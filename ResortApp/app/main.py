@@ -30,7 +30,9 @@ from app.api import (
 # Create DB tables
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+ROOT_PATH = os.getenv("ROOT_PATH", "")
+
+app = FastAPI(root_path=ROOT_PATH)
 
 # CORS
 app.add_middleware(
