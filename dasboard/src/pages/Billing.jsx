@@ -11,6 +11,7 @@ import autoTable from 'jspdf-autotable';
 import { useInfiniteScroll } from "./useInfiniteScroll";
 import logo from '../assets/logo.jpeg'; 
 import { formatCurrency } from '../utils/currency'; 
+import { getApiBaseUrl } from "../utils/env";
 
 
 // --- Placeholder for DashboardLayout ---
@@ -20,7 +21,7 @@ import { formatCurrency } from '../utils/currency';
 // --- API service ---
 // Using the same API service setup as other pages
 const api = axios.create({
-  baseURL: process.env.NODE_ENV === 'production' ? "https://www.teqmates.com/api" : "http://localhost:8000/api",
+  baseURL: getApiBaseUrl(),
 });
 
 // 1. Request Interceptor: Attaches the token to every request
@@ -34,6 +35,14 @@ api.interceptors.request.use(config => {
   return Promise.reject(error);
 });
 
+const resolveLoginPath = () => {
+  if (typeof window === "undefined") {
+    return "/admin/login";
+  }
+  const path = window.location.pathname || "";
+  return path.startsWith("/pommaadmin") ? "/pommaadmin/login" : "/admin/login";
+};
+
 // 2. Response Interceptor: Handles 401 errors globally
 api.interceptors.response.use(response => {
   return response;
@@ -42,7 +51,7 @@ api.interceptors.response.use(response => {
     // Token is invalid or expired
     localStorage.removeItem('token');
     // Use window.location to force a full page reload to clear any stale state
-    window.location.href = '/login';
+    window.location.href = resolveLoginPath();
     // You could also use a state management solution to show a "Session Expired" message
   }
   return Promise.reject(error);

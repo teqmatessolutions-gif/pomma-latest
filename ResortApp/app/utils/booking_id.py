@@ -63,3 +63,4 @@ def format_display_id(numeric_id: int, is_package: bool = False) -> str:
     prefix = "PK" if is_package else "BK"
     return f"{prefix}-{str(numeric_id).zfill(6)}"
 
+

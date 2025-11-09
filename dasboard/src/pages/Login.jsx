@@ -1,10 +1,12 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -13,7 +15,7 @@ export default function LoginPage() {
       const response = await api.post("/auth/login", { email, password });
       if (response.data && response.data.access_token) {
         localStorage.setItem("token", response.data.access_token);
-        window.location.href = "/admin/dashboard";
+        navigate("/dashboard", { replace: true });
       } else {
         alert("Login failed: No token received from server.");
       }

@@ -4,6 +4,7 @@ import API from "../services/api";
 import { LineChart, Line, Tooltip, ResponsiveContainer } from "recharts";
 import CountUp from "react-countup";
 import { useInfiniteScroll } from "./useInfiniteScroll";
+import { getMediaBaseUrl } from "../utils/env";
 
 const Expenses = () => {
   const [expenses, setExpenses] = useState([]);
@@ -23,6 +24,7 @@ const Expenses = () => {
   });
 
   const fileInputRef = useRef(null);
+  const mediaBaseUrl = getMediaBaseUrl();
 
   useEffect(() => {
     fetchEmployees();
@@ -289,7 +291,7 @@ const Expenses = () => {
                     <td className="p-2">
                       {exp.image && (
                         <img
-                          src={`${process.env.NODE_ENV === 'production' ? 'https://www.teqmates.com' : 'http://localhost:8000'}/${exp.image.replace(/\\/g, "/")}`}
+                          src={`${mediaBaseUrl}/${(exp.image || "").replace(/\\/g, "/").replace(/^\//, "")}`}
                           alt="Bill"
                           className="h-12 rounded"
                         />

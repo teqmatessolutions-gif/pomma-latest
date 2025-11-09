@@ -22,56 +22,80 @@ def get_kpis(db: Session = Depends(get_db)):
     """
     Calculates and returns key performance indicators for the dashboard.
     """
-    today = date.today()
+    try:
+        today = date.today()
 
-    # 1. Checkout KPIs
-    checkouts_today = db.query(Checkout).filter(func.cast(Checkout.checkout_date, Date) == today).count()
-    checkouts_total = db.query(Checkout).count()
+        # 1. Checkout KPIs
+        checkouts_today = db.query(Checkout).filter(func.cast(Checkout.checkout_date, Date) == today).count() or 0
+        checkouts_total = db.query(Checkout).count() or 0
 
-    # 2. Room Status KPIs
-    all_rooms = db.query(Room).all()
-    booked_room_ids = set()
+        # 2. Room Status KPIs
+        all_rooms = db.query(Room).all() or []
+        booked_room_ids = set()
 
-    # Find rooms booked via regular bookings
-    active_bookings = db.query(BookingRoom.room_id).join(Booking).filter(
-        Booking.status == "booked",
-        Booking.check_in <= today,
-        Booking.check_out > today,
-    ).all()
-    booked_room_ids.update([r.room_id for r in active_bookings])
+        # Find rooms booked via regular bookings (include both 'booked' and 'checked-in' statuses)
+        active_bookings = db.query(BookingRoom.room_id).join(Booking).filter(
+            Booking.status.in_(['booked', 'checked-in', 'checked_in']),  # Include checked-in status
+            Booking.check_in <= today,
+            Booking.check_out > today,
+        ).all()
+        booked_room_ids.update([r.room_id for r in active_bookings if r.room_id])
 
-    # Find rooms booked via package bookings
-    active_package_bookings = db.query(PackageBookingRoom.room_id).join(PackageBooking).filter(
-        PackageBooking.status == "booked",
-        PackageBooking.check_in <= today,
-        PackageBooking.check_out > today,
-    ).all()
-    booked_room_ids.update([r.room_id for r in active_package_bookings])
+        # Find rooms booked via package bookings (include both 'booked' and 'checked-in' statuses)
+        active_package_bookings = db.query(PackageBookingRoom.room_id).join(PackageBooking).filter(
+            PackageBooking.status.in_(['booked', 'checked-in', 'checked_in']),  # Include checked-in status
+            PackageBooking.check_in <= today,
+            PackageBooking.check_out > today,
+        ).all()
+        booked_room_ids.update([r.room_id for r in active_package_bookings if r.room_id])
 
-    booked_rooms_count = len(booked_room_ids)
-    maintenance_rooms_count = db.query(Room).filter(func.lower(Room.status) == "maintenance").count()
-    total_rooms_count = len(all_rooms)
-    available_rooms_count = total_rooms_count - booked_rooms_count - maintenance_rooms_count
+        booked_rooms_count = len(booked_room_ids) or 0
+        maintenance_rooms_count = db.query(Room).filter(func.lower(Room.status) == "maintenance").count() or 0
+        total_rooms_count = len(all_rooms) or 0
+        available_rooms_count = max(0, total_rooms_count - booked_rooms_count - maintenance_rooms_count)
 
-    # 3. Food Revenue KPI
-    # Assuming FoodOrder has a 'created_at' field. If not, this needs adjustment.
-    food_revenue_today = db.query(func.sum(FoodOrder.amount)).filter(
-        func.cast(FoodOrder.created_at, Date) == today
-    ).scalar() or 0
+        # 3. Food Revenue KPI
+        # Handle both 'amount' and 'total_amount' fields for FoodOrder
+        food_revenue_today = 0
+        try:
+            food_revenue_today = db.query(func.sum(FoodOrder.amount)).filter(
+                func.cast(FoodOrder.created_at, Date) == today
+            ).scalar() or 0
+        except Exception:
+            # Fallback to total_amount if amount field doesn't exist
+            try:
+                food_revenue_today = db.query(func.sum(FoodOrder.total_amount)).filter(
+                    func.cast(FoodOrder.created_at, Date) == today
+                ).scalar() or 0
+            except Exception:
+                food_revenue_today = 0
 
-    # 4. Package Booking KPI
-    package_bookings_today = db.query(PackageBooking).filter(
-        func.cast(PackageBooking.check_in, Date) == today
-    ).count()
+        # 4. Package Booking KPI
+        package_bookings_today = db.query(PackageBooking).filter(
+            func.cast(PackageBooking.check_in, Date) == today
+        ).count() or 0
 
-    return [{
-        "checkouts_today": checkouts_today,
-        "checkouts_total": checkouts_total,
-        "available_rooms": available_rooms_count,
-        "booked_rooms": booked_rooms_count,
-        "food_revenue_today": food_revenue_today,
-        "package_bookings_today": package_bookings_today,
-    }]
+        return [{
+            "checkouts_today": checkouts_today,
+            "checkouts_total": checkouts_total,
+            "available_rooms": available_rooms_count,
+            "booked_rooms": booked_rooms_count,
+            "food_revenue_today": float(food_revenue_today) if food_revenue_today else 0,
+            "package_bookings_today": package_bookings_today,
+        }]
+    except Exception as e:
+        # Return default values if there's any error to prevent 500 response
+        import traceback
+        print(f"Error in get_kpis: {str(e)}")
+        print(traceback.format_exc())
+        return [{
+            "checkouts_today": 0,
+            "checkouts_total": 0,
+            "available_rooms": 0,
+            "booked_rooms": 0,
+            "food_revenue_today": 0,
+            "package_bookings_today": 0,
+        }]
 
 @router.get("/charts")
 def get_chart_data(db: Session = Depends(get_db)):

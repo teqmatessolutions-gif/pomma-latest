@@ -22,9 +22,21 @@ import GuestProfile from "./pages/GuestProfile.jsx";
 import UserHistory from "./pages/UserHistory.jsx";
 import EmployeeManagement from "./pages/EmployeeManagement.jsx";
 
+const getRouterBasename = () => {
+  if (typeof window === "undefined") {
+    return "/admin";
+  }
+  const path = window.location.pathname || "";
+  if (path.startsWith("/pommaadmin")) {
+    return "/pommaadmin";
+  }
+  return "/admin";
+};
+
 function App() {
+  const basename = getRouterBasename();
   return (
-    <Router basename="/admin">
+    <Router basename={basename}>
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/dashboard" element={

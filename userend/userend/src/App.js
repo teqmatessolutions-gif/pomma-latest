@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback, memo } from "
 import { BedDouble, Coffee, ConciergeBell, Package, ChevronRight, ChevronDown, Image as ImageIcon, Star, Quote, ChevronUp, MessageSquare, Send, X, Facebook, Instagram, Linkedin, Twitter, Moon, Sun, Droplet } from 'lucide-react';
 // Currency formatting utility
 import { formatCurrency } from './utils/currency';
+import { getApiBaseUrl, getMediaBaseUrl } from "./utils/env";
 
 // Custom hook to detect if an element is in the viewport
 const useOnScreen = (ref, rootMargin = "0px") => {
@@ -695,6 +696,9 @@ export default function App() {
     const [isChatLoading, setIsChatLoading] = useState(false);
     const [showAllRooms, setShowAllRooms] = useState(false);
 
+    const mediaBaseUrl = useMemo(() => getMediaBaseUrl(), []);
+    const apiBaseUrl = useMemo(() => getApiBaseUrl(), []);
+
     // Package image slider state
     const [packageImageIndex, setPackageImageIndex] = useState({});
 
@@ -768,12 +772,8 @@ export default function App() {
     const getImageUrl = (imagePath) => {
         if (!imagePath) return ITEM_PLACEHOLDER;
         if (imagePath.startsWith('http')) return imagePath; // Already a full URL
-        const baseUrl = process.env.NODE_ENV === 'production' 
-            ? 'https://www.teqmates.com' 
-            : 'http://localhost:8000';
-        // Ensure imagePath starts with / for proper URL construction
         const path = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
-        return `${baseUrl}${path}`;
+        return `${mediaBaseUrl}${path}`;
     };
 
     // Determine gallery card height for a mosaic layout.
@@ -802,9 +802,8 @@ export default function App() {
     // *** FIX: Added useEffect to fetch all resort data on component mount ***
     useEffect(() => {
         const fetchResortData = async () => {
-            const API_BASE_URL = process.env.NODE_ENV === 'production' ? "https://www.teqmates.com/api" : "http://localhost:8000/api";
             const endpoints = {
-                rooms: '/rooms/test',  // Use working test endpoint for real room data
+                rooms: '/rooms/test',
                 bookings: '/bookings?limit=500&skip=0', // Reduced limit for better performance - only recent bookings needed
                 foodItems: '/food-items/',
                 packages: '/packages/',
@@ -820,7 +819,7 @@ export default function App() {
 
             try {
                 const responses = await Promise.all(
-                    Object.values(endpoints).map(endpoint => fetch(`${API_BASE_URL}${endpoint}`))
+                    Object.values(endpoints).map(endpoint => fetch(`${apiBaseUrl}${endpoint}`))
                 );
 
                 for (const res of responses) {
@@ -861,7 +860,7 @@ export default function App() {
         };
 
         fetchResortData();
-    }, []); // Empty dependency array ensures this runs only once on mount
+    }, [apiBaseUrl]); // Empty dependency array ensures this runs only once on mount
 
     // Auto-rotate banner images - only if multiple banners
     useEffect(() => {
@@ -1148,8 +1147,7 @@ export default function App() {
         // -------------------------
 
         try {
-            const API_BASE_URL = process.env.NODE_ENV === 'production' ? "https://www.teqmates.com/api" : "http://localhost:8000/api";
-            const response = await fetch(`${API_BASE_URL}/bookings/guest`, {
+            const response = await fetch(`${apiBaseUrl}/bookings/guest`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(bookingData)
@@ -1223,8 +1221,6 @@ export default function App() {
         // -------------------------
 
         try {
-            const API_BASE_URL = process.env.NODE_ENV === 'production' ? "https://www.teqmates.com/api" : "http://localhost:8000/api";
-            
             // Validate required fields
             if (!packageBookingData.package_id) {
                 showBannerMessage("error", "Package ID is missing. Please select a package.");
@@ -1265,7 +1261,7 @@ export default function App() {
             
             console.log("Package Booking Payload:", payload); // Debug log
             
-            const response = await fetch(`${API_BASE_URL}/packages/book/guest`, {
+            const response = await fetch(`${apiBaseUrl}/packages/book/guest`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -1323,8 +1319,7 @@ export default function App() {
         setBookingMessage({ type: null, text: "" });
 
         try {
-            const API_BASE_URL = process.env.NODE_ENV === 'production' ? "https://www.teqmates.com/api" : "http://localhost:8000/api";
-            const response = await fetch(`${API_BASE_URL}/services/bookings`, {
+            const response = await fetch(`${apiBaseUrl}/services/bookings`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(serviceBookingData)
@@ -1373,8 +1368,7 @@ export default function App() {
         };
         
         try {
-            const API_BASE_URL = process.env.NODE_ENV === 'production' ? "https://www.teqmates.com/api" : "http://localhost:8000/api";
-            const response = await fetch(`${API_BASE_URL}/food-orders/`, {
+            const response = await fetch(`${apiBaseUrl}/food-orders/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -2155,7 +2149,7 @@ export default function App() {
                                             {/* Image */}
                                             <div className="relative h-40 overflow-hidden">
                                                 <img 
-                                                    src={process.env.NODE_ENV === 'production' ? `https://www.teqmates.com/${food.images?.[0]?.image_url}` : `http://localhost:8000/${food.images?.[0]?.image_url}`} 
+                                                    src={getImageUrl(food.images?.[0]?.image_url)} 
                                                     alt={food.name} 
                                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                                                     onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }} 
@@ -2220,7 +2214,7 @@ export default function App() {
                                             style={{ height: getGalleryCardHeight(index), transitionDelay: `${(index % 5) * 70}ms` }}
                                         >
                                             <img 
-                                                src={process.env.NODE_ENV === 'production' ? `https://www.teqmates.com${image.image_url}` : `http://localhost:8000${image.image_url}`} 
+                                                src={getImageUrl(image.image_url)} 
                                                 alt={image.caption || 'Gallery image'} 
                                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                                                 loading="lazy"
@@ -2914,7 +2908,7 @@ export default function App() {
                                     {foodItems.map(item => (
                                         <div key={item.id} className="flex items-center justify-between">
                                             <div className="flex items-center space-x-4">
-                                                <img src={process.env.NODE_ENV === 'production' ? `https://www.teqmates.com/${item.images?.[0]?.image_url}` : `http://localhost:8000/${item.images?.[0]?.image_url}`} alt={item.name} className="w-12 h-12 object-cover rounded-full" />
+                                                <img src={getImageUrl(item.images?.[0]?.image_url)} alt={item.name} className="w-12 h-12 object-cover rounded-full" />
                                                 <div>
                                                     <p className={`font-semibold ${theme.textPrimary}`}>{item.name}</p>
                                                 </div>

@@ -4,6 +4,7 @@ import api from "../services/api";
 import { toast } from "react-hot-toast";
 import { FaStar, FaTrashAlt, FaPencilAlt, FaPlus, FaTimes } from "react-icons/fa";
 import { AnimatePresence, motion } from "framer-motion";
+import { getMediaBaseUrl } from "../utils/env";
 
 // Get the correct base URL based on environment
 const getImageUrl = (imagePath) => {
@@ -17,9 +18,7 @@ const getImageUrl = (imagePath) => {
     return imagePath;
   }
   
-  const baseUrl = process.env.NODE_ENV === 'production' 
-    ? 'https://www.teqmates.com' 
-    : 'http://localhost:8000';
+  const baseUrl = getMediaBaseUrl();
   
   // Normalize the path
   let path = imagePath;
@@ -68,8 +67,6 @@ const getImageUrl = (imagePath) => {
   console.log(`getImageUrl: "${imagePath}" -> "${fullUrl}"`);
   return fullUrl;
 };
-
-const API_URL = process.env.NODE_ENV === 'production' ? 'https://www.teqmates.com' : 'http://localhost:8000';
 
 // --- Reusable Components ---
 

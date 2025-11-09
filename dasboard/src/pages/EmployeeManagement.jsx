@@ -8,6 +8,7 @@ import * as XLSX from "xlsx";
 import { LineChart, Line, Tooltip, ResponsiveContainer } from "recharts";
 import CountUp from "react-countup";
 import BannerMessage from "../components/BannerMessage";
+import { getMediaBaseUrl } from "../utils/env";
 
 const UserHistory = () => {
   const [users, setUsers] = useState([]);
@@ -17,6 +18,7 @@ const UserHistory = () => {
   const [history, setHistory] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const mediaBaseUrl = useMemo(() => getMediaBaseUrl(), []);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -826,6 +828,8 @@ const EmployeeListAndForm = () => {
   const [page, setPage] = useState(1);
   const [hoveredKPI, setHoveredKPI] = useState(null);
 
+  const mediaBaseUrl = useMemo(() => getMediaBaseUrl(), []);
+
   useEffect(() => {
     fetchEmployees();
     fetchRoles();
@@ -950,10 +954,8 @@ const EmployeeListAndForm = () => {
     });
     // Build full URL for the preview image
     if (emp.image_url) {
-      const baseURL = process.env.NODE_ENV === 'production' ? 'https://www.teqmates.com' : 'http://localhost:8000';
-      // Remove leading slash if present to avoid double slashes
       const imagePath = emp.image_url.startsWith('/') ? emp.image_url.substring(1) : emp.image_url;
-      setPreviewImage(`${baseURL}/${imagePath}`);
+      setPreviewImage(`${mediaBaseUrl}/${imagePath}`);
     } else {
       setPreviewImage(null);
     }
@@ -1077,7 +1079,7 @@ const EmployeeListAndForm = () => {
                 <td className="p-1 sm:p-2 border">
                   {emp.image_url ? (
                     <img 
-                      src={`${process.env.NODE_ENV === 'production' ? 'https://www.teqmates.com' : 'http://localhost:8000'}/${emp.image_url.startsWith('/') ? emp.image_url.substring(1) : emp.image_url}`} 
+                      src={`${mediaBaseUrl}/${emp.image_url.startsWith('/') ? emp.image_url.substring(1) : emp.image_url}`} 
                       alt="Profile" 
                       className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover" 
                     />

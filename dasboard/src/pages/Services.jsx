@@ -6,6 +6,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer
 } from "recharts";
 import { Loader2 } from "lucide-react";
+import { getMediaBaseUrl } from "../utils/env";
 
 // Reusable card component for a consistent look
 const Card = ({ title, className = "", children }) => (
@@ -169,9 +170,7 @@ const Services = () => {
   const getImageUrl = (imagePath) => {
     if (!imagePath) return '';
     if (imagePath.startsWith('http')) return imagePath;
-    const baseUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://www.teqmates.com' 
-      : 'http://localhost:8000';
+    const baseUrl = getMediaBaseUrl();
     const path = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
     return `${baseUrl}${path}`;
   };

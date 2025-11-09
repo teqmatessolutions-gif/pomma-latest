@@ -6,15 +6,15 @@ import API from "../services/api";
 import { LineChart, Line, ResponsiveContainer, Tooltip as RechartsTooltip } from "recharts";
 import { toast } from "react-hot-toast";
 import { motion } from "framer-motion";
+import { getMediaBaseUrl } from "../utils/env";
 
 // Get the correct base URL based on environment
 const getImageUrl = (imageUrl) => {
   if (!imageUrl) return 'https://placehold.co/400x300/e2e8f0/a0aec0?text=No+Image';
   if (imageUrl.startsWith('http')) return imageUrl; // Already a full URL
-  const baseUrl = process.env.NODE_ENV === 'production' 
-    ? 'https://www.teqmates.com' 
-    : 'http://localhost:8000';
-  return `${baseUrl}${imageUrl}`;
+  const baseUrl = getMediaBaseUrl();
+  const normalized = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
+  return `${baseUrl}${normalized}`;
 };
 
 // KPI Card for quick stats

@@ -3,12 +3,13 @@ import DashboardLayout from "../layout/DashboardLayout";
 import API from "../services/api";
 import { toast } from "react-hot-toast";
 import { motion } from "framer-motion";
+import { getMediaBaseUrl } from "../utils/env";
 
 // Helper function to get correct image URL based on environment
 const getImageUrl = (imagePath) => {
   if (!imagePath) return 'https://placehold.co/400x300/e2e8f0/a0aec0?text=No+Image';
   if (imagePath.startsWith('http')) return imagePath;
-  const baseUrl = process.env.NODE_ENV === 'production' ? 'https://www.teqmates.com' : 'http://localhost:8000';
+  const baseUrl = getMediaBaseUrl();
   return imagePath.startsWith('/') ? `${baseUrl}${imagePath}` : `${baseUrl}/${imagePath}`;
 };
 

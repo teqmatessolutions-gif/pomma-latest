@@ -5,6 +5,7 @@ import DashboardLayout from "../layout/DashboardLayout";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement } from 'chart.js';
 import { Pie, Bar, Line } from 'react-chartjs-2';
 import { motion } from "framer-motion";
+import { getMediaBaseUrl } from "../utils/env";
 
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement);
@@ -13,9 +14,7 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarEle
 const getImageUrl = (imagePath) => {
   if (!imagePath) return 'https://placehold.co/400x300/e2e8f0/a0aec0?text=No+Image';
   if (imagePath.startsWith('http')) return imagePath;
-  const baseUrl = process.env.NODE_ENV === 'production' 
-    ? 'https://www.teqmates.com' 
-    : 'http://localhost:8000';
+  const baseUrl = getMediaBaseUrl();
   const path = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
   return `${baseUrl}${path}`;
 };

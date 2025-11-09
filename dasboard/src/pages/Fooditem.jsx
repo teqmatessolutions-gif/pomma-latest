@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from "react";
 import DashboardLayout from "../layout/DashboardLayout";
 import API from "../services/api";
+import { getMediaBaseUrl } from "../utils/env";
 
 // Helper function to construct image URLs
 const getImageUrl = (imagePath) => {
   if (!imagePath) return 'https://placehold.co/400x300/e2e8f0/a0aec0?text=No+Image';
   if (imagePath.startsWith('http')) return imagePath;
-  const baseUrl = process.env.NODE_ENV === 'production' 
-    ? 'https://www.teqmates.com' 
-    : 'http://localhost:8000';
+  const baseUrl = getMediaBaseUrl();
   const path = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
   return `${baseUrl}${path}`;
 };
