@@ -32,7 +32,7 @@ Base.metadata.create_all(bind=engine)
 
 ROOT_PATH = os.getenv("ROOT_PATH", "")
 
-app = FastAPI(root_path=ROOT_PATH)
+app = FastAPI(root_path=ROOT_PATH, redirect_slashes=False)
 
 # CORS
 app.add_middleware(
