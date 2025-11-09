@@ -23,7 +23,7 @@ os.makedirs(CHECKIN_UPLOAD_DIR, exist_ok=True)
 
 # ------------------- Packages -------------------
 
-@router.post("/", response_model=PackageOut)
+@router.post("", response_model=PackageOut)
 async def create_package_api(
     title: str = Form(...),
     description: str = Form(...),
@@ -228,7 +228,7 @@ def get_bookings(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
     ).filter(PackageBooking.package_id.is_not(None)).offset(skip).limit(limit).all()
 
 
-@router.get("/", response_model=List[PackageOut])
+@router.get("", response_model=List[PackageOut])
 def list_packages(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
     # Query directly in the endpoint to apply pagination
     return db.query(Package).offset(skip).limit(limit).all()

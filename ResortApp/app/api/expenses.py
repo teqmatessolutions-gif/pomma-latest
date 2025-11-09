@@ -15,7 +15,7 @@ router = APIRouter(prefix="/expenses", tags=["Expenses"])
 UPLOAD_DIR = "uploads/expenses"
 
 
-@router.post("/", response_model=ExpenseOut)
+@router.post("", response_model=ExpenseOut)
 async def create_expense(
     category: str = Form(...),
     amount: float = Form(...),
@@ -58,7 +58,7 @@ async def create_expense(
         "employee_name": employee.name if employee else "N/A"
     }
 
-@router.get("/", response_model=list[ExpenseOut])
+@router.get("", response_model=list[ExpenseOut])
 def get_expenses(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
     expenses = expense_crud.get_all_expenses(db, skip=skip, limit=limit)
     result = []

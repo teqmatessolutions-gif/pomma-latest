@@ -21,7 +21,7 @@ def get_db():
 @router.get("/me", response_model=UserOut)
 def read_current_user(current_user = Depends(get_current_user)):
     return current_user
-@router.post("/", response_model=UserOut)
+@router.post("", response_model=UserOut)
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
     db_user = crud_user.get_user_by_email(db, email=user.email,)
     if db_user:
@@ -56,6 +56,6 @@ def setup_initial_admin(setup_data: AdminSetupRequest, db: Session = Depends(get
     new_admin_user = crud_user.create_user(db=db, user=user_data)
     return new_admin_user
 
-@router.get("/")
+@router.get("")
 def get_users(db: Session = Depends(get_db), current_user: User = Depends(get_current_user), skip: int = 0, limit: int = 20):
     return db.query(User).options(joinedload(User.role)).offset(skip).limit(limit).all()

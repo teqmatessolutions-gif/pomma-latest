@@ -15,13 +15,13 @@ def get_db():
     finally:
         db.close()
 
-@router.post("/", response_model=RoleOut)
+@router.post("", response_model=RoleOut)
 def create_new_role(role: RoleCreate, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     if user.role.name != "admin":
         raise HTTPException(status_code=403, detail="Only admin can create roles")
     return crud_role.create_role(db, role)
 
-@router.get("/", response_model=list[RoleOut])
+@router.get("", response_model=list[RoleOut])
 def list_roles(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
     roles = crud_role.get_roles(db, skip=skip, limit=limit)
     return roles

@@ -28,7 +28,7 @@ def get_db():
 UPLOAD_DIR = "uploads/employees"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-@router.post("/")
+@router.post("")
 def add_employee(
     db: Session = Depends(get_db),
     name: str = Form(...),
@@ -85,7 +85,7 @@ def add_employee(
         user_id=new_user.id,
     )
 
-@router.get("/", response_model=list[Employee])
+@router.get("", response_model=list[Employee])
 def list_employees(db: Session = Depends(get_db), current_user: User = Depends(get_current_user), skip: int = 0, limit: int = 20):
     return crud_employee.get_employees(db, skip=skip, limit=limit)
     

@@ -13,7 +13,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 
-@router.post("/")
+@router.post("")
 async def create_item(
     name: str = Form(...),
     description: str = Form(...),
@@ -41,7 +41,7 @@ async def create_item(
     )
     return food_item.create_food_item(db, item_data, image_paths)
 
-@router.get("/")
+@router.get("")
 def list_items(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
     return food_item.get_all_food_items(db, skip=skip, limit=limit)
 

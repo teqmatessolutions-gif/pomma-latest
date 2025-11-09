@@ -12,7 +12,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 router = APIRouter(prefix="/food-categories", tags=["Food Categories"])
 
 
-@router.post("/", response_model=FoodCategoryOut)
+@router.post("", response_model=FoodCategoryOut)
 def create_category(name: str = Form(...), image: UploadFile = File(None), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     filename = None
     if image:
@@ -28,7 +28,7 @@ def create_category(name: str = Form(...), image: UploadFile = File(None), db: S
     return category
 
 
-@router.get("/", response_model=list[FoodCategoryOut])
+@router.get("", response_model=list[FoodCategoryOut])
 def read_all(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
     return crud.get_categories(db, skip=skip, limit=limit)
 

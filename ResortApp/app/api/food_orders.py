@@ -8,11 +8,11 @@ from typing import List
 
 router = APIRouter(prefix="/food-orders", tags=["Food Orders"])
 
-@router.post("/", response_model=FoodOrderOut)
+@router.post("", response_model=FoodOrderOut)
 def create_order(order: FoodOrderCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return crud.create_food_order(db, order)
 
-@router.get("/", response_model=List[FoodOrderOut])
+@router.get("", response_model=List[FoodOrderOut])
 def get_orders(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
     return crud.get_food_orders(db, skip=skip, limit=limit)
 
