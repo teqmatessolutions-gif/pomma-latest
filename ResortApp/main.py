@@ -124,9 +124,16 @@ async def admin_dashboard(request: Request, path: str = ""):
 @app.get("/resort/{path:path}", response_class=HTMLResponse)
 async def user_page(request: Request, path: str = ""):
     """Serve the user interface at www.teqmates.com/resort"""
-    userend_file = Path("../userend/build/index.html")
-    if userend_file.exists():
-        return FileResponse(userend_file)
+    userend_dir = Path("../userend/build").resolve()
+    index_file = userend_dir / "index.html"
+
+    if path:
+        requested_path = (userend_dir / path).resolve()
+        if requested_path.is_file() and userend_dir in requested_path.parents:
+            return FileResponse(requested_path)
+
+    if index_file.exists():
+        return FileResponse(index_file)
 
     # Fallback to a simple user interface
     return HTMLResponse("""

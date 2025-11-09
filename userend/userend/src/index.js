@@ -13,10 +13,12 @@ const makeDateInputsClickable = () => {
         // Always open the picker when clicking anywhere on the date input
         // Small delay to ensure the input is focused first
         setTimeout(() => {
-          input.showPicker().catch(() => {
+          try {
+            input.showPicker();
+          } catch (_err) {
             // showPicker may fail in some contexts (e.g., user interaction required)
             // Allow normal browser behavior in those cases
-          });
+          }
         }, 50);
       }
     }
@@ -52,4 +54,8 @@ if (document.readyState === 'loading') {
 }
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<App />);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);

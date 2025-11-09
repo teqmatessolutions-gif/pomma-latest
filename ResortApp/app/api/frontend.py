@@ -760,3 +760,131 @@ async def update_nearby_attraction(
 @router.delete("/nearby-attractions/{item_id}")
 def delete_nearby_attraction(item_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return crud.delete(db, models.NearbyAttraction, item_id)
+
+
+@router.get("/nearby-attraction-banners/", response_model=list[schemas.NearbyAttractionBanner])
+def list_nearby_attraction_banners(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+    return crud.get_all(db, models.NearbyAttractionBanner, skip=skip, limit=limit)
+
+
+@router.post("/nearby-attraction-banners/", response_model=schemas.NearbyAttractionBanner)
+async def create_nearby_attraction_banner(
+    title: str = Form(...),
+    subtitle: str = Form(...),
+    map_link: str | None = Form(None),
+    is_active: bool = Form(True),
+    image: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        if not os.access(UPLOAD_DIR, os.W_OK):
+            raise HTTPException(status_code=500, detail=f"Upload directory is not writable: {UPLOAD_DIR}")
+        if not image.filename:
+            raise HTTPException(status_code=400, detail="No filename provided for image")
+
+        file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
+        unique_filename = f"nearby_banner_{uuid.uuid4().hex}.{file_ext}"
+        file_path = os.path.join(UPLOAD_DIR, unique_filename)
+
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(image.file, buffer)
+
+        if not os.path.exists(file_path):
+            raise HTTPException(status_code=500, detail="File was not saved successfully")
+
+        normalized_path = file_path.replace('\\', '/')
+        if normalized_path.startswith(BASE_DIR.replace('\\', '/')):
+            image_url = normalized_path.replace(BASE_DIR.replace('\\', '/'), '').lstrip('/')
+        else:
+            image_url = normalized_path.lstrip('/')
+
+        if not image_url.startswith('static/'):
+            image_url = f"static/uploads/{unique_filename}"
+
+        image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
+
+        obj = schemas.NearbyAttractionBannerCreate(
+            title=title,
+            subtitle=subtitle,
+            image_url=image_url,
+            is_active=is_active,
+            map_link=map_link.strip() if map_link else None,
+        )
+        return crud.create(db, models.NearbyAttractionBanner, obj)
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        error_detail = f"Failed to create nearby attraction banner: {str(e)}\n{traceback.format_exc()}"
+        print(f"ERROR: {error_detail}")
+        raise HTTPException(status_code=500, detail=f"Failed to create nearby attraction banner: {str(e)}")
+
+
+@router.put("/nearby-attraction-banners/{item_id}", response_model=schemas.NearbyAttractionBanner)
+async def update_nearby_attraction_banner(
+    item_id: int,
+    title: str = Form(...),
+    subtitle: str = Form(...),
+    map_link: str | None = Form(None),
+    is_active: bool = Form(True),
+    image: UploadFile = File(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        update_data = {
+            "title": title,
+            "subtitle": subtitle,
+            "is_active": is_active,
+            "map_link": map_link.strip() if map_link else None,
+        }
+
+        if image:
+            os.makedirs(UPLOAD_DIR, exist_ok=True)
+            if not os.access(UPLOAD_DIR, os.W_OK):
+                raise HTTPException(status_code=500, detail=f"Upload directory is not writable: {UPLOAD_DIR}")
+            if not image.filename:
+                raise HTTPException(status_code=400, detail="No filename provided for image")
+
+            file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
+            unique_filename = f"nearby_banner_{uuid.uuid4().hex}.{file_ext}"
+            file_path = os.path.join(UPLOAD_DIR, unique_filename)
+
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(image.file, buffer)
+
+            if not os.path.exists(file_path):
+                raise HTTPException(status_code=500, detail="File was not saved successfully")
+
+            normalized_path = file_path.replace('\\', '/')
+            if normalized_path.startswith(BASE_DIR.replace('\\', '/')):
+                image_url = normalized_path.replace(BASE_DIR.replace('\\', '/'), '').lstrip('/')
+            else:
+                image_url = normalized_path.lstrip('/')
+
+            if not image_url.startswith('static/'):
+                image_url = f"static/uploads/{unique_filename}"
+
+            image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
+            update_data["image_url"] = image_url
+        else:
+            existing = crud.get_by_id(db, models.NearbyAttractionBanner, item_id)
+            if existing:
+                update_data["image_url"] = existing.image_url
+
+        obj = schemas.NearbyAttractionBannerUpdate(**update_data)
+        return crud.update(db, models.NearbyAttractionBanner, item_id, obj)
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        error_detail = f"Failed to update nearby attraction banner: {str(e)}\n{traceback.format_exc()}"
+        print(f"ERROR: {error_detail}")
+        raise HTTPException(status_code=500, detail=f"Failed to update nearby attraction banner: {str(e)}")
+
+
+@router.delete("/nearby-attraction-banners/{item_id}")
+def delete_nearby_attraction_banner(item_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return crud.delete(db, models.NearbyAttractionBanner, item_id)

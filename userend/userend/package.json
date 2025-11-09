@@ -61,10 +61,10 @@
   "scripts": {
     "start": "set PORT=3002 && react-scripts start",
     "build": "react-scripts build && npm run copy-assets && npm run copy-build",
-    "copy-build": "rm -rf ../build && cp -r build ../build || (rmdir /s /q ..\\build 2>nul & xcopy build ..\\build /E /I /H /Y 2>nul) || true",
+    "copy-build": "node scripts/copyBuild.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "copy-assets": "cp -r public/assets build/ || xcopy public\\assets build\\assets /E /I /H /Y 2>nul || true",
+    "copy-assets": "node scripts/copyAssets.js",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --write src/**/*.{js,jsx,ts,tsx,json,css,md}"

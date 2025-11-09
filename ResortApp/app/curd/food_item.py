@@ -18,7 +18,16 @@ def create_food_item(db: Session, item: FoodItemCreate, image_paths: list[str]):
     return db_item
 
 def get_all_food_items(db: Session, skip: int = 0, limit: int = 100):
-    items = db.query(FoodItem).options(joinedload(FoodItem.images)).offset(skip).limit(limit).all()
+    items = (
+        db.query(FoodItem)
+        .options(
+            joinedload(FoodItem.images),
+            joinedload(FoodItem.category)
+        )
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
     return items 
 
 def delete_food_item(db: Session, item_id: int):

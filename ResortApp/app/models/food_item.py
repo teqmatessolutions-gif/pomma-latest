@@ -14,6 +14,7 @@ class FoodItem(Base):
     category_id = Column(Integer, ForeignKey("food_categories.id"))
 
     images = relationship("FoodItemImage", back_populates="food_item", cascade="all, delete-orphan")
+    category = relationship("FoodCategory", lazy="joined")
 
 
 class FoodItemImage(Base):

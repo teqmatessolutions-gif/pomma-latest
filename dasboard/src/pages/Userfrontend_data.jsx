@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import DashboardLayout from "../layout/DashboardLayout";
 import api from "../services/api";
 import { toast } from "react-hot-toast";
-import { FaStar, FaTrashAlt, FaPencilAlt, FaPlus, FaTimes } from "react-icons/fa";
+import { FaStar, FaTrashAlt, FaPencilAlt, FaPlus, FaTimes, FaMapMarkerAlt } from "react-icons/fa";
 import { AnimatePresence, motion } from "framer-motion";
 import { getMediaBaseUrl } from "../utils/env";
 
@@ -68,6 +68,16 @@ const getImageUrl = (imagePath) => {
   return fullUrl;
 };
 
+<<<<<<< HEAD
+=======
+const ensureHttpUrl = (url) => {
+  if (!url) return "";
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+};
+
+const API_URL = process.env.NODE_ENV === 'production' ? 'https://www.teqmates.com' : 'http://localhost:8000';
+
+>>>>>>> 710ede8 (Add map links for nearby attraction banners and clean up assets)
 // --- Reusable Components ---
 
 const ManagementSection = ({ title, onAdd, children, isLoading }) => (
@@ -184,6 +194,7 @@ export default function ResortCMS() {
         signatureExperiences: [],
         planWeddings: [],
         nearbyAttractions: [],
+        nearbyAttractionBanners: [],
     });
     const [isLoading, setIsLoading] = useState(true);
     const [modalState, setModalState] = useState({ isOpen: false, config: null, initialData: null });
@@ -191,7 +202,16 @@ export default function ResortCMS() {
     const fetchAll = async () => {
         setIsLoading(true);
         try {
-            const [bannersRes, galleryRes, reviewsRes, resortInfoRes, signatureExpRes, planWeddingRes, nearbyAttrRes] = await Promise.all([
+            const [
+                bannersRes,
+                galleryRes,
+                reviewsRes,
+                resortInfoRes,
+                signatureExpRes,
+                planWeddingRes,
+                nearbyAttrRes,
+                nearbyAttrBannerRes
+            ] = await Promise.all([
                 api.get("/header-banner/"),
                 api.get("/gallery/"),
                 api.get("/reviews/"),
@@ -199,6 +219,7 @@ export default function ResortCMS() {
                 api.get("/signature-experiences/"),
                 api.get("/plan-weddings/"),
                 api.get("/nearby-attractions/"),
+                api.get("/nearby-attraction-banners/"),
             ]);
             setResortData({
                 banners: bannersRes.data || [],
@@ -208,6 +229,7 @@ export default function ResortCMS() {
                 signatureExperiences: signatureExpRes.data || [],
                 planWeddings: planWeddingRes.data || [],
                 nearbyAttractions: nearbyAttrRes.data || [],
+                nearbyAttractionBanners: nearbyAttrBannerRes.data || [],
             });
         } catch (error) {
             console.error("Failed to fetch data:", error);
@@ -245,6 +267,8 @@ export default function ResortCMS() {
                         return { ...prev, planWeddings: prev.planWeddings.filter(item => item.id !== id) };
                     } else if (endpoint.includes('nearby-attractions')) {
                         return { ...prev, nearbyAttractions: prev.nearbyAttractions.filter(item => item.id !== id) };
+                    } else if (endpoint.includes('nearby-attraction-banners')) {
+                        return { ...prev, nearbyAttractionBanners: prev.nearbyAttractionBanners.filter(item => item.id !== id) };
                     }
                     return prev;
                 });
@@ -350,6 +374,13 @@ export default function ResortCMS() {
                         ? prev.nearbyAttractions.map(item => item.id === initialData.id ? response.data : item)
                         : [response.data, ...prev.nearbyAttractions]
                 }));
+            } else if (config.endpoint.includes('nearby-attraction-banners')) {
+                setResortData(prev => ({
+                    ...prev,
+                    nearbyAttractionBanners: isEditing
+                        ? prev.nearbyAttractionBanners.map(item => item.id === initialData.id ? response.data : item)
+                        : [response.data, ...prev.nearbyAttractionBanners]
+                }));
             }
             
             // Close modal after successful save
@@ -374,6 +405,7 @@ export default function ResortCMS() {
         signatureExperiences: { title: "Signature Experience", endpoint: "/signature-experiences/", fields: [{ name: "title", placeholder: "Experience Title" }, { name: "description", placeholder: "Description", type: "textarea" }, { name: "image", type: "file" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: true },
         planWeddings: { title: "Plan Your Wedding", endpoint: "/plan-weddings/", fields: [{ name: "title", placeholder: "Title" }, { name: "description", placeholder: "Description", type: "textarea" }, { name: "image", type: "file" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: true },
         nearbyAttractions: { title: "Nearby Attraction", endpoint: "/nearby-attractions/", fields: [{ name: "title", placeholder: "Attraction Title" }, { name: "description", placeholder: "Description", type: "textarea" }, { name: "image", type: "file" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: true },
+        nearbyAttractionBanners: { title: "Nearby Attraction Banner", endpoint: "/nearby-attraction-banners/", fields: [{ name: "title", placeholder: "Banner Title" }, { name: "subtitle", placeholder: "Banner Subtitle", type: "textarea" }, { name: "map_link", placeholder: "Google Maps Link (optional)" }, { name: "image", type: "file" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: true },
     };
 
     if (isLoading) {
@@ -535,6 +567,48 @@ export default function ResortCMS() {
                                 </div>
                             </div>
                         )) : <p className="col-span-full text-center text-gray-500">No wedding plans found.</p>}
+                    </ManagementSection>
+
+                    <ManagementSection title="Nearby Attraction Banners" onAdd={() => openModal(sectionConfigs.nearbyAttractionBanners)} isLoading={isLoading}>
+                        {resortData.nearbyAttractionBanners.length > 0 ? resortData.nearbyAttractionBanners.map(item => (
+                            <div key={item.id} className="bg-gray-50 border rounded-lg p-4 space-y-3">
+                                {item.image_url ? (
+                                    <img
+                                        src={getImageUrl(item.image_url)}
+                                        alt={item.title || 'Nearby attraction banner'}
+                                        className="w-full h-32 object-cover rounded-md shadow-sm"
+                                        onError={(e) => {
+                                            console.error('Failed to load nearby attraction banner image:', item.image_url);
+                                            e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2U1ZTdlYiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5Y2EzYWYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5JbWFnZSBub3QgYXZhaWxhYmxlPC90ZXh0Pjwvc3ZnPg==';
+                                        }}
+                                    />
+                                ) : (
+                                    <div className="w-full h-32 bg-gray-200 rounded-md flex items-center justify-center text-gray-400 text-xs">
+                                        No image
+                                    </div>
+                                )}
+                                <h3 className="font-bold text-gray-800">{item.title || 'No title'}</h3>
+                                <p className="text-xs text-gray-600 line-clamp-2">{item.subtitle || 'No description'}</p>
+                                {item.map_link ? (
+                                    <a
+                                        href={ensureHttpUrl(item.map_link)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 text-xs font-semibold text-blue-600 hover:text-blue-800"
+                                    >
+                                        <FaMapMarkerAlt className="text-red-500" />
+                                        View on Google Maps
+                                    </a>
+                                ) : (
+                                    <p className="text-xs text-gray-400">No map link provided</p>
+                                )}
+                                <p className="text-xs font-semibold">{item.is_active ? "🟢 Active" : "🔴 Inactive"}</p>
+                                <div className="flex gap-2 pt-2 border-t">
+                                    <button onClick={() => openModal(sectionConfigs.nearbyAttractionBanners, item)} className="text-blue-600 hover:text-blue-800"><FaPencilAlt /></button>
+                                    <button onClick={() => handleDelete(sectionConfigs.nearbyAttractionBanners.endpoint, item.id, 'nearby attraction banner')} className="text-red-600 hover:text-red-800"><FaTrashAlt /></button>
+                                </div>
+                            </div>
+                        )) : <p className="col-span-full text-center text-gray-500">No nearby attraction banners found.</p>}
                     </ManagementSection>
 
                     <ManagementSection title="Nearby Attractions" onAdd={() => openModal(sectionConfigs.nearbyAttractions)} isLoading={isLoading}>

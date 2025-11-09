@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback, memo } from "react";
+import localLogo from "./assets/logo.png";
 // Lucide React is used for elegant icons
-import { BedDouble, Coffee, ConciergeBell, Package, ChevronRight, ChevronDown, Image as ImageIcon, Star, Quote, ChevronUp, MessageSquare, Send, X, Facebook, Instagram, Linkedin, Twitter, Moon, Sun, Droplet } from 'lucide-react';
+import { BedDouble, Coffee, ConciergeBell, Package, ChevronRight, ChevronLeft, ChevronDown, Image as ImageIcon, Star, Quote, ChevronUp, MessageSquare, Send, X, Facebook, Instagram, Linkedin, Twitter, Moon, Sun, Droplet } from 'lucide-react';
+import { SiGooglemaps } from "react-icons/si";
 // Currency formatting utility
 import { formatCurrency } from './utils/currency';
 import { getApiBaseUrl, getMediaBaseUrl } from "./utils/env";
@@ -299,6 +301,39 @@ const themes = {
         chatModelText: "text-stone-900",
         chatLoaderBg: "bg-stone-600",
     },
+    pomma: {
+        id: 'pomma',
+        name: 'Pomma',
+        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-leaf"><path d="M2 13c3.5-3.5 12-5 18 0 0 0-4 4-8 8s-8-4-10-6z"/></svg>,
+        bgPrimary: "bg-[#f9f4ea]",
+        bgSecondary: "bg-[#f1e7d8]",
+        bgCard: "bg-white/95",
+        textPrimary: "text-[#153a2c]",
+        textSecondary: "text-[#4f6f62]",
+        textAccent: "text-[#c99c4e]",
+        textCardPrimary: "text-[#153a2c]",
+        textCardSecondary: "text-[#4f6f62]",
+        textCardAccent: "text-[#c99c4e]",
+        textTitleGradient: "from-[#184f39] via-[#1f6945] to-[#2c8453]",
+        border: "border-[#d6c8ab]",
+        cardBorder: "border-[#e2d6c0]",
+        borderHover: "hover:border-[#c99c4e]/60",
+        buttonBg: "bg-gradient-to-r from-[#0f5132] to-[#1a7042]",
+        buttonText: "text-white",
+        buttonHover: "hover:from-[#136640] hover:to-[#218051]",
+        placeholderBg: "bg-[#f4ebda]",
+        placeholderText: "text-[#6e8579]",
+        chatBg: "bg-white/90",
+        chatHeaderBg: "bg-[#f3e7d2]",
+        chatInputBorder: "border-[#d9c9ac]",
+        chatInputBg: "bg-[#f7efe0]",
+        chatInputPlaceholder: "placeholder-[#6e8579]",
+        chatUserBg: "bg-gradient-to-r from-[#0f5132] to-[#1a7042]",
+        chatUserText: "text-white",
+        chatModelBg: "bg-[#f7efe0]",
+        chatModelText: "text-[#153a2c]",
+        chatLoaderBg: "bg-[#c99c4e]",
+    },
     grape: {
         id: 'grape',
         name: 'Grape',
@@ -490,16 +525,17 @@ const BackgroundAnimation = ({ theme }) => {
     return (
         <>
             <style>{`
-                /* Mountain Shadows Luxury Typography & Colors */
-                @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600;700;800&display=swap');
+                /* Pomma Holidays Inspired Typography & Colors */
+                @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
                 
                 :root {
-                    --font-display: 'Playfair Display', serif;
-                    --font-body: 'Inter', sans-serif;
-                    --color-amber-primary: #f59e0b;
-                    --color-amber-gold: #d97706;
-                    --color-neutral-900: #171717;
-                    --color-neutral-50: #fafafa;
+                    --font-display: 'Cormorant Garamond', serif;
+                    --font-body: 'Poppins', sans-serif;
+                    --color-pomma-forest: #0f5132;
+                    --color-pomma-forest-dark: #0c3d26;
+                    --color-pomma-fern: #1a7042;
+                    --color-pomma-gold: #c99c4e;
+                    --color-pomma-cream: #f9f4ea;
                 }
                 
                 * {
@@ -510,15 +546,18 @@ const BackgroundAnimation = ({ theme }) => {
                     font-family: var(--font-body);
                     font-weight: 400;
                     letter-spacing: 0.01em;
+                    background-color: var(--color-pomma-cream);
+                    color: var(--color-pomma-forest-dark);
                     overflow-x: hidden;
                 }
                 
                 h1, h2, h3, h4, h5, h6 {
                     font-family: var(--font-display);
                     font-weight: 700;
-                    letter-spacing: -0.02em;
+                    letter-spacing: -0.015em;
                     max-width: 100%;
                     word-wrap: break-word;
+                    color: var(--color-pomma-forest-dark);
                 }
                 
                 section {
@@ -553,58 +592,59 @@ const BackgroundAnimation = ({ theme }) => {
                     }
                 }
                 
-                /* Luxury Mountain Shadows Premium Styling */
+                /* Pomma Holidays Premium Styling */
                 .luxury-card {
                     border-radius: 1rem;
-                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                    box-shadow: 0 6px 24px -8px rgba(12, 61, 38, 0.25);
                     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
                 }
                 
                 .luxury-card:hover {
-                    box-shadow: 0 20px 25px -5px rgba(245, 158, 11, 0.2), 0 10px 10px -5px rgba(245, 158, 11, 0.1);
-                    transform: translateY(-4px) scale(1.01);
+                    box-shadow: 0 24px 40px -12px rgba(12, 61, 38, 0.35), 0 0 0 1px rgba(201, 156, 78, 0.25);
+                    transform: translateY(-4px) scale(1.015);
                 }
                 
                 .premium-gradient {
-                    background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+                    background: linear-gradient(135deg, #0f5132 0%, #1a7042 60%, #218051 100%);
                 }
                 
                 .premium-text-gradient {
-                    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+                    background: linear-gradient(135deg, #0f5132 0%, #1a7042 100%);
                     -webkit-background-clip: text;
                     -webkit-text-fill-color: transparent;
                     background-clip: text;
                 }
                 
                 .luxury-overlay {
-                    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.8) 100%);
+                    background: linear-gradient(180deg, rgba(12, 61, 38, 0.05) 0%, rgba(12, 61, 38, 0.55) 55%, rgba(15, 49, 38, 0.85) 100%);
                 }
                 
                 .section-badge {
                     display: inline-block;
                     padding: 0.5rem 1.5rem;
-                    background: rgba(245, 158, 11, 0.1);
-                    color: #d97706;
+                    background: rgba(15, 81, 50, 0.08);
+                    color: #0f5132;
                     font-weight: 600;
-                    letter-spacing: 0.1em;
+                    letter-spacing: 0.12em;
                     border-radius: 9999px;
-                    border: 1px solid rgba(245, 158, 11, 0.2);
+                    border: 1px solid rgba(201, 156, 78, 0.35);
                     backdrop-filter: blur(10px);
+                    text-transform: uppercase;
                 }
                 
                 .luxury-shadow {
-                    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(245, 158, 11, 0.05);
+                    box-shadow: 0 28px 50px -18px rgba(12, 61, 38, 0.28), 0 0 0 1px rgba(201, 156, 78, 0.12);
                 }
                 
                 .card-image {
                     max-height: 200px;
                     object-fit: cover;
-                    filter: brightness(1) saturate(1.1);
+                    filter: brightness(1) saturate(1.05);
                     transition: all 0.5s ease;
                 }
                 
                 .luxury-card:hover .card-image {
-                    filter: brightness(1.05) saturate(1.2);
+                    filter: brightness(1.08) saturate(1.2);
                 }
                 
                 .card-title {
@@ -616,8 +656,8 @@ const BackgroundAnimation = ({ theme }) => {
                 
                 .card-description {
                     font-size: 0.875rem;
-                    line-height: 1.5;
-                    color: #6b7280;
+                    line-height: 1.6;
+                    color: #4f6f62;
                 }
                 
                 @keyframes slow-pan { 
@@ -675,6 +715,50 @@ export default function App() {
     const [bookings, setBookings] = useState([]); // Store bookings for availability check
     const [services, setServices] = useState([]);
     const [foodItems, setFoodItems] = useState([]);
+    const [foodCategories, setFoodCategories] = useState([]);
+    const logoCandidates = useMemo(() => {
+        const unique = new Set();
+        const candidates = [];
+        const addCandidate = (src) => {
+            if (!src || unique.has(src)) return;
+            unique.add(src);
+            candidates.push(src);
+        };
+
+        addCandidate(localLogo);
+
+        const publicUrl = process.env.PUBLIC_URL;
+        if (publicUrl && publicUrl !== ".") {
+            addCandidate(`${publicUrl.replace(/\/$/, "")}/logo.png`);
+        }
+
+        addCandidate("/logo.png");
+        addCandidate("/resort/logo.png");
+
+        if (typeof window !== "undefined") {
+            const origin = window.location.origin;
+            addCandidate(`${origin}/logo.png`);
+            addCandidate(`${origin}/resort/logo.png`);
+            const { pathname } = window.location;
+            if (pathname && pathname !== "/") {
+                const trimmedPath = pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
+                if (trimmedPath) {
+                    addCandidate(`${trimmedPath}/logo.png`);
+                }
+                const segments = pathname.split("/").filter(Boolean);
+                if (segments.length > 0) {
+                    addCandidate(`/${segments[0]}/logo.png`);
+                }
+            }
+        }
+
+        addCandidate("https://pommaholidays.com/wp-content/uploads/2024/04/logo-1.png");
+        addCandidate("https://pommaholidays.com/wp-content/uploads/2024/03/logo-1.png");
+
+        return candidates;
+    }, []);
+    const [logoIndex, setLogoIndex] = useState(0);
+    const logoSrc = logoCandidates[Math.min(logoIndex, logoCandidates.length - 1)];
     const [packages, setPackages] = useState([]);
     const [resortInfo, setResortInfo] = useState(null);
     const [galleryImages, setGalleryImages] = useState([]);
@@ -683,8 +767,10 @@ export default function App() {
     const [signatureExperiences, setSignatureExperiences] = useState([]);
     const [planWeddings, setPlanWeddings] = useState([]);
     const [nearbyAttractions, setNearbyAttractions] = useState([]);
+    const [nearbyAttractionBanners, setNearbyAttractionBanners] = useState([]);
     const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
     const [currentWeddingIndex, setCurrentWeddingIndex] = useState(0);
+    const [currentAttractionBannerIndex, setCurrentAttractionBannerIndex] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showBackToTop, setShowBackToTop] = useState(false);
@@ -701,6 +787,8 @@ export default function App() {
 
     // Package image slider state
     const [packageImageIndex, setPackageImageIndex] = useState({});
+    // Signature carousel index
+    const [signatureIndex, setSignatureIndex] = useState(0);
 
     // Banner Message State
     const [bannerMessage, setBannerMessage] = useState({ type: null, text: "" });
@@ -758,8 +846,8 @@ export default function App() {
     const [bookingMessage, setBookingMessage] = useState({ type: null, text: "" });
     const [isBookingLoading, setIsBookingLoading] = useState(false);
 
-    // Always use light theme - matching Mountain Shadows style
-    const currentTheme = 'light';
+    // Use Pomma Holidays inspired theme palette
+    const currentTheme = 'pomma';
     const theme = themes[currentTheme];
 
     const bannerRef = useRef(null);
@@ -775,6 +863,111 @@ export default function App() {
         const path = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
         return `${mediaBaseUrl}${path}`;
     };
+
+    const activeSignatureExperiences = useMemo(
+        () => signatureExperiences.filter(exp => exp.is_active),
+        [signatureExperiences]
+    );
+    const totalSignatureExperiences = activeSignatureExperiences.length;
+    const activeNearbyAttractions = useMemo(
+        () => nearbyAttractions.filter(attraction => attraction.is_active),
+        [nearbyAttractions]
+    );
+    const totalNearbyAttractions = activeNearbyAttractions.length;
+    const activeNearbyAttractionBanners = useMemo(
+        () => nearbyAttractionBanners.filter(banner => banner.is_active),
+        [nearbyAttractionBanners]
+    );
+    const totalNearbyAttractionBanners = activeNearbyAttractionBanners.length;
+
+    const foodItemsByCategory = useMemo(() => {
+        if (!foodItems || !foodItems.length) return {};
+        return foodItems.reduce((acc, item) => {
+            const categoryName = item.category?.name || item.category_name || "Uncategorized";
+            if (!acc[categoryName]) acc[categoryName] = [];
+            acc[categoryName].push(item);
+            return acc;
+        }, {});
+    }, [foodItems]);
+    const categoryNames = useMemo(() => {
+        const fromCategories = foodCategories.map(cat => cat.name || "Uncategorized");
+        const fromItems = Object.keys(foodItemsByCategory);
+        return Array.from(new Set(['All', ...fromCategories, ...fromItems]));
+    }, [foodCategories, foodItemsByCategory]);
+    const [selectedFoodCategory, setSelectedFoodCategory] = useState('All');
+    useEffect(() => {
+        if (!categoryNames.length) {
+            if (selectedFoodCategory !== 'All') setSelectedFoodCategory('All');
+            return;
+        }
+        if (!categoryNames.includes(selectedFoodCategory)) {
+            setSelectedFoodCategory(categoryNames[0]);
+        }
+    }, [categoryNames, selectedFoodCategory]);
+    useEffect(() => {
+        if (!categoryNames.includes(selectedFoodCategory)) {
+            setSelectedFoodCategory(categoryNames[0] || 'All');
+        }
+    }, [categoryNames, selectedFoodCategory]);
+    const displayedFoodItems = useMemo(() => {
+        if (selectedFoodCategory === 'All') return foodItems;
+        return foodItemsByCategory[selectedFoodCategory] || [];
+    }, [foodItems, foodItemsByCategory, selectedFoodCategory]);
+
+    const goToSignature = useCallback((direction) => {
+        setSignatureIndex((prev) => {
+            if (!totalSignatureExperiences) return 0;
+            return (prev + direction + totalSignatureExperiences) % totalSignatureExperiences;
+        });
+    }, [totalSignatureExperiences]);
+
+    const getSignatureCardStyle = useCallback((offset) => {
+        const abs = Math.abs(offset);
+        const horizontalDistance = abs === 1
+            ? 'clamp(160px, 24vw, 260px)'
+            : 'clamp(260px, 34vw, 380px)';
+        const translateX = offset === 0
+            ? '0px'
+            : offset > 0
+                ? horizontalDistance
+                : `calc(-1 * ${horizontalDistance})`;
+        const translateY = abs === 0
+            ? '0px'
+            : abs === 1
+                ? 'clamp(16px, 4vw, 32px)'
+                : 'clamp(28px, 6vw, 52px)';
+        const scale = abs === 0 ? 1 : abs === 1 ? 0.9 : 0.78;
+        const opacity = abs === 0 ? 1 : abs === 1 ? 0.92 : 0.82;
+        const zIndex = abs === 0 ? 50 : abs === 1 ? 40 : 30;
+        const boxShadow = abs === 0
+            ? '0 25px 45px rgba(12, 61, 38, 0.28)'
+            : '0 18px 35px rgba(12, 61, 38, 0.18)';
+        const backgroundColor = abs === 0 ? '#ffffff' : 'rgba(255,255,255,0.92)';
+        return {
+            transform: `translate(-50%, -50%) translate(${translateX}, ${translateY}) scale(${scale})`,
+            opacity,
+            zIndex,
+            boxShadow,
+            backgroundColor,
+            transition: 'transform 700ms cubic-bezier(.4,0,.2,1), opacity 500ms ease, box-shadow 500ms ease, background-color 500ms ease'
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!totalSignatureExperiences) {
+            setSignatureIndex(0);
+            return;
+        }
+        setSignatureIndex(prev => prev % totalSignatureExperiences);
+    }, [totalSignatureExperiences]);
+
+    useEffect(() => {
+        if (totalSignatureExperiences <= 1) return;
+        const timer = setInterval(() => {
+            goToSignature(1);
+        }, 6000);
+        return () => clearInterval(timer);
+    }, [totalSignatureExperiences, goToSignature]);
 
     // Determine gallery card height for a mosaic layout.
     // Specifically, for the SECOND ROW (indices 5-9), apply:
@@ -806,6 +999,7 @@ export default function App() {
                 rooms: '/rooms/test',
                 bookings: '/bookings?limit=500&skip=0', // Reduced limit for better performance - only recent bookings needed
                 foodItems: '/food-items/',
+                foodCategories: '/food-categories/',
                 packages: '/packages/',
                 resortInfo: '/resort-info/',
                 gallery: '/gallery/',
@@ -814,7 +1008,8 @@ export default function App() {
                 services: '/services/', // Fetch services (note: plural)
                 signatureExperiences: '/signature-experiences/',
                 planWeddings: '/plan-weddings/',
-                nearbyAttractions: '/nearby-attractions/'
+                nearbyAttractions: '/nearby-attractions/',
+                nearbyAttractionBanners: '/nearby-attraction-banners/'
             };
 
             try {
@@ -831,9 +1026,9 @@ export default function App() {
                 const data = await Promise.all(responses.map(res => res.json()));
 
                 const [
-                    roomsData, bookingsData, foodItemsData, packagesData,
+                    roomsData, bookingsData, foodItemsData, foodCategoriesData, packagesData,
                     resortInfoData, galleryData, reviewsData, bannerData, servicesData,
-                    signatureExperiencesData, planWeddingsData, nearbyAttractionsData
+                    signatureExperiencesData, planWeddingsData, nearbyAttractionsData, nearbyAttractionBannersData
                 ] = data;
 
                 setAllRooms(roomsData);
@@ -842,6 +1037,7 @@ export default function App() {
                 setBookings(bookingsData.bookings || []); // Store bookings for availability filtering
                 setServices(servicesData || []); // Fetch services from backend
                 setFoodItems(foodItemsData);
+                setFoodCategories(foodCategoriesData || []);
                 setPackages(packagesData);
                 setResortInfo(resortInfoData.length > 0 ? resortInfoData[0] : null);
                 setGalleryImages(galleryData);
@@ -850,6 +1046,7 @@ export default function App() {
                 setSignatureExperiences(signatureExperiencesData || []);
                 setPlanWeddings(planWeddingsData || []);
                 setNearbyAttractions(nearbyAttractionsData || []);
+                setNearbyAttractionBanners(nearbyAttractionBannersData || []);
 
             } catch (err) {
                 console.error("Failed to fetch resort data:", err);
@@ -887,6 +1084,16 @@ export default function App() {
             setCurrentWeddingIndex(0); // Ensure first wedding is shown
         }
     }, [activeWeddings.length, isWeddingHovered]);
+    useEffect(() => {
+        if (totalNearbyAttractionBanners > 1) {
+            const interval = setInterval(() => {
+                setCurrentAttractionBannerIndex((prev) => (prev + 1) % totalNearbyAttractionBanners);
+            }, 9000);
+            return () => clearInterval(interval);
+        } else if (totalNearbyAttractionBanners === 1) {
+            setCurrentAttractionBannerIndex(0);
+        }
+    }, [totalNearbyAttractionBanners]);
 
     const toggleChat = () => setIsChatOpen(!isChatOpen);
 
@@ -1030,23 +1237,23 @@ export default function App() {
         // Calculate availability for each room (memoized for performance)
         const availability = {};
         allRooms.forEach(room => {
-            const hasConflict = bookings.some(booking => {
-                const normalizedStatus = booking.status?.toLowerCase().replace(/_/g, '-');
-                if (normalizedStatus === "cancelled" || normalizedStatus === "checked-out") return false;
-                
-                const bookingCheckIn = new Date(booking.check_in);
-                const bookingCheckOut = new Date(booking.check_out);
+                const hasConflict = bookings.some(booking => {
+                    const normalizedStatus = booking.status?.toLowerCase().replace(/_/g, '-');
+                    if (normalizedStatus === "cancelled" || normalizedStatus === "checked-out") return false;
+                    
+                    const bookingCheckIn = new Date(booking.check_in);
+                    const bookingCheckOut = new Date(booking.check_out);
                 const requestedCheckIn = new Date(bookingData.check_in);
                 const requestedCheckOut = new Date(bookingData.check_out);
+                    
+                    const isRoomInBooking = booking.rooms && booking.rooms.some(r => r.id === room.id);
+                    if (!isRoomInBooking) return false;
+                    
+                    return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
+                });
                 
-                const isRoomInBooking = booking.rooms && booking.rooms.some(r => r.id === room.id);
-                if (!isRoomInBooking) return false;
-                
-                return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
-            });
-            
             availability[room.id] = !hasConflict;
-        });
+            });
         return availability;
     }, [bookingData.check_in, bookingData.check_out, allRooms, bookings]);
     
@@ -1057,7 +1264,7 @@ export default function App() {
         }, 100); // 100ms debounce
         return () => clearTimeout(timer);
     }, [roomAvailabilityMemo]);
-    
+
     // Always set rooms to allRooms - availability filtering happens in UI
     useEffect(() => {
         setRooms(allRooms);
@@ -1074,23 +1281,23 @@ export default function App() {
         // Calculate availability for each room for package booking (memoized for performance)
         const availability = {};
         allRooms.forEach(room => {
-            const hasConflict = bookings.some(booking => {
-                const normalizedStatus = booking.status?.toLowerCase().replace(/_/g, '-');
-                if (normalizedStatus === "cancelled" || normalizedStatus === "checked-out") return false;
+                const hasConflict = bookings.some(booking => {
+                    const normalizedStatus = booking.status?.toLowerCase().replace(/_/g, '-');
+                    if (normalizedStatus === "cancelled" || normalizedStatus === "checked-out") return false;
+                    
+                    const bookingCheckIn = new Date(booking.check_in);
+                    const bookingCheckOut = new Date(booking.check_out);
+                    const requestedCheckIn = new Date(packageBookingData.check_in);
+                    const requestedCheckOut = new Date(packageBookingData.check_out);
+                    
+                    const isRoomInBooking = booking.rooms && booking.rooms.some(r => r.id === room.id);
+                    if (!isRoomInBooking) return false;
+                    
+                    return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
+                });
                 
-                const bookingCheckIn = new Date(booking.check_in);
-                const bookingCheckOut = new Date(booking.check_out);
-                const requestedCheckIn = new Date(packageBookingData.check_in);
-                const requestedCheckOut = new Date(packageBookingData.check_out);
-                
-                const isRoomInBooking = booking.rooms && booking.rooms.some(r => r.id === room.id);
-                if (!isRoomInBooking) return false;
-                
-                return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
-            });
-            
             availability[room.id] = !hasConflict;
-        });
+            });
         return availability;
     }, [packageBookingData.check_in, packageBookingData.check_out, allRooms, bookings, isPackageBookingFormOpen]);
     
@@ -1548,16 +1755,27 @@ export default function App() {
                     </div>
                 )}
                 
-                <header className={`fixed left-0 right-0 z-50 ${theme.bgCard}/30 backdrop-blur-sm shadow-sm ${bannerMessage.text ? 'top-16' : 'top-0'} transition-all duration-300`}>
+                <header className={`fixed left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-[#d9c9ac] shadow-sm ${bannerMessage.text ? 'top-16' : 'top-0'} transition-all duration-300`}>
                     <div className="container mx-auto px-4 sm:px-6 md:px-12 py-4 flex items-center justify-between">
                         <div className="flex items-center space-x-3">
-                            <BedDouble className={`w-8 h-8 ${theme.textAccent}`} />
-                            <span className={`text-2xl font-bold ${theme.textPrimary} tracking-tight`}>Elysian Retreat</span>
+                            <img 
+                                src={logoSrc} 
+                                alt="Pomma Holidays logo" 
+                                className="w-12 h-12 object-contain"
+                                loading="lazy"
+                                onError={() => {
+                                    setLogoIndex((prev) => {
+                                        const next = prev + 1;
+                                        return next < logoCandidates.length ? next : prev;
+                                    });
+                                }}
+                            />
+                            <span className="text-2xl font-bold text-[#153a2c] tracking-tight">Pomma Holidays</span>
                         </div>
                         <nav className="flex items-center space-x-4">
                             <button 
                                 onClick={() => setIsGeneralBookingOpen(true)} 
-                                className={`px-6 py-3 text-sm font-bold text-white bg-gradient-to-r from-amber-500 to-amber-600 rounded-full shadow-lg hover:from-amber-400 hover:to-amber-500 transition-all duration-300 transform hover:scale-105`}
+                                className="px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-[#0f5132] to-[#1a7042] rounded-full shadow-lg hover:from-[#136640] hover:to-[#218051] transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#c99c4e]"
                             >
                                 Book Now
                             </button>
@@ -1571,8 +1789,8 @@ export default function App() {
   ref={bannerRef}
   className="relative w-full h-screen overflow-hidden"
 >
-    {bannerData.length > 0 ? (
-        <>
+                {bannerData.length > 0 ? (
+                        <>
             {/* Banner Images with Fade Transition and Slow Movement */}
             {bannerData.map((banner, index) => (
                 <img
@@ -1589,31 +1807,31 @@ export default function App() {
             ))}
 
             {/* Luxury Gradient Overlay with Premium Content */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/30 flex items-center justify-center text-center px-6">
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0c3d26]/75 via-[#0f5132]/45 to-transparent flex items-center justify-center text-center px-6">
                 <div className="relative w-full max-w-5xl">
                     {bannerData.map((banner, index) => (
                         <div key={banner.id} className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-1000 ease-in-out ${index === currentBannerIndex ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-                            <div className="mb-4 inline-block px-6 py-2 bg-amber-500/20 backdrop-blur-sm rounded-full border border-amber-400/30 animate-[fadeInUp_1s_ease-out]">
-                                <span className="text-amber-400 text-sm font-semibold tracking-widest uppercase">
-                                    ✦ Luxury Experience ✦
+                            <div className="mb-4 inline-block px-6 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/30 animate-[fadeInUp_1s_ease-out]">
+                                <span className="text-[#0f5132] text-sm font-semibold tracking-[0.35em] uppercase">
+                                    ✦ Nature Meets Luxury ✦
                                 </span>
                             </div>
                             <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-tight drop-shadow-2xl text-white mb-6 animate-[fadeInUp_1.2s_ease-out]">
-                                <span className="bg-gradient-to-r from-white via-amber-100 to-white bg-clip-text text-transparent inline-block animate-[gentle-glow_3s_ease-in-out_infinite]">
+                                <span className="bg-gradient-to-r from-white via-[#f5e6c9] to-white bg-clip-text text-transparent inline-block animate-[gentle-glow_3s_ease-in-out_infinite]">
                                     {banner.title}
                                 </span>
                             </h1>
-                            <p className="mt-4 text-xl md:text-2xl text-neutral-100 max-w-4xl mx-auto leading-relaxed drop-shadow-lg px-4 animate-[fadeInUp_1.4s_ease-out]">
+                            <p className="mt-4 text-xl md:text-2xl text-[#f5ece0] max-w-4xl mx-auto leading-relaxed drop-shadow-lg px-4 animate-[fadeInUp_1.4s_ease-out]">
                                 {banner.subtitle}
                             </p>
                             <div className="mt-10 flex flex-wrap justify-center gap-4 animate-[fadeInUp_1.6s_ease-out]">
-                                <a href="#rooms-section" className="group px-10 py-4 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-bold text-lg rounded-full shadow-2xl hover:from-amber-400 hover:to-amber-500 transition-all duration-300 transform hover:scale-110 hover:shadow-amber-500/50 animate-[gentle-pulse_2s_ease-in-out_infinite]">
+                                <a href="#rooms-section" className="group px-10 py-4 bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white font-semibold text-lg rounded-full shadow-2xl hover:from-[#136640] hover:to-[#218051] transition-all duration-300 transform hover:scale-110 hover:shadow-[0_20px_45px_rgba(12,61,38,0.45)] focus:outline-none focus:ring-2 focus:ring-[#d8b471]/60 focus:ring-offset-2 focus:ring-offset-[#0f5132] animate-[gentle-pulse_2s_ease-in-out_infinite]">
                                     <span className="flex items-center gap-2">
                                         Book Your Stay
                                         <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                     </span>
                                 </a>
-                                <a href="#packages" className="px-10 py-4 bg-white/10 backdrop-blur-sm text-white font-bold text-lg rounded-full border-2 border-white/30 hover:bg-white/20 transition-all duration-300">
+                                <a href="#packages" className="px-10 py-4 bg-white/10 backdrop-blur-sm text-white font-semibold text-lg rounded-full border-2 border-white/40 hover:bg-white/20 transition-all duration-300">
                                     View Packages
                                 </a>
                             </div>
@@ -1631,8 +1849,8 @@ export default function App() {
                         onClick={() => setCurrentBannerIndex(index)}
                         className={`transition-all duration-300 ${
                             index === currentBannerIndex
-                                ? "w-12 h-1 bg-amber-400 rounded-full"
-                                : "w-8 h-1 bg-white/40 hover:bg-white/60 rounded-full"
+                                ? "w-12 h-1 bg-[#d8b471] rounded-full shadow-[0_0_12px_rgba(216,180,113,0.6)]"
+                                : "w-8 h-1 bg-white/40 hover:bg-white/70 rounded-full"
                         }`}
                     />
                 ))}
@@ -1646,15 +1864,15 @@ export default function App() {
     )}
 </div>
 
-                    {/* Exclusive Deals Section - Mountain Shadows Style */}
-                    <section id="packages" className={`bg-gradient-to-b ${theme.bgSecondary} ${theme.bgCard} py-20 transition-colors duration-500`}>
+                    {/* Exclusive Deals Section - Pomma Holidays Style */}
+                    <section id="packages" className="bg-gradient-to-b from-[#f4ede1] via-[#f9f4ea] to-white py-20 transition-colors duration-500">
                         <div className="w-full mx-auto px-2 sm:px-4 md:px-6">
                             {/* Section Header */}
                             <div className="text-center mb-16">
-                                <span className={`inline-block px-6 py-2 bg-amber-500/10 ${theme.textAccent} text-sm font-semibold tracking-widest uppercase rounded-full mb-4`}>
+                                <span className="inline-block px-6 py-2 bg-[#0f5132]/10 text-[#0f5132] text-sm font-semibold tracking-[0.35em] uppercase rounded-full border border-[#d8c9ac] mb-4">
                                     ✦ Exclusive Deals ✦
                                 </span>
-                                <h2 className={`text-4xl md:text-5xl font-extrabold ${theme.textPrimary} mb-4`}>
+                                <h2 className="text-4xl md:text-5xl font-extrabold text-[#153a2c] mb-4">
                                     EXCLUSIVE DEALS FOR MEMORABLE EXPERIENCES
                                 </h2>
                             </div>
@@ -1684,7 +1902,7 @@ export default function App() {
                                                             onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }} 
                                                         />
                                                         {/* Price badge - large card */}
-                                                        <div className="absolute bottom-4 left-4 bg-white/95 text-amber-700 font-extrabold text-2xl md:text-3xl px-4 py-2 rounded-xl shadow-lg">
+                                                        <div className="absolute bottom-4 left-4 bg-[#0f5132]/90 text-white font-extrabold text-2xl md:text-3xl px-4 py-2 rounded-xl shadow-lg border border-white/20 backdrop-blur-sm">
                                                             {formatCurrency(featuredPkg.price || 0)}
                                                         </div>
                                                         {/* Image Slider Dots */}
@@ -1709,10 +1927,12 @@ export default function App() {
                                                         <h3 className={`text-4xl md:text-5xl font-extrabold ${theme.textPrimary} mb-2 leading-tight`}>
                                                             {featuredPkg.title}
                                                         </h3>
-                                                        <p className={`text-xl md:text-2xl ${theme.textSecondary} mb-6 font-medium`}>
-                                                            (Luxury Package {featuredPkg.duration || '2 Nights & 3 Days'})
-                                                        </p>
-                                                        <div className="w-20 h-1 bg-gradient-to-r from-amber-500 to-amber-600 mb-6"></div>
+                                                        {featuredPkg.duration && (
+                                                            <p className={`text-xl md:text-2xl ${theme.textSecondary} mb-6 font-medium`}>
+                                                                {featuredPkg.duration}
+                                                            </p>
+                                                        )}
+                                                        <div className="w-20 h-1 bg-gradient-to-r from-[#0f5132] via-[#1a7042] to-[#c99c4e] mb-6"></div>
                                                         <p className={`text-base md:text-lg ${theme.textSecondary} leading-relaxed mb-6`}>
                                                             {featuredPkg.description}
                                                         </p>
@@ -1728,7 +1948,7 @@ export default function App() {
                                                         <div className="flex items-center justify-between flex-wrap gap-4">
                                                             <button
                                                                 onClick={() => handleOpenPackageBookingForm(featuredPkg.id)} 
-                                                                className={`px-8 py-3 border-2 ${theme.border} ${theme.textAccent} font-bold rounded-full hover:${theme.bgSecondary} transition-all duration-300 transform hover:scale-105 flex items-center gap-2`}
+                                                                className="px-8 py-3 bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white font-semibold rounded-full shadow-lg hover:from-[#136640] hover:to-[#218051] transition-all duration-300 transform hover:scale-105 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#c99c4e]/70"
                                                             >
                                                                 Book Now
                                                                 <ChevronRight className="w-5 h-5" />
@@ -1763,14 +1983,14 @@ export default function App() {
                                                         onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }} 
                                                     />
                                                     {/* Price badge - always visible */}
-                                                    <div className="absolute bottom-3 left-3 bg-white/90 text-amber-700 font-extrabold text-lg px-3 py-1 rounded-lg shadow-md">
+                                                    <div className="absolute bottom-3 left-3 bg-[#0f5132]/90 text-white font-extrabold text-lg px-3 py-1 rounded-lg shadow-md border border-white/20 backdrop-blur-sm">
                                                         {formatCurrency(pkg.price || 0)}
                                                     </div>
                                                             {/* Quick Book button overlay */}
                                                             <button
                                                                 type="button"
                                                                 onClick={(e) => { e.stopPropagation(); handleOpenPackageBookingForm(pkg.id); }}
-                                                                className="absolute top-3 right-3 bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md hover:bg-amber-600"
+                                                                className="absolute top-3 right-3 bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md hover:from-[#136640] hover:to-[#218051]"
                                                             >
                                                                 Book Now
                                                             </button>
@@ -1796,9 +2016,11 @@ export default function App() {
                                                             <h3 className={`text-xl md:text-2xl font-extrabold ${theme.textPrimary} mb-2 leading-tight`}>
                                                             {pkg.title}
                                                         </h3>
-                                                            <p className={`text-base ${theme.textSecondary} font-medium mb-2`}>
-                                                                (Luxury Package {pkg.duration || '2 Nights & 3 Days'})
-                                                            </p>
+                                                            {pkg.duration && (
+                                                                <p className={`text-base ${theme.textSecondary} font-medium mb-2`}>
+                                                                    {pkg.duration}
+                                                        </p>
+                                                            )}
                                                             {/* Price */}
                                                             <div className="mb-4 pt-3 border-t border-gray-200">
                                                                 <p className={`text-sm ${theme.textSecondary} mb-1`}>Starting from</p>
@@ -1809,17 +2031,17 @@ export default function App() {
                                                             </div>
                                                             {/* CTA Row */}
                                                             <div className="mt-4 flex items-center justify-between">
-                                                                <button
+                                                            <button 
                                                                     type="button"
                                                                     onClick={(e) => { e.stopPropagation(); handleOpenPackageBookingForm(pkg.id); }}
-                                                                    className={`px-5 py-2 rounded-full border-2 ${theme.border} ${theme.textAccent} font-semibold hover:${theme.bgSecondary} transition-all duration-300`}
-                                                                >
+                                                                    className="px-5 py-2 rounded-full bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white font-semibold shadow-md hover:from-[#136640] hover:to-[#218051] transition-all duration-300"
+                                                            >
                                                                     Book Now
-                                                                </button>
+                                                            </button>
                                                                 <span className={`text-sm ${theme.textSecondary}`}>
                                                                     Tap card to book
                                                                 </span>
-                                                            </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         );
@@ -1834,11 +2056,11 @@ export default function App() {
                     </section>
                     
                     {/* Luxury Villa Showcase Section */}
-                    <section id="rooms-section" className={`bg-gradient-to-b ${theme.bgCard} ${theme.bgSecondary} py-20 transition-colors duration-500`}>
+                    <section id="rooms-section" className="bg-gradient-to-b from-white via-[#f4ede1] to-[#efe1ce] py-20 transition-colors duration-500">
                         <div className="w-full mx-auto px-2 sm:px-4 md:px-6">
                             {/* Section Header */}
                             <div className="text-center mb-16">
-                                <span className="inline-block px-6 py-2 bg-amber-500/10 text-amber-600 text-sm font-semibold tracking-widest uppercase rounded-full mb-4">
+                                <span className="inline-block px-6 py-2 bg-[#0f5132]/10 text-[#0f5132] text-sm font-semibold tracking-[0.35em] uppercase rounded-full border border-[#d8c9ac] mb-4">
                                     ✦ LUXURY ACCOMMODATION ✦
                                 </span>
                                 <h2 className={`text-4xl md:text-5xl font-extrabold ${theme.textPrimary} mb-4`}>
@@ -1906,7 +2128,7 @@ export default function App() {
                                                 
                                                 {/* Luxury Badge */}
                                                 <div className="absolute top-4 left-4">
-                                                    <span className="px-4 py-2 bg-amber-500 text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-lg">
+                                                    <span className="px-4 py-2 bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white text-xs font-semibold uppercase tracking-[0.3em] rounded-full shadow-lg">
                                                         Premium Villa
                                                     </span>
                                                 </div>
@@ -1927,7 +2149,7 @@ export default function App() {
                                                 )}
 
                                                 {/* Hover Effect Overlay */}
-                                                <div className="absolute inset-0 bg-amber-500/0 group-hover:bg-amber-500/10 transition-all duration-500" />
+                                                <div className="absolute inset-0 bg-transparent group-hover:bg-[#0f5132]/10 transition-all duration-500" />
                                             </div>
 
                                             {/* Content */}
@@ -1970,7 +2192,7 @@ export default function App() {
                                                     className={`w-full mt-4 px-6 py-3 font-bold rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2 ${
                                                         bookingData.check_in && bookingData.check_out && !roomAvailability[room.id]
                                                             ? 'bg-gray-400 text-gray-700 cursor-not-allowed opacity-50'
-                                                            : 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-400 hover:to-amber-500 hover:shadow-amber-500/50'
+                                                            : 'bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white hover:from-[#136640] hover:to-[#218051] hover:shadow-[0_18px_35px_rgba(12,61,38,0.35)]'
                                                     }`}
                                                 >
                                                     {bookingData.check_in && bookingData.check_out && !roomAvailability[room.id] ? 'Not Available' : 'Book Now'}
@@ -1992,12 +2214,12 @@ export default function App() {
                         </div>
                     </section>
 
-                    {/* Premium Experiences Section - Mountain Shadows Style */}
-                    <section className={`${theme.bgCard} py-20 transition-colors duration-500`}>
+                    {/* Signature Experiences Section - Pomma Rooms Style */}
+                    <section className="bg-gradient-to-b from-[#f4ede1] via-[#f9f4ea] to-white py-20 transition-colors duration-500">
                         <div className="w-full mx-auto px-2 sm:px-4 md:px-6">
                             {/* Section Header */}
                             <div className="text-center mb-16">
-                                <span className="inline-block px-6 py-2 bg-amber-500/10 text-amber-600 text-sm font-semibold tracking-widest uppercase rounded-full mb-4">
+                                <span className="inline-block px-6 py-2 bg-[#0f5132]/10 text-[#0f5132] text-sm font-semibold tracking-[0.35em] uppercase rounded-full border border-[#d8c9ac] mb-4">
                                     ✦ Signature Experiences ✦
                                 </span>
                                 <h2 className={`text-4xl md:text-5xl font-extrabold ${theme.textPrimary} mb-4`}>
@@ -2008,36 +2230,113 @@ export default function App() {
                                 </p>
                             </div>
 
-                            {/* Signature Experiences Grid */}
-                            {signatureExperiences.length > 0 ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                    {signatureExperiences.filter(exp => exp.is_active).map((experience) => (
+                            {totalSignatureExperiences > 0 ? (
+                                <div className="relative max-w-6xl mx-auto">
+                                    {/* Carousel Container */}
+                                    <div className="relative h-[420px] sm:h-[460px] lg:h-[520px]">
+                                        {[ -2, -1, 0, 1, 2 ].map((offset) => {
+                                            if (totalSignatureExperiences === 1 && offset !== 0) return null;
+                                            const experience = totalSignatureExperiences
+                                                ? activeSignatureExperiences[(signatureIndex + offset + totalSignatureExperiences) % totalSignatureExperiences]
+                                                : null;
+                                            if (!experience) return null;
+
+                                            const style = getSignatureCardStyle(offset);
+                                            const highlights = (experience.description || '')
+                                                .split(/[\n•\.]/)
+                                                .map(item => item.trim())
+                                                .filter(Boolean)
+                                                .slice(0, 3);
+
+                                            return (
                                         <div 
-                                            key={experience.id}
-                                            className={`group relative ${theme.bgCard} rounded-2xl overflow-hidden luxury-shadow transition-all duration-300 transition-all duration-500 transform hover:-translate-y-2 border ${theme.cardBorder || theme.border}`}
-                                        >
-                                            {/* Image Container */}
-                                            <div className="relative h-64 overflow-hidden">
-                                                <img 
-                                                    src={getImageUrl(experience.image_url)} 
-                                                    alt={experience.title} 
-                                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                                                    key={`${experience.id}-${offset}`}
+                                                        className="absolute top-1/2 left-1/2 w-[72%] sm:w-[60%] lg:w-[50%] max-w-xl transition-all duration-700 ease-[cubic-bezier(.4,.0,.2,1)] will-change-transform"
+                                                    style={{
+                                                        ...style,
+                                                        pointerEvents: offset === 0 ? 'auto' : 'none'
+                                                    }}
+                                                >
+                                                    <div
+                                                        className={`rounded-[28px] overflow-hidden bg-white border border-[#e5d9c3] shadow-xl transition-transform duration-700 ease-[cubic-bezier(.4,.0,.2,1)] will-change-transform ${offset === 0 ? '' : 'scale-[0.98]'}`}
+                                                    >
+                                                        <div className="relative h-48 sm:h-56 lg:h-64 overflow-hidden">
+                                                    <img 
+                                                                src={getImageUrl(experience.image_url)}
+                                                                alt={experience.title}
+                                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                                         onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }} 
                                                     />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                                                            <div className="absolute top-4 left-4">
+                                                                <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.35em] text-[#0f5132] bg-white/90 border border-[#d8c9ac] rounded-full px-4 py-1 shadow">
+                                                                    Explore
+                                                        </span>
+                                                    </div>
                                             </div>
-
-                                            {/* Content */}
-                                            <div className="p-6 space-y-3">
-                                                <h3 className={`text-xl font-bold ${theme.textCardPrimary || theme.textPrimary} group-hover:${theme.textCardAccent || theme.textAccent} transition-colors line-clamp-2`}>
-                                                    {experience.title}
+                                                        <div className="p-6 sm:p-7 space-y-4">
+                                                            <h3 className="text-2xl sm:text-3xl font-bold text-[#153a2c] leading-tight">
+                                                                {experience.title}
                                                 </h3>
-                                                <p className={`${theme.textCardSecondary || theme.textSecondary} text-sm leading-relaxed line-clamp-3`}>
-                                                    {experience.description}
-                                                </p>
+                                                            <p className="text-sm sm:text-base text-[#4f6f62] leading-relaxed">
+                                                                {experience.description || 'Discover a curated experience designed to immerse you in the natural beauty of our resort.'}
+                                                            </p>
+                                                            {highlights.length > 0 && (
+                                                                <ul className="space-y-2 text-sm text-[#153a2c]">
+                                                                    {highlights.map((point, idx) => (
+                                                                        <li key={idx} className="flex items-start gap-2">
+                                                                            <span className="mt-1 inline-flex w-2 h-2 rounded-full bg-[#c99c4e]" />
+                                                                            <span>{point}</span>
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            )}
+                                                    </div>
+                                                </div>
                                             </div>
+                                            );
+                                        })}
                                         </div>
-                                    ))}
+
+                                    {/* Carousel Controls */}
+                                    {totalSignatureExperiences > 1 && (
+                                        <>
+                                            <button
+                                                onClick={() => goToSignature(-1)}
+                                                aria-label="Previous experience"
+                                                type="button"
+                                                className="absolute left-0 top-1/2 -translate-y-1/2 bg-white w-12 h-12 rounded-full shadow-lg border border-[#d6c8ab] flex items-center justify-center hover:scale-105 transition-transform"
+                                            >
+                                                <ChevronLeft className="w-6 h-6 text-[#0f5132]" />
+                                            </button>
+                                            <button
+                                                onClick={() => goToSignature(1)}
+                                                aria-label="Next experience"
+                                                type="button"
+                                                className="absolute right-0 top-1/2 -translate-y-1/2 bg-white w-12 h-12 rounded-full shadow-lg border border-[#d6c8ab] flex items-center justify-center hover:scale-105 transition-transform"
+                                            >
+                                                <ChevronRight className="w-6 h-6 text-[#0f5132]" />
+                                            </button>
+                                        </>
+                                    )}
+
+                                    {/* Carousel Indicators */}
+                                    {totalSignatureExperiences > 1 && (
+                                        <div className="mt-10 flex justify-center gap-2">
+                                            {activeSignatureExperiences.map((exp, idx) => (
+                                                <button
+                                                    key={exp.id}
+                                                    onClick={() => setSignatureIndex(idx)}
+                                                    type="button"
+                                                    className={`w-3 h-3 rounded-full transition-all ${
+                                                        idx === signatureIndex
+                                                            ? 'bg-[#0f5132]'
+                                                            : 'bg-[#c99c4e]/40 hover:bg-[#c99c4e]/70'
+                                                    }`}
+                                                    aria-label={`Go to experience ${idx + 1}`}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             ) : (
                                 <p className={`text-center py-12 ${theme.textSecondary}`}>No signature experiences available at the moment.</p>
@@ -2045,12 +2344,84 @@ export default function App() {
                         </div>
                     </section>
 
+                    {/* Plan Your Wedding Section - Dynamic with Slider */}
+                    {planWeddings.length > 0 && planWeddings.some(w => w.is_active) && (
+                        <section
+                            className="relative w-full h-[600px] md:h-[700px] overflow-hidden"
+                            onMouseEnter={() => setIsWeddingHovered(true)}
+                            onMouseLeave={() => setIsWeddingHovered(false)}
+                        >
+                            {planWeddings.filter(w => w.is_active).map((wedding, index) => (
+                                <div key={wedding.id}>
+                                    {/* Background Images with Animation and Auto-Change */}
+                                    <div className="absolute inset-0">
+                                        <img 
+                                            src={getImageUrl(wedding.image_url)} 
+                                            alt={wedding.title} 
+                                            className={`absolute inset-0 w-[110%] h-[110%] object-cover object-center transition-all duration-[10000ms] ease-in-out ${index === currentWeddingIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-110'} animate-[slow-pan_20s_ease-in-out_infinite]`}
+                                            style={{
+                                                animationDelay: `${index * 2}s`,
+                                                animationDirection: index % 2 === 0 ? 'alternate' : 'alternate-reverse'
+                                            }}
+                                            onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
+                                        />
+                                        {/* Gradient Overlay */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/30"></div>
+                                    </div>
+
+                                    {/* Content Overlay */}
+                                    <div className={`relative h-full flex items-center justify-center px-4 sm:px-6 lg:px-8 transition-all duration-1000 ease-in-out ${index === currentWeddingIndex ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                                        <div className="max-w-5xl mx-auto text-center text-white">
+                                            {/* Badge */}
+                                            <div className="mb-6 inline-block px-6 py-2 bg-white/15 backdrop-blur-sm rounded-full border border-white/40 animate-[fadeInUp_1s_ease-out]">
+                                                <span className="text-[#d8b471] text-sm font-semibold tracking-[0.35em] uppercase">
+                                                    ✦ Perfect Venue ✦
+                                                </span>
+                                            </div>
+
+                        {/* Main Title */}
+                                            <h2 className="text-3xl md:text-5xl lg:text-7xl font-extrabold mb-6 animate-[fadeInUp_1.2s_ease-out] drop-shadow-2xl leading-tight">
+                                                {wedding.title.split(' ').slice(0, 3).join(' ')}<br/>
+                                                <span className="bg-gradient-to-r from-white via-[#f5e6c9] to-white bg-clip-text text-transparent">
+                                                    {wedding.title.split(' ').slice(3).join(' ') || 'WEDDING DESTINATION'}
+                                                </span>
+                                            </h2>
+
+                        {/* Description */}
+                                            <p className="text-base md:text-xl lg:text-2xl text-white/90 max-w-4xl mx-auto leading-relaxed mb-8 animate-[fadeInUp_1.4s_ease-out] drop-shadow-lg">
+                                                {wedding.description}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                            
+                            {/* Navigation Dots */}
+                            {planWeddings.filter(w => w.is_active).length > 1 && (
+                                <div className="absolute bottom-4 md:bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2 z-20">
+                                    {planWeddings.filter(w => w.is_active).map((_, index) => (
+                                        <button
+                                            key={index}
+                                            onClick={() => setCurrentWeddingIndex(index)}
+                                            className={`transition-all duration-300 ${
+                                                index === currentWeddingIndex
+                                                    ? "w-12 h-1 bg-[#d8b471] rounded-full shadow-[0_0_12px_rgba(216,180,113,0.6)]"
+                                                    : "w-8 h-1 bg-white/40 hover:bg-white/70 rounded-full"
+                                            }`}
+                                            aria-label={`Go to slide ${index + 1}`}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </section>
+                    )}
+
                     {/* Premium Services Showcase Section */}
                     <section className={`${theme.bgCard} py-20 transition-colors duration-500`}>
                         <div className="w-full mx-auto px-2 sm:px-4 md:px-6">
                             {/* Section Header */}
                             <div className="text-center mb-16">
-                                <span className="inline-block px-6 py-2 bg-amber-500/10 text-amber-600 text-sm font-semibold tracking-widest uppercase rounded-full mb-4">
+                                <span className="inline-block px-6 py-2 bg-[#0f5132]/10 text-[#0f5132] text-sm font-semibold tracking-[0.35em] uppercase rounded-full border border-[#d8c9ac] mb-4">
                                     ✦ Premium Services ✦
                                 </span>
                                 <h2 className={`text-4xl md:text-5xl font-extrabold ${theme.textPrimary} mb-4`}>
@@ -2061,63 +2432,49 @@ export default function App() {
                                 </p>
                             </div>
 
-                            {/* Services Grid - 2 Column Layout with Images */}
                             {services.length > 0 ? (
-                                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                                    {services.slice(0, 4).map((service) => (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                                    {services.slice(0, 3).map((service) => (
                                         <div 
                                             key={service.id}
-                                            className={`group relative ${theme.bgCard} rounded-2xl overflow-hidden luxury-shadow transition-all duration-500 transform hover:-translate-y-2 border ${theme.border}`}
+                                            className="relative group overflow-hidden rounded-[26px] bg-white shadow-[0_18px_35px_rgba(12,61,38,0.18)] transition-transform duration-500 hover:-translate-y-3"
                                         >
-                                            {/* Image Container */}
-                                            <div className="relative h-48 overflow-hidden">
+                                            <div className="relative h-64 overflow-hidden">
                                                 {service.images && service.images.length > 0 ? (
-                                                    <img 
-                                                        src={getImageUrl(service.images[0].image_url)} 
-                                                        alt={service.name} 
-                                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                                                        onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }} 
+                                                    <img
+                                                        src={getImageUrl(service.images[0].image_url)}
+                                                        alt={service.name}
+                                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                                        onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                                     />
                                                 ) : (
-                                                    <div className="w-full h-full bg-gradient-to-br from-amber-500/20 via-orange-500/20 to-yellow-500/20 flex items-center justify-center">
-                                                        <ConciergeBell className={`w-12 h-12 ${theme.textAccent}`} />
+                                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#0f5132]/15 via-[#1a7042]/15 to-[#c99c4e]/20">
+                                                        <ConciergeBell className="w-12 h-12 text-[#0f5132]" />
                                                     </div>
                                                 )}
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
-                                                
-                                                {/* Multiple Images Indicator */}
-                                                {service.images && service.images.length > 1 && (
-                                                    <div className="absolute top-2 right-2">
-                                                        <span className="px-2 py-1 bg-black/60 backdrop-blur-sm text-white text-xs font-bold rounded-full">
-                                                            +{service.images.length - 1}
-                                                        </span>
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
+                                                <div className="absolute bottom-4 left-0 right-0 px-6 text-white">
+                                                    <h3 className="text-2xl font-bold drop-shadow-lg">{service.name}</h3>
                                                 </div>
-                                                )}
                                             </div>
-
-                                            {/* Content */}
-                                            <div className="p-4 space-y-3">
-                                                <h3 className={`text-lg font-bold ${theme.textCardPrimary || theme.textPrimary} group-hover:${theme.textCardAccent || theme.textAccent} transition-colors line-clamp-2`}>
-                                                        {service.name}
-                                                    </h3>
-                                                <p className={`${theme.textCardSecondary || theme.textSecondary} text-sm leading-relaxed line-clamp-3`}>
+                                            <div className="p-6 space-y-4">
+                                                <p className="text-sm text-[#4f6f62] leading-relaxed">
                                                         {service.description}
                                                     </p>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleOpenServiceBookingForm(service.id)}
+                                                    className="inline-flex items-center gap-2 text-sm font-semibold text-[#0f5132] hover:text-[#1a7042] transition-colors"
+                                                >
+                                                    Explore Service
+                                                    <ChevronRight className="w-4 h-4" />
+                                                </button>
                                                 </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
                                 <p className={`text-center py-12 ${theme.textSecondary}`}>No services available at the moment.</p>
-                            )}
-
-                            {/* View More Button */}
-                            {services.length > 4 && (
-                                <div className="text-center mt-12">
-                                    <button className="px-10 py-4 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-bold text-lg rounded-full shadow-xl hover:from-amber-400 hover:to-amber-500 transition-all duration-300 transform hover:scale-105 hover:shadow-amber-500/50">
-                                        View All Services
-                                    </button>
-                                </div>
                             )}
                         </div>
                     </section>
@@ -2127,7 +2484,7 @@ export default function App() {
                         <div className="w-full mx-auto px-2 sm:px-4 md:px-6">
                             {/* Section Header */}
                             <div className="text-center mb-16">
-                                <span className="inline-block px-6 py-2 bg-amber-500/10 text-amber-600 text-sm font-semibold tracking-widest uppercase rounded-full mb-4">
+                                <span className="inline-block px-6 py-2 bg-[#0f5132]/10 text-[#0f5132] text-sm font-semibold tracking-[0.35em] uppercase rounded-full border border-[#d8c9ac] mb-4">
                                     ✦ Savor the Art ✦
                                 </span>
                                 <h2 className={`text-4xl md:text-5xl font-extrabold ${theme.textPrimary} mb-4`}>
@@ -2138,8 +2495,8 @@ export default function App() {
                                 </p>
                             </div>
 
-                            {/* Food Items Grid */}
                             {foodItems.length > 0 ? (
+<<<<<<< HEAD
                                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                                     {foodItems.map((food) => (
                                         <div 
@@ -2160,19 +2517,86 @@ export default function App() {
                                                 <div className="absolute top-4 right-4">
                                                     <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-lg ${food.available ? "bg-green-500 text-white" : "bg-red-500 text-white"}`}>
                                                         {food.available ? "Available" : "Unavailable"}
+=======
+                                <>
+                                    <div className="flex flex-wrap justify-center gap-3 mb-10">
+                                        {categoryNames.map((category) => {
+                                            const count = category === 'All'
+                                                ? foodItems.length
+                                                : (foodItemsByCategory[category]?.length || 0);
+                                            return (
+                                                <button
+                                                    key={category}
+                                                    type="button"
+                                                    onClick={() => setSelectedFoodCategory(category)}
+                                                    className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center gap-2 ${
+                                                        selectedFoodCategory === category
+                                                            ? 'bg-[#0f5132] text-white shadow'
+                                                            : 'bg-white text-[#0f5132] border border-[#d8c9ac] hover:bg-[#0f5132]/10'
+                                                    }`}
+                                                >
+                                                    <span>{category}</span>
+                                                    <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                                        selectedFoodCategory === category
+                                                            ? 'bg-white/20 text-white'
+                                                            : 'bg-[#0f5132]/10 text-[#0f5132]'
+                                                    }`}>
+                                                        {count}
+>>>>>>> 710ede8 (Add map links for nearby attraction banners and clean up assets)
                                                     </span>
-                                                </div>
-                                            </div>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
 
-                                            {/* Content */}
-                                            <div className="p-5">
-                                                <h3 className={`text-xl font-bold ${theme.textCardPrimary || theme.textPrimary} group-hover:${theme.textCardAccent || theme.textAccent} transition-colors mb-2 line-clamp-2`}>
-                                                    {food.name}
-                                                </h3>
-                                            </div>
+                                    {displayedFoodItems.length > 0 ? (
+                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                            {displayedFoodItems.map((food) => {
+                                                const categoryName = food.category?.name || food.category_name || 'Uncategorized';
+                                                return (
+                                                    <div 
+                                                        key={food.id}
+                                                        className={`group relative ${theme.bgCard} rounded-2xl overflow-hidden luxury-shadow transition-all duration-300 transform hover:-translate-y-2 border ${theme.cardBorder || theme.border}`}
+                                                    >
+                                                        <div className="relative h-40 overflow-hidden">
+                                                            <img 
+                                                                src={process.env.NODE_ENV === 'production' ? `https://www.teqmates.com/${food.images?.[0]?.image_url}` : `http://localhost:8000/${food.images?.[0]?.image_url}`} 
+                                                                alt={food.name} 
+                                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                                                                onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }} 
+                                                            />
+                                                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                                                            <div className="absolute top-3 left-3 px-3 py-1 bg-black/40 text-white text-xs font-semibold rounded-full backdrop-blur-sm">
+                                                                {categoryName}
+                                                            </div>
+                                                            <div className="absolute top-3 right-3">
+                                                                <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-lg ${food.available ? "bg-green-500 text-white" : "bg-red-500 text-white"}`}>
+                                                                    {food.available ? "Available" : "Unavailable"}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="p-5 space-y-2">
+                                                            <h4 className={`text-lg font-semibold ${theme.textCardPrimary || theme.textPrimary}`}>
+                                                                {food.name}
+                                                            </h4>
+                                                            {food.price && (
+                                                                <p className="text-sm text-[#1a7042] font-semibold">
+                                                                    {formatCurrency(food.price)}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
-                                    ))}
-                                </div>
+                                    ) : (
+                                        <div className="text-center py-10 bg-white/60 border border-[#d8c9ac] rounded-2xl">
+                                            <p className="text-[#4f6f62] font-medium">
+                                                No dishes available under <span className="font-semibold text-[#0f5132]">{selectedFoodCategory}</span> yet.
+                                            </p>
+                                        </div>
+                                    )}
+                                </>
                             ) : (
                                 <p className={`text-center py-12 ${theme.textSecondary}`}>No food items available at the moment.</p>
                             )}
@@ -2180,7 +2604,7 @@ export default function App() {
                             {/* View More Button */}
                             {foodItems.length > 8 && (
                                 <div className="text-center mt-12">
-                                    <button className="px-10 py-4 bg-white text-amber-600 font-bold text-lg rounded-full border-2 border-amber-600 hover:bg-amber-50 transition-all duration-300">
+                                    <button className="px-10 py-4 bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white font-semibold text-lg rounded-full shadow-xl hover:from-[#136640] hover:to-[#218051] transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#c99c4e]/70">
                                         View Full Menu
                                     </button>
                                 </div>
@@ -2193,7 +2617,7 @@ export default function App() {
                         <div className="w-full mx-auto px-2 sm:px-4 md:px-6">
                             {/* Section Header */}
                             <div className="text-center mb-16">
-                                <span className="inline-block px-6 py-2 bg-amber-500/10 text-amber-600 text-sm font-semibold tracking-widest uppercase rounded-full mb-4">
+                                <span className="inline-block px-6 py-2 bg-[#0f5132]/10 text-[#0f5132] text-sm font-semibold tracking-[0.35em] uppercase rounded-full border border-[#d8c9ac] mb-4">
                                     ✦ Captured Moments ✦
                                 </span>
                                 <h2 className={`text-4xl md:text-5xl font-extrabold ${theme.textPrimary} mb-4`}>
@@ -2208,7 +2632,7 @@ export default function App() {
                             {galleryImages.length > 0 ? (
                                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 auto-rows-auto gap-4" style={{overflow: 'visible'}}>
                                     {galleryImages.map((image, index) => (
-                                            <div 
+                                        <div 
                                             key={image.id} 
                                             className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 reveal"
                                             style={{ height: getGalleryCardHeight(index), transitionDelay: `${(index % 5) * 70}ms` }}
@@ -2240,67 +2664,70 @@ export default function App() {
                         </div>
                     </section>
                     
-                    {/* Plan Your Wedding Section - Dynamic with Slider */}
-                    {planWeddings.length > 0 && planWeddings.some(w => w.is_active) && (
-                        <section className="relative w-full h-[600px] md:h-[700px] overflow-hidden">
-                            {planWeddings.filter(w => w.is_active).map((wedding, index) => (
-                                <div key={wedding.id}>
-                                    {/* Background Images with Animation and Auto-Change */}
-                                    <div className="absolute inset-0">
-                                        <img 
-                                            src={getImageUrl(wedding.image_url)} 
-                                            alt={wedding.title} 
-                                            className={`absolute inset-0 w-[110%] h-[110%] object-cover object-center transition-all duration-[10000ms] ease-in-out ${index === currentWeddingIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-110'} animate-[slow-pan_20s_ease-in-out_infinite]`}
-                                            style={{
-                                                animationDelay: `${index * 2}s`,
-                                                animationDirection: index % 2 === 0 ? 'alternate' : 'alternate-reverse'
-                                            }}
-                                            onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
-                                        />
-                                        {/* Gradient Overlay */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/30"></div>
-                                    </div>
-
-                                    {/* Content Overlay */}
-                                    <div className={`relative h-full flex items-center justify-center px-4 sm:px-6 lg:px-8 transition-all duration-1000 ease-in-out ${index === currentWeddingIndex ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-                                        <div className="max-w-5xl mx-auto text-center text-white">
-                                            {/* Badge */}
-                                            <div className="mb-6 inline-block px-6 py-2 bg-amber-500/20 backdrop-blur-sm rounded-full border border-amber-400/30 animate-[fadeInUp_1s_ease-out]">
-                                                <span className="text-amber-400 text-sm font-semibold tracking-widest uppercase">
-                                                    ✦ Perfect Venue ✦
-                                                </span>
-                                            </div>
-
-                                            {/* Main Title */}
-                                            <h2 className="text-3xl md:text-5xl lg:text-7xl font-extrabold mb-6 animate-[fadeInUp_1.2s_ease-out] drop-shadow-2xl leading-tight">
-                                                {wedding.title.split(' ').slice(0, 3).join(' ')}<br/>
-                                                <span className="bg-gradient-to-r from-white via-amber-100 to-white bg-clip-text text-transparent">
-                                                    {wedding.title.split(' ').slice(3).join(' ') || 'WEDDING DESTINATION'}
-                                                </span>
-                                            </h2>
-
-                                            {/* Description */}
-                                            <p className="text-base md:text-xl lg:text-2xl text-white/90 max-w-4xl mx-auto leading-relaxed mb-8 animate-[fadeInUp_1.4s_ease-out] drop-shadow-lg">
-                                                {wedding.description}
-                                            </p>
-                                        </div>
-                                    </div>
+                    {/* Nearby Attractions Feature Banner */}
+                    {totalNearbyAttractionBanners > 0 && (
+                        <section className="relative w-full h-[520px] md:h-[620px] overflow-hidden rounded-3xl mt-20 mb-10 bg-[#0f5132]/5">
+                            {activeNearbyAttractionBanners.map((banner, index) => (
+                                <div key={banner.id} className="absolute inset-0">
+                                    <img
+                                        src={getImageUrl(banner.image_url)}
+                                        alt={banner.title}
+                                        className={`absolute inset-0 w-full h-full object-cover transition-all duration-[9000ms] ease-in-out ${index === currentAttractionBannerIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-110'}`}
+                                        style={{
+                                            animationDelay: `${index * 2}s`,
+                                            animationDirection: index % 2 === 0 ? 'alternate' : 'alternate-reverse'
+                                        }}
+                                        onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/60 to-black/20" />
                                 </div>
                             ))}
-                            
-                            {/* Navigation Dots */}
-                            {planWeddings.filter(w => w.is_active).length > 1 && (
-                                <div className="absolute bottom-4 md:bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2 z-20">
-                                    {planWeddings.filter(w => w.is_active).map((_, index) => (
+                            {totalNearbyAttractionBanners > 0 && (
+                                <div className="relative z-10 h-full flex items-center justify-center px-4 sm:px-6 lg:px-8 text-center text-white">
+                                    <div className="max-w-4xl mx-auto space-y-6">
+                                        <div className="inline-flex items-center gap-2 px-6 py-2 bg-white/15 backdrop-blur-sm rounded-full border border-white/30 uppercase tracking-[0.35em] text-xs font-semibold">
+                                            ✦ Nearby Attractions ✦
+                                        </div>
+                                        <h2 className="text-3xl md:text-5xl font-extrabold leading-tight drop-shadow-xl">
+                                            {activeNearbyAttractionBanners[currentAttractionBannerIndex]?.title || 'Explore the Destination'}
+                                        </h2>
+                                        <p className="text-base md:text-xl text-white/85 leading-relaxed drop-shadow-lg">
+                                            {activeNearbyAttractionBanners[currentAttractionBannerIndex]?.subtitle || 'Discover the most captivating sights surrounding our resort.'}
+                                        </p>
+                                        {(() => {
+                                            const currentBanner = activeNearbyAttractionBanners[currentAttractionBannerIndex];
+                                            const mapLink = currentBanner?.map_link ? formatUrl(currentBanner.map_link) : null;
+                                            if (!mapLink) return null;
+                                            return (
+                                                <a
+                                                    href={mapLink}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-3 px-6 py-3 bg-white text-[#0f5132] font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 mx-auto"
+                                                >
+                                                    <span className="flex items-center justify-center w-9 h-9 rounded-full bg-[#0f5132] text-white">
+                                                        <SiGooglemaps className="w-5 h-5" />
+                                                    </span>
+                                                    <span>Open in Google Maps</span>
+                                                </a>
+                                            );
+                                        })()}
+                                    </div>
+                                </div>
+                            )}
+                            {totalNearbyAttractionBanners > 1 && (
+                                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+                                    {activeNearbyAttractionBanners.map((_, index) => (
                                         <button
                                             key={index}
-                                            onClick={() => setCurrentWeddingIndex(index)}
+                                            onClick={() => setCurrentAttractionBannerIndex(index)}
                                             className={`transition-all duration-300 ${
-                                                index === currentWeddingIndex
-                                                    ? "w-12 h-1 bg-amber-400 rounded-full"
-                                                    : "w-8 h-1 bg-white/40 hover:bg-white/60 rounded-full"
+                                                index === currentAttractionBannerIndex
+                                                    ? "w-12 h-1 bg-[#d8b471] rounded-full shadow-[0_0_12px_rgba(216,180,113,0.6)]"
+                                                    : "w-8 h-1 bg-white/40 hover:bg-white/70 rounded-full"
                                             }`}
-                                            aria-label={`Go to slide ${index + 1}`}
+                                            aria-label={`Show attraction ${index + 1}`}
+                                            type="button"
                                         />
                                     ))}
                                 </div>
@@ -2313,7 +2740,7 @@ export default function App() {
                         <section className={`bg-gradient-to-b ${theme.bgCard} ${theme.bgSecondary} py-20 transition-colors duration-500`}>
                         <div className="w-full mx-auto px-2 sm:px-4 md:px-6">
                                 <div className="text-center mb-16">
-                                    <span className={`inline-block px-6 py-2 bg-amber-500/10 ${theme.textAccent} text-sm font-semibold tracking-widest uppercase rounded-full mb-4`}>
+                                <span className="inline-block px-6 py-2 bg-[#0f5132]/10 text-[#0f5132] text-sm font-semibold tracking-[0.35em] uppercase rounded-full border border-[#d8c9ac] mb-4">
                                     ✦ Explore ✦
                                 </span>
                                     <h2 className={`text-4xl md:text-5xl font-extrabold ${theme.textPrimary} mb-4`}>
@@ -2324,14 +2751,14 @@ export default function App() {
                                 {/* Split Layout - Image Left, Text Right or vice versa */}
                                 <div className="space-y-12">
                                     {nearbyAttractions.filter(attr => attr.is_active).map((attraction, index) => (
-                                        <div 
+                                    <div 
                                             key={attraction.id} 
                                             className={`${theme.bgCard} rounded-3xl overflow-hidden shadow-2xl border ${theme.border} transition-all duration-500 hover:shadow-3xl`}
-                                        >
+                                    >
                                             <div className={`flex flex-col ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} items-stretch`}>
                                                 {/* Image Section */}
                                                 <div className="w-full md:w-1/2 h-80 md:h-96 overflow-hidden">
-                                                    <img 
+                                            <img 
                                                         src={getImageUrl(attraction.image_url)} 
                                                         alt={attraction.title} 
                                                         className="w-full h-full object-cover transition-transform duration-700 hover:scale-110" 
@@ -2344,7 +2771,7 @@ export default function App() {
                                                     <h3 className={`text-3xl md:text-4xl font-extrabold ${theme.textPrimary} mb-4 leading-tight`}>
                                                         {attraction.title}
                                                     </h3>
-                                                    <div className="w-20 h-1 bg-gradient-to-r from-amber-500 to-amber-600 mb-6"></div>
+                                                    <div className="w-20 h-1 bg-gradient-to-r from-[#0f5132] via-[#1a7042] to-[#c99c4e] mb-6"></div>
                                                     <p className={`text-base md:text-lg ${theme.textSecondary} leading-relaxed`}>
                                                         {attraction.description}
                                                     </p>
@@ -2448,7 +2875,7 @@ export default function App() {
                                             onChange={handleRoomBookingChange} 
                                             min={new Date().toISOString().split('T')[0]} 
                                             required 
-                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors`} 
+                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-[#0f5132] transition-colors`} 
                                         />
                                     </div>
                                     <div className="space-y-2 w-1/2">
@@ -2460,7 +2887,7 @@ export default function App() {
                                             onChange={handleRoomBookingChange} 
                                             min={bookingData.check_in || new Date().toISOString().split('T')[0]} 
                                             required 
-                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors`} 
+                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-[#0f5132] transition-colors`} 
                                         />
                                     </div>
                                 </div>
@@ -2531,7 +2958,7 @@ export default function App() {
                                             onChange={handleRoomBookingChange} 
                                             min={new Date().toISOString().split('T')[0]} 
                                             required 
-                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors`} 
+                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-[#0f5132] transition-colors`} 
                                         />
                                     </div>
                                     <div className="space-y-2 w-1/2">
@@ -2543,7 +2970,7 @@ export default function App() {
                                             onChange={handleRoomBookingChange} 
                                             min={bookingData.check_in || new Date().toISOString().split('T')[0]} 
                                             required 
-                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors`} 
+                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-[#0f5132] transition-colors`} 
                                         />
                                     </div>
                                 </div>
@@ -2561,7 +2988,7 @@ export default function App() {
                                                 {rooms.length > 0 ? (
                                                     rooms.map(room => (
                                                 <div key={room.id} onClick={() => handleRoomSelection(room.id)}
-                                                    className={`rounded-lg border-2 cursor-pointer transition-all duration-200 overflow-hidden ${bookingData.room_ids.includes(room.id) ? `${theme.buttonBg} ${theme.buttonText} border-transparent` : `${theme.bgCard} ${theme.textPrimary} ${theme.border} hover:border-amber-500`}`}
+                                                    className={`rounded-lg border-2 cursor-pointer transition-all duration-200 overflow-hidden ${bookingData.room_ids.includes(room.id) ? `${theme.buttonBg} ${theme.buttonText} border-transparent` : `${theme.bgCard} ${theme.textPrimary} ${theme.border} hover:border-[#c99c4e]`}`}
                                                 >
                                                     <img 
                                                         src={getImageUrl(room.image_url)} 
@@ -2698,7 +3125,7 @@ export default function App() {
                                                     className={`rounded-lg border-2 transition-all duration-200 overflow-hidden ${
                                                         !isAvailable 
                                                             ? 'opacity-50 cursor-not-allowed bg-gray-300 border-gray-400' 
-                                                            : `cursor-pointer ${packageBookingData.room_ids.includes(room.id) ? `${theme.buttonBg} ${theme.buttonText} border-transparent` : `${theme.bgCard} ${theme.textPrimary} ${theme.border} hover:border-amber-500`}`
+                                                            : `cursor-pointer ${packageBookingData.room_ids.includes(room.id) ? `${theme.buttonBg} ${theme.buttonText} border-transparent` : `${theme.bgCard} ${theme.textPrimary} ${theme.border} hover:border-[#c99c4e]`}`
                                                     }`}
                                                 >
                                                     <img 

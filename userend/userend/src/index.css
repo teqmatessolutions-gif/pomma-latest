@@ -47,3 +47,13 @@ input[type="date"]:focus {
 input[type="date"]:focus:hover {
   cursor: pointer;
 }
+
+.focus\:ring-amber-500:focus {
+  --tw-ring-opacity: 1;
+  --tw-ring-color: #0f5132;
+}
+
+.focus\:ring-amber-500:focus-visible {
+  --tw-ring-opacity: 1;
+  --tw-ring-color: #0f5132;
+}
