@@ -5,7 +5,6 @@ import { BedDouble, Coffee, ConciergeBell, Package, ChevronRight, ChevronLeft, C
 import { SiGooglemaps } from "react-icons/si";
 // Currency formatting utility
 import { formatCurrency } from './utils/currency';
-import { getApiBaseUrl, getMediaBaseUrl } from "./utils/env";
 
 // Custom hook to detect if an element is in the viewport
 const useOnScreen = (ref, rootMargin = "0px") => {
@@ -782,9 +781,6 @@ export default function App() {
     const [isChatLoading, setIsChatLoading] = useState(false);
     const [showAllRooms, setShowAllRooms] = useState(false);
 
-    const mediaBaseUrl = useMemo(() => getMediaBaseUrl(), []);
-    const apiBaseUrl = useMemo(() => getApiBaseUrl(), []);
-
     // Package image slider state
     const [packageImageIndex, setPackageImageIndex] = useState({});
     // Signature carousel index
@@ -860,8 +856,12 @@ export default function App() {
     const getImageUrl = (imagePath) => {
         if (!imagePath) return ITEM_PLACEHOLDER;
         if (imagePath.startsWith('http')) return imagePath; // Already a full URL
+        const baseUrl = process.env.NODE_ENV === 'production' 
+            ? 'https://www.teqmates.com' 
+            : 'http://localhost:8000';
+        // Ensure imagePath starts with / for proper URL construction
         const path = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
-        return `${mediaBaseUrl}${path}`;
+        return `${baseUrl}${path}`;
     };
 
     const activeSignatureExperiences = useMemo(
@@ -995,8 +995,9 @@ export default function App() {
     // *** FIX: Added useEffect to fetch all resort data on component mount ***
     useEffect(() => {
         const fetchResortData = async () => {
+            const API_BASE_URL = process.env.NODE_ENV === 'production' ? "https://www.teqmates.com/api" : "http://localhost:8000/api";
             const endpoints = {
-                rooms: '/rooms/test',
+                rooms: '/rooms/test',  // Use working test endpoint for real room data
                 bookings: '/bookings?limit=500&skip=0', // Reduced limit for better performance - only recent bookings needed
                 foodItems: '/food-items/',
                 foodCategories: '/food-categories/',
@@ -1014,7 +1015,7 @@ export default function App() {
 
             try {
                 const responses = await Promise.all(
-                    Object.values(endpoints).map(endpoint => fetch(`${apiBaseUrl}${endpoint}`))
+                    Object.values(endpoints).map(endpoint => fetch(`${API_BASE_URL}${endpoint}`))
                 );
 
                 for (const res of responses) {
@@ -1057,7 +1058,7 @@ export default function App() {
         };
 
         fetchResortData();
-    }, [apiBaseUrl]); // Empty dependency array ensures this runs only once on mount
+    }, []); // Empty dependency array ensures this runs only once on mount
 
     // Auto-rotate banner images - only if multiple banners
     useEffect(() => {
@@ -1354,7 +1355,8 @@ export default function App() {
         // -------------------------
 
         try {
-            const response = await fetch(`${apiBaseUrl}/bookings/guest`, {
+            const API_BASE_URL = process.env.NODE_ENV === 'production' ? "https://www.teqmates.com/api" : "http://localhost:8000/api";
+            const response = await fetch(`${API_BASE_URL}/bookings/guest`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(bookingData)
@@ -1428,6 +1430,8 @@ export default function App() {
         // -------------------------
 
         try {
+            const API_BASE_URL = process.env.NODE_ENV === 'production' ? "https://www.teqmates.com/api" : "http://localhost:8000/api";
+            
             // Validate required fields
             if (!packageBookingData.package_id) {
                 showBannerMessage("error", "Package ID is missing. Please select a package.");
@@ -1468,7 +1472,7 @@ export default function App() {
             
             console.log("Package Booking Payload:", payload); // Debug log
             
-            const response = await fetch(`${apiBaseUrl}/packages/book/guest`, {
+            const response = await fetch(`${API_BASE_URL}/packages/book/guest`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -1526,7 +1530,8 @@ export default function App() {
         setBookingMessage({ type: null, text: "" });
 
         try {
-            const response = await fetch(`${apiBaseUrl}/services/bookings`, {
+            const API_BASE_URL = process.env.NODE_ENV === 'production' ? "https://www.teqmates.com/api" : "http://localhost:8000/api";
+            const response = await fetch(`${API_BASE_URL}/services/bookings`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(serviceBookingData)
@@ -1575,7 +1580,8 @@ export default function App() {
         };
         
         try {
-            const response = await fetch(`${apiBaseUrl}/food-orders/`, {
+            const API_BASE_URL = process.env.NODE_ENV === 'production' ? "https://www.teqmates.com/api" : "http://localhost:8000/api";
+            const response = await fetch(`${API_BASE_URL}/food-orders/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -2496,28 +2502,6 @@ export default function App() {
                             </div>
 
                             {foodItems.length > 0 ? (
-<<<<<<< HEAD
-                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                                    {foodItems.map((food) => (
-                                        <div 
-                                            key={food.id}
-                                            className={`group relative ${theme.bgCard} rounded-2xl overflow-hidden luxury-shadow transition-all duration-300 transition-all duration-500 transform hover:-translate-y-2 border ${theme.cardBorder || theme.border}`}
-                                        >
-                                            {/* Image */}
-                                            <div className="relative h-40 overflow-hidden">
-                                                <img 
-                                                    src={getImageUrl(food.images?.[0]?.image_url)} 
-                                                    alt={food.name} 
-                                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                                                    onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }} 
-                                                />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                                                
-                                                {/* Availability Badge */}
-                                                <div className="absolute top-4 right-4">
-                                                    <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-lg ${food.available ? "bg-green-500 text-white" : "bg-red-500 text-white"}`}>
-                                                        {food.available ? "Available" : "Unavailable"}
-=======
                                 <>
                                     <div className="flex flex-wrap justify-center gap-3 mb-10">
                                         {categoryNames.map((category) => {
@@ -2542,7 +2526,6 @@ export default function App() {
                                                             : 'bg-[#0f5132]/10 text-[#0f5132]'
                                                     }`}>
                                                         {count}
->>>>>>> 710ede8 (Add map links for nearby attraction banners and clean up assets)
                                                     </span>
                                                 </button>
                                             );
@@ -2638,7 +2621,7 @@ export default function App() {
                                             style={{ height: getGalleryCardHeight(index), transitionDelay: `${(index % 5) * 70}ms` }}
                                         >
                                             <img 
-                                                src={getImageUrl(image.image_url)} 
+                                                src={process.env.NODE_ENV === 'production' ? `https://www.teqmates.com${image.image_url}` : `http://localhost:8000${image.image_url}`} 
                                                 alt={image.caption || 'Gallery image'} 
                                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                                                 loading="lazy"
@@ -3335,7 +3318,7 @@ export default function App() {
                                     {foodItems.map(item => (
                                         <div key={item.id} className="flex items-center justify-between">
                                             <div className="flex items-center space-x-4">
-                                                <img src={getImageUrl(item.images?.[0]?.image_url)} alt={item.name} className="w-12 h-12 object-cover rounded-full" />
+                                                <img src={process.env.NODE_ENV === 'production' ? `https://www.teqmates.com/${item.images?.[0]?.image_url}` : `http://localhost:8000/${item.images?.[0]?.image_url}`} alt={item.name} className="w-12 h-12 object-cover rounded-full" />
                                                 <div>
                                                     <p className={`font-semibold ${theme.textPrimary}`}>{item.name}</p>
                                                 </div>

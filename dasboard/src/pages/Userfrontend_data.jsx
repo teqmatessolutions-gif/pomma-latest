@@ -4,7 +4,6 @@ import api from "../services/api";
 import { toast } from "react-hot-toast";
 import { FaStar, FaTrashAlt, FaPencilAlt, FaPlus, FaTimes, FaMapMarkerAlt } from "react-icons/fa";
 import { AnimatePresence, motion } from "framer-motion";
-import { getMediaBaseUrl } from "../utils/env";
 
 // Get the correct base URL based on environment
 const getImageUrl = (imagePath) => {
@@ -18,7 +17,9 @@ const getImageUrl = (imagePath) => {
     return imagePath;
   }
   
-  const baseUrl = getMediaBaseUrl();
+  const baseUrl = process.env.NODE_ENV === 'production' 
+    ? 'https://www.teqmates.com' 
+    : 'http://localhost:8000';
   
   // Normalize the path
   let path = imagePath;
@@ -68,8 +69,6 @@ const getImageUrl = (imagePath) => {
   return fullUrl;
 };
 
-<<<<<<< HEAD
-=======
 const ensureHttpUrl = (url) => {
   if (!url) return "";
   return /^https?:\/\//i.test(url) ? url : `https://${url}`;
@@ -77,7 +76,6 @@ const ensureHttpUrl = (url) => {
 
 const API_URL = process.env.NODE_ENV === 'production' ? 'https://www.teqmates.com' : 'http://localhost:8000';
 
->>>>>>> 710ede8 (Add map links for nearby attraction banners and clean up assets)
 // --- Reusable Components ---
 
 const ManagementSection = ({ title, onAdd, children, isLoading }) => (
