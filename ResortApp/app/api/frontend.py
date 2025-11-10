@@ -642,6 +642,7 @@ def list_nearby_attractions(db: Session = Depends(get_db), skip: int = 0, limit:
 async def create_nearby_attraction(
     title: str = Form(...),
     description: str = Form(...),
+    map_link: str | None = Form(None),
     is_active: bool = Form(True),
     image: UploadFile = File(...),
     db: Session = Depends(get_db),
@@ -681,7 +682,8 @@ async def create_nearby_attraction(
             title=title,
             description=description,
             is_active=is_active,
-            image_url=image_url
+            image_url=image_url,
+            map_link=map_link.strip() if map_link else None,
         )
         return crud.create(db, models.NearbyAttraction, obj)
     except HTTPException:
@@ -698,6 +700,7 @@ async def update_nearby_attraction(
     item_id: int,
     title: str = Form(...),
     description: str = Form(...),
+    map_link: str | None = Form(None),
     is_active: bool = Form(True),
     image: UploadFile = File(None),
     db: Session = Depends(get_db),
@@ -709,6 +712,9 @@ async def update_nearby_attraction(
             "description": description,
             "is_active": is_active,
         }
+        if map_link is not None:
+            cleaned = map_link.strip()
+            update_data["map_link"] = cleaned or None
         
         if image:
             os.makedirs(UPLOAD_DIR, exist_ok=True)

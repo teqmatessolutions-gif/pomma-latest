@@ -120,14 +120,19 @@ class NearbyAttractionBase(BaseSchema):
     title: str
     description: str
     image_url: str
+    map_link: str | None = None
+
 
 class NearbyAttractionCreate(NearbyAttractionBase):
     pass
+
 
 class NearbyAttractionUpdate(BaseSchema):
     title: str | None = None
     description: str | None = None
     image_url: str | None = None
+    map_link: str | None = None
+
 
 class NearbyAttraction(NearbyAttractionBase):
     id: int

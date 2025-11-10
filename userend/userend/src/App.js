@@ -245,7 +245,7 @@ const themes = {
     lavender: {
         id: 'lavender',
         name: 'Lavender',
-        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-lavender"><path d="M14.5 16.5c-2.4-1-4.2-2-5.5-2.5-1.5-.5-3.6-1-4.5-2-.8-1-1.3-2.2-1-3.5C3.3 6.7 4 6 5 6c1.1 0 2.4.8 3.5 2.5 1.2 1.9 2 4.2 2.5 5.5.5 1.5 1 3.6 2 4.5 1 .8 2.2 1.3 3.5 1C17.3 17.3 18 16.6 18 15.6c0-1.1-.8-2.4-2.5-3.5-1.9-1.2-4.2-2-5.5-2.5-1.5-.5-3.6-1-4.5-2-.8-1-1.3-2.2-1-3.5.3-1.3 1-2 2-2 1.1 0 2.4.8 3.5 2.5 1.9 1.2 4.2 2 5.5 2.5 1.5.5 3.6 1 4.5 2 .8 1 1.3 2.2 1 3.5-.3 1.3-1 2-2 2-1.1 0-2.4-.8-3.5-2.5-1.9-1.2-4.2-2-5.5-2.5-1.5-.5-3.6-1-4.5-2-.8-1-1.3-2.2-1-3.5-.3-1.3-1-2-2-2-1.1 0-2.4-.8-3.5-2.5"/><path d="M12 12c-2.4-1-4.2-2-5.5-2.5-1.5-.5-3.6-1-4.5-2-.8-1-1.3-2.2-1-3.5.3-1.3 1-2 2-2 1.1 0 2.4.8 3.5 2.5 1.9 1.2 4.2 2 5.5 2.5 1.5.5 3.6 1 4.5 2 .8 1 1.3 2.2 1 3.5-.3 1.3-1 2-2 2-1.1 0-2.4-.8-3.5-2.5"/><path d="M12 12c2.4-1 4.2-2 5.5-2.5 1.5-.5 3.6-1 4.5-2 .8-1 1.3 2.2 1-3.5-.3-1.3-1-2-2-2-1.1 0-2.4.8-3.5 2.5-1.9-1.2-4.2-2-5.5-2.5-1.5-.5-3.6-1-4.5-2-.8-1-1.3-2.2-1-3.5-.3-1.3-1-2-2-2-1.1 0-2.4-.8-3.5-2.5"/></svg>,
+        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-lavender"><path d="M14.5 16.5c-2.4-1-4.2-2-5.5-2.5-1.5-.5-3.6-1-4.5-2-.8-1-1.3-2.2-1-3.5C3.3 6.7 4 6 5 6c1.1 0 2.4.8 3.5 2.5 1.2 1.9 2 4.2 2.5 5.5.5 1.5 1 3.6 2 4.5 1 .8 2.2 1.3 3.5 1C17.3 17.3 18 16.6 18 15.6c0-1.1-.8-2.4-2.5-3.5-1.9-1.2-4.2-2-5.5-2.5-1.5-.5-3.6-1-4.5-2-.8-1-1.3-2.2-1-3.5.3-1.3 1-2 2-2 1.1 0 2.4.8 3.5 2.5 1.9 1.2 4.2 2 5.5 2.5 1.5.5 3.6 1 4.5 2 .8 1 1.3 2.2 1 3.5-.3 1.3-1 2-2 2-1.1 0-2.4-.8-3.5-2.5-1.9-1.2-4.2-2-5.5-2.5-1.5-.5-3.6-1-4.5-2-.8-1-1.3-2.2-1-3.5-.3-1.3-1-2-2-2-1.1 0-2.4-.8-3.5-2.5"/><path d="M12 12c-2.4-1-4.2-2-5.5-2.5-1.5-.5-3.6-1-4.5-2-.8-1-1.3-2.2-1-3.5.3-1.3 1-2 2-2 1.1 0 2.4.8 3.5 2.5 1.9 1.2 4.2 2 5.5 2.5 1.5.5 3.6 1 4.5 2 .8 1 1.3 2.2 1 3.5-.3 1.3-1 2-2 2-1.1 0-2.4-.8-3.5-2.5-1.9-1.2-4.2-2-5.5-2.5-1.5-.5-3.6-1-4.5-2-.8-1-1.3-2.2-1-3.5-.3-1.3-1-2-2-2-1.1 0-2.4-.8-3.5-2.5"/></svg>,
         bgPrimary: "bg-indigo-950",
         bgSecondary: "bg-indigo-900",
         bgCard: "bg-neutral-50",
@@ -805,6 +805,7 @@ export default function App() {
     const [isServiceBookingFormOpen, setIsServiceBookingFormOpen] = useState(false);
     const [isFoodOrderFormOpen, setIsFoodOrderFormOpen] = useState(false);
     const [isGeneralBookingOpen, setIsGeneralBookingOpen] = useState(false);
+    const [showAmenities, setShowAmenities] = useState(false);
 
     const [bookingData, setBookingData] = useState({
         room_ids: [],
@@ -865,7 +866,7 @@ export default function App() {
     };
 
     const activeSignatureExperiences = useMemo(
-        () => signatureExperiences.filter(exp => exp.is_active),
+        () => signatureExperiences.filter(exp => exp.is_active && exp.image_url),
         [signatureExperiences]
     );
     const totalSignatureExperiences = activeSignatureExperiences.length;
@@ -948,7 +949,6 @@ export default function App() {
             opacity,
             zIndex,
             boxShadow,
-            backgroundColor,
             transition: 'transform 700ms cubic-bezier(.4,0,.2,1), opacity 500ms ease, box-shadow 500ms ease, background-color 500ms ease'
         };
     }, []);
@@ -1761,13 +1761,13 @@ export default function App() {
                     </div>
                 )}
                 
-                <header className={`fixed left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-[#d9c9ac] shadow-sm ${bannerMessage.text ? 'top-16' : 'top-0'} transition-all duration-300`}>
-                    <div className="container mx-auto px-4 sm:px-6 md:px-12 py-4 flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
+                <header className={`fixed left-0 right-0 z-50 bg-[#0f5132]/95 backdrop-blur-sm shadow-lg ${bannerMessage.text ? 'top-16' : 'top-0'} transition-all duration-300`}>
+                    <div className="container mx-auto px-4 sm:px-6 md:px-12 py-4 flex items-center justify-between text-white">
+                <div className="flex items-center space-x-3 text-white h-20">
                             <img 
                                 src={logoSrc} 
                                 alt="Pomma Holidays logo" 
-                                className="w-12 h-12 object-contain"
+                        className="w-40 h-full object-contain"
                                 loading="lazy"
                                 onError={() => {
                                     setLogoIndex((prev) => {
@@ -1776,11 +1776,10 @@ export default function App() {
                                     });
                                 }}
                             />
-                            <span className="text-2xl font-bold text-[#153a2c] tracking-tight">Pomma Holidays</span>
                         </div>
                         <nav className="flex items-center space-x-4">
                             <button 
-                                onClick={() => setIsGeneralBookingOpen(true)} 
+                                onClick={() => { setShowAmenities(false); setIsGeneralBookingOpen(true); }} 
                                 className="px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-[#0f5132] to-[#1a7042] rounded-full shadow-lg hover:from-[#136640] hover:to-[#218051] transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#c99c4e]"
                             >
                                 Book Now
@@ -1813,7 +1812,7 @@ export default function App() {
             ))}
 
             {/* Luxury Gradient Overlay with Premium Content */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0c3d26]/75 via-[#0f5132]/45 to-transparent flex items-center justify-center text-center px-6">
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0c3d26]/60 via-[#0f5132]/30 to-transparent flex items-center justify-center text-center px-6">
                 <div className="relative w-full max-w-5xl">
                     {bannerData.map((banner, index) => (
                         <div key={banner.id} className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-1000 ease-in-out ${index === currentBannerIndex ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
@@ -1831,12 +1830,16 @@ export default function App() {
                                 {banner.subtitle}
                             </p>
                             <div className="mt-10 flex flex-wrap justify-center gap-4 animate-[fadeInUp_1.6s_ease-out]">
-                                <a href="#rooms-section" className="group px-10 py-4 bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white font-semibold text-lg rounded-full shadow-2xl hover:from-[#136640] hover:to-[#218051] transition-all duration-300 transform hover:scale-110 hover:shadow-[0_20px_45px_rgba(12,61,38,0.45)] focus:outline-none focus:ring-2 focus:ring-[#d8b471]/60 focus:ring-offset-2 focus:ring-offset-[#0f5132] animate-[gentle-pulse_2s_ease-in-out_infinite]">
+                                <button
+                                    type="button"
+                                    onClick={() => { setShowAmenities(false); setIsGeneralBookingOpen(true); }}
+                                    className="group px-10 py-4 bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white font-semibold text-lg rounded-full shadow-2xl hover:from-[#136640] hover:to-[#218051] transition-all duration-300 transform hover:scale-110 hover:shadow-[0_20px_45px_rgba(12,61,38,0.45)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d8b471]/60 focus:ring-offset-[#0f5132] animate-[gentle-pulse_2s_ease-in-out_infinite]"
+                                >
                                     <span className="flex items-center gap-2">
                                         Book Your Stay
                                         <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                     </span>
-                                </a>
+                                </button>
                                 <a href="#packages" className="px-10 py-4 bg-white/10 backdrop-blur-sm text-white font-semibold text-lg rounded-full border-2 border-white/40 hover:bg-white/20 transition-all duration-300">
                                     View Packages
                                 </a>
@@ -2087,7 +2090,7 @@ export default function App() {
                                                 Select check-in and check-out dates above to check room availability for your stay
                                             </p>
                                             <button 
-                                                onClick={() => setIsGeneralBookingOpen(true)}
+                                                onClick={() => { setShowAmenities(false); setIsGeneralBookingOpen(true); }} 
                                                 className={`px-4 py-2 text-xs font-semibold ${theme.buttonBg} ${theme.buttonText} rounded-full shadow hover:shadow-md transition-all duration-300 transform hover:scale-105`}
                                             >
                                                 Select Dates
@@ -2118,7 +2121,7 @@ export default function App() {
                                     </div>
                                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                                         {rooms.map((room, index) => (
-                                        <div 
+                                        <div
                                             key={room.id} 
                                             className={`group relative ${theme.bgCard} rounded-2xl overflow-hidden luxury-shadow transition-all duration-300 transition-all duration-500 transform hover:-translate-y-2 border ${theme.cardBorder || theme.border}`}
                                         >
@@ -2239,7 +2242,7 @@ export default function App() {
                             {totalSignatureExperiences > 0 ? (
                                 <div className="relative max-w-6xl mx-auto">
                                     {/* Carousel Container */}
-                                    <div className="relative h-[420px] sm:h-[460px] lg:h-[520px]">
+                                    <div className="relative h-[400px] sm:h-[460px] lg:h-[520px]">
                                         {[ -2, -1, 0, 1, 2 ].map((offset) => {
                                             if (totalSignatureExperiences === 1 && offset !== 0) return null;
                                             const experience = totalSignatureExperiences
@@ -2264,41 +2267,37 @@ export default function App() {
                                                     }}
                                                 >
                                                     <div
-                                                        className={`rounded-[28px] overflow-hidden bg-white border border-[#e5d9c3] shadow-xl transition-transform duration-700 ease-[cubic-bezier(.4,.0,.2,1)] will-change-transform ${offset === 0 ? '' : 'scale-[0.98]'}`}
+                                                        className={`relative group h-[400px] sm:h-[460px] lg:h-[520px] rounded-[32px] overflow-hidden bg-black shadow-[0_35px_80px_rgba(12,61,38,0.35)] transition-transform duration-700 ease-[cubic-bezier(.4,.0,.2,1)] will-change-transform ${offset === 0 ? '' : 'scale-[0.9] opacity-70 blur-[1.5px]'}`}
                                                     >
-                                                        <div className="relative h-48 sm:h-56 lg:h-64 overflow-hidden">
-                                                    <img 
-                                                                src={getImageUrl(experience.image_url)}
-                                                                alt={experience.title}
-                                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                                        onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }} 
-                                                    />
-                                                            <div className="absolute top-4 left-4">
-                                                                <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.35em] text-[#0f5132] bg-white/90 border border-[#d8c9ac] rounded-full px-4 py-1 shadow">
-                                                                    Explore
-                                                        </span>
-                                                    </div>
-                                            </div>
-                                                        <div className="p-6 sm:p-7 space-y-4">
-                                                            <h3 className="text-2xl sm:text-3xl font-bold text-[#153a2c] leading-tight">
+                                                        <img 
+                                                            src={getImageUrl(experience.image_url)}
+                                                            alt={experience.title}
+                                                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1500ms] ease-out group-hover:scale-[1.12]"
+                                                            onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }} 
+                                                        />
+                                                        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/60 to-transparent" />
+                                                        <div className="absolute top-6 left-6 z-10">
+                                                            <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.35em] text-white/95 bg-white/20 border border-white/30 rounded-full px-5 py-1.5 shadow-lg backdrop-blur">
+                                                                Explore
+                                                            </span>
+                                                        </div>
+                                                        <div className="absolute inset-x-0 bottom-0 z-10 px-8 pb-10 pt-16 space-y-6">
+                                                            <h3 className="text-3xl sm:text-4xl font-bold text-white leading-tight drop-shadow-[0_12px_30px_rgba(0,0,0,0.6)]">
                                                                 {experience.title}
-                                                </h3>
-                                                            <p className="text-sm sm:text-base text-[#4f6f62] leading-relaxed">
-                                                                {experience.description || 'Discover a curated experience designed to immerse you in the natural beauty of our resort.'}
-                                                            </p>
+                                                            </h3>
                                                             {highlights.length > 0 && (
-                                                                <ul className="space-y-2 text-sm text-[#153a2c]">
+                                                                <ul className="space-y-3 text-base text-white/90">
                                                                     {highlights.map((point, idx) => (
-                                                                        <li key={idx} className="flex items-start gap-2">
-                                                                            <span className="mt-1 inline-flex w-2 h-2 rounded-full bg-[#c99c4e]" />
+                                                                        <li key={idx} className="flex items-start gap-3">
+                                                                            <span className="mt-1 inline-flex w-2.5 h-2.5 rounded-full bg-[#c99c4e]" />
                                                                             <span>{point}</span>
                                                                         </li>
                                                                     ))}
                                                                 </ul>
                                                             )}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
                                             );
                                         })}
                                         </div>
@@ -2559,6 +2558,9 @@ export default function App() {
                                                             </div>
                                                         </div>
                                                         <div className="p-5 space-y-2">
+                                                            <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#0f5132]/70 bg-[#0f5132]/10 px-3 py-1 rounded-full">
+                                                                {categoryName}
+                                                            </span>
                                                             <h4 className={`text-lg font-semibold ${theme.textCardPrimary || theme.textPrimary}`}>
                                                                 {food.name}
                                                             </h4>
@@ -2677,24 +2679,7 @@ export default function App() {
                                         <p className="text-base md:text-xl text-white/85 leading-relaxed drop-shadow-lg">
                                             {activeNearbyAttractionBanners[currentAttractionBannerIndex]?.subtitle || 'Discover the most captivating sights surrounding our resort.'}
                                         </p>
-                                        {(() => {
-                                            const currentBanner = activeNearbyAttractionBanners[currentAttractionBannerIndex];
-                                            const mapLink = currentBanner?.map_link ? formatUrl(currentBanner.map_link) : null;
-                                            if (!mapLink) return null;
-                                            return (
-                                                <a
-                                                    href={mapLink}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="inline-flex items-center gap-3 px-6 py-3 bg-white text-[#0f5132] font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 mx-auto"
-                                                >
-                                                    <span className="flex items-center justify-center w-9 h-9 rounded-full bg-[#0f5132] text-white">
-                                                        <SiGooglemaps className="w-5 h-5" />
-                                                    </span>
-                                                    <span>Open in Google Maps</span>
-                                                </a>
-                                            );
-                                        })()}
+                                        {/* Map button displayed in main Nearby Attractions section */}
                                     </div>
                                 </div>
                             )}
@@ -2758,6 +2743,19 @@ export default function App() {
                                                     <p className={`text-base md:text-lg ${theme.textSecondary} leading-relaxed`}>
                                                         {attraction.description}
                                                     </p>
+                                                    {attraction.map_link && (
+                                                        <a
+                                                            href={formatUrl(attraction.map_link)}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="mt-8 inline-flex items-center gap-3 self-start px-6 py-3 bg-[#0f5132] text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+                                                        >
+                                                            <span className="flex items-center justify-center w-9 h-9 rounded-full bg-white text-[#0f5132]">
+                                                                <SiGooglemaps className="w-5 h-5" />
+                                                            </span>
+                                                            <span>Open in Google Maps</span>
+                                                        </a>
+                                                    )}
                                                 </div>
                                         </div>
                                     </div>
@@ -2844,7 +2842,7 @@ export default function App() {
                         <div className={`w-full max-w-md ${theme.bgCard} rounded-3xl shadow-2xl flex flex-col`}>
                             <div className={`p-6 flex items-center justify-between border-b ${theme.border}`}>
                                 <h3 className="text-lg font-bold flex items-center"><BedDouble className={`w-5 h-5 mr-2 ${theme.textAccent}`} /> Select Your Dates</h3>
-                                <button onClick={() => setIsGeneralBookingOpen(false)} className={`p-1 rounded-full ${theme.textSecondary} hover:${theme.textPrimary} transition-colors`}><X className="w-6 h-6" /></button>
+                                <button onClick={() => { setIsGeneralBookingOpen(false); setShowAmenities(false); }} className={`p-1 rounded-full ${theme.textSecondary} hover:${theme.textPrimary} transition-colors`}><X className="w-6 h-6" /></button>
                             </div>
                             <div className="p-6 space-y-4">
                                 <p className={`${theme.textSecondary} text-center mb-4`}>Select your check-in and check-out dates to view available rooms</p>
@@ -2875,31 +2873,71 @@ export default function App() {
                                     </div>
                                 </div>
                                 {bookingData.check_in && bookingData.check_out && (
-                                    <div className="pt-4 space-y-3 border-t border-gray-200 dark:border-neutral-700">
+                                    <div className="pt-4 space-y-3 border-top border-gray-200 dark:border-neutral-700">
                                         <p className={`text-sm ${theme.textSecondary} text-center`}>Continue with booking:</p>
-                                <button 
-                                    onClick={() => { setIsGeneralBookingOpen(false); setIsRoomBookingFormOpen(true); }}
-                                    className={`w-full py-3 rounded-full ${theme.buttonBg} ${theme.buttonText} font-bold shadow-lg ${theme.buttonHover} transition-colors flex items-center justify-center space-x-2`}
-                                >
-                                    <BedDouble className="w-5 h-5" />
-                                    <span>Book a Room</span>
-                                </button>
-                                <button 
+                                        <button 
+                                            onClick={() => { setIsGeneralBookingOpen(false); setShowAmenities(false); setIsRoomBookingFormOpen(true); }} 
+                                            className={`w-full py-3 rounded-full ${theme.buttonBg} ${theme.buttonText} font-bold shadow-lg ${theme.buttonHover} transition-colors flex items-center justify-center space-x-2`}
+                                        >
+                                            <BedDouble className="w-5 h-5" />
+                                            <span>Book a Room</span>
+                                        </button>
+                                        <button 
                                             onClick={() => { 
                                                 setIsGeneralBookingOpen(false);
-                                                // Copy dates from bookingData to packageBookingData
+                                                setShowAmenities(false);
                                                 setPackageBookingData(prev => ({ 
                                                     ...prev,
                                                     check_in: bookingData.check_in || prev.check_in || '',
                                                     check_out: bookingData.check_out || prev.check_out || ''
                                                 }));
                                                 setIsPackageSelectionOpen(true); 
-                                            }}
-                                    className={`w-full py-3 rounded-full ${theme.buttonBg} ${theme.buttonText} font-bold shadow-lg ${theme.buttonHover} transition-colors flex items-center justify-center space-x-2`}
-                                >
-                                    <Package className="w-5 h-5" />
-                                    <span>Book a Package</span>
-                                </button>
+                                            }} 
+                                            className={`w-full py-3 rounded-full ${theme.buttonBg} ${theme.buttonText} font-bold shadow-lg ${theme.buttonHover} transition-colors flex items-center justify-center space-x-2`}
+                                        >
+                                            <Package className="w-5 h-5" />
+                                            <span>Book a Package</span>
+                                        </button>
+                                        <button
+                                            onClick={() => setShowAmenities(prev => !prev)}
+                                            className="w-full py-3 rounded-full bg-white text-[#0f5132] font-bold shadow-lg hover:shadow-xl transition-colors flex items-center justify-center space-x-2 border border-[#d8c9ac]"
+                                        >
+                                            <Droplet className="w-5 h-5 text-[#0f5132]" />
+                                            <span>{showAmenities ? "Hide Amenities" : "View Amenities"}</span>
+                                        </button>
+                                    </div>
+                                )}
+                                {showAmenities && (
+                                    <div className="mt-4 space-y-3 border-t border-gray-200 dark:border-neutral-700 pt-4">
+                                        <h4 className="text-sm font-semibold text-center text-[#0f5132] uppercase tracking-widest">
+                                            Resort Amenities
+                                        </h4>
+                                        {services && services.length > 0 ? (
+                                            <div className="max-h-48 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                {services.map((service) => (
+                                                    <div
+                                                        key={service.id}
+                                                        className="flex items-start space-x-3 rounded-2xl bg-white/80 border border-[#d8c9ac] px-4 py-3 shadow-sm"
+                                                    >
+                                                        <div className="flex-shrink-0 mt-1 text-[#0f5132]">
+                                                            <ConciergeBell className="w-5 h-5" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-semibold text-[#0f5132]">{service.name}</p>
+                                                            {service.description && (
+                                                                <p className="text-xs text-[#4f6f62] mt-1 line-clamp-2">
+                                                                    {service.description}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="text-center text-sm text-[#4f6f62] bg-white/70 rounded-2xl px-4 py-6 border border-dashed border-[#d8c9ac]">
+                                                Amenities information will be available soon. Please contact concierge for more details.
+                                            </p>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -3346,20 +3384,20 @@ export default function App() {
                     </div>
                 )}
                 
-                <footer className={`${theme.bgSecondary} py-8 px-4 md:px-12 mt-12`}>
+                <footer className="bg-[#0f5132] text-white py-8 px-4 md:px-12 mt-12">
                     <div className="container mx-auto flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
                         {resortInfo && (
                             <>
                                 <div className="text-center md:text-left">
-                                    <h3 className={`text-xl font-bold tracking-tight ${theme.textPrimary}`}>{resortInfo.name}</h3>
-                                    <p className={`text-sm ${theme.textSecondary} mt-1`}>{resortInfo.address}</p>
-                                    <p className={`text-xs ${theme.textSecondary} mt-2`}>&copy; 2024 Elysian Retreat. All Rights Reserved.</p>
+                                    <h3 className="text-xl font-bold tracking-tight text-white">{resortInfo.name}</h3>
+                                    <p className="text-sm text-white/80 mt-1">{resortInfo.address}</p>
+                                    <p className="text-xs text-white/70 mt-2">&copy; 2024 Elysian Retreat. All Rights Reserved.</p>
                                 </div>
-                                <div className="flex space-x-4">
-                                    <a href={formatUrl(resortInfo.facebook)} target="_blank" rel="noopener noreferrer" className={`${theme.textSecondary} hover:${theme.textPrimary} transition-colors`}><Facebook /></a>
-                                    <a href={formatUrl(resortInfo.instagram)} target="_blank" rel="noopener noreferrer" className={`${theme.textSecondary} hover:${theme.textPrimary} transition-colors`}><Instagram /></a>
-                                    <a href={formatUrl(resortInfo.twitter)} target="_blank" rel="noopener noreferrer" className={`${theme.textSecondary} hover:${theme.textPrimary} transition-colors`}><Twitter /></a>
-                                    <a href={formatUrl(resortInfo.linkedin)} target="_blank" rel="noopener noreferrer" className={`${theme.textSecondary} hover:${theme.textPrimary} transition-colors`}><Linkedin /></a>
+                                <div className="flex space-x-4 text-white/80">
+                                    <a href={formatUrl(resortInfo.facebook)} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors"><Facebook /></a>
+                                    <a href={formatUrl(resortInfo.instagram)} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors"><Instagram /></a>
+                                    <a href={formatUrl(resortInfo.twitter)} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors"><Twitter /></a>
+                                    <a href={formatUrl(resortInfo.linkedin)} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors"><Linkedin /></a>
                                 </div>
                             </>
                         )}

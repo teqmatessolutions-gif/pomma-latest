@@ -85,6 +85,7 @@ class NearbyAttraction(Base):
     description = Column(Text)
     image_url = Column(String(255))
     is_active = Column(Boolean, default=True)
+    map_link = Column(String(512), nullable=True)
 
 
 # Nearby Attraction Banners

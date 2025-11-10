@@ -402,8 +402,8 @@ export default function ResortCMS() {
         resortInfo: { title: "Resort Info", endpoint: "/resort-info/", fields: [{ name: "name", placeholder: "Resort Name" }, { name: "address", placeholder: "Resort Address" }, { name: "facebook", placeholder: "Facebook URL" }, { name: "instagram", placeholder: "Instagram URL" }, { name: "twitter", placeholder: "Twitter URL" }, { name: "linkedin", placeholder: "LinkedIn URL" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: false },
         signatureExperiences: { title: "Signature Experience", endpoint: "/signature-experiences/", fields: [{ name: "title", placeholder: "Experience Title" }, { name: "description", placeholder: "Description", type: "textarea" }, { name: "image", type: "file" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: true },
         planWeddings: { title: "Plan Your Wedding", endpoint: "/plan-weddings/", fields: [{ name: "title", placeholder: "Title" }, { name: "description", placeholder: "Description", type: "textarea" }, { name: "image", type: "file" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: true },
-        nearbyAttractions: { title: "Nearby Attraction", endpoint: "/nearby-attractions/", fields: [{ name: "title", placeholder: "Attraction Title" }, { name: "description", placeholder: "Description", type: "textarea" }, { name: "image", type: "file" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: true },
-        nearbyAttractionBanners: { title: "Nearby Attraction Banner", endpoint: "/nearby-attraction-banners/", fields: [{ name: "title", placeholder: "Banner Title" }, { name: "subtitle", placeholder: "Banner Subtitle", type: "textarea" }, { name: "map_link", placeholder: "Google Maps Link (optional)" }, { name: "image", type: "file" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: true },
+        nearbyAttractions: { title: "Nearby Attraction", endpoint: "/nearby-attractions/", fields: [{ name: "title", placeholder: "Attraction Title" }, { name: "description", placeholder: "Description", type: "textarea" }, { name: "map_link", placeholder: "Google Maps Link (optional)" }, { name: "image", type: "file" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: true },
+        nearbyAttractionBanners: { title: "Nearby Attraction Banner", endpoint: "/nearby-attraction-banners/", fields: [{ name: "title", placeholder: "Banner Title" }, { name: "subtitle", placeholder: "Banner Subtitle", type: "textarea" }, { name: "image", type: "file" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: true },
     };
 
     if (isLoading) {
@@ -496,10 +496,10 @@ export default function ResortCMS() {
                                 <p className="text-sm text-gray-600">{item.address}</p>
                                 <p className="text-xs font-semibold">{item.is_active ? "🟢 Active" : "🔴 Inactive"}</p>
                                 <div className="flex gap-4 text-sm pt-2">
-                                    {item.facebook && <a href={item.facebook} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">Facebook</a>}
-                                    {item.instagram && <a href={item.instagram} target="_blank" rel="noreferrer" className="text-pink-600 hover:underline">Instagram</a>}
-                                    {item.twitter && <a href={item.twitter} target="_blank" rel="noreferrer" className="text-sky-500 hover:underline">Twitter</a>}
-                                    {item.linkedin && <a href={item.linkedin} target="_blank" rel="noreferrer" className="text-blue-800 hover:underline">LinkedIn</a>}
+                                    {item.facebook && <a href={ensureHttpUrl(item.facebook)} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">Facebook</a>}
+                                    {item.instagram && <a href={ensureHttpUrl(item.instagram)} target="_blank" rel="noreferrer" className="text-pink-600 hover:underline">Instagram</a>}
+                                    {item.twitter && <a href={ensureHttpUrl(item.twitter)} target="_blank" rel="noreferrer" className="text-sky-500 hover:underline">Twitter</a>}
+                                    {item.linkedin && <a href={ensureHttpUrl(item.linkedin)} target="_blank" rel="noreferrer" className="text-blue-800 hover:underline">LinkedIn</a>}
                                 </div>
                                 <div className="flex gap-2 pt-2 border-t">
                                     <button onClick={() => openModal(sectionConfigs.resortInfo, item)} className="text-blue-600 hover:text-blue-800"><FaPencilAlt /></button>
@@ -587,19 +587,6 @@ export default function ResortCMS() {
                                 )}
                                 <h3 className="font-bold text-gray-800">{item.title || 'No title'}</h3>
                                 <p className="text-xs text-gray-600 line-clamp-2">{item.subtitle || 'No description'}</p>
-                                {item.map_link ? (
-                                    <a
-                                        href={ensureHttpUrl(item.map_link)}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 text-xs font-semibold text-blue-600 hover:text-blue-800"
-                                    >
-                                        <FaMapMarkerAlt className="text-red-500" />
-                                        View on Google Maps
-                                    </a>
-                                ) : (
-                                    <p className="text-xs text-gray-400">No map link provided</p>
-                                )}
                                 <p className="text-xs font-semibold">{item.is_active ? "🟢 Active" : "🔴 Inactive"}</p>
                                 <div className="flex gap-2 pt-2 border-t">
                                     <button onClick={() => openModal(sectionConfigs.nearbyAttractionBanners, item)} className="text-blue-600 hover:text-blue-800"><FaPencilAlt /></button>
@@ -623,12 +610,25 @@ export default function ResortCMS() {
                                         }}
                                     />
                                 ) : (
-                                    <div className="w-full h-32 bg-gray-200 rounded-md flex items-center justify-center text-gray-400 text-xs">
+                                    <div className="w-full h-32 bg-gray-200 rounded-md flex items-justify-center text-gray-400 text-xs">
                                         No image
                                     </div>
                                 )}
                                 <h3 className="font-bold text-gray-800">{item.title || 'No title'}</h3>
                                 <p className="text-xs text-gray-600 line-clamp-2">{item.description || 'No description'}</p>
+                                {item.map_link ? (
+                                    <a
+                                        href={ensureHttpUrl(item.map_link)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 text-xs font-semibold text-blue-600 hover:text-blue-800"
+                                    >
+                                        <FaMapMarkerAlt className="text-red-500" />
+                                        View on Google Maps
+                                    </a>
+                                ) : (
+                                    <p className="text-xs text-gray-400">No map link provided</p>
+                                )}
                                 <p className="text-xs font-semibold">{item.is_active ? "🟢 Active" : "🔴 Inactive"}</p>
                                 <div className="flex gap-2 pt-2 border-t">
                                     <button onClick={() => openModal(sectionConfigs.nearbyAttractions, item)} className="text-blue-600 hover:text-blue-800"><FaPencilAlt /></button>
