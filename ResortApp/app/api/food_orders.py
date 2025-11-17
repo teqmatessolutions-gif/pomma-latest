@@ -12,9 +12,17 @@ router = APIRouter(prefix="/food-orders", tags=["Food Orders"])
 def create_order(order: FoodOrderCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return crud.create_food_order(db, order)
 
+def _get_orders_impl(db: Session, skip: int = 0, limit: int = 20):
+    """Helper function for get_orders"""
+    return crud.get_food_orders(db, skip=skip, limit=limit)
+
 @router.get("", response_model=List[FoodOrderOut])
 def get_orders(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
-    return crud.get_food_orders(db, skip=skip, limit=limit)
+    return _get_orders_impl(db, skip, limit)
+
+@router.get("/", response_model=List[FoodOrderOut])  # Handle trailing slash
+def get_orders_slash(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+    return _get_orders_impl(db, skip, limit)
 
 @router.delete("/{order_id}")
 def delete_order(order_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):

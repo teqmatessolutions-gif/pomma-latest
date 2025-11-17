@@ -85,9 +85,17 @@ def add_employee(
         user_id=new_user.id,
     )
 
+def _list_employees_impl(db: Session, current_user: User, skip: int = 0, limit: int = 20):
+    """Helper function for list_employees"""
+    return crud_employee.get_employees(db, skip=skip, limit=limit)
+
 @router.get("", response_model=list[Employee])
 def list_employees(db: Session = Depends(get_db), current_user: User = Depends(get_current_user), skip: int = 0, limit: int = 20):
-    return crud_employee.get_employees(db, skip=skip, limit=limit)
+    return _list_employees_impl(db, current_user, skip, limit)
+
+@router.get("/", response_model=list[Employee])  # Handle trailing slash
+def list_employees_slash(db: Session = Depends(get_db), current_user: User = Depends(get_current_user), skip: int = 0, limit: int = 20):
+    return _list_employees_impl(db, current_user, skip, limit)
     
 @router.get("/status-overview", response_model=EmployeeStatusOverview)
 def get_employee_status_overview(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
