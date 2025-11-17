@@ -3352,33 +3352,12 @@ export default function App() {
                                                            selectedPackage.booking_type === 'whole property' ||
                                                            (!selectedPackage.booking_type && !hasRoomTypes);
                                     
-                                    // Hide room selection completely for whole_property
-                                    if (isWholeProperty) {
-                                        const availableRoomCount = Object.keys(packageRoomAvailability).filter(
-                                            roomId => packageRoomAvailability[roomId] === true
-                                        ).length;
-                                        
-                                        return (
-                                            <div className={`p-4 rounded-xl ${theme.bgSecondary} border-2 border-amber-300`}>
-                                                <p className={`text-sm font-semibold ${theme.textPrimary}`}>Whole Property Package</p>
-                                                <p className={`text-xs ${theme.textSecondary} mt-1`}>
-                                                    All available rooms ({availableRoomCount} room{availableRoomCount !== 1 ? 's' : ''}) will be booked automatically for the selected dates.
-                                                </p>
-                                            </div>
-                                        );
-                                    }
-                                    
-                                    // Show room selection ONLY for room_type packages
-                                    // If booking_type is 'room_type' OR if room_types is set (legacy room_type)
-                                    const isRoomType = selectedPackage.booking_type === 'room_type' || hasRoomTypes;
-                                    
-                                    if (!isRoomType) {
-                                        return null; // Don't show room selection if package type is unclear
-                                    }
-                                    
+                                    // Show room selection for both room_type and whole_property packages
                                     return (
                                         <div className="space-y-2">
-                                            <label className={`block text-sm font-medium ${theme.textSecondary}`}>Available Rooms for Selected Dates</label>
+                                            <label className={`block text-sm font-medium ${theme.textSecondary}`}>
+                                                {isWholeProperty ? 'Available Rooms (Full Property Booking)' : 'Available Rooms for Selected Dates'}
+                                            </label>
                                             {!packageBookingData.check_in || !packageBookingData.check_out ? (
                                                 <div className={`p-6 text-center rounded-xl ${theme.bgSecondary} border-2 border-dashed ${theme.border}`}>
                                                     <BedDouble className={`w-10 h-10 ${theme.textSecondary} mx-auto mb-3`} />
@@ -3386,20 +3365,32 @@ export default function App() {
                                                 </div>
                                             ) : (
                                                 <>
+                                                    {isWholeProperty && (
+                                                        <div className={`p-3 rounded-xl ${theme.bgSecondary} border-2 border-amber-300 mb-3`}>
+                                                            <p className={`text-sm font-semibold ${theme.textPrimary}`}>Whole Property Package</p>
+                                                            <p className={`text-xs ${theme.textSecondary} mt-1`}>
+                                                                All available rooms will be booked for the selected dates. You can see them below.
+                                                            </p>
+                                                        </div>
+                                                    )}
                                                     <p className={`text-xs ${theme.textSecondary} mb-2`}>Showing rooms available from {packageBookingData.check_in} to {packageBookingData.check_out}</p>
                                                     <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-48 overflow-y-auto p-3 rounded-xl ${theme.bgSecondary}`}>
                                                         {(() => {
-                                                            // Filter rooms by package's room_types (only for room_type packages)
-                                                            // Use case-insensitive comparison to handle "Cottage" vs "cottage"
+                                                            // Filter rooms based on package type
                                                             let roomsToShow = rooms;
-                                                            if (selectedPackage && selectedPackage.booking_type === 'room_type' && selectedPackage.room_types) {
+                                                            
+                                                            if (isWholeProperty) {
+                                                                // For whole_property: Show ALL available rooms
+                                                                roomsToShow = rooms;
+                                                            } else if (selectedPackage && selectedPackage.booking_type === 'room_type' && selectedPackage.room_types) {
+                                                                // For room_type: Only show rooms matching the package's room_types
                                                                 const allowedRoomTypes = selectedPackage.room_types.split(',').map(t => t.trim().toLowerCase());
                                                                 roomsToShow = rooms.filter(room => {
                                                                     const roomType = room.type ? room.type.trim().toLowerCase() : '';
                                                                     return allowedRoomTypes.includes(roomType);
                                                                 });
-                                                            } else if (!selectedPackage || selectedPackage.booking_type !== 'room_type') {
-                                                                // If package is not room_type, don't show any rooms
+                                                            } else {
+                                                                // Invalid package type
                                                                 return (
                                                                     <div className="col-span-full text-center py-8 text-gray-500">
                                                                         <BedDouble className="w-12 h-12 text-gray-400 mx-auto mb-3" />
@@ -3418,11 +3409,13 @@ export default function App() {
                                                             
                                                             return roomsToShow.length > 0 ? (
                                                                 roomsToShow.map(room => {
+                                                                    // For whole_property, all available rooms are auto-selected, but still show them
+                                                                    const isSelected = packageBookingData.room_ids.includes(room.id);
                                                                     return (
                                                                         <div 
                                                                             key={room.id} 
-                                                                            onClick={() => handlePackageRoomSelection(room.id)}
-                                                                            className={`rounded-lg border-2 transition-all duration-200 overflow-hidden cursor-pointer ${packageBookingData.room_ids.includes(room.id) ? `${theme.buttonBg} ${theme.buttonText} border-transparent` : `${theme.bgCard} ${theme.textPrimary} ${theme.border} hover:border-[#c99c4e]`}`}
+                                                                            onClick={() => !isWholeProperty ? handlePackageRoomSelection(room.id) : null}
+                                                                            className={`rounded-lg border-2 transition-all duration-200 overflow-hidden ${!isWholeProperty ? 'cursor-pointer' : 'cursor-default'} ${isSelected ? `${theme.buttonBg} ${theme.buttonText} border-transparent` : `${theme.bgCard} ${theme.textPrimary} ${theme.border} ${!isWholeProperty ? 'hover:border-[#c99c4e]' : ''}`}`}
                                                                         >
                                                                             <img 
                                                                                 src={getImageUrl(room.image_url)} 
@@ -3435,6 +3428,9 @@ export default function App() {
                                                                                 <p className="text-xs opacity-80">{room.type}</p>
                                                                                 <p className="text-xs opacity-60 mt-1">Max: {room.adults}A, {room.children}C</p>
                                                                                 <p className="text-xs font-bold mt-1">{formatCurrency(room.price)}</p>
+                                                                                {isWholeProperty && isSelected && (
+                                                                                    <p className="text-xs font-semibold mt-1 text-green-600">✓ Selected</p>
+                                                                                )}
                                                                             </div>
                                                                         </div>
                                                                     );
