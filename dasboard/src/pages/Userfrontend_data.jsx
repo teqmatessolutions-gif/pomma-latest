@@ -17,9 +17,26 @@ const getImageUrl = (imagePath) => {
     return imagePath;
   }
   
-  const baseUrl = process.env.NODE_ENV === 'production' 
-    ? 'https://www.teqmates.com' 
-    : 'http://localhost:8000';
+  // Check if we're in a pomma deployment (pommaadmin)
+  const isPommaDeployment = () => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+    const path = window.location.pathname || "";
+    return path.startsWith("/pommaholidays") || path.startsWith("/pommaadmin");
+  };
+  
+  // Get base URL - use /pomma prefix for pomma deployments
+  let baseUrl;
+  if (typeof window !== "undefined" && isPommaDeployment()) {
+    baseUrl = `${window.location.origin}/pomma`;
+  } else if (process.env.REACT_APP_MEDIA_BASE_URL) {
+    baseUrl = process.env.REACT_APP_MEDIA_BASE_URL;
+  } else {
+    baseUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://www.teqmates.com' 
+      : 'http://localhost:8000';
+  }
   
   // Normalize the path
   let path = imagePath;

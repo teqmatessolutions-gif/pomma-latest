@@ -75,47 +75,69 @@ export default function FoodOrders() {
       // Get room IDs from active regular bookings (checked-in or booked, not cancelled)
       regularBookings.forEach(booking => {
         if (isActiveBooking(booking.status)) {
+          // Parse dates properly
           const checkInDate = new Date(booking.check_in);
           const checkOutDate = new Date(booking.check_out);
           checkInDate.setHours(0, 0, 0, 0);
           checkOutDate.setHours(0, 0, 0, 0);
           
-          // Include rooms if check-in date is today or in the past, and check-out date is today or in the future
+          // Check if booking is active (today is between check-in and check-out)
+          // Also allow if check-out is today (room is still checked in)
           if (checkInDate <= today && checkOutDate >= today) {
             if (booking.rooms && Array.isArray(booking.rooms)) {
               booking.rooms.forEach(room => {
                 // For regular bookings, room.id is the room ID directly
                 if (room && room.id) {
                   checkedInRoomIds.add(room.id);
+                  console.log(`Added active regular room: ${room.number || room.id} (ID: ${room.id}) from booking ${booking.id}, status: ${booking.status}`);
+                } else {
+                  console.log(`Regular booking ${booking.id} room missing id:`, room);
                 }
               });
+            } else {
+              console.log(`Regular booking ${booking.id} has active status but no rooms array or rooms is not an array`);
             }
+          } else {
+            console.log(`Regular booking ${booking.id} is active but dates don't match: check_in=${checkInDate}, check_out=${checkOutDate}, today=${today}`);
           }
+        } else {
+          console.log(`Regular booking ${booking.id} status '${booking.status}' is not active (normalized: '${normalizeStatus(booking.status)}')`);
         }
       });
       
       // Get room IDs from active package bookings (checked-in or booked, not cancelled)
+      // Note: Package bookings have rooms as PackageBookingRoomOut objects with a nested 'room' property
       packageBookings.forEach(booking => {
         if (isActiveBooking(booking.status)) {
+          // Parse dates properly
           const checkInDate = new Date(booking.check_in);
           const checkOutDate = new Date(booking.check_out);
           checkInDate.setHours(0, 0, 0, 0);
           checkOutDate.setHours(0, 0, 0, 0);
           
-          // Include rooms if check-in date is today or in the past, and check-out date is today or in the future
+          // Check if booking is active (today is between check-in and check-out)
+          // Also allow if check-out is today (room is still checked in)
           if (checkInDate <= today && checkOutDate >= today) {
             if (booking.rooms && Array.isArray(booking.rooms)) {
               booking.rooms.forEach(roomLink => {
                 // Package bookings have rooms as PackageBookingRoomOut objects
-                // For package bookings, roomLink.room_id is the actual room ID
-                // roomLink.id is the PackageBookingRoom.id, not the room.id
-                const roomId = roomLink.room_id || roomLink.room?.id;
-                if (roomId) {
-                  checkedInRoomIds.add(roomId);
+                // The actual room is nested in roomLink.room
+                const room = roomLink.room || roomLink;
+                if (room && room.id) {
+                  checkedInRoomIds.add(room.id);
+                  console.log(`Added active package room: ${room.number || room.id} (ID: ${room.id}) from booking ${booking.id}, status: ${booking.status}`);
+                } else {
+                  console.log(`Package booking ${booking.id} room link missing room data:`, roomLink);
                 }
               });
+            } else {
+              console.log(`Package booking ${booking.id} has active status but no rooms array`);
             }
+          } else {
+            console.log(`Package booking ${booking.id} is active but dates don't match: check_in=${checkInDate}, check_out=${checkOutDate}, today=${today}`);
           }
+        } else {
+          console.log(`Package booking ${booking.id} status '${booking.status}' is not active (normalized: '${normalizeStatus(booking.status)}')`);
         }
       });
       
