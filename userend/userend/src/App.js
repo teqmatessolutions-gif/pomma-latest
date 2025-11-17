@@ -2935,11 +2935,11 @@ export default function App() {
                                     >
                                             <div className={`flex flex-col ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} items-stretch`}>
                                                 {/* Image Section */}
-                                                <div className="w-full md:w-1/2 h-80 md:h-96 overflow-hidden">
+                                                <div className="w-full md:w-1/2 overflow-hidden flex items-center justify-center">
                                             <img 
                                                         src={getImageUrl(attraction.image_url)} 
                                                         alt={attraction.title} 
-                                                        className="w-full h-full object-cover transition-transform duration-700 hover:scale-110" 
+                                                        className="w-full h-auto object-contain transition-transform duration-700 hover:scale-105" 
                                                 onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }} 
                                             />
                                             </div>

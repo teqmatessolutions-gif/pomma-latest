@@ -1,14 +1,14 @@
 {
   "files": {
-    "main.css": "/pommaholidays/static/css/main.6ccdb8ab.css",
-    "main.js": "/pommaholidays/static/js/main.31f1a335.js",
+    "main.css": "/pommaholidays/static/css/main.ca9a1819.css",
+    "main.js": "/pommaholidays/static/js/main.419e59b9.js",
     "static/media/logo.png": "/pommaholidays/static/media/logo.29e80df92cc4eafda613.png",
     "index.html": "/pommaholidays/index.html",
-    "main.6ccdb8ab.css.map": "/pommaholidays/static/css/main.6ccdb8ab.css.map",
-    "main.31f1a335.js.map": "/pommaholidays/static/js/main.31f1a335.js.map"
+    "main.ca9a1819.css.map": "/pommaholidays/static/css/main.ca9a1819.css.map",
+    "main.419e59b9.js.map": "/pommaholidays/static/js/main.419e59b9.js.map"
   },
   "entrypoints": [
-    "static/css/main.6ccdb8ab.css",
-    "static/js/main.31f1a335.js"
+    "static/css/main.ca9a1819.css",
+    "static/js/main.419e59b9.js"
   ]
 }
