@@ -28,10 +28,17 @@ def create_category(name: str = Form(...), image: UploadFile = File(None), db: S
     return category
 
 
-@router.get("", response_model=list[FoodCategoryOut])
-@router.get("/", response_model=list[FoodCategoryOut])  # Handle trailing slash
-def read_all(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+def _read_all_impl(db: Session, skip: int = 0, limit: int = 20):
+    """Helper function for read_all"""
     return crud.get_categories(db, skip=skip, limit=limit)
+
+@router.get("", response_model=list[FoodCategoryOut])
+def read_all(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+    return _read_all_impl(db, skip, limit)
+
+@router.get("/", response_model=list[FoodCategoryOut])  # Handle trailing slash
+def read_all_slash(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+    return _read_all_impl(db, skip, limit)
 
 @router.put("/{cat_id}", response_model=FoodCategoryOut)
 def update(cat_id: int, name: str = Form(...), image: UploadFile = File(None), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):

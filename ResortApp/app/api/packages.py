@@ -358,9 +358,8 @@ def get_bookings(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
         return []
 
 
-@router.get("", response_model=List[PackageOut])
-@router.get("/", response_model=List[PackageOut])  # Handle trailing slash
-def list_packages(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+def _list_packages_impl(db: Session, skip: int = 0, limit: int = 20):
+    """Helper function for list_packages"""
     try:
         # Query directly in the endpoint to apply pagination
         result = db.query(Package).offset(skip).limit(limit).all()
@@ -374,6 +373,14 @@ def list_packages(db: Session = Depends(get_db), skip: int = 0, limit: int = 20)
         # Return empty list to prevent frontend breakage
         print(f"Unexpected error in packages endpoint, returning empty list: {str(e)}")
         return []
+
+@router.get("", response_model=List[PackageOut])
+def list_packages(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+    return _list_packages_impl(db, skip, limit)
+
+@router.get("/", response_model=List[PackageOut])  # Handle trailing slash
+def list_packages_slash(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+    return _list_packages_impl(db, skip, limit)
 
 
 @router.get("/{package_id}", response_model=PackageOut)

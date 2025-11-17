@@ -37,10 +37,17 @@ async def create_service(
     
     return service_crud.create_service(db, name, description, charges, image_urls)
 
-@router.get("", response_model=List[service_schema.ServiceOut])
-@router.get("/", response_model=List[service_schema.ServiceOut])  # Handle trailing slash
-def list_services(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+def _list_services_impl(db: Session, skip: int = 0, limit: int = 20):
+    """Helper function for list_services"""
     return service_crud.get_services(db, skip=skip, limit=limit)
+
+@router.get("", response_model=List[service_schema.ServiceOut])
+def list_services(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+    return _list_services_impl(db, skip, limit)
+
+@router.get("/", response_model=List[service_schema.ServiceOut])  # Handle trailing slash
+def list_services_slash(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+    return _list_services_impl(db, skip, limit)
 
 @router.delete("/{service_id}")
 def delete_service(service_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
