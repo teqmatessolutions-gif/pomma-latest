@@ -30,7 +30,7 @@ proc_name = "resort_management"
 
 # Server mechanics
 daemon = False
-pidfile = "/var/run/resort/resort.pid"
+pidfile = None  # Let systemd manage the PID
 user = "www-data"
 group = "www-data"
 tmp_upload_dir = None
