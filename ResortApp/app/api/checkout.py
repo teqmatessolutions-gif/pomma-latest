@@ -296,12 +296,34 @@ def _calculate_bill_for_single_room(db: Session, room_number: str):
     stay_days = max(1, (effective_checkout_date - booking.check_in).days)
     
     if is_package:
-        # Package price is per room, per night
-        package_price_per_room = booking.package.price if booking.package else 0
-        charges.package_charges = package_price_per_room * stay_days
-        charges.room_charges = 0
+        # Check if this is a whole_property package
+        package = booking.package if booking.package else None
+        is_whole_property = False
+        if package:
+            # Check booking_type field
+            booking_type = getattr(package, 'booking_type', None)
+            if booking_type:
+                is_whole_property = booking_type.lower() in ['whole_property', 'whole property']
+            else:
+                # Fallback: if no room_types specified, treat as whole_property (legacy packages)
+                room_types = getattr(package, 'room_types', None)
+                is_whole_property = not room_types or not room_types.strip()
+        
+        package_price = package.price if package else 0
+        
+        if is_whole_property:
+            # For whole_property packages: package price is the total amount (not multiplied by days)
+            # Note: For single room checkout, we still use the full package price
+            # as it's a whole property package (all rooms included)
+            charges.package_charges = package_price
+            charges.room_charges = 0
+        else:
+            # For room_type packages: package price is per room, per night
+            charges.package_charges = package_price * stay_days
+            charges.room_charges = 0
     else:
         charges.package_charges = 0
+        # For regular bookings: calculate room charges as days * room price
         charges.room_charges = (room.price or 0) * stay_days
     
     # Get food and service charges for THIS ROOM ONLY
@@ -427,13 +449,33 @@ def _calculate_bill_for_entire_booking(db: Session, room_number: str):
     stay_days = max(1, (effective_checkout_date - booking.check_in).days)
 
     if is_package:
-        # The package price is per room, per night.
-        num_rooms_in_package = len(all_rooms)
-        package_price_per_room = booking.package.price if booking.package else 0
-        charges.package_charges = package_price_per_room * num_rooms_in_package * stay_days
-        charges.room_charges = 0  # Room charges are included in the package price
+        # Check if this is a whole_property package
+        package = booking.package if booking.package else None
+        is_whole_property = False
+        if package:
+            # Check booking_type field
+            booking_type = getattr(package, 'booking_type', None)
+            if booking_type:
+                is_whole_property = booking_type.lower() in ['whole_property', 'whole property']
+            else:
+                # Fallback: if no room_types specified, treat as whole_property (legacy packages)
+                room_types = getattr(package, 'room_types', None)
+                is_whole_property = not room_types or not room_types.strip()
+        
+        package_price = package.price if package else 0
+        
+        if is_whole_property:
+            # For whole_property packages: package price is the total amount (not multiplied by rooms/days)
+            charges.package_charges = package_price
+            charges.room_charges = 0  # Room charges are included in the package price
+        else:
+            # For room_type packages: package price is per room, per night
+            num_rooms_in_package = len(all_rooms)
+            charges.package_charges = package_price * num_rooms_in_package * stay_days
+            charges.room_charges = 0  # Room charges are included in the package price
     else:
         charges.package_charges = 0
+        # For regular bookings: calculate room charges as number of rooms * days * room price
         charges.room_charges = sum((room.price or 0) * stay_days for room in all_rooms)
     
     # Sum up additional food and service charges from all rooms
