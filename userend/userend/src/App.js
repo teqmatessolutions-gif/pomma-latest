@@ -5,6 +5,8 @@ import { BedDouble, Coffee, ConciergeBell, Package, ChevronRight, ChevronLeft, C
 import { SiGooglemaps } from "react-icons/si";
 // Currency formatting utility
 import { formatCurrency } from './utils/currency';
+// API base URL utility
+import { getApiBaseUrl } from './utils/env';
 
 // Custom hook to detect if an element is in the viewport
 const useOnScreen = (ref, rootMargin = "0px") => {
@@ -1004,10 +1006,7 @@ export default function App() {
     // Fetch all resort data on component mount
     useEffect(() => {
         const fetchResortData = async () => {
-            const API_BASE_URL =
-                process.env.NODE_ENV === "production"
-                    ? "https://www.teqmates.com/api"
-                    : "http://localhost:8000/api";
+            const API_BASE_URL = getApiBaseUrl();
 
             // Helper: fetch JSON but never throw – log and return fallback on error.
             const safeFetch = async (endpoint, fallback) => {
@@ -1448,7 +1447,7 @@ export default function App() {
         // -------------------------
 
         try {
-            const API_BASE_URL = process.env.NODE_ENV === 'production' ? "https://www.teqmates.com/api" : "http://localhost:8000/api";
+            const API_BASE_URL = getApiBaseUrl();
             const response = await fetch(`${API_BASE_URL}/bookings/guest`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1573,7 +1572,7 @@ export default function App() {
         // -------------------------
 
         try {
-            const API_BASE_URL = process.env.NODE_ENV === 'production' ? "https://www.teqmates.com/api" : "http://localhost:8000/api";
+            const API_BASE_URL = getApiBaseUrl();
             
             // Validate required fields
             if (!packageBookingData.package_id) {
@@ -1673,7 +1672,7 @@ export default function App() {
         setBookingMessage({ type: null, text: "" });
 
         try {
-            const API_BASE_URL = process.env.NODE_ENV === 'production' ? "https://www.teqmates.com/api" : "http://localhost:8000/api";
+            const API_BASE_URL = getApiBaseUrl();
             const response = await fetch(`${API_BASE_URL}/services/bookings`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1723,7 +1722,7 @@ export default function App() {
         };
         
         try {
-            const API_BASE_URL = process.env.NODE_ENV === 'production' ? "https://www.teqmates.com/api" : "http://localhost:8000/api";
+            const API_BASE_URL = getApiBaseUrl();
             const response = await fetch(`${API_BASE_URL}/food-orders/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
