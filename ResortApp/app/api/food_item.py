@@ -43,7 +43,16 @@ async def create_item(
 
 @router.get("")
 def list_items(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
-    return food_item.get_all_food_items(db, skip=skip, limit=limit)
+    try:
+        return food_item.get_all_food_items(db, skip=skip, limit=limit)
+    except Exception as e:
+        import traceback
+        error_detail = f"Failed to fetch food items: {str(e)}\n{traceback.format_exc()}"
+        print(f"ERROR: {error_detail}")
+        import sys
+        sys.stderr.write(f"ERROR in food-items: {error_detail}\n")
+        # Return empty list to prevent frontend breakage
+        return []
 
 @router.delete("/{item_id}")
 def delete_item(item_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):

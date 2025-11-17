@@ -28,6 +28,11 @@ def list_header_banner(db: Session = Depends(get_db), skip: int = 0, limit: int 
     return crud.get_all(db, models.HeaderBanner, skip=skip, limit=limit)
 
 
+@router.get("/header-banner", response_model=list[schemas.HeaderBanner], include_in_schema=False)
+def list_header_banner_no_slash(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+    return list_header_banner(db=db, skip=skip, limit=limit)
+
+
 # ✅ Create header banner
 @router.post("/header-banner/", response_model=schemas.HeaderBanner)
 async def create_header_banner(
@@ -168,6 +173,17 @@ def list_check_availability(db: Session = Depends(get_db), skip: int = 0, limit:
     return crud.get_all(db, models.CheckAvailability, skip=skip, limit=limit)
 
 
+@router.get(
+    "/check-availability",
+    response_model=list[schemas.CheckAvailability],
+    include_in_schema=False,
+)
+def list_check_availability_no_slash(
+    db: Session = Depends(get_db), skip: int = 0, limit: int = 20
+):
+    return list_check_availability(db=db, skip=skip, limit=limit)
+
+
 @router.post("/check-availability/", response_model=schemas.CheckAvailability)
 def create_check_availability(obj: schemas.CheckAvailabilityCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return crud.create(db, models.CheckAvailability, obj)
@@ -187,6 +203,13 @@ def delete_check_availability(item_id: int, db: Session = Depends(get_db), curre
 @router.get("/gallery/", response_model=list[schemas.Gallery])
 def list_gallery(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
     return crud.get_all(db, models.Gallery, skip=skip, limit=limit)
+
+
+@router.get("/gallery", response_model=list[schemas.Gallery], include_in_schema=False)
+def list_gallery_no_slash(
+    db: Session = Depends(get_db), skip: int = 0, limit: int = 20
+):
+    return list_gallery(db=db, skip=skip, limit=limit)
 
 
 @router.post("/gallery/", response_model=schemas.Gallery)
@@ -315,6 +338,13 @@ def list_reviews(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
     return crud.get_all(db, models.Review, skip=skip, limit=limit)
 
 
+@router.get("/reviews", response_model=list[schemas.Review], include_in_schema=False)
+def list_reviews_no_slash(
+    db: Session = Depends(get_db), skip: int = 0, limit: int = 20
+):
+    return list_reviews(db=db, skip=skip, limit=limit)
+
+
 @router.post("/reviews/", response_model=schemas.Review)
 def create_review(obj: schemas.ReviewCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     try:
@@ -348,6 +378,15 @@ def list_resort_info(db: Session = Depends(get_db), skip: int = 0, limit: int = 
     return crud.get_all(db, models.ResortInfo, skip=skip, limit=limit)
 
 
+@router.get(
+    "/resort-info", response_model=list[schemas.ResortInfo], include_in_schema=False
+)
+def list_resort_info_no_slash(
+    db: Session = Depends(get_db), skip: int = 0, limit: int = 20
+):
+    return list_resort_info(db=db, skip=skip, limit=limit)
+
+
 @router.post("/resort-info/", response_model=schemas.ResortInfo)
 def create_resort_info(
     obj: schemas.ResortInfoCreate,
@@ -376,6 +415,17 @@ def delete_resort_info(item_id: int, db: Session = Depends(get_db), current_user
 @router.get("/signature-experiences/", response_model=list[schemas.SignatureExperience])
 def list_signature_experiences(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
     return crud.get_all(db, models.SignatureExperience, skip=skip, limit=limit)
+
+
+@router.get(
+    "/signature-experiences",
+    response_model=list[schemas.SignatureExperience],
+    include_in_schema=False,
+)
+def list_signature_experiences_no_slash(
+    db: Session = Depends(get_db), skip: int = 0, limit: int = 20
+):
+    return list_signature_experiences(db=db, skip=skip, limit=limit)
 
 
 @router.post("/signature-experiences/", response_model=schemas.SignatureExperience)
@@ -506,6 +556,17 @@ def delete_signature_experience(item_id: int, db: Session = Depends(get_db), cur
 @router.get("/plan-weddings/", response_model=list[schemas.PlanWedding])
 def list_plan_weddings(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
     return crud.get_all(db, models.PlanWedding, skip=skip, limit=limit)
+
+
+@router.get(
+    "/plan-weddings",
+    response_model=list[schemas.PlanWedding],
+    include_in_schema=False,
+)
+def list_plan_weddings_no_slash(
+    db: Session = Depends(get_db), skip: int = 0, limit: int = 20
+):
+    return list_plan_weddings(db=db, skip=skip, limit=limit)
 
 
 @router.post("/plan-weddings/", response_model=schemas.PlanWedding)
@@ -667,6 +728,17 @@ def list_nearby_attractions(db: Session = Depends(get_db), skip: int = 0, limit:
         return []
 
 
+@router.get(
+    "/nearby-attractions",
+    response_model=list[schemas.NearbyAttraction],
+    include_in_schema=False,
+)
+def list_nearby_attractions_no_slash(
+    db: Session = Depends(get_db), skip: int = 0, limit: int = 20
+):
+    return list_nearby_attractions(db=db, skip=skip, limit=limit)
+
+
 @router.post("/nearby-attractions/", response_model=schemas.NearbyAttraction)
 async def create_nearby_attraction(
     title: str = Form(...),
@@ -800,6 +872,28 @@ def delete_nearby_attraction(item_id: int, db: Session = Depends(get_db), curren
 @router.get("/nearby-attraction-banners/", response_model=list[schemas.NearbyAttractionBanner])
 def list_nearby_attraction_banners(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
     return crud.get_all(db, models.NearbyAttractionBanner, skip=skip, limit=limit)
+
+
+@router.get(
+    "/nearby-attraction-banners",
+    response_model=list[schemas.NearbyAttractionBanner],
+    include_in_schema=False,
+)
+def list_nearby_attraction_banners_no_slash(
+    db: Session = Depends(get_db), skip: int = 0, limit: int = 20
+):
+    return list_nearby_attraction_banners(db=db, skip=skip, limit=limit)
+
+
+@router.get(
+    "/nearby-attraction-banner",
+    response_model=list[schemas.NearbyAttractionBanner],
+    include_in_schema=False,
+)
+def list_nearby_attraction_banner_singular(
+    db: Session = Depends(get_db), skip: int = 0, limit: int = 20
+):
+    return list_nearby_attraction_banners(db=db, skip=skip, limit=limit)
 
 
 @router.post("/nearby-attraction-banners/", response_model=schemas.NearbyAttractionBanner)
