@@ -1316,9 +1316,15 @@ export default function App() {
         const availability = {};
         let roomsToCheck = allRooms;
         
-        // Filter by room_types if booking_type is room_type (case-insensitive)
+        // Determine if it's whole_property (same logic as UI)
+        const hasRoomTypes = selectedPackage.room_types && selectedPackage.room_types.trim().length > 0;
+        const isWholeProperty = selectedPackage.booking_type === 'whole_property' || 
+                               selectedPackage.booking_type === 'whole property' ||
+                               (!selectedPackage.booking_type && !hasRoomTypes);
+        
+        // Filter by room_types if it's NOT whole_property (i.e., it's room_type)
         // For whole_property, check ALL rooms
-        if (selectedPackage.booking_type === 'room_type' && selectedPackage.room_types) {
+        if (!isWholeProperty && selectedPackage.room_types) {
             const allowedRoomTypes = selectedPackage.room_types.split(',').map(t => t.trim().toLowerCase());
             roomsToCheck = allRooms.filter(room => {
                 const roomType = room.type ? room.type.trim().toLowerCase() : '';
@@ -1370,17 +1376,25 @@ export default function App() {
             // Auto-select all available rooms for whole_property packages
             if (packageBookingData.package_id && packageBookingData.check_in && packageBookingData.check_out) {
                 const selectedPackage = packages.find(p => p.id === packageBookingData.package_id);
-                if (selectedPackage && selectedPackage.booking_type === 'whole_property') {
-                    // Get all available room IDs (rooms that are available for the selected dates)
-                    const availableRoomIds = Object.keys(packageRoomAvailabilityMemo)
-                        .filter(roomId => packageRoomAvailabilityMemo[roomId] === true)
-                        .map(id => parseInt(id));
+                if (selectedPackage) {
+                    // Determine if it's whole_property (same logic as UI)
+                    const hasRoomTypes = selectedPackage.room_types && selectedPackage.room_types.trim().length > 0;
+                    const isWholeProperty = selectedPackage.booking_type === 'whole_property' || 
+                                           selectedPackage.booking_type === 'whole property' ||
+                                           (!selectedPackage.booking_type && !hasRoomTypes);
                     
-                    // Always update room_ids for whole_property to ensure all available rooms are selected
-                    setPackageBookingData(prev => ({
-                        ...prev,
-                        room_ids: availableRoomIds
-                    }));
+                    if (isWholeProperty) {
+                        // Get all available room IDs (rooms that are available for the selected dates)
+                        const availableRoomIds = Object.keys(packageRoomAvailabilityMemo)
+                            .filter(roomId => packageRoomAvailabilityMemo[roomId] === true)
+                            .map(id => parseInt(id));
+                        
+                        // Always update room_ids for whole_property to ensure all available rooms are selected
+                        setPackageBookingData(prev => ({
+                            ...prev,
+                            room_ids: availableRoomIds
+                        }));
+                    }
                 }
             }
         }, 100); // 100ms debounce
@@ -3408,7 +3422,7 @@ export default function App() {
                                                             if (isWholeProperty) {
                                                                 // For whole_property: Show ALL available rooms
                                                                 roomsToShow = rooms;
-                                                            } else if (selectedPackage && selectedPackage.booking_type === 'room_type' && selectedPackage.room_types) {
+                                                            } else if (selectedPackage && selectedPackage.room_types) {
                                                                 // For room_type: Only show rooms matching the package's room_types
                                                                 const allowedRoomTypes = selectedPackage.room_types.split(',').map(t => t.trim().toLowerCase());
                                                                 roomsToShow = rooms.filter(room => {
@@ -3416,7 +3430,7 @@ export default function App() {
                                                                     return allowedRoomTypes.includes(roomType);
                                                                 });
                                                             } else {
-                                                                // Invalid package type
+                                                                // Invalid package type - no room_types specified and not whole_property
                                                                 return (
                                                                     <div className="col-span-full text-center py-8 text-gray-500">
                                                                         <BedDouble className="w-12 h-12 text-gray-400 mx-auto mb-3" />
