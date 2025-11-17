@@ -1505,9 +1505,35 @@ export default function App() {
         let finalRoomIds = packageBookingData.room_ids;
         
         if (isWholeProperty) {
-            const availableRoomIds = Object.keys(packageRoomAvailability)
-                .filter(roomId => packageRoomAvailability[roomId] === true)
-                .map(id => parseInt(id));
+            // For whole_property, get ALL available rooms from the system
+            // Check availability for all rooms based on selected dates
+            const availableRoomIds = allRooms
+                .filter(room => {
+                    // Check if room has any conflicting bookings
+                    const hasConflict = bookings.some(booking => {
+                        const normalizedStatus = booking.status?.toLowerCase().replace(/_/g, '-');
+                        // Only check for "booked" or "checked-in" status
+                        if (normalizedStatus !== "booked" && normalizedStatus !== "checked-in") return false;
+                        
+                        const bookingCheckIn = new Date(booking.check_in);
+                        const bookingCheckOut = new Date(booking.check_out);
+                        const requestedCheckIn = new Date(packageBookingData.check_in);
+                        const requestedCheckOut = new Date(packageBookingData.check_out);
+                        
+                        // Check if this room is part of the booking
+                        const isRoomInBooking = booking.rooms && booking.rooms.some(r => {
+                            const roomId = r.room?.id || r.id;
+                            return roomId === room.id;
+                        });
+                        if (!isRoomInBooking) return false;
+                        
+                        // Check for date overlap
+                        return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
+                    });
+                    
+                    return !hasConflict; // Room is available if no conflicts
+                })
+                .map(room => room.id);
             
             if (availableRoomIds.length === 0) {
                 showBannerMessage("error", "No rooms are available for the selected dates.");
@@ -2331,13 +2357,13 @@ export default function App() {
                                                             <span className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
                                                                 <span className="w-2 h-2 rounded-full bg-blue-500"></span>
                                                                 AC
-                                                            </span>
+                                                    </span>
                                                         )}
                                                         {room.wifi && (
                                                             <span className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
                                                                 <span className="w-2 h-2 rounded-full bg-green-500"></span>
                                                                 WiFi
-                                                            </span>
+                                                    </span>
                                                         )}
                                                         {room.bathroom && (
                                                             <span className="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs">
@@ -2399,7 +2425,7 @@ export default function App() {
                                                                 Breakfast
                                                             </span>
                                                         )}
-                                                    </div>
+                                                </div>
                                                 )}
 
                                                 {/* Price */}
