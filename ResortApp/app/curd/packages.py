@@ -1,5 +1,4 @@
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import and_, or_
 from fastapi import HTTPException
 from typing import List
 
@@ -231,32 +230,20 @@ def book_package(db: Session, booking: PackageBookingCreate):
     # CRITICAL FIX: Check for conflicts BEFORE creating the booking
     # This prevents invalid bookings from being created in the database
     for room_id in booking.room_ids:
-        # Check for conflicts with package bookings
+        # Check for conflicts with package bookings (simplified overlap check: start1 < end2 AND start2 < end1)
         package_conflict = (
             db.query(PackageBookingRoom)
             .join(PackageBooking)
             .filter(
                 PackageBookingRoom.room_id == room_id,
                 PackageBooking.status.in_(["booked", "checked-in", "checked_in"]),  # Only check for active bookings
-                or_(
-                    and_(
-                        PackageBooking.check_in <= booking.check_in,
-                        PackageBooking.check_out > booking.check_in
-                    ),
-                    and_(
-                        PackageBooking.check_in < booking.check_out,
-                        PackageBooking.check_out >= booking.check_out
-                    ),
-                    and_(
-                        PackageBooking.check_in >= booking.check_in,
-                        PackageBooking.check_out <= booking.check_out
-                    ),
-                )
+                PackageBooking.check_in < booking.check_out,
+                PackageBooking.check_out > booking.check_in
             )
             .first()
         )
 
-        # Check for conflicts with regular bookings (THIS WAS MISSING!)
+        # Check for conflicts with regular bookings (simplified overlap check: start1 < end2 AND start2 < end1)
         from app.models.booking import Booking, BookingRoom
         regular_conflict = (
             db.query(BookingRoom)
@@ -264,20 +251,8 @@ def book_package(db: Session, booking: PackageBookingCreate):
             .filter(
                 BookingRoom.room_id == room_id,
                 Booking.status.in_(["booked", "checked-in", "checked_in"]),  # Only check for active bookings
-                or_(
-                    and_(
-                        Booking.check_in <= booking.check_in,
-                        Booking.check_out > booking.check_in
-                    ),
-                    and_(
-                        Booking.check_in < booking.check_out,
-                        Booking.check_out >= booking.check_out
-                    ),
-                    and_(
-                        Booking.check_in >= booking.check_in,
-                        Booking.check_out <= booking.check_out
-                    ),
-                )
+                Booking.check_in < booking.check_out,
+                Booking.check_out > booking.check_in
             )
             .first()
         )

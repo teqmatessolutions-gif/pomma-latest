@@ -538,15 +538,23 @@ def create_guest_booking(booking: BookingCreate, db: Session = Depends(get_db)):
 
         # Check if rooms are available for the requested dates
         for room_id in booking.room_ids:
-            # Check if room is already booked for overlapping dates
-            conflicting_booking = db.query(BookingRoom).join(Booking).filter(
+            # Check if room is already booked by regular bookings for overlapping dates (only check active bookings, not cancelled or checked-out)
+            conflicting_regular_booking = db.query(BookingRoom).join(Booking).filter(
                 BookingRoom.room_id == room_id,
-                Booking.status.in_(['booked', 'checked-in']),
+                Booking.status.in_(['booked', 'checked-in']),  # Only check for active bookings
                 Booking.check_in < booking.check_out,
                 Booking.check_out > booking.check_in
             ).first()
             
-            if conflicting_booking:
+            # Check if room is already booked by package bookings for overlapping dates
+            conflicting_package_booking = db.query(PackageBookingRoom).join(PackageBooking).filter(
+                PackageBookingRoom.room_id == room_id,
+                PackageBooking.status.in_(['booked', 'checked-in']),  # Only check for active bookings
+                PackageBooking.check_in < booking.check_out,
+                PackageBooking.check_out > booking.check_in
+            ).first()
+            
+            if conflicting_regular_booking or conflicting_package_booking:
                 room = db.query(Room).filter(Room.id == room_id).first()
                 raise HTTPException(
                     status_code=400,
