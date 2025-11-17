@@ -379,7 +379,7 @@ export default function DashboardLayout({ children }) {
               const exactMatch = location.pathname === item.to;
               const startsWithMatch = item.to !== '/dashboard' && location.pathname.startsWith(item.to);
               const isActive = exactMatch || startsWithMatch;
-              
+
               return (
                 <Link
                   key={idx}

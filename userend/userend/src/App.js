@@ -6,7 +6,7 @@ import { SiGooglemaps } from "react-icons/si";
 // Currency formatting utility
 import { formatCurrency } from './utils/currency';
 // API base URL utility
-import { getApiBaseUrl } from './utils/env';
+import { getApiBaseUrl, getMediaBaseUrl } from './utils/env';
 
 // Custom hook to detect if an element is in the viewport
 const useOnScreen = (ref, rootMargin = "0px") => {
@@ -868,9 +868,7 @@ export default function App() {
     const getImageUrl = (imagePath) => {
         if (!imagePath) return ITEM_PLACEHOLDER;
         if (imagePath.startsWith('http')) return imagePath; // Already a full URL
-        const baseUrl = process.env.NODE_ENV === 'production' 
-            ? 'https://www.teqmates.com' 
-            : 'http://localhost:8000';
+        const baseUrl = getMediaBaseUrl();
         // Ensure imagePath starts with / for proper URL construction
         const path = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
         return `${baseUrl}${path}`;
@@ -2763,7 +2761,7 @@ export default function App() {
                                                     >
                                                         <div className="relative h-40 overflow-hidden">
                                                             <img 
-                                                                src={process.env.NODE_ENV === 'production' ? `https://www.teqmates.com/${food.images?.[0]?.image_url}` : `http://localhost:8000/${food.images?.[0]?.image_url}`} 
+                                                                src={getImageUrl(food.images?.[0]?.image_url)} 
                                                                 alt={food.name} 
                                                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                                                                 onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }} 
@@ -2835,7 +2833,7 @@ export default function App() {
                                             style={{ height: getGalleryCardHeight(index), transitionDelay: `${(index % 5) * 70}ms` }}
                                         >
                                             <img 
-                                                src={process.env.NODE_ENV === 'production' ? `https://www.teqmates.com${image.image_url}` : `http://localhost:8000${image.image_url}`} 
+                                                src={getImageUrl(image.image_url)} 
                                                 alt={image.caption || 'Gallery image'} 
                                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                                                 loading="lazy"
@@ -3633,7 +3631,7 @@ export default function App() {
                                     {foodItems.map(item => (
                                         <div key={item.id} className="flex items-center justify-between">
                                             <div className="flex items-center space-x-4">
-                                                <img src={process.env.NODE_ENV === 'production' ? `https://www.teqmates.com/${item.images?.[0]?.image_url}` : `http://localhost:8000/${item.images?.[0]?.image_url}`} alt={item.name} className="w-12 h-12 object-cover rounded-full" />
+                                                <img src={getImageUrl(item.images?.[0]?.image_url)} alt={item.name} className="w-12 h-12 object-cover rounded-full" />
                                                 <div>
                                                     <p className={`font-semibold ${theme.textPrimary}`}>{item.name}</p>
                                                 </div>
