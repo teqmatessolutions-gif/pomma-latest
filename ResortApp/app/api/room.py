@@ -228,8 +228,8 @@ def update_room_statuses_endpoint(db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error updating room statuses: {str(e)}")
 
-@router.get("", response_model=list[RoomOut])
-def get_rooms(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+def _get_rooms_impl(db: Session, skip: int = 0, limit: int = 20):
+    """Helper function for get_rooms"""
     try:
         # Test database connection first
         try:
@@ -271,6 +271,14 @@ def get_rooms(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
             print(f"Rollback error: {rollback_error}")
         
         raise HTTPException(status_code=500, detail=f"Error fetching rooms: {str(e)}")
+
+@router.get("", response_model=list[RoomOut])
+def get_rooms(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+    return _get_rooms_impl(db, skip, limit)
+
+@router.get("/", response_model=list[RoomOut])  # Handle trailing slash
+def get_rooms_slash(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+    return _get_rooms_impl(db, skip, limit)
 
 
 # ---------------- DELETE ----------------
