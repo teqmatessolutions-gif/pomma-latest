@@ -200,7 +200,6 @@ def book_package(db: Session, booking: PackageBookingCreate):
         guest_name_to_use = existing_booking.guest_name
 
     # Validate room capacity for adults and children separately (skip for whole_property packages)
-    from app.models.package import Package
     selected_package = db.query(Package).filter(Package.id == booking.package_id).first()
     if not selected_package:
         raise HTTPException(status_code=404, detail="Package not found")
