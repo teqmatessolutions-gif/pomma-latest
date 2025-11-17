@@ -39,6 +39,7 @@ app = FastAPI(
     title="Resort Management System",
     description="Complete resort management system with booking, payments, and customer management",
     version="1.0.0",
+    redirect_slashes=False,  # Prevent automatic trailing slash redirects
 )
 
 # Exception handlers for proper error logging and responses
