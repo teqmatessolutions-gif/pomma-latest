@@ -35,11 +35,26 @@ export default function FoodOrders() {
       // Fetch initial page of orders, rooms, bookings, and other data
       const [ordersRes, roomsRes, employeesRes, foodItemsRes, bookingsRes, packageBookingsRes] = await Promise.all([
         api.get("/food-orders/?skip=0&limit=20"),
-        api.get("/rooms/"),
-        api.get("/employees/"),
-        api.get("/food-items/"),
-        api.get("/bookings?limit=1000").catch(() => ({ data: { bookings: [] } })),
-        api.get("/packages/bookingsall?limit=1000").catch(() => ({ data: [] })),
+        api.get("/rooms?limit=1000").catch(err => {
+          console.error("Error fetching rooms:", err);
+          return { data: [] };
+        }),
+        api.get("/employees/").catch(err => {
+          console.error("Error fetching employees:", err);
+          return { data: [] };
+        }),
+        api.get("/food-items/").catch(err => {
+          console.error("Error fetching food items:", err);
+          return { data: [] };
+        }),
+        api.get("/bookings?limit=1000").catch(err => {
+          console.error("Error fetching bookings:", err);
+          return { data: { bookings: [] } };
+        }),
+        api.get("/packages/bookingsall?limit=1000").catch(err => {
+          console.error("Error fetching package bookings:", err);
+          return { data: [] };
+        }),
       ]);
       setOrders(ordersRes.data);
       setHasMore(ordersRes.data.length === 12);
@@ -159,9 +174,10 @@ export default function FoodOrders() {
       
       // Filter rooms to only show checked-in/active rooms
       const checkedInRooms = allRooms.filter(room => checkedInRoomIds.has(room.id));
-      setRooms(checkedInRooms);
       
-      // Debug logging (can be removed in production)
+      // Detailed debug logging (matching Services.jsx pattern)
+      console.log(`Food Orders - Total checked-in room IDs: ${checkedInRoomIds.size}`, Array.from(checkedInRoomIds));
+      console.log(`Food Orders - Filtered checked-in rooms: ${checkedInRooms.length}`, checkedInRooms.map(r => `${r.number || r.id} (status: ${r.status})`));
       console.log('Food Orders - Room Availability Check:', {
         totalRooms: allRooms.length,
         checkedInRoomIds: Array.from(checkedInRoomIds),
@@ -169,10 +185,19 @@ export default function FoodOrders() {
         regularBookingsCount: regularBookings.length,
         packageBookingsCount: packageBookings.length,
         activeRegularBookings: regularBookings.filter(b => isActiveBooking(b.status)).length,
-        activePackageBookings: packageBookings.filter(b => isActiveBooking(b.status)).length
+        activePackageBookings: packageBookings.filter(b => isActiveBooking(b.status)).length,
+        today: today.toISOString(),
+        allRoomStatuses: allRooms.map(r => ({ id: r.id, number: r.number, status: r.status }))
       });
+      
+      setRooms(checkedInRooms);
     } catch (error) {
       console.error("Failed to fetch data:", error);
+      // Set empty arrays on error to prevent UI breakage
+      setOrders([]);
+      setRooms([]);
+      setEmployees([]);
+      setFoodItems([]);
     }
   };
 
