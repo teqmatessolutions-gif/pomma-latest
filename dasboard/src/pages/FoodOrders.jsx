@@ -61,10 +61,12 @@ export default function FoodOrders() {
         return status.toLowerCase().replace(/[-_\s]/g, '');
       };
       
-      // Helper function to check if status is checked-in
+      // Helper function to check if status is checked-in or booked (active booking)
       const isCheckedIn = (status) => {
-        const normalized = normalizeStatus(status);
-        return normalized === 'checkedin';
+        if (!status) return false;
+        const normalized = status.toLowerCase().replace(/[-_\s]/g, '');
+        // Accept: 'checkedin', 'checked-in', 'checked_in', 'checked in', or 'booked' (for active bookings)
+        return normalized === 'checkedin' || normalized === 'booked';
       };
       
       // Get room IDs from checked-in regular bookings
@@ -99,9 +101,11 @@ export default function FoodOrders() {
             if (booking.rooms && Array.isArray(booking.rooms)) {
               booking.rooms.forEach(roomLink => {
                 // Package bookings have rooms as PackageBookingRoomOut objects
-                const room = roomLink.room || roomLink;
-                if (room && room.id) {
-                  checkedInRoomIds.add(room.id);
+                // For package bookings, roomLink.room_id is the actual room ID
+                // roomLink.id is the PackageBookingRoom.id, not the room.id
+                const roomId = roomLink.room_id || roomLink.room?.id;
+                if (roomId) {
+                  checkedInRoomIds.add(roomId);
                 }
               });
             }
@@ -110,9 +114,11 @@ export default function FoodOrders() {
       });
       
       // Also check room status directly as a fallback
+      // Include rooms with status: checked-in, booked, occupied (if they're part of active bookings)
       allRooms.forEach(room => {
         const roomStatusNormalized = normalizeStatus(room.status);
-        if (roomStatusNormalized === 'checkedin') {
+        // Accept: checkedin, booked, occupied
+        if (roomStatusNormalized === 'checkedin' || roomStatusNormalized === 'booked' || roomStatusNormalized === 'occupied') {
           checkedInRoomIds.add(room.id);
         }
       });
