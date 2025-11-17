@@ -713,7 +713,8 @@ const formatUrl = (url) => {
 export default function App() {
     const [rooms, setRooms] = useState([]);
     const [allRooms, setAllRooms] = useState([]); // Store all rooms for filtering
-    const [bookings, setBookings] = useState([]); // Store bookings for availability check
+    const [bookings, setBookings] = useState([]); // Store regular bookings for availability check
+    const [packageBookings, setPackageBookings] = useState([]); // Store package bookings for availability check
     const [services, setServices] = useState([]);
     const [foodItems, setFoodItems] = useState([]);
     const [foodCategories, setFoodCategories] = useState([]);
@@ -1025,6 +1026,7 @@ export default function App() {
                 // Essential data for layout
                 const roomsData = await safeFetch("/rooms/test", []);
                 const bookingsData = await safeFetch("/bookings?limit=500&skip=0", { bookings: [] });
+                const packageBookingsData = await safeFetch("/packages/bookingsall?limit=500&skip=0", []);
                 const resortInfoData = await safeFetch("/resort-info/", []);
 
                 // Non‑critical / image-heavy endpoints – errors should not break the page
@@ -1057,6 +1059,7 @@ export default function App() {
                 setAllRooms(roomsData);
                 // Don't set rooms here - only show after dates are selected
                 setBookings(bookingsData.bookings || []);
+                setPackageBookings(packageBookingsData || []);
                 setServices(servicesData || []);
                 setFoodItems(foodItemsData);
                 setFoodCategories(foodCategoriesData || []);
@@ -1255,7 +1258,7 @@ export default function App() {
         }));
     };
 
-    // Check room availability based on selected dates (but always show all rooms)
+    // Check room availability based on selected dates - only show available rooms
     const [roomAvailability, setRoomAvailability] = useState({});
     
     // Optimized room availability calculation with useMemo and debouncing
@@ -1266,26 +1269,50 @@ export default function App() {
         
         // Calculate availability for each room (memoized for performance)
         const availability = {};
+        const requestedCheckIn = new Date(bookingData.check_in);
+        const requestedCheckOut = new Date(bookingData.check_out);
+        
         allRooms.forEach(room => {
-                const hasConflict = bookings.some(booking => {
-                    const normalizedStatus = booking.status?.toLowerCase().replace(/_/g, '-');
-                    if (normalizedStatus === "cancelled" || normalizedStatus === "checked-out") return false;
-                    
-                    const bookingCheckIn = new Date(booking.check_in);
-                    const bookingCheckOut = new Date(booking.check_out);
-                const requestedCheckIn = new Date(bookingData.check_in);
-                const requestedCheckOut = new Date(bookingData.check_out);
-                    
-                    const isRoomInBooking = booking.rooms && booking.rooms.some(r => r.id === room.id);
-                    if (!isRoomInBooking) return false;
-                    
-                    return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
-                });
+            // Check conflicts with regular bookings
+            const hasRegularConflict = bookings.some(booking => {
+                const normalizedStatus = booking.status?.toLowerCase().replace(/_/g, '-');
+                // Only check for "booked" or "checked-in" status
+                if (normalizedStatus !== "booked" && normalizedStatus !== "checked-in") return false;
                 
-            availability[room.id] = !hasConflict;
+                const bookingCheckIn = new Date(booking.check_in);
+                const bookingCheckOut = new Date(booking.check_out);
+                
+                const isRoomInBooking = booking.rooms && booking.rooms.some(r => {
+                    const roomId = r.room?.id || r.id;
+                    return roomId === room.id;
+                });
+                if (!isRoomInBooking) return false;
+                
+                return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
             });
+            
+            // Check conflicts with package bookings
+            const hasPackageConflict = packageBookings.some(packageBooking => {
+                const normalizedStatus = packageBooking.status?.toLowerCase().replace(/_/g, '-');
+                // Only check for "booked" or "checked-in" status
+                if (normalizedStatus !== "booked" && normalizedStatus !== "checked-in") return false;
+                
+                const bookingCheckIn = new Date(packageBooking.check_in);
+                const bookingCheckOut = new Date(packageBooking.check_out);
+                
+                const isRoomInBooking = packageBooking.rooms && packageBooking.rooms.some(r => {
+                    const roomId = r.room?.id || r.id || r.room_id;
+                    return roomId === room.id;
+                });
+                if (!isRoomInBooking) return false;
+                
+                return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
+            });
+            
+            availability[room.id] = !hasRegularConflict && !hasPackageConflict;
+        });
         return availability;
-    }, [bookingData.check_in, bookingData.check_out, allRooms, bookings]);
+    }, [bookingData.check_in, bookingData.check_out, allRooms, bookings, packageBookings]);
     
     // Update state with debouncing to prevent excessive re-renders
     useEffect(() => {
@@ -1295,10 +1322,17 @@ export default function App() {
         return () => clearTimeout(timer);
     }, [roomAvailabilityMemo]);
 
-    // Always set rooms to allRooms - availability filtering happens in UI
+    // Filter rooms to show only available ones when dates are selected
     useEffect(() => {
-        setRooms(allRooms);
-    }, [allRooms]);
+        if (bookingData.check_in && bookingData.check_out && Object.keys(roomAvailability).length > 0) {
+            // Only show available rooms when dates are selected
+            const availableRooms = allRooms.filter(room => roomAvailability[room.id] === true);
+            setRooms(availableRooms);
+        } else {
+            // Show all rooms when no dates are selected
+            setRooms(allRooms);
+        }
+    }, [allRooms, bookingData.check_in, bookingData.check_out, roomAvailability]);
 
     // Package booking availability - optimized with useMemo
     const [packageRoomAvailability, setPackageRoomAvailability] = useState({});
