@@ -8,9 +8,17 @@ from typing import List
 
 router = APIRouter(prefix="/food-orders", tags=["Food Orders"])
 
+def _create_order_impl(order: FoodOrderCreate, db: Session, current_user: User):
+    """Helper function for create_order"""
+    return crud.create_food_order(db, order)
+
 @router.post("", response_model=FoodOrderOut)
 def create_order(order: FoodOrderCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    return crud.create_food_order(db, order)
+    return _create_order_impl(order, db, current_user)
+
+@router.post("/", response_model=FoodOrderOut)  # Handle trailing slash
+def create_order_slash(order: FoodOrderCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return _create_order_impl(order, db, current_user)
 
 def _get_orders_impl(db: Session, skip: int = 0, limit: int = 20):
     """Helper function for get_orders"""
