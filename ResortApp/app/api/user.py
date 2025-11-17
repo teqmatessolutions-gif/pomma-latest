@@ -56,6 +56,14 @@ def setup_initial_admin(setup_data: AdminSetupRequest, db: Session = Depends(get
     new_admin_user = crud_user.create_user(db=db, user=user_data)
     return new_admin_user
 
+def _get_users_impl(db: Session, current_user: User, skip: int = 0, limit: int = 20):
+    """Helper function for get_users"""
+    return db.query(User).options(joinedload(User.role)).offset(skip).limit(limit).all()
+
 @router.get("")
 def get_users(db: Session = Depends(get_db), current_user: User = Depends(get_current_user), skip: int = 0, limit: int = 20):
-    return db.query(User).options(joinedload(User.role)).offset(skip).limit(limit).all()
+    return _get_users_impl(db, current_user, skip, limit)
+
+@router.get("/")  # Handle trailing slash
+def get_users_slash(db: Session = Depends(get_db), current_user: User = Depends(get_current_user), skip: int = 0, limit: int = 20):
+    return _get_users_impl(db, current_user, skip, limit)
