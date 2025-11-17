@@ -62,24 +62,29 @@ export default function FoodOrders() {
       };
       
       // Helper function to check if status is checked-in or booked (active booking)
-      const isCheckedIn = (status) => {
+      const isActiveBooking = (status) => {
         if (!status) return false;
         const normalized = status.toLowerCase().replace(/[-_\s]/g, '');
         // Accept: 'checkedin', 'checked-in', 'checked_in', 'checked in', or 'booked' (for active bookings)
-        return normalized === 'checkedin' || normalized === 'booked';
+        // Exclude: 'cancelled', 'checkedout', 'checked-out', 'checked_out'
+        return (normalized === 'checkedin' || normalized === 'booked') && 
+               normalized !== 'cancelled' && 
+               !normalized.includes('checkedout');
       };
       
-      // Get room IDs from checked-in regular bookings
+      // Get room IDs from active regular bookings (checked-in or booked, not cancelled)
       regularBookings.forEach(booking => {
-        if (isCheckedIn(booking.status)) {
+        if (isActiveBooking(booking.status)) {
           const checkInDate = new Date(booking.check_in);
           const checkOutDate = new Date(booking.check_out);
           checkInDate.setHours(0, 0, 0, 0);
           checkOutDate.setHours(0, 0, 0, 0);
           
+          // Include rooms if check-in date is today or in the past, and check-out date is today or in the future
           if (checkInDate <= today && checkOutDate >= today) {
             if (booking.rooms && Array.isArray(booking.rooms)) {
               booking.rooms.forEach(room => {
+                // For regular bookings, room.id is the room ID directly
                 if (room && room.id) {
                   checkedInRoomIds.add(room.id);
                 }
@@ -89,14 +94,15 @@ export default function FoodOrders() {
         }
       });
       
-      // Get room IDs from checked-in package bookings
+      // Get room IDs from active package bookings (checked-in or booked, not cancelled)
       packageBookings.forEach(booking => {
-        if (isCheckedIn(booking.status)) {
+        if (isActiveBooking(booking.status)) {
           const checkInDate = new Date(booking.check_in);
           const checkOutDate = new Date(booking.check_out);
           checkInDate.setHours(0, 0, 0, 0);
           checkOutDate.setHours(0, 0, 0, 0);
           
+          // Include rooms if check-in date is today or in the past, and check-out date is today or in the future
           if (checkInDate <= today && checkOutDate >= today) {
             if (booking.rooms && Array.isArray(booking.rooms)) {
               booking.rooms.forEach(roomLink => {
@@ -114,18 +120,32 @@ export default function FoodOrders() {
       });
       
       // Also check room status directly as a fallback
-      // Include rooms with status: checked-in, booked, occupied (if they're part of active bookings)
+      // Include rooms with status: checked-in, booked, occupied (regardless of booking status)
       allRooms.forEach(room => {
         const roomStatusNormalized = normalizeStatus(room.status);
-        // Accept: checkedin, booked, occupied
-        if (roomStatusNormalized === 'checkedin' || roomStatusNormalized === 'booked' || roomStatusNormalized === 'occupied') {
+        // Accept: checkedin, booked, occupied, checked-in (any variation)
+        if (roomStatusNormalized === 'checkedin' || 
+            roomStatusNormalized === 'booked' || 
+            roomStatusNormalized === 'occupied' ||
+            roomStatusNormalized.includes('checkedin')) {
           checkedInRoomIds.add(room.id);
         }
       });
       
-      // Filter rooms to only show checked-in rooms
+      // Filter rooms to only show checked-in/active rooms
       const checkedInRooms = allRooms.filter(room => checkedInRoomIds.has(room.id));
       setRooms(checkedInRooms);
+      
+      // Debug logging (can be removed in production)
+      console.log('Food Orders - Room Availability Check:', {
+        totalRooms: allRooms.length,
+        checkedInRoomIds: Array.from(checkedInRoomIds),
+        checkedInRoomsCount: checkedInRooms.length,
+        regularBookingsCount: regularBookings.length,
+        packageBookingsCount: packageBookings.length,
+        activeRegularBookings: regularBookings.filter(b => isActiveBooking(b.status)).length,
+        activePackageBookings: packageBookings.filter(b => isActiveBooking(b.status)).length
+      });
     } catch (error) {
       console.error("Failed to fetch data:", error);
     }
