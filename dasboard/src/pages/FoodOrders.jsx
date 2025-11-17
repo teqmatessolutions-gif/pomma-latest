@@ -121,15 +121,16 @@ export default function FoodOrders() {
             if (booking.rooms && Array.isArray(booking.rooms)) {
               booking.rooms.forEach(roomLink => {
                 // Package bookings have rooms as PackageBookingRoomOut objects
-                // PackageBookingRoomOut has: room_id (int), room (Optional[RoomOut])
-                // Check room_id first (always present), then room?.id as fallback
-                const roomId = roomLink.room_id || roomLink.room?.id;
+                // The actual room is nested in roomLink.room
+                // Match Services.jsx pattern exactly
+                const room = roomLink.room || roomLink;
+                // Also check room_id as fallback (direct field in PackageBookingRoomOut)
+                const roomId = room?.id || roomLink.room_id;
                 if (roomId) {
                   checkedInRoomIds.add(roomId);
-                  const roomNumber = roomLink.room?.number || roomId;
-                  console.log(`Added active package room: ${roomNumber} (ID: ${roomId}) from booking ${booking.id}, status: ${booking.status}`);
+                  console.log(`Added active package room: ${room?.number || roomId} (ID: ${roomId}) from booking ${booking.id}, status: ${booking.status}`);
                 } else {
-                  console.log(`Package booking ${booking.id} room link missing room_id:`, roomLink);
+                  console.log(`Package booking ${booking.id} room link missing room data:`, roomLink);
                 }
               });
             } else {
