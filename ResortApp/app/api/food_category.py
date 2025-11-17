@@ -29,6 +29,7 @@ def create_category(name: str = Form(...), image: UploadFile = File(None), db: S
 
 
 @router.get("", response_model=list[FoodCategoryOut])
+@router.get("/", response_model=list[FoodCategoryOut])  # Handle trailing slash
 def read_all(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
     return crud.get_categories(db, skip=skip, limit=limit)
 
