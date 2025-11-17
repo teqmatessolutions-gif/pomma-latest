@@ -238,13 +238,19 @@ def _get_rooms_impl(db: Session, skip: int = 0, limit: int = 20):
             print(f"Database connection test failed: {conn_error}")
             raise HTTPException(status_code=503, detail="Database connection unavailable. Please try again.")
         
-        # Update room statuses before fetching (non-blocking - continues even if update fails)
-        try:
-            from app.utils.room_status import update_room_statuses
-            update_room_statuses(db)
-        except Exception as status_error:
-            print(f"Room status update failed (continuing): {status_error}")
-            # Continue fetching rooms even if status update fails
+        # Skip room status update for large queries (limit > 100) to prevent timeouts
+        # Status updates are expensive and can cause 30+ second delays with many rooms
+        # For Food Orders page and other bulk operations, we don't need real-time status
+        if limit <= 100:
+            # Update room statuses before fetching (non-blocking - continues even if update fails)
+            try:
+                from app.utils.room_status import update_room_statuses
+                update_room_statuses(db)
+            except Exception as status_error:
+                print(f"Room status update failed (continuing): {status_error}")
+                # Continue fetching rooms even if status update fails
+        else:
+            print(f"Skipping room status update for large query (limit={limit}) to prevent timeout")
         
         # Query rooms with proper error handling
         try:
