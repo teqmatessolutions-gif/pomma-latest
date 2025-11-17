@@ -5,7 +5,7 @@ import os
 import multiprocessing
 
 # Server socket
-bind = "0.0.0.0:8000"
+bind = "0.0.0.0:8010"
 backlog = 2048
 
 # Worker processes
@@ -48,7 +48,7 @@ limit_request_field_size = 8190
 
 # Application
 pythonpath = "/var/www/resort"
-chdir = "/var/www/resort/Resort_first/ResortApp"
+chdir = "/var/www/resort/pomma_production/ResortApp"
 
 # Performance
 worker_tmp_dir = "/dev/shm"
