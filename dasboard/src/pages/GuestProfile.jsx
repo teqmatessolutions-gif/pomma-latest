@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../layout/DashboardLayout';
 import api from '../services/api';
 import { User, Mail, Phone, Bed, Utensils, ConciergeBell, FileText, Camera, Search, AlertCircle } from 'lucide-react';
+import { getApiBaseUrl } from '../utils/env';
 
 const InfoCard = ({ icon, label, value }) => (
     <div className="flex items-center text-gray-700">
@@ -86,12 +87,15 @@ const GuestProfile = () => {
 
     const getImageUrl = (path) => {
         if (!path) return null;
-        // This logic assumes check-in images are served from a specific endpoint
-        // Adjust the base URL if your package check-in images have a different path
+        // Get the correct API base URL based on environment
+        const apiBaseUrl = getApiBaseUrl();
+        
+        // Package booking images start with 'id_pkg_' or 'guest_pkg_'
         if (path.startsWith('id_pkg_') || path.startsWith('guest_pkg_')) {
-            return `http://localhost:8000/packages/booking/checkin-image/${path}`;
+            return `${apiBaseUrl}/packages/booking/checkin-image/${path}`;
         }
-        return `http://localhost:8000/bookings/checkin-image/${path}`;
+        // Regular booking images start with 'id_' or 'guest_'
+        return `${apiBaseUrl}/bookings/checkin-image/${path}`;
     };
 
     return (
