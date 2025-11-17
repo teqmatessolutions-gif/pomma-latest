@@ -1301,7 +1301,9 @@ export default function App() {
                 const bookingCheckOut = new Date(packageBooking.check_out);
                 
                 const isRoomInBooking = packageBooking.rooms && packageBooking.rooms.some(r => {
-                    const roomId = r.room?.id || r.id || r.room_id;
+                    // For package bookings, r.id is PackageBookingRoom.id, not room.id
+                    // We need to use r.room_id (direct field) or r.room.id (nested object)
+                    const roomId = r.room_id || r.room?.id;
                     return roomId === room.id;
                 });
                 if (!isRoomInBooking) return false;
@@ -1368,22 +1370,22 @@ export default function App() {
         // For whole_property, roomsToCheck remains allRooms (no filtering)
         
         // Check availability for each room
+        const requestedCheckIn = new Date(packageBookingData.check_in);
+        const requestedCheckOut = new Date(packageBookingData.check_out);
+        
         roomsToCheck.forEach(room => {
-            // Check for date conflicts with existing bookings
-            // Only consider bookings with status "booked" or "checked-in" as conflicts
-            const hasConflict = bookings.some(booking => {
+            // Check conflicts with regular bookings
+            const hasRegularConflict = bookings.some(booking => {
                 const normalizedStatus = booking.status?.toLowerCase().replace(/_/g, '-');
-                // Only check for "booked" or "checked-in" status - all other statuses are available
+                // Only check for "booked" or "checked-in" status
                 if (normalizedStatus !== "booked" && normalizedStatus !== "checked-in") return false;
                 
                 const bookingCheckIn = new Date(booking.check_in);
                 const bookingCheckOut = new Date(booking.check_out);
-                const requestedCheckIn = new Date(packageBookingData.check_in);
-                const requestedCheckOut = new Date(packageBookingData.check_out);
                 
                 // Check if this room is part of the booking
                 const isRoomInBooking = booking.rooms && booking.rooms.some(r => {
-                    // Handle both nested (r.room.id) and direct (r.id) room references
+                    // For regular bookings, r.id is the room.id directly
                     const roomId = r.room?.id || r.id;
                     return roomId === room.id;
                 });
@@ -1393,13 +1395,34 @@ export default function App() {
                 return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
             });
             
-            // Room is available if there are no conflicting bookings for the selected dates
-            // Don't filter by room.status - availability is determined by booking conflicts, not status field
-            availability[room.id] = !hasConflict;
+            // Check conflicts with package bookings
+            const hasPackageConflict = packageBookings.some(packageBooking => {
+                const normalizedStatus = packageBooking.status?.toLowerCase().replace(/_/g, '-');
+                // Only check for "booked" or "checked-in" status
+                if (normalizedStatus !== "booked" && normalizedStatus !== "checked-in") return false;
+                
+                const bookingCheckIn = new Date(packageBooking.check_in);
+                const bookingCheckOut = new Date(packageBooking.check_out);
+                
+                // Check if this room is part of the package booking
+                const isRoomInBooking = packageBooking.rooms && packageBooking.rooms.some(r => {
+                    // For package bookings, r.id is PackageBookingRoom.id, not room.id
+                    // We need to use r.room_id (direct field) or r.room.id (nested object)
+                    const roomId = r.room_id || r.room?.id;
+                    return roomId === room.id;
+                });
+                if (!isRoomInBooking) return false;
+                
+                // Check for date overlap
+                return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
+            });
+            
+            // Room is available if there are no conflicting bookings (regular or package) for the selected dates
+            availability[room.id] = !hasRegularConflict && !hasPackageConflict;
         });
         
         return availability;
-    }, [packageBookingData.check_in, packageBookingData.check_out, packageBookingData.package_id, allRooms, bookings, isPackageBookingFormOpen, packages]);
+    }, [packageBookingData.check_in, packageBookingData.check_out, packageBookingData.package_id, allRooms, bookings, packageBookings, isPackageBookingFormOpen, packages]);
     
     // Update state with debouncing to prevent excessive re-renders
     // Also auto-select all available rooms for whole_property packages
