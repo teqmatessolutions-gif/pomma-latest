@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import pommaLogo from "../assets/pommalogo.png";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -30,15 +31,15 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden p-4">
-      {/* Luxury Gradient Background */}
-      <div className="absolute inset-0 animate-gradient bg-gradient-to-r from-rose-100 via-yellow-50 to-purple-100"></div>
+      {/* Natural Green Gradient Background */}
+      <div className="absolute inset-0 animate-gradient bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50"></div>
 
-      {/* Floating dark particles */}
+      {/* Floating natural particles */}
       <div className="absolute inset-0 overflow-hidden">
         {[...Array(15)].map((_, i) => (
           <div
             key={i}
-            className="absolute w-10 h-10 bg-gray-400/40 rounded-full animate-float"
+            className="absolute w-10 h-10 bg-emerald-200/30 rounded-full animate-float"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
@@ -50,9 +51,20 @@ export default function LoginPage() {
       </div>
 
       {/* Login Card */}
-      <div className="relative z-10 w-full max-w-md bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl p-6 sm:p-8 space-y-6">
-        <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 text-center">Welcome Back</h2>
-        <p className="text-center text-gray-600 text-sm sm:text-base">Sign in to your account</p>
+      <div className="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl p-6 sm:p-8 space-y-6 border border-emerald-100/50">
+        <div className="flex justify-center mb-6">
+          <div className="relative">
+            <div className="absolute inset-0 bg-emerald-100/30 rounded-full blur-xl"></div>
+            <div className="relative bg-gradient-to-br from-emerald-50 to-green-50 p-4 rounded-2xl shadow-lg border border-emerald-200/50">
+              <img 
+                src={pommaLogo} 
+                alt="Pomma Holidays Logo" 
+                className="h-28 md:h-32 w-auto object-contain drop-shadow-lg"
+              />
+            </div>
+          </div>
+        </div>
+        <p className="text-center text-emerald-700 text-sm sm:text-base font-medium">Sign in to your account</p>
 
         <form className="space-y-4" onSubmit={handleLogin}>
           <div>
@@ -63,7 +75,7 @@ export default function LoginPage() {
               type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-400 focus:outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 focus:outline-none transition-colors"
               required
             />
           </div>
@@ -76,7 +88,7 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-400 focus:outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 focus:outline-none transition-colors"
               required
             />
           </div>
@@ -84,7 +96,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-rose-500 hover:bg-rose-600 text-white font-semibold py-2 px-4 rounded-lg shadow transition"
+            className="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
           >
             {loading ? "Signing in..." : "Sign In"}
           </button>

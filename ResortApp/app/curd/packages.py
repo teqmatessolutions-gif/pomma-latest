@@ -10,18 +10,33 @@ from app.schemas.packages import PackageBookingCreate
 
 # ------------------- Packages -------------------
 
-def create_package(db: Session, title: str, description: str, price: float, image_urls: List[str]):
-    pkg = Package(title=title, description=description, price=price)
-    db.add(pkg)
-    db.commit()
-    db.refresh(pkg)
+def create_package(db: Session, title: str, description: str, price: float, image_urls: List[str], booking_type: str = "room_type", room_types: str = None):
+    try:
+        pkg = Package(
+            title=title, 
+            description=description, 
+            price=price,
+            booking_type=booking_type,
+            room_types=room_types
+        )
+        db.add(pkg)
+        db.commit()
+        db.refresh(pkg)
 
-    for url in image_urls:
-        img = PackageImage(package_id=pkg.id, image_url=url)
-        db.add(img)
-    db.commit()
-    db.refresh(pkg)
-    return pkg
+        for url in image_urls:
+            img = PackageImage(package_id=pkg.id, image_url=url)
+            db.add(img)
+        db.commit()
+        db.refresh(pkg)
+        return pkg
+    except Exception as e:
+        db.rollback()
+        import traceback
+        error_detail = f"Database error in create_package: {str(e)}\n{traceback.format_exc()}"
+        print(f"ERROR: {error_detail}")
+        import sys
+        sys.stderr.write(f"ERROR in create_package: {error_detail}\n")
+        raise HTTPException(status_code=500, detail=f"Failed to create package: {str(e)}")
 
 
 
@@ -184,6 +199,34 @@ def book_package(db: Session, booking: PackageBookingCreate):
     if existing_booking:
         # If a guest with the same email and mobile exists, use their established name
         guest_name_to_use = existing_booking.guest_name
+
+    # Validate room capacity for adults and children separately (skip for whole_property packages)
+    from app.models.package import Package
+    selected_package = db.query(Package).filter(Package.id == booking.package_id).first()
+    if not selected_package:
+        raise HTTPException(status_code=404, detail="Package not found")
+    
+    is_whole_property = selected_package.booking_type == 'whole_property'
+    
+    if not is_whole_property and booking.room_ids:
+        selected_rooms = db.query(Room).filter(Room.id.in_(booking.room_ids)).all()
+        if len(selected_rooms) != len(booking.room_ids):
+            raise HTTPException(status_code=400, detail="One or more selected rooms are invalid.")
+        
+        total_adult_capacity = sum(room.adults or 0 for room in selected_rooms)
+        total_children_capacity = sum(room.children or 0 for room in selected_rooms)
+        
+        if booking.adults > total_adult_capacity:
+            raise HTTPException(
+                status_code=400,
+                detail=f"The number of adults ({booking.adults}) exceeds the total adult capacity of the selected rooms ({total_adult_capacity} adults max). Please select additional rooms or reduce the number of adults."
+            )
+        
+        if booking.children > total_children_capacity:
+            raise HTTPException(
+                status_code=400,
+                detail=f"The number of children ({booking.children}) exceeds the total children capacity of the selected rooms ({total_children_capacity} children max). Please select additional rooms or reduce the number of children."
+            )
 
     # CRITICAL FIX: Check for conflicts BEFORE creating the booking
     # This prevents invalid bookings from being created in the database

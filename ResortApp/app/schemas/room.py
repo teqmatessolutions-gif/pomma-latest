@@ -6,6 +6,19 @@ class RoomBase(BaseModel):
     price: float
     adults: int = 2      # new field
     children: int = 0    # new field
+    # Room features/amenities
+    air_conditioning: bool = False
+    wifi: bool = False
+    bathroom: bool = False
+    living_area: bool = False
+    terrace: bool = False
+    parking: bool = False
+    kitchen: bool = False
+    family_room: bool = False
+    bbq: bool = False
+    garden: bool = False
+    dining: bool = False
+    breakfast: bool = False
 
 class RoomCreate(RoomBase):
     pass

@@ -126,6 +126,81 @@ def get_employee_status_overview(db: Session = Depends(get_db), current_user: Us
         on_paid_leave=on_paid_leave, on_sick_leave=on_sick_leave, on_unpaid_leave=on_unpaid_leave
     )
 
+@router.put("/{employee_id}")
+def update_employee(
+    employee_id: int,
+    db: Session = Depends(get_db),
+    name: str = Form(None),
+    role: str = Form(None),
+    salary: float = Form(None),
+    join_date: str = Form(None),
+    email: str = Form(None),
+    phone: str = Form(None),
+    password: str = Form(None),
+    is_active: bool = Form(None),
+    image: UploadFile = File(None),
+    current_user: User = Depends(get_current_user),
+):
+    """Update employee details. Admin can change password and is_active status."""
+    if current_user.role.name != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admin can update employees")
+    
+    employee = db.query(EmployeeModel).options(joinedload(EmployeeModel.user)).filter(EmployeeModel.id == employee_id).first()
+    if not employee:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Employee not found")
+    
+    if not employee.user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Employee user account not found")
+    
+    # Update employee fields
+    if name is not None:
+        employee.name = name
+        employee.user.name = name
+    if role is not None:
+        role_obj = crud_employee.get_role_by_name(db, role_name=role)
+        if not role_obj:
+            raise HTTPException(status_code=404, detail="Role not found")
+        employee.role = role
+        employee.user.role_id = role_obj.id
+    if salary is not None:
+        employee.salary = salary
+    if join_date is not None:
+        try:
+            parsed_join_date = date.fromisoformat(join_date)
+            employee.join_date = parsed_join_date
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid date format. Use YYYY-MM-DD.")
+    if email is not None:
+        # Check if email is already taken by another user
+        existing_user = crud_user.get_user_by_email(db, email=email)
+        if existing_user and existing_user.id != employee.user_id:
+            raise HTTPException(status_code=400, detail="Email already registered")
+        employee.user.email = email
+    if phone is not None:
+        employee.user.phone = phone
+    if password is not None and password.strip():
+        # Update password
+        from app.utils.auth import get_password_hash
+        employee.user.hashed_password = get_password_hash(password)
+    if is_active is not None:
+        # Handle boolean conversion for Form data (can come as string "true"/"false" or boolean)
+        if isinstance(is_active, str):
+            is_active = is_active.lower() in ('true', '1', 'yes')
+        employee.user.is_active = bool(is_active)
+    
+    # Handle image update
+    if image and image.filename:
+        upload_folder = "uploads"
+        os.makedirs(upload_folder, exist_ok=True)
+        file_path = os.path.join(upload_folder, image.filename)
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(image.file, buffer)
+        employee.image_url = file_path.replace("\\", "/")
+    
+    db.commit()
+    db.refresh(employee)
+    return employee
+
 @router.delete("/{employee_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_employee(employee_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if current_user.role.name != "admin":

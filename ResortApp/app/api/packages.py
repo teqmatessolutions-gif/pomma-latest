@@ -28,25 +28,144 @@ async def create_package_api(
     title: str = Form(...),
     description: str = Form(...),
     price: float = Form(...),
+    booking_type: str = Form("room_type"),  # "whole_property" or "room_type"
+    room_types: str = Form(None),  # Comma-separated list of room types
     images: List[UploadFile] = File([]),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    image_urls = []
-    for img in images:
-        # Generate unique filename
-        filename = f"pkg_{uuid.uuid4().hex}_{img.filename}"
-        file_path = os.path.join(UPLOAD_DIR, filename)
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(img.file, buffer)
-        # Store with leading slash for proper URL construction
-        normalized_path = file_path.replace('\\', '/')
-        image_urls.append(f"/{normalized_path}")
+    try:
+        # Validate booking_type
+        if booking_type not in ["whole_property", "room_type"]:
+            raise HTTPException(status_code=400, detail="booking_type must be either 'whole_property' or 'room_type'")
+        
+        # If booking_type is room_type, room_types must be provided
+        if booking_type == "room_type" and not room_types:
+            raise HTTPException(status_code=400, detail="room_types is required when booking_type is 'room_type'")
+        
+        # If booking_type is whole_property, room_types should be empty
+        if booking_type == "whole_property":
+            room_types = None
+        
+        image_urls = []
+        try:
+            for img in images:
+                # Generate unique filename - handle case where filename might be None
+                original_filename = img.filename if img.filename else "image.jpg"
+                filename = f"pkg_{uuid.uuid4().hex}_{original_filename}"
+                file_path = os.path.join(UPLOAD_DIR, filename)
+                
+                # Use async file operations for better performance with large files
+                try:
+                    # Read file content asynchronously
+                    contents = await img.read()
+                    # Write to disk
+                    with open(file_path, "wb") as buffer:
+                        buffer.write(contents)
+                except (AttributeError, TypeError):
+                    # Fallback to synchronous if async methods not available
+                    with open(file_path, "wb") as buffer:
+                        shutil.copyfileobj(img.file, buffer)
+                
+                # Store with leading slash for proper URL construction
+                normalized_path = file_path.replace('\\', '/')
+                image_urls.append(f"/{normalized_path}")
+        except Exception as img_error:
+            import traceback
+            error_detail = f"Failed to save package images: {str(img_error)}\n{traceback.format_exc()}"
+            print(f"ERROR: {error_detail}")
+            import sys
+            sys.stderr.write(f"ERROR in create_package_api (image upload): {error_detail}\n")
+            raise HTTPException(status_code=500, detail=f"Failed to upload images: {str(img_error)}")
 
-    return crud_package.create_package(db, title, description, price, image_urls)
+        try:
+            return crud_package.create_package(db, title, description, price, image_urls, booking_type, room_types)
+        except Exception as db_error:
+            import traceback
+            error_detail = f"Failed to create package in database: {str(db_error)}\n{traceback.format_exc()}"
+            print(f"ERROR: {error_detail}")
+            import sys
+            sys.stderr.write(f"ERROR in create_package_api (database): {error_detail}\n")
+            # Clean up uploaded images if package creation fails
+            for img_url in image_urls:
+                try:
+                    # Remove leading slash to get actual file path
+                    file_path = img_url.lstrip('/')
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                except Exception as cleanup_error:
+                    print(f"Warning: Failed to cleanup image {img_url}: {str(cleanup_error)}")
+            raise HTTPException(status_code=500, detail=f"Failed to create package: {str(db_error)}")
+    except HTTPException:
+        # Re-raise HTTP exceptions (like validation errors) as-is
+        raise
+    except Exception as e:
+        import traceback
+        error_detail = f"Unexpected error in create_package_api: {str(e)}\n{traceback.format_exc()}"
+        print(f"ERROR: {error_detail}")
+        import sys
+        sys.stderr.write(f"ERROR in create_package_api: {error_detail}\n")
+        raise HTTPException(status_code=500, detail=f"Failed to create package: {str(e)}")
 
 
-
+@router.put("/{package_id}", response_model=PackageOut)
+async def update_package_api(
+    package_id: int,
+    title: str = Form(...),
+    description: str = Form(...),
+    price: float = Form(...),
+    booking_type: str = Form("room_type"),  # "whole_property" or "room_type"
+    room_types: str = Form(None),  # Comma-separated list of room types
+    images: List[UploadFile] = File([]),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Validate booking_type
+    if booking_type not in ["whole_property", "room_type"]:
+        raise HTTPException(status_code=400, detail="booking_type must be either 'whole_property' or 'room_type'")
+    
+    # If booking_type is room_type, room_types must be provided
+    if booking_type == "room_type" and not room_types:
+        raise HTTPException(status_code=400, detail="room_types is required when booking_type is 'room_type'")
+    
+    # If booking_type is whole_property, room_types should be empty
+    if booking_type == "whole_property":
+        room_types = None
+    
+    # Get existing package
+    package = db.query(Package).filter(Package.id == package_id).first()
+    if not package:
+        raise HTTPException(status_code=404, detail="Package not found")
+    
+    # Update package fields
+    package.title = title
+    package.description = description
+    package.price = price
+    package.booking_type = booking_type
+    package.room_types = room_types
+    
+    # Add new images if provided
+    if images:
+        image_urls = []
+        for img in images:
+            # Generate unique filename
+            filename = f"pkg_{uuid.uuid4().hex}_{img.filename}"
+            file_path = os.path.join(UPLOAD_DIR, filename)
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(img.file, buffer)
+            # Store with leading slash for proper URL construction
+            normalized_path = file_path.replace('\\', '/')
+            image_urls.append(f"/{normalized_path}")
+        
+        # Add new images to existing ones
+        for url in image_urls:
+            from app.models.Package import PackageImage
+            img = PackageImage(package_id=package.id, image_url=url)
+            db.add(img)
+    
+    db.commit()
+    db.refresh(package)
+    return package
 
 
 @router.delete("/{package_id}")
@@ -219,19 +338,41 @@ def book_package_guest_api(
 
 @router.get("/bookingsall", response_model=List[PackageBookingOut])
 def get_bookings(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
-    # It's possible for a package to be deleted, leaving an orphaned booking.
-    # We must filter to only include bookings that still have a valid package_id.
-    # We also need to eagerly load the related package and room data for the frontend.
-    return db.query(PackageBooking).options(
-        joinedload(PackageBooking.package),
-        joinedload(PackageBooking.rooms).joinedload(PackageBookingRoom.room)
-    ).filter(PackageBooking.package_id.is_not(None)).offset(skip).limit(limit).all()
+    try:
+        # It's possible for a package to be deleted, leaving an orphaned booking.
+        # We must filter to only include bookings that still have a valid package_id.
+        # We also need to eagerly load the related package and room data for the frontend.
+        result = db.query(PackageBooking).options(
+            joinedload(PackageBooking.package),
+            joinedload(PackageBooking.rooms).joinedload(PackageBookingRoom.room)
+        ).filter(PackageBooking.package_id.is_not(None)).offset(skip).limit(limit).all()
+        return result if result is not None else []
+    except Exception as e:
+        import traceback
+        error_detail = f"Failed to fetch package bookings: {str(e)}\n{traceback.format_exc()}"
+        print(f"ERROR: {error_detail}")
+        import sys
+        sys.stderr.write(f"ERROR in /packages/bookingsall: {error_detail}\n")
+        # Return empty list to prevent frontend breakage
+        print(f"Unexpected error in package bookings endpoint, returning empty list: {str(e)}")
+        return []
 
 
 @router.get("", response_model=List[PackageOut])
 def list_packages(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
-    # Query directly in the endpoint to apply pagination
-    return db.query(Package).offset(skip).limit(limit).all()
+    try:
+        # Query directly in the endpoint to apply pagination
+        result = db.query(Package).offset(skip).limit(limit).all()
+        return result if result is not None else []
+    except Exception as e:
+        import traceback
+        error_detail = f"Failed to fetch packages: {str(e)}\n{traceback.format_exc()}"
+        print(f"ERROR: {error_detail}")
+        import sys
+        sys.stderr.write(f"ERROR in /packages: {error_detail}\n")
+        # Return empty list to prevent frontend breakage
+        print(f"Unexpected error in packages endpoint, returning empty list: {str(e)}")
+        return []
 
 
 @router.get("/{package_id}", response_model=PackageOut)
@@ -312,12 +453,91 @@ def extend_package_booking_checkout(booking_id: Union[str, int], new_checkout: s
     if not booking:
         raise HTTPException(status_code=404, detail="Package booking not found")
     
+    # IMPORTANT: Refresh the booking from database to get the latest status
+    # This ensures we have the most current status, not a stale cached value
+    db.refresh(booking)
+    
     # Check if booking is in a valid state for extension
-    if booking.status not in ['booked', 'checked-in', 'checked_in']:
+    # Normalize status: convert to lowercase and replace underscores/hyphens with hyphens for consistent comparison
+    if not booking.status:
         raise HTTPException(
             status_code=400, 
-            detail=f"Cannot extend checkout for package booking with status '{booking.status}'. Only 'booked' or 'checked-in' bookings can be extended."
+            detail="Booking status is missing. Cannot extend checkout."
         )
+    
+    # Normalize status: handle variations like "booked", "Booked", "BOOKED", "checked-in", "checked_in", "checked-out", "checked_out"
+    raw_status_lower = booking.status.lower().strip() if booking.status else ''
+    # Replace underscores and spaces with hyphens, but be careful not to break "booked"
+    normalized_status = raw_status_lower.replace('_', '-').replace(' ', '-')
+    
+    # Debug: Print the actual status values for troubleshooting
+    print(f"[DEBUG] Extend package booking - ID: {booking_id}")
+    print(f"[DEBUG]   Guest: {booking.guest_name}")
+    print(f"[DEBUG]   Original status from DB: '{booking.status}'")
+    print(f"[DEBUG]   Raw lower: '{raw_status_lower}'")
+    print(f"[DEBUG]   Normalized: '{normalized_status}'")
+    print(f"[DEBUG]   Check-in: {booking.check_in}, Check-out: {booking.check_out}")
+    
+    # First, check if it's explicitly "booked" - this should always be allowed and skip all other checks
+    is_booked = normalized_status == 'booked' or raw_status_lower == 'booked'
+    
+    if is_booked:
+        # "booked" status is always valid for extension - skip all other checks
+        print(f"[DEBUG]   Status is 'booked' - allowing extension without further checks")
+        # Continue to date validation and conflict checks below
+    else:
+        # For non-"booked" statuses, check if it's checked-out
+        # Check if it's checked-out (must end with "-out" or be exactly "checked_out")
+        # This ensures "checked-in" is NOT matched
+        # Be very specific: only match if it explicitly contains "checked" and "out"
+        is_checked_out = False
+        if normalized_status == 'checked-out' or raw_status_lower in ['checked_out', 'checked-out', 'checked out']:
+            is_checked_out = True
+        elif normalized_status.startswith('checked-') and normalized_status.endswith('-out'):
+            is_checked_out = True
+        
+        # Check if it's a valid status for extension (checked-in)
+        is_valid_for_extension = (
+            normalized_status == 'checked-in' or
+            raw_status_lower in ['checked_in', 'checked-in', 'checked in']
+        )
+        
+        print(f"[DEBUG]   Is valid for extension: {is_valid_for_extension}")
+        print(f"[DEBUG]   Is checked out: {is_checked_out}")
+        print(f"[DEBUG]   Has check-in images: id_card={bool(booking.id_card_image_url)}, guest_photo={bool(booking.guest_photo_url)}")
+        
+        # Special case: If status is "checked_out" but has check-in images, it might be a data inconsistency
+        # Also check if check-out date is in the future (guest is still checked in)
+        from datetime import date
+        has_checkin_images = bool(booking.id_card_image_url) or bool(booking.guest_photo_url)
+        today = date.today()
+        checkout_is_future = booking.check_out >= today
+        
+        # If status says "checked_out" but:
+        # 1. Has check-in images (guest was checked in), OR
+        # 2. Check-out date is today or in the future (guest should still be checked in)
+        # Then treat as checked-in for extension purposes
+        if is_checked_out and (has_checkin_images or checkout_is_future):
+            print(f"[DEBUG]   WARNING: Status is 'checked_out' but has check-in images or future checkout date.")
+            print(f"[DEBUG]   Has check-in images: {has_checkin_images}, Checkout is future: {checkout_is_future}")
+            print(f"[DEBUG]   Allowing extension due to data inconsistency - treating as checked-in.")
+            # Treat as checked-in for extension purposes
+            is_checked_out = False
+            is_valid_for_extension = True
+        
+        # Reject checked-out statuses first (unless they have check-in images)
+        if is_checked_out:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Cannot extend checkout for package booking with status '{booking.status}'. The guest has already checked out. If this booking was checked in, please refresh the page or contact support."
+            )
+        
+        # Then check if it's a valid status for extension
+        if not is_valid_for_extension:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Cannot extend checkout for package booking with status '{booking.status}'. Only 'booked' or 'checked-in' bookings can be extended."
+            )
     
     # Validate that new checkout date is after current checkout date
     if new_checkout_date <= booking.check_out:

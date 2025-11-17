@@ -13,10 +13,20 @@ const makeDateInputsClickable = () => {
         // Always open the picker when clicking anywhere on the date input
         // Small delay to ensure the input is focused first
         setTimeout(() => {
-          input.showPicker().catch(() => {
-            // showPicker may fail in some contexts (e.g., user interaction required)
+          try {
+            const pickerResult = input.showPicker();
+            // Only call .catch() if showPicker returns a promise
+            if (pickerResult && typeof pickerResult.catch === 'function') {
+              pickerResult.catch(() => {
+                // showPicker may fail in some contexts (e.g., user interaction required)
+                // Allow normal browser behavior in those cases
+              });
+            }
+          } catch (err) {
+            // showPicker may throw an error in some contexts
             // Allow normal browser behavior in those cases
-          });
+            console.debug('showPicker failed:', err);
+          }
         }, 50);
       }
     }

@@ -902,11 +902,23 @@ const EmployeeListAndForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const requiredFields = ["name", "role", "salary", "join_date", "email", "password"];
-    for (const field of requiredFields) {
-      if (!form[field]) {
-        alert(`Please fill in the required field: ${field}`);
-        return;
+    if (editId) {
+      // For edit, password is optional
+      const requiredFields = ["name", "role", "salary", "join_date", "email"];
+      for (const field of requiredFields) {
+        if (!form[field]) {
+          alert(`Please fill in the required field: ${field}`);
+          return;
+        }
+      }
+    } else {
+      // For create, password is required
+      const requiredFields = ["name", "role", "salary", "join_date", "email", "password"];
+      for (const field of requiredFields) {
+        if (!form[field]) {
+          alert(`Please fill in the required field: ${field}`);
+          return;
+        }
       }
     }
     const data = new FormData();
@@ -915,7 +927,19 @@ const EmployeeListAndForm = () => {
     data.append("salary", form.salary);
     data.append("join_date", form.join_date);
     data.append("email", form.email);
-    data.append("password", form.password);
+    if (editId) {
+      // Only append password if it's provided (for edit)
+      if (form.password && form.password.trim()) {
+        data.append("password", form.password);
+      }
+      // Append is_active status if it exists
+      if (form.is_active !== undefined) {
+        data.append("is_active", String(form.is_active)); // Convert to string for FormData
+      }
+    } else {
+      // For create, password is required
+      data.append("password", form.password);
+    }
     if (form.phone) data.append("phone", form.phone);
     if (form.image) data.append("image", form.image);
 
@@ -926,6 +950,7 @@ const EmployeeListAndForm = () => {
         await api.post("/employees", data, authHeader());
       }
       fetchEmployees();
+      fetchUsers(); // Refresh users list
       resetForm();
     } catch (err) {
       const errorMessage = err.response?.data?.detail || "An error occurred while saving the employee.";
@@ -935,7 +960,7 @@ const EmployeeListAndForm = () => {
   };
 
   const resetForm = () => {
-    setForm({ name: "", role: "", salary: "", join_date: "", email: "", phone: "", password: "", image: null });
+    setForm({ name: "", role: "", salary: "", join_date: "", email: "", phone: "", password: "", is_active: true, image: null });
     setPreviewImage(null);
     setEditId(null);
   };
@@ -946,10 +971,11 @@ const EmployeeListAndForm = () => {
       name: emp.name,
       role: emp.role,
       salary: emp.salary,
-      join_date: emp.join_date.split("T")[0],
+      join_date: emp.join_date ? emp.join_date.split("T")[0] : "",
       email: emp.email,
       phone: emp.phone,
-      password: "",
+      password: "", // Leave empty for edit - only update if provided
+      is_active: emp.is_active !== undefined ? emp.is_active : true,
       image: null,
     });
     // Build full URL for the preview image
@@ -958,6 +984,23 @@ const EmployeeListAndForm = () => {
       setPreviewImage(`${mediaBaseUrl}/${imagePath}`);
     } else {
       setPreviewImage(null);
+    }
+  };
+
+  const handleToggleActive = async (emp) => {
+    if (!window.confirm(`Are you sure you want to ${emp.is_active ? 'deactivate' : 'activate'} this employee?`)) {
+      return;
+    }
+    try {
+      const data = new FormData();
+      data.append("is_active", String(!emp.is_active)); // Convert to string for FormData
+      await api.put(`/employees/${emp.id}`, data, authHeader());
+      fetchEmployees();
+      fetchUsers(); // Refresh users list
+    } catch (err) {
+      const errorMessage = err.response?.data?.detail || "An error occurred while updating employee status.";
+      console.error("Error updating employee:", err.response || err);
+      alert(errorMessage);
     }
   };
 
@@ -1042,8 +1085,25 @@ const EmployeeListAndForm = () => {
             <input name="email" type="email" value={form.email} onChange={handleFormChange} placeholder="Email" className="border px-3 py-2 rounded w-full" required />
             <label className="text-sm text-gray-600 mb-1">Phone</label>
             <input name="phone" type="tel" value={form.phone} onChange={handleFormChange} placeholder="Phone (optional)" className="border px-3 py-2 rounded w-full" />
-            <label className="text-sm text-gray-600 mb-1">Password <span className="text-red-500">*</span></label>
-            <input name="password" type="password" value={form.password} onChange={handleFormChange} placeholder="Password" className="border px-3 py-2 rounded w-full" required />
+            <label className="text-sm text-gray-600 mb-1">
+              Password {editId ? "(Leave blank to keep current)" : <span className="text-red-500">*</span>}
+            </label>
+            <input name="password" type="password" value={form.password} onChange={handleFormChange} placeholder={editId ? "New password (optional)" : "Password"} className="border px-3 py-2 rounded w-full" required={!editId} />
+            {editId && (
+              <>
+                <label className="text-sm text-gray-600 mb-1">Status</label>
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="checkbox" 
+                    name="is_active" 
+                    checked={form.is_active !== undefined ? form.is_active : true} 
+                    onChange={(e) => setForm({...form, is_active: e.target.checked})}
+                    className="w-5 h-5"
+                  />
+                  <span className="text-sm">{form.is_active ? 'Active' : 'Inactive'}</span>
+                </div>
+              </>
+            )}
             <label className="text-sm text-gray-600 mb-1">Image</label>
             <input type="file" name="image" accept="image/*" onChange={handleFormChange} className="w-full" />
             <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">{editId ? "Update" : "Create"}</button>
@@ -1069,6 +1129,7 @@ const EmployeeListAndForm = () => {
               <th className="p-2 sm:p-3 border text-xs sm:text-sm">Role</th>
               <th className="p-2 sm:p-3 border text-xs sm:text-sm">Salary</th>
               <th className="p-2 sm:p-3 border text-xs sm:text-sm">Join Date</th>
+              <th className="p-2 sm:p-3 border text-xs sm:text-sm">Status</th>
               <th className="p-2 sm:p-3 border text-xs sm:text-sm">Actions</th>
             </tr>
           </thead>
@@ -1098,6 +1159,15 @@ const EmployeeListAndForm = () => {
                 <td className="p-1 sm:p-2 border text-xs sm:text-sm">{emp.role}</td>
                 <td className="p-1 sm:p-2 border text-right text-xs sm:text-sm">{emp.salary ? `₹${emp.salary}` : 'N/A'}</td>
                 <td className="p-1 sm:p-2 border text-xs sm:text-sm">{emp.join_date || 'N/A'}</td>
+                <td className="p-1 sm:p-2 border text-xs sm:text-sm">
+                  {emp.has_employee_record ? (
+                    <span className={`px-2 py-1 rounded text-xs ${emp.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {emp.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                  ) : (
+                    <span className="text-gray-500 text-xs">-</span>
+                  )}
+                </td>
                 <td className="p-1 sm:p-2 border">
                   <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
                     {emp.has_employee_record ? (
@@ -1107,6 +1177,12 @@ const EmployeeListAndForm = () => {
                           onClick={() => handleEdit(emp)}
                         >
                           Edit
+                        </button>
+                        <button 
+                          className={`px-1 sm:px-2 py-1 text-xs sm:text-sm rounded ${emp.is_active ? 'bg-yellow-500' : 'bg-green-500'} text-white`}
+                          onClick={() => handleToggleActive(emp)}
+                        >
+                          {emp.is_active ? 'Deactivate' : 'Activate'}
                         </button>
                         <button 
                           className="bg-red-500 text-white px-1 sm:px-2 py-1 text-xs sm:text-sm rounded" 
@@ -1124,7 +1200,7 @@ const EmployeeListAndForm = () => {
             ))}
             {filteredEmployees.length === 0 && (
               <tr>
-                <td colSpan="7" className="text-center py-4 text-gray-500 text-sm sm:text-base">
+                <td colSpan="8" className="text-center py-4 text-gray-500 text-sm sm:text-base">
                   No employees found.
                 </td>
               </tr>
@@ -1133,7 +1209,7 @@ const EmployeeListAndForm = () => {
           {hasMore && filteredEmployees.length > 0 && (
             <tfoot>
               <tr>
-                <td colSpan="7" className="text-center p-4">
+                <td colSpan="8" className="text-center p-4">
                   <button onClick={loadMoreEmployees} disabled={isFetchingMore} className="bg-indigo-100 text-indigo-700 font-semibold px-6 py-2 rounded-lg hover:bg-indigo-200 transition-colors disabled:bg-gray-200 disabled:text-gray-500">
                     {isFetchingMore ? "Loading..." : "Load More"}
                   </button>

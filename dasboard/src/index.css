@@ -5,6 +5,25 @@
 /* Import responsive styles */
 @import './styles/responsive.css';
 
+/* Eco-friendly theme button styles */
+:root {
+  --primary-button: #22c55e;
+  --primary-button-hover: #16a34a;
+  --border-color: #a7d4b8;
+}
+
+/* Apply eco-friendly colors to common button classes when eco-friendly theme is active */
+[data-theme="eco-friendly"] .btn-primary,
+body:has([data-theme="eco-friendly"]) .btn-primary {
+  background-color: var(--primary-button);
+  color: white;
+}
+
+[data-theme="eco-friendly"] .btn-primary:hover,
+body:has([data-theme="eco-friendly"]) .btn-primary:hover {
+  background-color: var(--primary-button-hover);
+}
+
 /* Make date inputs fully clickable - click anywhere to open calendar */
 input[type="date"] {
   cursor: pointer;

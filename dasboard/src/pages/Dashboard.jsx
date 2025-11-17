@@ -25,95 +25,111 @@ const Dashboard = () => {
   const [billings, setBillings] = useState([]);
   const [packages, setPackages] = useState([]);
 
-  // ---------- Fetch Data ----------
-  useEffect(() => {
-    // ... (rest of the fetch logic, which is already correct)
-    let mounted = true;
-    (async () => {
-      try {
+  // ---------- Fetch Data Function ----------
+  const fetchDashboardData = useCallback(async (showLoading = true) => {
+    try {
+      if (showLoading) {
         setLoading(true);
-        setErr(null); // Clear any previous errors
-        
-        // Fetch all endpoints with individual error handling to prevent complete failure
-        // Reduced limits for better performance (pagination handles the rest)
-        const results = await Promise.allSettled([
-          API.get("/bookings?limit=500").catch(err => ({ error: err, data: { bookings: [] } })),
-          API.get("/rooms?limit=500").catch(err => ({ error: err, data: [] })),
-          API.get("/expenses?limit=500").catch(err => ({ error: err, data: [] })),
-          API.get("/food-orders?limit=500").catch(err => ({ error: err, data: [] })),
-          API.get("/services/assigned?limit=500").catch(err => ({ error: err, data: [] })),
-          API.get("/bill/checkouts?limit=500").catch(err => ({ error: err, data: [] })),
-          API.get("/packages?limit=500").catch(err => ({ error: err, data: [] })),
-        ]);
-
-        if (!mounted) return;
-        
-        // Process results individually - allow partial failures
-        if (results[0].status === 'fulfilled' && !results[0].value.error) {
-          setBookings(Array.isArray(results[0].value.data?.bookings) ? results[0].value.data.bookings : []);
-        } else {
-          console.error("Failed to load bookings:", results[0].value?.error || results[0].reason);
-          setBookings([]);
-        }
-        
-        if (results[1].status === 'fulfilled' && !results[1].value.error) {
-          setRooms(Array.isArray(results[1].value.data) ? results[1].value.data : []);
-        } else {
-          console.error("Failed to load rooms:", results[1].value?.error || results[1].reason);
-          setRooms([]);
-        }
-        
-        if (results[2].status === 'fulfilled' && !results[2].value.error) {
-          setExpenses(Array.isArray(results[2].value.data) ? results[2].value.data : []);
-        } else {
-          console.error("Failed to load expenses:", results[2].value?.error || results[2].reason);
-          setExpenses([]);
-        }
-        
-        if (results[3].status === 'fulfilled' && !results[3].value.error) {
-          setFoodOrders(Array.isArray(results[3].value.data) ? results[3].value.data : []);
-        } else {
-          console.error("Failed to load food orders:", results[3].value?.error || results[3].reason);
-          setFoodOrders([]);
-        }
-        
-        if (results[4].status === 'fulfilled' && !results[4].value.error) {
-          setAssignedServices(Array.isArray(results[4].value.data) ? results[4].value.data : []);
-        } else {
-          console.error("Failed to load services:", results[4].value?.error || results[4].reason);
-          setAssignedServices([]);
-        }
-        
-        if (results[5].status === 'fulfilled' && !results[5].value.error) {
-          setBillings(Array.isArray(results[5].value.data) ? results[5].value.data : []);
-        } else {
-          console.error("Failed to load billings:", results[5].value?.error || results[5].reason);
-          setBillings([]);
-        }
-        
-        if (results[6].status === 'fulfilled' && !results[6].value.error) {
-          setPackages(Array.isArray(results[6].value.data) ? results[6].value.data : []);
-        } else {
-          console.error("Failed to load packages:", results[6].value?.error || results[6].reason);
-          setPackages([]);
-        }
-        
-        // Set error message only if all requests failed
-        const allFailed = results.every(r => r.status === 'rejected' || (r.status === 'fulfilled' && r.value?.error));
-        if (allFailed) {
-          setErr("Failed to load dashboard data. Please check your connection and try again.");
-        }
-      } catch (e) {
-        console.error("Dashboard fetch error:", e);
-        setErr(e?.response?.data?.detail || "Failed to load dashboard data");
-      } finally {
+      }
+      setErr(null); // Clear any previous errors
+      
+      // Fetch all endpoints with individual error handling to prevent complete failure
+      // Reduced limits for better performance (pagination handles the rest)
+      const results = await Promise.allSettled([
+        API.get("/bookings?limit=500").catch(err => ({ error: err, data: { bookings: [] } })),
+        API.get("/rooms?limit=500").catch(err => ({ error: err, data: [] })),
+        API.get("/expenses?limit=500").catch(err => ({ error: err, data: [] })),
+        API.get("/food-orders?limit=500").catch(err => ({ error: err, data: [] })),
+        API.get("/services/assigned?limit=500").catch(err => ({ error: err, data: [] })),
+        API.get("/bill/checkouts?limit=500").catch(err => ({ error: err, data: [] })),
+        API.get("/packages?limit=500").catch(err => ({ error: err, data: [] })),
+      ]);
+      
+      // Process results individually - allow partial failures
+      if (results[0].status === 'fulfilled' && !results[0].value.error) {
+        setBookings(Array.isArray(results[0].value.data?.bookings) ? results[0].value.data.bookings : []);
+      } else {
+        console.error("Failed to load bookings:", results[0].value?.error || results[0].reason);
+        setBookings([]);
+      }
+      
+      if (results[1].status === 'fulfilled' && !results[1].value.error) {
+        setRooms(Array.isArray(results[1].value.data) ? results[1].value.data : []);
+      } else {
+        console.error("Failed to load rooms:", results[1].value?.error || results[1].reason);
+        setRooms([]);
+      }
+      
+      if (results[2].status === 'fulfilled' && !results[2].value.error) {
+        setExpenses(Array.isArray(results[2].value.data) ? results[2].value.data : []);
+      } else {
+        console.error("Failed to load expenses:", results[2].value?.error || results[2].reason);
+        setExpenses([]);
+      }
+      
+      if (results[3].status === 'fulfilled' && !results[3].value.error) {
+        setFoodOrders(Array.isArray(results[3].value.data) ? results[3].value.data : []);
+      } else {
+        console.error("Failed to load food orders:", results[3].value?.error || results[3].reason);
+        setFoodOrders([]);
+      }
+      
+      if (results[4].status === 'fulfilled' && !results[4].value.error) {
+        setAssignedServices(Array.isArray(results[4].value.data) ? results[4].value.data : []);
+      } else {
+        console.error("Failed to load services:", results[4].value?.error || results[4].reason);
+        setAssignedServices([]);
+      }
+      
+      if (results[5].status === 'fulfilled' && !results[5].value.error) {
+        setBillings(Array.isArray(results[5].value.data) ? results[5].value.data : []);
+      } else {
+        console.error("Failed to load billings:", results[5].value?.error || results[5].reason);
+        setBillings([]);
+      }
+      
+      if (results[6].status === 'fulfilled' && !results[6].value.error) {
+        setPackages(Array.isArray(results[6].value.data) ? results[6].value.data : []);
+      } else {
+        console.error("Failed to load packages:", results[6].value?.error || results[6].reason);
+        setPackages([]);
+      }
+      
+      // Set error message only if all requests failed
+      const allFailed = results.every(r => r.status === 'rejected' || (r.status === 'fulfilled' && r.value?.error));
+      if (allFailed) {
+        setErr("Failed to load dashboard data. Please check your connection and try again.");
+      }
+    } catch (e) {
+      console.error("Dashboard fetch error:", e);
+      setErr(e?.response?.data?.detail || "Failed to load dashboard data");
+    } finally {
+      if (showLoading) {
         setLoading(false);
       }
-    })();
+    }
+  }, []);
+
+  // ---------- Initial Data Fetch and Auto-Refresh ----------
+  useEffect(() => {
+    let mounted = true;
+    
+    // Initial fetch with loading indicator
+    fetchDashboardData(true);
+    
+    // Set up auto-refresh every 5 minutes (300,000 milliseconds)
+    const refreshInterval = setInterval(() => {
+      if (mounted) {
+        // Refresh without showing loading indicator for smoother UX
+        fetchDashboardData(false);
+      }
+    }, 5 * 60 * 1000); // 5 minutes
+    
     return () => {
       mounted = false;
+      clearInterval(refreshInterval);
     };
-  }, []);
+  }, [fetchDashboardData]);
 
   // ... (rest of the useMemo and helper functions)
   const safeDate = useCallback((d) => (d ? new Date(d) : null), []);
@@ -325,7 +341,7 @@ const Dashboard = () => {
       <div className="relative max-w-[1400px] mx-auto px-2 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
         <header className="flex items-end justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">Resort Admin Dashboard</h1>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">Pomma Holidays Admin Dashboard</h1>
             <p className="text-sm sm:text-base text-gray-500">Overview of bookings, rooms, revenue, expenses & operations</p>
           </div>
           <div className="text-xs sm:text-sm text-gray-500">

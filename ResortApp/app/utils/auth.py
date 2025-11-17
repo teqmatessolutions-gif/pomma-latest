@@ -9,9 +9,9 @@ from fastapi.security import OAuth2PasswordBearer
 import os
 
 # ENV
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
+SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "24"))
 
 # Removed pwd_context - using bcrypt directly
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -65,15 +65,37 @@ def get_current_user(
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
     )
     try:
+        # Check if token is None or empty
+        if not token:
+            raise credentials_exception
+        
         payload = decode_token(token)
         user_id: int = payload.get("user_id")
         if user_id is None:
             raise credentials_exception
+    except HTTPException:
+        # Re-raise HTTP exceptions (like 401/403 from OAuth2PasswordBearer)
+        raise
     except JWTError:
         raise credentials_exception
-    user = db.query(User).filter(User.id == user_id).first()
-    if user is None:
+    except Exception as e:
+        # Catch any other exceptions during token decoding
+        import traceback
+        print(f"ERROR in get_current_user (token decode): {str(e)}\n{traceback.format_exc()}")
         raise credentials_exception
-    return user
+    try:
+        user = db.query(User).filter(User.id == user_id).first()
+        if user is None:
+            raise credentials_exception
+        return user
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+    except Exception as e:
+        # Catch any database errors
+        import traceback
+        print(f"ERROR in get_current_user (database query): {str(e)}\n{traceback.format_exc()}")
+        raise credentials_exception

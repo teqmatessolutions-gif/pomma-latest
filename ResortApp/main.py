@@ -1,9 +1,12 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from pathlib import Path
 import os
+import traceback
 
 # Import all API routers
 from app.api import (
@@ -37,6 +40,44 @@ app = FastAPI(
     description="Complete resort management system with booking, payments, and customer management",
     version="1.0.0",
 )
+
+# Exception handlers for proper error logging and responses
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    """Handle HTTP exceptions with proper logging"""
+    import sys
+    print(f"HTTP Exception {exc.status_code} in {request.method} {request.url.path}: {exc.detail}")
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+        headers=exc.headers if hasattr(exc, 'headers') else None
+    )
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Handle validation errors with proper logging"""
+    import sys
+    print(f"Validation error in {request.method} {request.url.path}: {exc.errors()}")
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors()}
+    )
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Catch all other unhandled exceptions and return proper error responses"""
+    import sys
+    
+    # Log the full error with traceback
+    error_detail = f"Unhandled exception in {request.method} {request.url.path}: {str(exc)}\n{traceback.format_exc()}"
+    print(f"ERROR (global handler): {error_detail}")
+    sys.stderr.write(f"ERROR (global handler): {error_detail}\n")
+    
+    # Return 500 with error message
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Internal server error: {str(exc)}"}
+    )
 
 # CORS middleware
 app.add_middleware(

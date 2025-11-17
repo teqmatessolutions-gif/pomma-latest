@@ -73,10 +73,22 @@ const Services = () => {
       today.setHours(0, 0, 0, 0); // Set to start of day for comparison
       const checkedInRoomIds = new Set();
       
+      // Helper function to normalize status (handle all variations)
+      const normalizeStatus = (status) => {
+        if (!status) return '';
+        return status.toLowerCase().replace(/[-_\s]/g, '');
+      };
+      
+      // Helper function to check if status is checked-in
+      const isCheckedIn = (status) => {
+        const normalized = normalizeStatus(status);
+        return normalized === 'checkedin';
+      };
+      
       // Get room IDs from checked-in regular bookings
       regularBookings.forEach(booking => {
-        const normalizedStatus = booking.status?.toLowerCase().replace(/[-_\s]/g, '');
-        if (normalizedStatus === 'checkedin' || normalizedStatus === 'checked-in') {
+        console.log(`Checking regular booking ${booking.id}, status: ${booking.status}, rooms:`, booking.rooms);
+        if (isCheckedIn(booking.status)) {
           // Parse dates properly
           const checkInDate = new Date(booking.check_in);
           const checkOutDate = new Date(booking.check_out);
@@ -84,23 +96,33 @@ const Services = () => {
           checkOutDate.setHours(0, 0, 0, 0);
           
           // Check if booking is active (today is between check-in and check-out)
-          if (checkInDate <= today && checkOutDate > today) {
+          // Also allow if check-out is today (room is still checked in)
+          if (checkInDate <= today && checkOutDate >= today) {
             if (booking.rooms && Array.isArray(booking.rooms)) {
               booking.rooms.forEach(room => {
                 if (room && room.id) {
                   checkedInRoomIds.add(room.id);
-                  console.log(`Added checked-in room: ${room.number} (ID: ${room.id}) from booking ${booking.id}`);
+                  console.log(`Added checked-in room: ${room.number} (ID: ${room.id}) from booking ${booking.id}, status: ${booking.status}`);
+                } else {
+                  console.log(`Booking ${booking.id} room missing id:`, room);
                 }
               });
+            } else {
+              console.log(`Booking ${booking.id} has checked-in status but no rooms array or rooms is not an array`);
             }
+          } else {
+            console.log(`Booking ${booking.id} is checked-in but dates don't match: check_in=${checkInDate}, check_out=${checkOutDate}, today=${today}`);
           }
+        } else {
+          console.log(`Regular booking ${booking.id} status '${booking.status}' is not checked-in (normalized: '${normalizeStatus(booking.status)}')`);
         }
       });
       
       // Get room IDs from checked-in package bookings
+      // Note: Package bookings have rooms as PackageBookingRoomOut objects with a nested 'room' property
       packageBookings.forEach(booking => {
-        const normalizedStatus = booking.status?.toLowerCase().replace(/[-_\s]/g, '');
-        if (normalizedStatus === 'checkedin' || normalizedStatus === 'checked-in') {
+        console.log(`Checking package booking ${booking.id}, status: ${booking.status}, rooms:`, booking.rooms);
+        if (isCheckedIn(booking.status)) {
           // Parse dates properly
           const checkInDate = new Date(booking.check_in);
           const checkOutDate = new Date(booking.check_out);
@@ -108,16 +130,37 @@ const Services = () => {
           checkOutDate.setHours(0, 0, 0, 0);
           
           // Check if booking is active (today is between check-in and check-out)
-          if (checkInDate <= today && checkOutDate > today) {
+          // Also allow if check-out is today (room is still checked in)
+          if (checkInDate <= today && checkOutDate >= today) {
             if (booking.rooms && Array.isArray(booking.rooms)) {
-              booking.rooms.forEach(room => {
+              booking.rooms.forEach(roomLink => {
+                // Package bookings have rooms as PackageBookingRoomOut objects
+                // The actual room is nested in roomLink.room
+                const room = roomLink.room || roomLink;
                 if (room && room.id) {
                   checkedInRoomIds.add(room.id);
-                  console.log(`Added checked-in package room: ${room.number} (ID: ${room.id}) from booking ${booking.id}`);
+                  console.log(`Added checked-in package room: ${room.number} (ID: ${room.id}) from booking ${booking.id}, status: ${booking.status}`);
+                } else {
+                  console.log(`Package booking ${booking.id} room link missing room data:`, roomLink);
                 }
               });
+            } else {
+              console.log(`Package booking ${booking.id} has checked-in status but no rooms array`);
             }
+          } else {
+            console.log(`Package booking ${booking.id} is checked-in but dates don't match: check_in=${checkInDate}, check_out=${checkOutDate}, today=${today}`);
           }
+        } else {
+          console.log(`Package booking ${booking.id} status '${booking.status}' is not checked-in (normalized: '${normalizeStatus(booking.status)}')`);
+        }
+      });
+      
+      // Also check room status directly as a fallback (in case booking status is not set correctly)
+      rRes.data.forEach(room => {
+        const roomStatusNormalized = normalizeStatus(room.status);
+        if (roomStatusNormalized === 'checkedin') {
+          checkedInRoomIds.add(room.id);
+          console.log(`Added checked-in room from room status: ${room.number} (ID: ${room.id}), status: ${room.status}`);
         }
       });
       
@@ -125,7 +168,7 @@ const Services = () => {
       
       // Filter rooms to only show checked-in rooms
       const checkedInRooms = rRes.data.filter(room => checkedInRoomIds.has(room.id));
-      console.log(`Filtered checked-in rooms: ${checkedInRooms.length}`, checkedInRooms.map(r => r.number));
+      console.log(`Filtered checked-in rooms: ${checkedInRooms.length}`, checkedInRooms.map(r => `${r.number} (status: ${r.status})`));
       setRooms(checkedInRooms);
     } catch (error) {
       setHasMore(aRes.data.length === 10);

@@ -23,11 +23,24 @@ import {
   Sun,
 } from "lucide-react";
 import jwt_decode from "https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.esm.js";
+import pommaLogo from "../assets/pommalogo.png";
 
 import { CreditCard } from "lucide-react";
 
 // Define professional, high-end themes with a focus on harmony and readability.
 const themes = {
+  'eco-friendly': {
+    '--bg-primary': '#f0f7f4', // Soft mint green background
+    '--bg-secondary': '#ffffff',
+    '--text-primary': '#1a4d3a', // Deep forest green text
+    '--text-secondary': '#5a7c6a', // Muted green-gray
+    '--accent-bg': '#c8e6d5', // Light sage green accent (slightly more vibrant)
+    '--accent-text': '#2d6a4f', // Medium green for active items
+    '--bubble-color': 'rgba(76, 175, 80, 0.3)', // Soft green bubbles
+    '--primary-button': '#22c55e', // Green for primary actions
+    '--primary-button-hover': '#16a34a', // Darker green on hover
+    '--border-color': '#a7d4b8', // Light green borders
+  },
   'platinum': {
     '--bg-primary': '#f4f7f9',
     '--bg-secondary': '#ffffff',
@@ -36,6 +49,9 @@ const themes = {
     '--accent-bg': '#e7edf1', // A light, clean accent
     '--accent-text': '#34495e',
     '--bubble-color': 'rgba(175, 215, 255, 0.4)', // Soft blue bubbles
+    '--primary-button': '#6366f1',
+    '--primary-button-hover': '#4f46e5',
+    '--border-color': '#e2e8f0',
   },
   'onyx': {
     '--bg-primary': '#1c1c1c',
@@ -45,6 +61,9 @@ const themes = {
     '--accent-bg': '#34495e', // A deep blue-gray accent
     '--accent-text': '#f1c40f',
     '--bubble-color': 'rgba(255, 223, 186, 0.2)', // Faint gold bubbles
+    '--primary-button': '#f1c40f',
+    '--primary-button-hover': '#f39c12',
+    '--border-color': '#34495e',
   },
   'gilded-age': {
     '--bg-primary': '#fdf8f0', // A warm, off-white
@@ -54,6 +73,9 @@ const themes = {
     '--accent-bg': '#f5ecde',
     '--accent-text': '#4a4a4a',
     '--bubble-color': 'rgba(212, 172, 97, 0.3)',
+    '--primary-button': '#d4ac61',
+    '--primary-button-hover': '#b8945f',
+    '--border-color': '#e8dcc6',
   },
 };
 
@@ -64,6 +86,8 @@ const applyTheme = (themeName) => {
     Object.keys(selectedTheme).forEach(key => {
       document.documentElement.style.setProperty(key, selectedTheme[key]);
     });
+    // Set data attribute for theme-specific styling
+    document.documentElement.setAttribute('data-theme', themeName);
     localStorage.setItem('dashboard-theme', themeName);
   }
 };
@@ -94,15 +118,22 @@ export const ProtectedRoute = ({ children, requiredPermission }) => {
   const hasAccess = role === 'admin' || permissions.includes(requiredPermission);
 
   if (!hasAccess) {
+    // Redirect to dashboard with a message instead of showing blank page
     return <Navigate to="/dashboard" replace />;
   }
-  return children;
+  
+  // Ensure children are rendered properly
+  if (!children) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return <>{children}</>;
 };
 
 export default function DashboardLayout({ children }) {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
-  const [currentTheme, setCurrentTheme] = useState('platinum'); // Default theme
+  const [currentTheme, setCurrentTheme] = useState('eco-friendly'); // Default theme - eco-friendly
 
   // State and ref for managing scroll position
   const navRef = useRef(null);
@@ -115,7 +146,9 @@ export default function DashboardLayout({ children }) {
       setCurrentTheme(savedTheme);
       applyTheme(savedTheme);
     } else {
-      applyTheme('platinum');
+      // Set eco-friendly as default theme
+      setCurrentTheme('eco-friendly');
+      applyTheme('eco-friendly');
     }
   }, []);
 
@@ -275,12 +308,11 @@ export default function DashboardLayout({ children }) {
         >
           {/* Header section with logo, app name, and menu toggle */}
           <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: 'var(--accent-bg)' }}>
-            {/* Left side: App Logo and Name */}
+            {/* Left side: App Logo */}
             <div className="flex items-center gap-4">
-              <img src="./logo.jpeg" className="h-10 w-10 rounded-full" alt="Logo" />
-              {!collapsed && (
-                <span className="text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)'}}>ResortApp</span>
-              )}
+              <div className="p-3 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--accent-bg)' }}>
+                <img src={pommaLogo} className="h-12 w-auto object-contain" alt="Pomma Holidays Logo" />
+              </div>
             </div>
             {/* Right side: Menu Toggle */}
             <button
@@ -295,10 +327,19 @@ export default function DashboardLayout({ children }) {
           {/* Theme Switcher UI with image previews */}
           <div className={`p-4 transition-all duration-300 flex justify-center gap-2 border-b`} style={{ borderColor: 'var(--accent-bg)' }}>
               <motion.button
+                  animate={{ scale: currentTheme === 'eco-friendly' ? 1.15 : 1, y: currentTheme === 'eco-friendly' ? -2 : 0 }}
+                  whileHover={{ scale: 1.2, y: -2 }} whileTap={{ scale: 1.1 }} transition={{ type: 'spring', stiffness: 300 }}
+                  className={`w-8 h-8 rounded-full overflow-hidden ${currentTheme === 'eco-friendly' ? 'shadow-lg border-2 border-green-500' : ''}`}
+                  onClick={() => { setCurrentTheme('eco-friendly'); applyTheme('eco-friendly'); }}
+                  title="Eco-Friendly"
+              >
+                <div className="w-full h-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center text-white font-bold text-xs">🌿</div>
+              </motion.button>
+              <motion.button
                   animate={{ scale: currentTheme === 'platinum' ? 1.15 : 1, y: currentTheme === 'platinum' ? -2 : 0 }}
                   whileHover={{ scale: 1.2, y: -2 }} whileTap={{ scale: 1.1 }} transition={{ type: 'spring', stiffness: 300 }}
                   className={`w-8 h-8 rounded-full overflow-hidden ${currentTheme === 'platinum' ? 'shadow-lg border-2 border-gray-400' : ''}`}
-                  onClick={() => applyTheme('platinum')}
+                  onClick={() => { setCurrentTheme('platinum'); applyTheme('platinum'); }}
                   title="Platinum"
               >
                 <img src="https://placehold.co/32x32/f4f7f9/2c3e50?text=P" alt="Platinum Theme" className="w-full h-full object-cover"/>
@@ -307,7 +348,7 @@ export default function DashboardLayout({ children }) {
                   animate={{ scale: currentTheme === 'onyx' ? 1.15 : 1, y: currentTheme === 'onyx' ? -2 : 0 }}
                   whileHover={{ scale: 1.2, y: -2 }} whileTap={{ scale: 1.1 }} transition={{ type: 'spring', stiffness: 300 }}
                   className={`w-8 h-8 rounded-full overflow-hidden ${currentTheme === 'onyx' ? 'shadow-lg border-2 border-yellow-600' : ''}`}
-                  onClick={() => applyTheme('onyx')}
+                  onClick={() => { setCurrentTheme('onyx'); applyTheme('onyx'); }}
                   title="Onyx"
               >
                 <img src="https://placehold.co/32x32/1c1c1c/f1c40f?text=O" alt="Onyx Theme" className="w-full h-full object-cover"/>
@@ -316,7 +357,7 @@ export default function DashboardLayout({ children }) {
                   animate={{ scale: currentTheme === 'gilded-age' ? 1.15 : 1, y: currentTheme === 'gilded-age' ? -2 : 0 }}
                   whileHover={{ scale: 1.2, y: -2 }} whileTap={{ scale: 1.1 }} transition={{ type: 'spring', stiffness: 300 }}
                   className={`w-8 h-8 rounded-full overflow-hidden ${currentTheme === 'gilded-age' ? 'shadow-lg border-2 border-yellow-800' : ''}`}
-                  onClick={() => applyTheme('gilded-age')}
+                  onClick={() => { setCurrentTheme('gilded-age'); applyTheme('gilded-age'); }}
                   title="Gilded Age"
               >
                 <img src="https://placehold.co/32x32/fdf8f0/d4ac61?text=G" alt="Gilded Age Theme" className="w-full h-full object-cover"/>
@@ -334,22 +375,15 @@ export default function DashboardLayout({ children }) {
             }}
           >
             {menuItems.map((item, idx) => {
-              const isActive = location.pathname === item.to || (item.to !== '/dashboard' && location.pathname.startsWith(item.to));
+              // Improved active state detection - check exact match or if path starts with the route
+              const exactMatch = location.pathname === item.to;
+              const startsWithMatch = item.to !== '/dashboard' && location.pathname.startsWith(item.to);
+              const isActive = exactMatch || startsWithMatch;
               
-              // Prevent navigation if clicking on the already active route
-              const handleClick = (e) => {
-                if (isActive) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  return false;
-                }
-              };
-
               return (
                 <Link
                   key={idx}
                   to={item.to}
-                  onClick={handleClick}
                   className={`
                     group block flex items-center gap-4 p-3 rounded-xl
                     transition-all duration-200 cursor-pointer
@@ -359,10 +393,9 @@ export default function DashboardLayout({ children }) {
                     backgroundColor: isActive ? 'var(--accent-bg)' : 'transparent',
                     color: isActive ? 'var(--accent-text)' : 'var(--text-secondary)',
                     boxShadow: isActive ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none',
-                    pointerEvents: isActive ? 'auto' : 'auto',
                   }}
                 >
-                  <motion.span whileHover={{ scale: 1.1, rotate: -5 }} className="transition-transform duration-200">
+                  <motion.span whileHover={{ scale: isActive ? 1 : 1.1, rotate: isActive ? 0 : -5 }} className="transition-transform duration-200">
                     {item.icon}
                   </motion.span>
                   {!collapsed && (

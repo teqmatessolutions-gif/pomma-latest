@@ -74,27 +74,207 @@ const KpiCard = React.memo(({ title, value, icon, color, prefix = '', suffix = '
 KpiCard.displayName = 'KpiCard';
 
 const CheckoutDetailModal = React.memo(({ checkout, onClose }) => {
+  const [details, setDetails] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (checkout) {
+      setLoading(true);
+      api.get(`/bill/checkouts/${checkout.id}/details`)
+        .then(response => {
+          setDetails(response.data);
+        })
+        .catch(err => {
+          console.error("Failed to load checkout details:", err);
+          setDetails(null);
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [checkout]);
+
   if (!checkout) return null;
+  
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 relative animate-fade-in-up">
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4 overflow-y-auto">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] p-6 relative animate-fade-in-up overflow-y-auto">
+        <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 z-10">
           <X size={24} />
         </button>
         <h2 className="text-2xl font-bold text-gray-800 mb-4">Checkout Details (ID: {checkout.id})</h2>
-        <div className="space-y-2 text-gray-700">
-          <p><strong>Guest:</strong> {checkout.guest_name}</p>
-          <p><strong>Rooms:</strong> {checkout.room_number}</p>
-          <p><strong>Date:</strong> {new Date(checkout.created_at).toLocaleString()}</p>
-          <p><strong>Payment Method:</strong> {checkout.payment_method}</p>
-          {checkout.booking_id && <p><strong>Booking ID:</strong> {checkout.booking_id}</p>}
-          {checkout.package_booking_id && <p><strong>Package ID:</strong> {checkout.package_booking_id}</p>}
-          <div className="mt-4 pt-4 border-t">
-            <p className="text-xl font-bold text-right text-indigo-600">
-              Grand Total: {formatCurrency(checkout.grand_total)}
-            </p>
+        
+        {loading ? (
+          <div className="text-center py-8">Loading details...</div>
+        ) : details ? (
+          <div className="space-y-6">
+            {/* Basic Information */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Guest Name</p>
+                <p className="font-semibold">{details.guest_name || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Rooms</p>
+                <p className="font-semibold">{details.room_numbers?.join(', ') || details.room_number || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Checkout Date</p>
+                <p className="font-semibold">{new Date(details.created_at).toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Payment Method</p>
+                <p className="font-semibold">{details.payment_method || 'N/A'}</p>
+              </div>
+              {details.booking_id && (
+                <div>
+                  <p className="text-sm text-gray-500">Booking ID</p>
+                  <p className="font-semibold">{details.booking_id}</p>
+                </div>
+              )}
+              {details.package_booking_id && (
+                <div>
+                  <p className="text-sm text-gray-500">Package Booking ID</p>
+                  <p className="font-semibold">{details.package_booking_id}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Booking Details */}
+            {details.booking_details && (
+              <div className="border-t pt-4">
+                <h3 className="text-lg font-semibold mb-3">Booking Information</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Check-in</p>
+                    <p className="font-semibold">{details.booking_details.check_in}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Check-out</p>
+                    <p className="font-semibold">{details.booking_details.check_out}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Adults</p>
+                    <p className="font-semibold">{details.booking_details.adults}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Children</p>
+                    <p className="font-semibold">{details.booking_details.children}</p>
+                  </div>
+                  {details.booking_details.package_name && (
+                    <div className="col-span-2">
+                      <p className="text-sm text-gray-500">Package</p>
+                      <p className="font-semibold">{details.booking_details.package_name}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Food Orders */}
+            {details.food_orders && details.food_orders.length > 0 && (
+              <div className="border-t pt-4">
+                <h3 className="text-lg font-semibold mb-3">Food Orders</h3>
+                <div className="space-y-4">
+                  {details.food_orders.map((order, idx) => (
+                    <div key={idx} className="bg-gray-50 p-4 rounded-lg">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <p className="font-semibold">Order #{order.id}</p>
+                          <p className="text-sm text-gray-500">Room: {order.room_number}</p>
+                          <p className="text-sm text-gray-500">{new Date(order.created_at).toLocaleString()}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-indigo-600">{formatCurrency(order.amount)}</p>
+                          <p className="text-sm text-gray-500">{order.status}</p>
+                        </div>
+                      </div>
+                      <div className="mt-2 space-y-1">
+                        {order.items?.map((item, itemIdx) => (
+                          <div key={itemIdx} className="flex justify-between text-sm">
+                            <span>{item.item_name} x {item.quantity}</span>
+                            <span className="font-medium">{formatCurrency(item.total)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Services */}
+            {details.services && details.services.length > 0 && (
+              <div className="border-t pt-4">
+                <h3 className="text-lg font-semibold mb-3">Services</h3>
+                <div className="space-y-2">
+                  {details.services.map((service, idx) => (
+                    <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+                      <div>
+                        <p className="font-semibold">{service.service_name}</p>
+                        <p className="text-sm text-gray-500">Room: {service.room_number}</p>
+                        {service.created_at && (
+                          <p className="text-xs text-gray-400">{new Date(service.created_at).toLocaleString()}</p>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-indigo-600">{formatCurrency(service.charges)}</p>
+                        <p className="text-sm text-gray-500">{service.status}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Bill Summary */}
+            <div className="border-t pt-4">
+              <h3 className="text-lg font-semibold mb-3">Bill Summary</h3>
+              <div className="space-y-2">
+                {details.room_total > 0 && (
+                  <div className="flex justify-between">
+                    <span>Room Charges:</span>
+                    <span className="font-medium">{formatCurrency(details.room_total)}</span>
+                  </div>
+                )}
+                {details.package_total > 0 && (
+                  <div className="flex justify-between">
+                    <span>Package Charges:</span>
+                    <span className="font-medium">{formatCurrency(details.package_total)}</span>
+                  </div>
+                )}
+                {details.food_total > 0 && (
+                  <div className="flex justify-between">
+                    <span>Food Charges:</span>
+                    <span className="font-medium">{formatCurrency(details.food_total)}</span>
+                  </div>
+                )}
+                {details.service_total > 0 && (
+                  <div className="flex justify-between">
+                    <span>Service Charges:</span>
+                    <span className="font-medium">{formatCurrency(details.service_total)}</span>
+                  </div>
+                )}
+                {details.tax_amount > 0 && (
+                  <div className="flex justify-between">
+                    <span>Tax:</span>
+                    <span className="font-medium">{formatCurrency(details.tax_amount)}</span>
+                  </div>
+                )}
+                {details.discount_amount > 0 && (
+                  <div className="flex justify-between text-red-600">
+                    <span>Discount:</span>
+                    <span className="font-medium">-{formatCurrency(details.discount_amount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-xl font-bold text-indigo-600 pt-2 border-t">
+                  <span>Grand Total:</span>
+                  <span>{formatCurrency(details.grand_total)}</span>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="text-center py-8 text-gray-500">Failed to load details</div>
+        )}
       </div>
     </div>
   );

@@ -64,6 +64,29 @@ class CheckoutFull(BaseModel):
     class Config:
         from_attributes = True
 
+class CheckoutDetail(BaseModel):
+    id: int
+    booking_id: Optional[int]
+    package_booking_id: Optional[int]
+    room_total: float = 0
+    food_total: float = 0
+    service_total: float = 0
+    package_total: float = 0
+    tax_amount: float = 0
+    discount_amount: float = 0
+    grand_total: float = 0
+    payment_method: Optional[str] = ""
+    payment_status: Optional[str] = "Paid"
+    created_at: Optional[datetime]
+    guest_name: Optional[str] = ""
+    room_number: Optional[str] = ""
+    food_orders: List[dict] = []
+    services: List[dict] = []
+    booking_details: Optional[dict] = None
+
+    class Config:
+        from_attributes = True
+
 class CheckoutSuccess(BaseModel):
     message: str = "Checkout successful"
     checkout_id: int

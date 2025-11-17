@@ -28,7 +28,7 @@ def update_room_statuses(db: Session):
             updated_count = 0
             for room in rooms:
                 try:
-                    # Check if room has active bookings (currently occupied)
+                    # Check if room has active bookings (currently occupied or checked-in)
                     # Normalize status values to handle both formats
                     active_booking = db.query(BookingRoom).join(Booking).filter(
                         BookingRoom.room_id == room.id,
@@ -37,10 +37,31 @@ def update_room_statuses(db: Session):
                         Booking.check_out > today
                     ).first()
                     
+                    # Check for active package bookings too
+                    from app.models.Package import PackageBooking, PackageBookingRoom
+                    active_package_booking = db.query(PackageBookingRoom).join(PackageBooking).filter(
+                        PackageBookingRoom.room_id == room.id,
+                        PackageBooking.status.in_(['booked', 'checked-in', 'checked_in']),
+                        PackageBooking.check_in <= today,
+                        PackageBooking.check_out > today
+                    ).first()
+                    
                     new_status = None
-                    if active_booking:
-                        # Room is currently occupied
-                        new_status = "Occupied"
+                    if active_booking or active_package_booking:
+                        # Check if the booking is actually checked-in (not just booked)
+                        is_checked_in = False
+                        if active_booking:
+                            normalized_status = active_booking.booking.status.lower().replace('-', '').replace('_', '').replace(' ', '')
+                            is_checked_in = normalized_status == 'checkedin'
+                        if not is_checked_in and active_package_booking:
+                            normalized_status = active_package_booking.package_booking.status.lower().replace('-', '').replace('_', '').replace(' ', '')
+                            is_checked_in = normalized_status == 'checkedin'
+                        
+                        # Set status based on whether booking is checked-in or just booked
+                        if is_checked_in:
+                            new_status = "Checked-in"
+                        else:
+                            new_status = "Occupied"
                     else:
                         # Check if booking has ended today or before
                         past_booking = db.query(BookingRoom).join(Booking).filter(

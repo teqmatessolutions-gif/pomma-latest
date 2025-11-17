@@ -16,6 +16,8 @@ class PackageOut(BaseModel):
     title: str
     description: Optional[str] = None
     price: float
+    booking_type: Optional[str] = "room_type"  # "whole_property" or "room_type"
+    room_types: Optional[str] = None  # Comma-separated list of room types
     images: List[PackageImageOut] = Field(default_factory=list)
 
     class Config:

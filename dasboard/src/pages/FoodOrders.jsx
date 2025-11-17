@@ -32,18 +32,94 @@ export default function FoodOrders() {
 
   const fetchAll = async () => {
     try {
-      // Fetch initial page of orders
-      const [ordersRes, roomsRes, employeesRes, foodItemsRes] = await Promise.all([
+      // Fetch initial page of orders, rooms, bookings, and other data
+      const [ordersRes, roomsRes, employeesRes, foodItemsRes, bookingsRes, packageBookingsRes] = await Promise.all([
         api.get("/food-orders/?skip=0&limit=20"),
         api.get("/rooms/"),
         api.get("/employees/"),
         api.get("/food-items/"),
+        api.get("/bookings?limit=1000").catch(() => ({ data: { bookings: [] } })),
+        api.get("/packages/bookingsall?limit=1000").catch(() => ({ data: [] })),
       ]);
       setOrders(ordersRes.data);
       setHasMore(ordersRes.data.length === 12);
-      setRooms(roomsRes.data);
       setEmployees(employeesRes.data);
       setFoodItems(foodItemsRes.data);
+      
+      // Filter rooms to only show checked-in rooms (similar to Services page)
+      const allRooms = roomsRes.data;
+      const regularBookings = bookingsRes.data?.bookings || [];
+      const packageBookings = (packageBookingsRes.data || []).map(pb => ({ ...pb, is_package: true }));
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const checkedInRoomIds = new Set();
+      
+      // Helper function to normalize status
+      const normalizeStatus = (status) => {
+        if (!status) return '';
+        return status.toLowerCase().replace(/[-_\s]/g, '');
+      };
+      
+      // Helper function to check if status is checked-in
+      const isCheckedIn = (status) => {
+        const normalized = normalizeStatus(status);
+        return normalized === 'checkedin';
+      };
+      
+      // Get room IDs from checked-in regular bookings
+      regularBookings.forEach(booking => {
+        if (isCheckedIn(booking.status)) {
+          const checkInDate = new Date(booking.check_in);
+          const checkOutDate = new Date(booking.check_out);
+          checkInDate.setHours(0, 0, 0, 0);
+          checkOutDate.setHours(0, 0, 0, 0);
+          
+          if (checkInDate <= today && checkOutDate >= today) {
+            if (booking.rooms && Array.isArray(booking.rooms)) {
+              booking.rooms.forEach(room => {
+                if (room && room.id) {
+                  checkedInRoomIds.add(room.id);
+                }
+              });
+            }
+          }
+        }
+      });
+      
+      // Get room IDs from checked-in package bookings
+      packageBookings.forEach(booking => {
+        if (isCheckedIn(booking.status)) {
+          const checkInDate = new Date(booking.check_in);
+          const checkOutDate = new Date(booking.check_out);
+          checkInDate.setHours(0, 0, 0, 0);
+          checkOutDate.setHours(0, 0, 0, 0);
+          
+          if (checkInDate <= today && checkOutDate >= today) {
+            if (booking.rooms && Array.isArray(booking.rooms)) {
+              booking.rooms.forEach(roomLink => {
+                // Package bookings have rooms as PackageBookingRoomOut objects
+                const room = roomLink.room || roomLink;
+                if (room && room.id) {
+                  checkedInRoomIds.add(room.id);
+                }
+              });
+            }
+          }
+        }
+      });
+      
+      // Also check room status directly as a fallback
+      allRooms.forEach(room => {
+        const roomStatusNormalized = normalizeStatus(room.status);
+        if (roomStatusNormalized === 'checkedin') {
+          checkedInRoomIds.add(room.id);
+        }
+      });
+      
+      // Filter rooms to only show checked-in rooms
+      const checkedInRooms = allRooms.filter(room => checkedInRoomIds.has(room.id));
+      setRooms(checkedInRooms);
     } catch (error) {
       console.error("Failed to fetch data:", error);
     }
@@ -216,22 +292,14 @@ export default function FoodOrders() {
   className="border rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 text-black"
 >
   <option value="">Select Room</option>
-  {rooms.filter((room) => {
-    const normalizedStatus = room.status?.toLowerCase().replace(/[-_\s]/g, '');
-    return normalizedStatus === 'booked' || normalizedStatus === 'checkedin' || normalizedStatus === 'occupied';
-  }).length === 0 ? (
+  {rooms.length === 0 ? (
     <option disabled>No checked-in rooms available</option>
   ) : (
-    rooms
-      .filter((room) => {
-        const normalizedStatus = room.status?.toLowerCase().replace(/[-_\s]/g, '');
-        return normalizedStatus === 'booked' || normalizedStatus === 'checkedin' || normalizedStatus === 'occupied';
-      })
-      .map((room) => (
-        <option key={room.id} value={room.id}>
-          Room {room.number || room.room_number || room.id} ({room.booking?.guest_name || 'Guest'})
-        </option>
-      ))
+    rooms.map((room) => (
+      <option key={room.id} value={room.id}>
+        Room {room.number || room.room_number || room.id}
+      </option>
+    ))
   )}
 </select>
 

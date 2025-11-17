@@ -176,6 +176,18 @@ const Rooms = () => {
     adults: 2,
     children: 0,
     image: null,
+    air_conditioning: false,
+    wifi: false,
+    bathroom: false,
+    living_area: false,
+    terrace: false,
+    parking: false,
+    kitchen: false,
+    family_room: false,
+    bbq: false,
+    garden: false,
+    dining: false,
+    breakfast: false,
   });
   const [previewImage, setPreviewImage] = useState(null);
   const [bannerMessage, setBannerMessage] = useState({ type: null, text: "" });
@@ -284,7 +296,7 @@ const Rooms = () => {
   };
 
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
+    const { name, value, files, type, checked } = e.target;
     if (name === "image") {
       const file = files[0];
       if (file) {
@@ -304,6 +316,8 @@ const Rooms = () => {
       }
       setForm((prev) => ({ ...prev, image: file }));
       setPreviewImage(file ? URL.createObjectURL(file) : null);
+    } else if (type === "checkbox") {
+      setForm((prev) => ({ ...prev, [name]: checked }));
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
     }
@@ -319,6 +333,20 @@ const Rooms = () => {
     formData.append("adults", form.adults);
     formData.append("children", form.children);
     if (form.image) formData.append("image", form.image);
+    
+    // Append feature fields
+    formData.append("air_conditioning", form.air_conditioning);
+    formData.append("wifi", form.wifi);
+    formData.append("bathroom", form.bathroom);
+    formData.append("living_area", form.living_area);
+    formData.append("terrace", form.terrace);
+    formData.append("parking", form.parking);
+    formData.append("kitchen", form.kitchen);
+    formData.append("family_room", form.family_room);
+    formData.append("bbq", form.bbq);
+    formData.append("garden", form.garden);
+    formData.append("dining", form.dining);
+    formData.append("breakfast", form.breakfast);
 
     try {
       if (isEditing) {
@@ -329,16 +357,6 @@ const Rooms = () => {
         setIsEditing(false);
         setEditRoomId(null);
       } else {
-        // Use the working test endpoint for room creation
-        const formData = new FormData();
-        formData.append("number", form.number);
-        formData.append("type", form.type);
-        formData.append("price", form.price);
-        formData.append("status", form.status);
-        formData.append("adults", form.adults);
-        formData.append("children", form.children);
-        if (form.image) formData.append("image", form.image);
-
         await API.post("/rooms/test", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
@@ -353,6 +371,18 @@ const Rooms = () => {
         adults: 2,
         children: 0,
         image: null,
+        air_conditioning: false,
+        wifi: false,
+        bathroom: false,
+        living_area: false,
+        terrace: false,
+        parking: false,
+        kitchen: false,
+        family_room: false,
+        bbq: false,
+        garden: false,
+        dining: false,
+        breakfast: false,
       });
       setPreviewImage(null);
       fetchRooms();
@@ -373,6 +403,18 @@ const Rooms = () => {
       adults: room.adults,
       children: room.children,
       image: null,
+      air_conditioning: room.air_conditioning || false,
+      wifi: room.wifi || false,
+      bathroom: room.bathroom || false,
+      living_area: room.living_area || false,
+      terrace: room.terrace || false,
+      parking: room.parking || false,
+      kitchen: room.kitchen || false,
+      family_room: room.family_room || false,
+      bbq: room.bbq || false,
+      garden: room.garden || false,
+      dining: room.dining || false,
+      breakfast: room.breakfast || false,
     });
     setPreviewImage(getImageUrl(room.image_url));
     setBannerMessage({ type: null, text: "" });
@@ -527,6 +569,133 @@ const Rooms = () => {
               className="w-full h-32 object-cover rounded-lg border-2 border-gray-200"
             />
           )}
+          
+          {/* Room Features Section */}
+          <div className="md:col-span-2 lg:col-span-3">
+            <label className="block text-sm font-medium text-gray-700 mb-3">Room Features & Amenities</label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="air_conditioning"
+                  checked={form.air_conditioning}
+                  onChange={handleChange}
+                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                />
+                <span className="text-sm text-gray-700">Air Conditioning</span>
+              </label>
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="wifi"
+                  checked={form.wifi}
+                  onChange={handleChange}
+                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                />
+                <span className="text-sm text-gray-700">Free Wifi</span>
+              </label>
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="bathroom"
+                  checked={form.bathroom}
+                  onChange={handleChange}
+                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                />
+                <span className="text-sm text-gray-700">Private Bathroom</span>
+              </label>
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="living_area"
+                  checked={form.living_area}
+                  onChange={handleChange}
+                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                />
+                <span className="text-sm text-gray-700">Living Room</span>
+              </label>
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="terrace"
+                  checked={form.terrace}
+                  onChange={handleChange}
+                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                />
+                <span className="text-sm text-gray-700">Terrace</span>
+              </label>
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="parking"
+                  checked={form.parking}
+                  onChange={handleChange}
+                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                />
+                <span className="text-sm text-gray-700">Free Parking</span>
+              </label>
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="kitchen"
+                  checked={form.kitchen}
+                  onChange={handleChange}
+                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                />
+                <span className="text-sm text-gray-700">Kitchen</span>
+              </label>
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="family_room"
+                  checked={form.family_room}
+                  onChange={handleChange}
+                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                />
+                <span className="text-sm text-gray-700">Family Room</span>
+              </label>
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="bbq"
+                  checked={form.bbq}
+                  onChange={handleChange}
+                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                />
+                <span className="text-sm text-gray-700">BBQ</span>
+              </label>
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="garden"
+                  checked={form.garden}
+                  onChange={handleChange}
+                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                />
+                <span className="text-sm text-gray-700">Garden</span>
+              </label>
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="dining"
+                  checked={form.dining}
+                  onChange={handleChange}
+                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                />
+                <span className="text-sm text-gray-700">Dining Area</span>
+              </label>
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="breakfast"
+                  checked={form.breakfast}
+                  onChange={handleChange}
+                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                />
+                <span className="text-sm text-gray-700">Breakfast</span>
+              </label>
+            </div>
+          </div>
         <div className="md:col-span-2 lg:col-span-3 flex items-center gap-4">
           <button
             type="submit"
@@ -548,6 +717,18 @@ const Rooms = () => {
                   adults: 2,
                   children: 0,
                   image: null,
+                  air_conditioning: false,
+                  wifi: false,
+                  bathroom: false,
+                  living_area: false,
+                  terrace: false,
+                  parking: false,
+                  kitchen: false,
+                  family_room: false,
+                  bbq: false,
+                  garden: false,
+                  dining: false,
+                  breakfast: false,
                 });
                 setPreviewImage(null);
                 setBannerMessage({ type: null, text: "" });
@@ -601,6 +782,25 @@ const Rooms = () => {
                   <p className="text-indigo-600 font-bold text-xl">{formatCurrency(room.price)}</p>
                 </div>
                 <p className="text-sm text-gray-600 mt-2">Capacity: {room.adults} Adults, {room.children} Children</p>
+                
+                {/* Room Features */}
+                {(room.air_conditioning || room.wifi || room.bathroom || room.living_area || room.terrace || room.parking || room.kitchen || room.family_room || room.bbq || room.garden || room.dining || room.breakfast) && (
+                  <div className="mt-3 flex flex-wrap gap-1">
+                    {room.air_conditioning && <span className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">AC</span>}
+                    {room.wifi && <span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full">WiFi</span>}
+                    {room.bathroom && <span className="px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded-full">Bathroom</span>}
+                    {room.living_area && <span className="px-2 py-1 text-xs bg-orange-100 text-orange-700 rounded-full">Living</span>}
+                    {room.terrace && <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded-full">Terrace</span>}
+                    {room.parking && <span className="px-2 py-1 text-xs bg-indigo-100 text-indigo-700 rounded-full">Parking</span>}
+                    {room.kitchen && <span className="px-2 py-1 text-xs bg-pink-100 text-pink-700 rounded-full">Kitchen</span>}
+                    {room.family_room && <span className="px-2 py-1 text-xs bg-teal-100 text-teal-700 rounded-full">Family</span>}
+                    {room.bbq && <span className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded-full">BBQ</span>}
+                    {room.garden && <span className="px-2 py-1 text-xs bg-emerald-100 text-emerald-700 rounded-full">Garden</span>}
+                    {room.dining && <span className="px-2 py-1 text-xs bg-amber-100 text-amber-700 rounded-full">Dining</span>}
+                    {room.breakfast && <span className="px-2 py-1 text-xs bg-cyan-100 text-cyan-700 rounded-full">Breakfast</span>}
+                  </div>
+                )}
+                
                 <div className="h-16 mt-4">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={(room.trend || []).map((v, i) => ({ day: i + 1, value: v }))}>

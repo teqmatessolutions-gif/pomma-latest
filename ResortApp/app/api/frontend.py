@@ -635,7 +635,36 @@ def delete_plan_wedding(item_id: int, db: Session = Depends(get_db), current_use
 # ---------- Nearby Attractions ----------
 @router.get("/nearby-attractions/", response_model=list[schemas.NearbyAttraction])
 def list_nearby_attractions(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
-    return crud.get_all(db, models.NearbyAttraction, skip=skip, limit=limit)
+    try:
+        # Verify model is available
+        if not hasattr(models, 'NearbyAttraction'):
+            print("ERROR: NearbyAttraction model not found in models module")
+            return []
+        
+        # Try to query the table
+        result = crud.get_all(db, models.NearbyAttraction, skip=skip, limit=limit)
+        # Ensure we return a list
+        if result is None:
+            return []
+        return result
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+    except Exception as e:
+        import traceback
+        error_detail = f"Failed to fetch nearby attractions: {str(e)}\n{traceback.format_exc()}"
+        print(f"ERROR: {error_detail}")
+        # Log to stderr as well for better visibility
+        import sys
+        sys.stderr.write(f"ERROR in nearby-attractions: {error_detail}\n")
+        # For any error, return empty list to prevent frontend breakage
+        # This allows the frontend to work even if there's a database issue
+        error_str = str(e).lower()
+        if "does not exist" in error_str or "relation" in error_str or "no such table" in error_str:
+            print("Table may not exist yet, returning empty list")
+        else:
+            print(f"Unexpected error in nearby-attractions endpoint, returning empty list: {str(e)}")
+        return []
 
 
 @router.post("/nearby-attractions/", response_model=schemas.NearbyAttraction)

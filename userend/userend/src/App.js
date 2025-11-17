@@ -843,6 +843,15 @@ export default function App() {
     const [bookingMessage, setBookingMessage] = useState({ type: null, text: "" });
     const [isBookingLoading, setIsBookingLoading] = useState(false);
 
+    // Fallback: if data fetch hangs for some reason, hide the loader after 8s so the page can render.
+    useEffect(() => {
+        if (!loading) return;
+        const timer = setTimeout(() => {
+            setLoading(false);
+        }, 8000);
+        return () => clearTimeout(timer);
+    }, [loading]);
+
     // Use Pomma Holidays inspired theme palette
     const currentTheme = 'pomma';
     const theme = themes[currentTheme];
@@ -877,7 +886,7 @@ export default function App() {
     const totalNearbyAttractions = activeNearbyAttractions.length;
     const activeNearbyAttractionBanners = useMemo(
         () => nearbyAttractionBanners.filter(banner => banner.is_active),
-        [nearbyAttractionBanners]
+        [nearbyAttractions]
     );
     const totalNearbyAttractionBanners = activeNearbyAttractionBanners.length;
 
@@ -992,73 +1001,96 @@ export default function App() {
         return `${defaultPattern[colIndex]}px`;
     };
 
-    // *** FIX: Added useEffect to fetch all resort data on component mount ***
+    // Fetch all resort data on component mount
     useEffect(() => {
         const fetchResortData = async () => {
-            const API_BASE_URL = process.env.NODE_ENV === 'production' ? "https://www.teqmates.com/api" : "http://localhost:8000/api";
-            const endpoints = {
-                rooms: '/rooms/test',  // Use working test endpoint for real room data
-                bookings: '/bookings?limit=500&skip=0', // Reduced limit for better performance - only recent bookings needed
-                foodItems: '/food-items/',
-                foodCategories: '/food-categories/',
-                packages: '/packages/',
-                resortInfo: '/resort-info/',
-                gallery: '/gallery/',
-                reviews: '/reviews/',
-                banners: '/header-banner/',
-                services: '/services/', // Fetch services (note: plural)
-                signatureExperiences: '/signature-experiences/',
-                planWeddings: '/plan-weddings/',
-                nearbyAttractions: '/nearby-attractions/',
-                nearbyAttractionBanners: '/nearby-attraction-banners/'
+            const API_BASE_URL =
+                process.env.NODE_ENV === "production"
+                    ? "https://www.teqmates.com/api"
+                    : "http://localhost:8000/api";
+
+            // Helper: fetch JSON but never throw – log and return fallback on error.
+            const safeFetch = async (endpoint, fallback) => {
+                try {
+                    const res = await fetch(`${API_BASE_URL}${endpoint}`);
+                    if (!res.ok) {
+                        console.warn(`Endpoint ${endpoint} returned ${res.status}`);
+                        return fallback;
+                    }
+                    return await res.json();
+                } catch (e) {
+                    console.warn(`Failed to fetch ${endpoint}:`, e);
+                    return fallback;
+                }
             };
 
             try {
-                const responses = await Promise.all(
-                    Object.values(endpoints).map(endpoint => fetch(`${API_BASE_URL}${endpoint}`))
-                );
+                // Essential data for layout
+                const roomsData = await safeFetch("/rooms/test", []);
+                const bookingsData = await safeFetch("/bookings?limit=500&skip=0", { bookings: [] });
+                const resortInfoData = await safeFetch("/resort-info/", []);
 
-                for (const res of responses) {
-                    if (!res.ok) {
-                        throw new Error(`HTTP error! status: ${res.status} for ${res.url}`);
-                    }
-                }
-
-                const data = await Promise.all(responses.map(res => res.json()));
-
+                // Non‑critical / image-heavy endpoints – errors should not break the page
                 const [
-                    roomsData, bookingsData, foodItemsData, foodCategoriesData, packagesData,
-                    resortInfoData, galleryData, reviewsData, bannerData, servicesData,
-                    signatureExperiencesData, planWeddingsData, nearbyAttractionsData, nearbyAttractionBannersData
-                ] = data;
+                    foodItemsData,
+                    foodCategoriesData,
+                    packagesData,
+                    galleryData,
+                    reviewsData,
+                    bannerData,
+                    servicesData,
+                    signatureExperiencesData,
+                    planWeddingsData,
+                    nearbyAttractionsData,
+                    nearbyAttractionBannersData,
+                ] = await Promise.all([
+                    safeFetch("/food-items/", []),
+                    safeFetch("/food-categories/", []),
+                    safeFetch("/packages/", []),
+                    safeFetch("/gallery/", []),
+                    safeFetch("/reviews/", []),
+                    safeFetch("/header-banner/", []),
+                    safeFetch("/services/", []),
+                    safeFetch("/signature-experiences/", []),
+                    safeFetch("/plan-weddings/", []),
+                    safeFetch("/nearby-attractions/", []),
+                    safeFetch("/nearby-attraction-banners/", []),
+                ]);
 
                 setAllRooms(roomsData);
                 // Don't set rooms here - only show after dates are selected
-                // setRooms will be set in useEffect when dates are chosen
-                setBookings(bookingsData.bookings || []); // Store bookings for availability filtering
-                setServices(servicesData || []); // Fetch services from backend
+                setBookings(bookingsData.bookings || []);
+                setServices(servicesData || []);
                 setFoodItems(foodItemsData);
                 setFoodCategories(foodCategoriesData || []);
                 setPackages(packagesData);
                 setResortInfo(resortInfoData.length > 0 ? resortInfoData[0] : null);
-                setGalleryImages(galleryData);
-                setReviews(reviewsData);
-                setBannerData(bannerData.filter(b => b.is_active));
+                setGalleryImages(galleryData || []);
+                setReviews(reviewsData || []);
+                setBannerData((bannerData || []).filter((b) => b.is_active));
                 setSignatureExperiences(signatureExperiencesData || []);
                 setPlanWeddings(planWeddingsData || []);
                 setNearbyAttractions(nearbyAttractionsData || []);
                 setNearbyAttractionBanners(nearbyAttractionBannersData || []);
 
+                // Only set a global error if even the core resort info is missing
+                if (!roomsData.length && !resortInfoData.length) {
+                    setError(
+                        "Unable to load resort details. Please ensure the backend server is running and accessible."
+                    );
+                }
             } catch (err) {
-                console.error("Failed to fetch resort data:", err);
-                setError("Failed to load resort data. Please ensure the backend server is running and accessible.");
+                console.error("Unexpected error while fetching resort data:", err);
+                setError(
+                    "Unexpected error while loading the resort. Please try again later."
+                );
             } finally {
                 setLoading(false);
             }
         };
 
         fetchResortData();
-    }, []); // Empty dependency array ensures this runs only once on mount
+    }, []); // run once on mount
 
     // Auto-rotate banner images - only if multiple banners
     useEffect(() => {
@@ -1275,40 +1307,88 @@ export default function App() {
     const [packageRoomAvailability, setPackageRoomAvailability] = useState({});
     
     const packageRoomAvailabilityMemo = useMemo(() => {
-        if (!packageBookingData.check_in || !packageBookingData.check_out || allRooms.length === 0 || !isPackageBookingFormOpen) {
+        if (!packageBookingData.check_in || !packageBookingData.check_out || allRooms.length === 0 || !isPackageBookingFormOpen || !packageBookingData.package_id) {
             return {};
         }
         
+        // Get the selected package to check booking_type and room_types
+        const selectedPackage = packages.find(p => p.id === packageBookingData.package_id);
+        if (!selectedPackage) return {};
+        
         // Calculate availability for each room for package booking (memoized for performance)
         const availability = {};
-        allRooms.forEach(room => {
-                const hasConflict = bookings.some(booking => {
-                    const normalizedStatus = booking.status?.toLowerCase().replace(/_/g, '-');
-                    if (normalizedStatus === "cancelled" || normalizedStatus === "checked-out") return false;
-                    
-                    const bookingCheckIn = new Date(booking.check_in);
-                    const bookingCheckOut = new Date(booking.check_out);
-                    const requestedCheckIn = new Date(packageBookingData.check_in);
-                    const requestedCheckOut = new Date(packageBookingData.check_out);
-                    
-                    const isRoomInBooking = booking.rooms && booking.rooms.some(r => r.id === room.id);
-                    if (!isRoomInBooking) return false;
-                    
-                    return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
-                });
-                
-            availability[room.id] = !hasConflict;
+        let roomsToCheck = allRooms;
+        
+        // Filter by room_types if booking_type is room_type (case-insensitive)
+        // For whole_property, check ALL rooms
+        if (selectedPackage.booking_type === 'room_type' && selectedPackage.room_types) {
+            const allowedRoomTypes = selectedPackage.room_types.split(',').map(t => t.trim().toLowerCase());
+            roomsToCheck = allRooms.filter(room => {
+                const roomType = room.type ? room.type.trim().toLowerCase() : '';
+                return allowedRoomTypes.includes(roomType);
             });
+        }
+        // For whole_property, roomsToCheck remains allRooms (no filtering)
+        
+        // Check availability for each room
+        roomsToCheck.forEach(room => {
+            // Check for date conflicts with existing bookings
+            // Only consider bookings with status "booked" or "checked-in" as conflicts
+            const hasConflict = bookings.some(booking => {
+                const normalizedStatus = booking.status?.toLowerCase().replace(/_/g, '-');
+                // Only check for "booked" or "checked-in" status - all other statuses are available
+                if (normalizedStatus !== "booked" && normalizedStatus !== "checked-in") return false;
+                
+                const bookingCheckIn = new Date(booking.check_in);
+                const bookingCheckOut = new Date(booking.check_out);
+                const requestedCheckIn = new Date(packageBookingData.check_in);
+                const requestedCheckOut = new Date(packageBookingData.check_out);
+                
+                // Check if this room is part of the booking
+                const isRoomInBooking = booking.rooms && booking.rooms.some(r => {
+                    // Handle both nested (r.room.id) and direct (r.id) room references
+                    const roomId = r.room?.id || r.id;
+                    return roomId === room.id;
+                });
+                if (!isRoomInBooking) return false;
+                
+                // Check for date overlap
+                return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
+            });
+            
+            // Room is available if there are no conflicting bookings for the selected dates
+            // Don't filter by room.status - availability is determined by booking conflicts, not status field
+            availability[room.id] = !hasConflict;
+        });
+        
         return availability;
-    }, [packageBookingData.check_in, packageBookingData.check_out, allRooms, bookings, isPackageBookingFormOpen]);
+    }, [packageBookingData.check_in, packageBookingData.check_out, packageBookingData.package_id, allRooms, bookings, isPackageBookingFormOpen, packages]);
     
     // Update state with debouncing to prevent excessive re-renders
+    // Also auto-select all available rooms for whole_property packages
     useEffect(() => {
         const timer = setTimeout(() => {
             setPackageRoomAvailability(packageRoomAvailabilityMemo);
+            
+            // Auto-select all available rooms for whole_property packages
+            if (packageBookingData.package_id && packageBookingData.check_in && packageBookingData.check_out) {
+                const selectedPackage = packages.find(p => p.id === packageBookingData.package_id);
+                if (selectedPackage && selectedPackage.booking_type === 'whole_property') {
+                    // Get all available room IDs (rooms that are available for the selected dates)
+                    const availableRoomIds = Object.keys(packageRoomAvailabilityMemo)
+                        .filter(roomId => packageRoomAvailabilityMemo[roomId] === true)
+                        .map(id => parseInt(id));
+                    
+                    // Always update room_ids for whole_property to ensure all available rooms are selected
+                    setPackageBookingData(prev => ({
+                        ...prev,
+                        room_ids: availableRoomIds
+                    }));
+                }
+            }
         }, 100); // 100ms debounce
         return () => clearTimeout(timer);
-    }, [packageRoomAvailabilityMemo]);
+    }, [packageRoomAvailabilityMemo, packageBookingData.package_id, packageBookingData.check_in, packageBookingData.check_out, packages]);
 
     // Handlers for form submissions
     const handleRoomBookingSubmit = async (e) => {
@@ -1343,12 +1423,25 @@ export default function App() {
         }
 
         // --- CAPACITY VALIDATION ---
-        const totalGuests = parseInt(bookingData.adults) + parseInt(bookingData.children);
         const selectedRoomDetails = bookingData.room_ids.map(roomId => rooms.find(r => r.id === roomId)).filter(Boolean);
-        const totalCapacity = selectedRoomDetails.reduce((sum, room) => sum + (room.adults || 0) + (room.children || 0), 0);
-
-        if (totalGuests > totalCapacity) {
-            showBannerMessage("error", `Guest count (${totalGuests}) exceeds the total capacity (${totalCapacity}) of the selected rooms.`);
+        const roomCapacity = {
+            adults: selectedRoomDetails.reduce((sum, room) => sum + (room.adults || 0), 0),
+            children: selectedRoomDetails.reduce((sum, room) => sum + (room.children || 0), 0)
+        };
+        
+        const adultsRequested = parseInt(bookingData.adults);
+        const childrenRequested = parseInt(bookingData.children);
+        
+        // Validate adults capacity
+        if (adultsRequested > roomCapacity.adults) {
+            showBannerMessage("error", `The number of adults (${adultsRequested}) exceeds the total adult capacity of the selected rooms (${roomCapacity.adults} adults max). Please select additional rooms or reduce the number of adults.`);
+            setIsBookingLoading(false);
+            return;
+        }
+        
+        // Validate children capacity
+        if (childrenRequested > roomCapacity.children) {
+            showBannerMessage("error", `The number of children (${childrenRequested}) exceeds the total children capacity of the selected rooms (${roomCapacity.children} children max). Please select additional rooms or reduce the number of children.`);
             setIsBookingLoading(false);
             return;
         }
@@ -1397,10 +1490,44 @@ export default function App() {
         setIsBookingLoading(true);
         setBookingMessage({ type: null, text: "" });
 
-        if (packageBookingData.room_ids.length === 0) {
-            showBannerMessage("error", "Please select at least one room for the package.");
+        // Check if package is whole_property - skip room validation
+        const selectedPackage = packages.find(p => p.id === packageBookingData.package_id);
+        if (!selectedPackage) {
+            showBannerMessage("error", "Package not found. Please select a valid package.");
             setIsBookingLoading(false);
             return;
+        }
+        
+        // Determine if it's whole_property (same logic as UI)
+        const hasRoomTypes = selectedPackage.room_types && selectedPackage.room_types.trim().length > 0;
+        const isWholeProperty = selectedPackage.booking_type === 'whole_property' || 
+                               selectedPackage.booking_type === 'whole property' ||
+                               (!selectedPackage.booking_type && !hasRoomTypes);
+        
+        // For whole_property, get all available rooms and use them directly
+        let finalRoomIds = packageBookingData.room_ids;
+        
+        if (isWholeProperty) {
+            const availableRoomIds = Object.keys(packageRoomAvailability)
+                .filter(roomId => packageRoomAvailability[roomId] === true)
+                .map(id => parseInt(id));
+            
+            if (availableRoomIds.length === 0) {
+                showBannerMessage("error", "No rooms are available for the selected dates.");
+                setIsBookingLoading(false);
+                return;
+            }
+            
+            // Use all available rooms for whole_property
+            finalRoomIds = availableRoomIds;
+        } else {
+            // For room_type packages, validate that at least one room is selected
+            if (packageBookingData.room_ids.length === 0) {
+                showBannerMessage("error", "Please select at least one room for the package.");
+                setIsBookingLoading(false);
+                return;
+            }
+            finalRoomIds = packageBookingData.room_ids;
         }
 
         // --- MINIMUM BOOKING DURATION VALIDATION ---
@@ -1418,14 +1545,30 @@ export default function App() {
         }
 
         // --- CAPACITY VALIDATION ---
-        const totalGuests = parseInt(packageBookingData.adults) + parseInt(packageBookingData.children);
-        const selectedRoomDetails = packageBookingData.room_ids.map(roomId => rooms.find(r => r.id === roomId)).filter(Boolean);
-        const totalCapacity = selectedRoomDetails.reduce((sum, room) => sum + (room.adults || 0) + (room.children || 0), 0);
-
-        if (totalGuests > totalCapacity) {
-            showBannerMessage("error", `Guest count (${totalGuests}) exceeds the total capacity (${totalCapacity}) of the selected rooms for this package.`);
-            setIsBookingLoading(false);
-            return;
+        // Skip capacity validation for whole_property packages (they book entire property regardless of guest count)
+        if (!isWholeProperty) {
+            const selectedRoomDetails = finalRoomIds.map(roomId => rooms.find(r => r.id === roomId)).filter(Boolean);
+            const packageCapacity = {
+                adults: selectedRoomDetails.reduce((sum, room) => sum + (room.adults || 0), 0),
+                children: selectedRoomDetails.reduce((sum, room) => sum + (room.children || 0), 0)
+            };
+            
+            const adultsRequested = parseInt(packageBookingData.adults);
+            const childrenRequested = parseInt(packageBookingData.children);
+            
+            // Validate adults capacity
+            if (adultsRequested > packageCapacity.adults) {
+                showBannerMessage("error", `The number of adults (${adultsRequested}) exceeds the total adult capacity of the selected rooms (${packageCapacity.adults} adults max). Please select additional rooms or reduce the number of adults.`);
+                setIsBookingLoading(false);
+                return;
+            }
+            
+            // Validate children capacity
+            if (childrenRequested > packageCapacity.children) {
+                showBannerMessage("error", `The number of children (${childrenRequested}) exceeds the total children capacity of the selected rooms (${packageCapacity.children} children max). Please select additional rooms or reduce the number of children.`);
+                setIsBookingLoading(false);
+                return;
+            }
         }
         // -------------------------
 
@@ -1460,7 +1603,7 @@ export default function App() {
             
             const payload = {
                 package_id: parseInt(packageBookingData.package_id),
-                room_ids: packageBookingData.room_ids.map(id => parseInt(id)),
+                room_ids: finalRoomIds.map(id => parseInt(id)), // Use finalRoomIds (all available for whole_property, selected for room_type)
                 guest_name: packageBookingData.guest_name.trim(),
                 guest_email: packageBookingData.guest_email?.trim() || null,
                 guest_mobile: packageBookingData.guest_mobile.trim(),
@@ -1692,13 +1835,26 @@ export default function App() {
 
     if (loading) {
         return (
-            <div className={`flex items-center justify-center min-h-screen ${theme.bgPrimary} ${theme.textPrimary}`}>
-                <div className="flex flex-col items-center">
-                    <svg className={`animate-spin h-10 w-10 ${theme.textAccent}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <p className="mt-4">Loading resort data...</p>
+            <div className="min-h-screen flex items-center justify-center bg-[#f9f4ea]">
+                <div className="flex flex-col items-center space-y-6">
+                    <div className="relative">
+                        <div className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-[#c99c4e]/30 border-t-[#c99c4e] animate-spin" />
+                        <div className="absolute inset-3 md:inset-4 rounded-full bg-white flex items-center justify-center shadow-lg">
+                            <img
+                                src={logoSrc || localLogo}
+                                alt="Pomma Holidays"
+                                className="h-12 w-auto md:h-14 object-contain"
+                            />
+                        </div>
+                    </div>
+                    <div className="text-center">
+                        <p className="text-xs md:text-sm tracking-[0.25em] uppercase text-[#c99c4e]">
+                            PommaHolidays
+                        </p>
+                        <p className="mt-2 text-xs md:text-sm text-[#4f6f62]">
+                            Crafting your perfect stay...
+                        </p>
+                    </div>
                 </div>
             </div>
         );
@@ -1761,9 +1917,9 @@ export default function App() {
                     </div>
                 )}
                 
-                <header className={`fixed left-0 right-0 z-50 bg-[#0f5132]/95 backdrop-blur-sm shadow-lg ${bannerMessage.text ? 'top-16' : 'top-0'} transition-all duration-300`}>
-                    <div className="container mx-auto px-4 sm:px-6 md:px-12 py-4 flex items-center justify-between text-white">
-                <div className="flex items-center space-x-3 text-white h-20">
+                <header className={`fixed left-0 right-0 z-50 bg-gradient-to-r from-[#0f5132] to-[#1a7042] shadow-lg h-20 ${bannerMessage.text ? 'top-16' : 'top-0'} transition-all duration-300`} style={{ boxShadow: '0 4px 6px -1px rgba(15, 81, 50, 0.3), 0 2px 4px -1px rgba(26, 112, 66, 0.2)' }}>
+                    <div className="container mx-auto px-4 sm:px-6 md:px-12 h-full flex items-center justify-between text-white">
+                <div className="flex items-center space-x-3 text-white h-full">
                             <img 
                                 src={logoSrc} 
                                 alt="Pomma Holidays logo" 
@@ -2172,16 +2328,82 @@ export default function App() {
                                                 </div>
                                                 
                                                 {/* Features */}
-                                                <div className={`flex items-center gap-4 text-sm ${theme.textCardSecondary || theme.textSecondary}`}>
-                                                    <span className="flex items-center gap-1">
-                                                        <span className="w-2 h-2 rounded-full bg-green-400"></span>
-                                                        Lake View
-                                                    </span>
-                                                    <span className="flex items-center gap-1">
-                                                        <span className="w-2 h-2 rounded-full bg-green-400"></span>
-                                                        Balcony
-                                                    </span>
-                                                </div>
+                                                {(room.air_conditioning || room.wifi || room.bathroom || room.living_area || room.terrace || room.parking || room.kitchen || room.family_room || room.bbq || room.garden || room.dining || room.breakfast) && (
+                                                    <div className="flex flex-wrap items-center gap-2 text-sm mt-2">
+                                                        {room.air_conditioning && (
+                                                            <span className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
+                                                                <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                                                                AC
+                                                            </span>
+                                                        )}
+                                                        {room.wifi && (
+                                                            <span className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
+                                                                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                                                                WiFi
+                                                            </span>
+                                                        )}
+                                                        {room.bathroom && (
+                                                            <span className="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs">
+                                                                <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                                                                Bathroom
+                                                            </span>
+                                                        )}
+                                                        {room.living_area && (
+                                                            <span className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs">
+                                                                <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                                                                Living
+                                                            </span>
+                                                        )}
+                                                        {room.terrace && (
+                                                            <span className="flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs">
+                                                                <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                                                                Terrace
+                                                            </span>
+                                                        )}
+                                                        {room.parking && (
+                                                            <span className="flex items-center gap-1 px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs">
+                                                                <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                                                                Parking
+                                                            </span>
+                                                        )}
+                                                        {room.kitchen && (
+                                                            <span className="flex items-center gap-1 px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-xs">
+                                                                <span className="w-2 h-2 rounded-full bg-pink-500"></span>
+                                                                Kitchen
+                                                            </span>
+                                                        )}
+                                                        {room.family_room && (
+                                                            <span className="flex items-center gap-1 px-2 py-1 bg-teal-100 text-teal-700 rounded-full text-xs">
+                                                                <span className="w-2 h-2 rounded-full bg-teal-500"></span>
+                                                                Family
+                                                            </span>
+                                                        )}
+                                                        {room.bbq && (
+                                                            <span className="flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs">
+                                                                <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                                                                BBQ
+                                                            </span>
+                                                        )}
+                                                        {room.garden && (
+                                                            <span className="flex items-center gap-1 px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs">
+                                                                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                                                Garden
+                                                            </span>
+                                                        )}
+                                                        {room.dining && (
+                                                            <span className="flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-xs">
+                                                                <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                                                                Dining
+                                                            </span>
+                                                        )}
+                                                        {room.breakfast && (
+                                                            <span className="flex items-center gap-1 px-2 py-1 bg-cyan-100 text-cyan-700 rounded-full text-xs">
+                                                                <span className="w-2 h-2 rounded-full bg-cyan-500"></span>
+                                                                Breakfast
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                )}
 
                                                 {/* Price */}
                                                 <div className={`flex items-baseline justify-between pt-2 border-t ${theme.cardBorder || theme.border}`}>
@@ -2459,7 +2681,7 @@ export default function App() {
                                                 )}
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
                                                 <div className="absolute bottom-4 left-0 right-0 px-6 text-white">
-                                                    <h3 className="text-2xl font-bold drop-shadow-lg">{service.name}</h3>
+                                                    <h3 className="text-3xl md:text-4xl font-extrabold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]" style={{ textShadow: '0 0 20px rgba(255,255,255,0.3), 0 2px 8px rgba(0,0,0,0.9), 0 4px 12px rgba(0,0,0,0.7)' }}>{service.name}</h3>
                                                 </div>
                                             </div>
                                             <div className="p-6 space-y-4">
@@ -2584,15 +2806,6 @@ export default function App() {
                                 </>
                             ) : (
                                 <p className={`text-center py-12 ${theme.textSecondary}`}>No food items available at the moment.</p>
-                            )}
-
-                            {/* View More Button */}
-                            {foodItems.length > 8 && (
-                                <div className="text-center mt-12">
-                                    <button className="px-10 py-4 bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white font-semibold text-lg rounded-full shadow-xl hover:from-[#136640] hover:to-[#218051] transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#c99c4e]/70">
-                                        View Full Menu
-                                    </button>
-                                </div>
                             )}
                         </div>
                     </section>
@@ -3125,59 +3338,124 @@ export default function App() {
                                         />
                                     </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className={`block text-sm font-medium ${theme.textSecondary}`}>Available Rooms for Selected Dates</label>
-                                    {!packageBookingData.check_in || !packageBookingData.check_out ? (
-                                        <div className={`p-6 text-center rounded-xl ${theme.bgSecondary} border-2 border-dashed ${theme.border}`}>
-                                            <BedDouble className={`w-10 h-10 ${theme.textSecondary} mx-auto mb-3`} />
-                                            <p className={`text-sm ${theme.textSecondary}`}>Please select check-in and check-out dates above to see available rooms</p>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <p className={`text-xs ${theme.textSecondary} mb-2`}>Showing rooms available from {packageBookingData.check_in} to {packageBookingData.check_out}</p>
-                                    <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-48 overflow-y-auto p-3 rounded-xl ${theme.bgSecondary}`}>
-                                                {rooms.length > 0 ? (
-                                                    rooms.map(room => {
-                                                        const isAvailable = Object.keys(packageRoomAvailability).length === 0 || packageRoomAvailability[room.id] !== false;
-                                                        return (
-                                                <div 
-                                                    key={room.id} 
-                                                    onClick={() => isAvailable && handlePackageRoomSelection(room.id)}
-                                                    className={`rounded-lg border-2 transition-all duration-200 overflow-hidden ${
-                                                        !isAvailable 
-                                                            ? 'opacity-50 cursor-not-allowed bg-gray-300 border-gray-400' 
-                                                            : `cursor-pointer ${packageBookingData.room_ids.includes(room.id) ? `${theme.buttonBg} ${theme.buttonText} border-transparent` : `${theme.bgCard} ${theme.textPrimary} ${theme.border} hover:border-[#c99c4e]`}`
-                                                    }`}
-                                                >
-                                                    <img 
-                                                        src={getImageUrl(room.image_url)} 
-                                                        alt={room.type} 
-                                                        className="w-full h-20 object-cover" 
-                                                        onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }} 
-                                                    />
-                                                    <div className="p-2 text-center">
-                                                        <p className="font-semibold text-xs">Room {room.number}</p>
-                                                        <p className="text-xs opacity-80">{room.type}</p>
-                                                        <p className="text-xs opacity-60 mt-1">Max: {room.adults}A, {room.children}C</p>
-                                                        <p className="text-xs font-bold mt-1">{formatCurrency(room.price)}</p>
-                                                        {!isAvailable && (
-                                                            <p className="text-xs text-red-600 font-bold mt-1">Unavailable</p>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                        );
-                                                    })
-                                        ) : (
-                                            <div className="col-span-full text-center py-8 text-gray-500">
-                                                        <BedDouble className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                                                        <p className="text-sm font-semibold mb-1">No rooms available</p>
-                                                        <p className="text-xs">No rooms are available for the selected dates. Please try different dates.</p>
+                                {/* Room Selection - Only show for room_type packages */}
+                                {(() => {
+                                    const selectedPackage = packages.find(p => p.id === packageBookingData.package_id);
+                                    
+                                    if (!selectedPackage) {
+                                        return null;
+                                    }
+                                    
+                                    // Determine if it's whole_property:
+                                    // 1. If booking_type is explicitly 'whole_property'
+                                    // 2. If booking_type is not set AND room_types is not set (legacy whole_property)
+                                    // 3. If booking_type is null/undefined and room_types is null/undefined/empty
+                                    const hasRoomTypes = selectedPackage.room_types && selectedPackage.room_types.trim().length > 0;
+                                    const isWholeProperty = selectedPackage.booking_type === 'whole_property' || 
+                                                           selectedPackage.booking_type === 'whole property' ||
+                                                           (!selectedPackage.booking_type && !hasRoomTypes);
+                                    
+                                    // Hide room selection completely for whole_property
+                                    if (isWholeProperty) {
+                                        const availableRoomCount = Object.keys(packageRoomAvailability).filter(
+                                            roomId => packageRoomAvailability[roomId] === true
+                                        ).length;
+                                        
+                                        return (
+                                            <div className={`p-4 rounded-xl ${theme.bgSecondary} border-2 border-amber-300`}>
+                                                <p className={`text-sm font-semibold ${theme.textPrimary}`}>Whole Property Package</p>
+                                                <p className={`text-xs ${theme.textSecondary} mt-1`}>
+                                                    All available rooms ({availableRoomCount} room{availableRoomCount !== 1 ? 's' : ''}) will be booked automatically for the selected dates.
+                                                </p>
                                             </div>
-                                        )}
-                                    </div>
-                                        </>
-                                    )}
-                                </div>
+                                        );
+                                    }
+                                    
+                                    // Show room selection ONLY for room_type packages
+                                    // If booking_type is 'room_type' OR if room_types is set (legacy room_type)
+                                    const isRoomType = selectedPackage.booking_type === 'room_type' || hasRoomTypes;
+                                    
+                                    if (!isRoomType) {
+                                        return null; // Don't show room selection if package type is unclear
+                                    }
+                                    
+                                    return (
+                                        <div className="space-y-2">
+                                            <label className={`block text-sm font-medium ${theme.textSecondary}`}>Available Rooms for Selected Dates</label>
+                                            {!packageBookingData.check_in || !packageBookingData.check_out ? (
+                                                <div className={`p-6 text-center rounded-xl ${theme.bgSecondary} border-2 border-dashed ${theme.border}`}>
+                                                    <BedDouble className={`w-10 h-10 ${theme.textSecondary} mx-auto mb-3`} />
+                                                    <p className={`text-sm ${theme.textSecondary}`}>Please select check-in and check-out dates above to see available rooms</p>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <p className={`text-xs ${theme.textSecondary} mb-2`}>Showing rooms available from {packageBookingData.check_in} to {packageBookingData.check_out}</p>
+                                                    <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-48 overflow-y-auto p-3 rounded-xl ${theme.bgSecondary}`}>
+                                                        {(() => {
+                                                            // Filter rooms by package's room_types (only for room_type packages)
+                                                            // Use case-insensitive comparison to handle "Cottage" vs "cottage"
+                                                            let roomsToShow = rooms;
+                                                            if (selectedPackage && selectedPackage.booking_type === 'room_type' && selectedPackage.room_types) {
+                                                                const allowedRoomTypes = selectedPackage.room_types.split(',').map(t => t.trim().toLowerCase());
+                                                                roomsToShow = rooms.filter(room => {
+                                                                    const roomType = room.type ? room.type.trim().toLowerCase() : '';
+                                                                    return allowedRoomTypes.includes(roomType);
+                                                                });
+                                                            } else if (!selectedPackage || selectedPackage.booking_type !== 'room_type') {
+                                                                // If package is not room_type, don't show any rooms
+                                                                return (
+                                                                    <div className="col-span-full text-center py-8 text-gray-500">
+                                                                        <BedDouble className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                                                                        <p className="text-sm font-semibold mb-1">Invalid package type</p>
+                                                                        <p className="text-xs">Please select a valid package.</p>
+                                                                    </div>
+                                                                );
+                                                            }
+                                                            
+                                                            // Filter to only show available rooms (check availability)
+                                                            roomsToShow = roomsToShow.filter(room => {
+                                                                // Check if room is available based on packageRoomAvailability
+                                                                const isAvailable = packageRoomAvailability[room.id] === true;
+                                                                return isAvailable;
+                                                            });
+                                                            
+                                                            return roomsToShow.length > 0 ? (
+                                                                roomsToShow.map(room => {
+                                                                    return (
+                                                                        <div 
+                                                                            key={room.id} 
+                                                                            onClick={() => handlePackageRoomSelection(room.id)}
+                                                                            className={`rounded-lg border-2 transition-all duration-200 overflow-hidden cursor-pointer ${packageBookingData.room_ids.includes(room.id) ? `${theme.buttonBg} ${theme.buttonText} border-transparent` : `${theme.bgCard} ${theme.textPrimary} ${theme.border} hover:border-[#c99c4e]`}`}
+                                                                        >
+                                                                            <img 
+                                                                                src={getImageUrl(room.image_url)} 
+                                                                                alt={room.type} 
+                                                                                className="w-full h-20 object-cover" 
+                                                                                onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }} 
+                                                                            />
+                                                                            <div className="p-2 text-center">
+                                                                                <p className="font-semibold text-xs">Room {room.number}</p>
+                                                                                <p className="text-xs opacity-80">{room.type}</p>
+                                                                                <p className="text-xs opacity-60 mt-1">Max: {room.adults}A, {room.children}C</p>
+                                                                                <p className="text-xs font-bold mt-1">{formatCurrency(room.price)}</p>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })
+                                                            ) : (
+                                                                <div className="col-span-full text-center py-8 text-gray-500">
+                                                                    <BedDouble className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                                                                    <p className="text-sm font-semibold mb-1">No rooms available</p>
+                                                                    <p className="text-xs">No rooms are available for the selected dates. Please try different dates.</p>
+                                                                </div>
+                                                            );
+                                                        })()}
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
                                 <div className="space-y-2">
                                     <label className={`block text-sm font-medium ${theme.textSecondary}`}>Full Name</label>
                                     <input type="text" name="guest_name" value={packageBookingData.guest_name} onChange={handlePackageBookingChange} placeholder="Enter your full name" required className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors`} />
@@ -3401,6 +3679,16 @@ export default function App() {
                                 </div>
                             </>
                         )}
+                    </div>
+                    <div className="mt-6 pt-6 border-t border-white/20 text-center">
+                        <a 
+                            href="https://teqmates.com" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-sm text-white/70 hover:text-white transition-colors"
+                        >
+                            Powered by <span className="font-semibold">TeqMates</span>
+                        </a>
                     </div>
                 </footer>
             </div>

@@ -28,6 +28,113 @@ def get_all_checkouts(db: Session = Depends(get_db), current_user: User = Depend
     checkouts = db.query(Checkout).order_by(Checkout.id.desc()).offset(skip).limit(limit).all()
     return checkouts if checkouts else []
 
+@router.get("/checkouts/{checkout_id}/details")
+def get_checkout_details(checkout_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Get detailed checkout information including food orders and services."""
+    checkout = db.query(Checkout).filter(Checkout.id == checkout_id).first()
+    if not checkout:
+        raise HTTPException(status_code=404, detail="Checkout not found")
+    
+    # Get room numbers from booking
+    room_numbers = []
+    booking_details = None
+    
+    if checkout.booking_id:
+        booking = db.query(Booking).options(
+            joinedload(Booking.booking_rooms).joinedload(BookingRoom.room)
+        ).filter(Booking.id == checkout.booking_id).first()
+        if booking:
+            room_numbers = [br.room.number for br in booking.booking_rooms if br.room]
+            booking_details = {
+                "check_in": str(booking.check_in),
+                "check_out": str(booking.check_out),
+                "adults": booking.adults,
+                "children": booking.children,
+                "status": booking.status
+            }
+    elif checkout.package_booking_id:
+        package_booking = db.query(PackageBooking).options(
+            joinedload(PackageBooking.rooms).joinedload(PackageBookingRoom.room)
+        ).filter(PackageBooking.id == checkout.package_booking_id).first()
+        if package_booking:
+            room_numbers = [pbr.room.number for pbr in package_booking.rooms if pbr.room]
+            booking_details = {
+                "check_in": str(package_booking.check_in),
+                "check_out": str(package_booking.check_out),
+                "adults": package_booking.adults,
+                "children": package_booking.children,
+                "status": package_booking.status,
+                "package_name": package_booking.package.title if package_booking.package else None
+            }
+    
+    # Get food orders for these rooms
+    food_orders = []
+    if room_numbers:
+        rooms = db.query(Room).filter(Room.number.in_(room_numbers)).all()
+        room_ids = [r.id for r in rooms]
+        if room_ids:
+            orders = db.query(FoodOrder).options(
+                joinedload(FoodOrder.items).joinedload(FoodOrderItem.food_item)
+            ).filter(FoodOrder.room_id.in_(room_ids)).all()
+            for order in orders:
+                food_orders.append({
+                    "id": order.id,
+                    "room_number": next((r.number for r in rooms if r.id == order.room_id), None),
+                    "amount": order.amount,
+                    "status": order.status,
+                    "created_at": order.created_at.isoformat() if order.created_at else None,
+                    "items": [
+                        {
+                            "item_name": item.food_item.name if item.food_item else "Unknown",
+                            "quantity": item.quantity,
+                            "price": item.food_item.price if item.food_item else 0,
+                            "total": item.quantity * (item.food_item.price if item.food_item else 0)
+                        }
+                        for item in order.items
+                    ]
+                })
+    
+    # Get services for these rooms
+    services = []
+    if room_numbers:
+        rooms = db.query(Room).filter(Room.number.in_(room_numbers)).all()
+        room_ids = [r.id for r in rooms]
+        if room_ids:
+            assigned_services = db.query(AssignedService).options(
+                joinedload(AssignedService.service)
+            ).filter(AssignedService.room_id.in_(room_ids)).all()
+            for ass in assigned_services:
+                services.append({
+                    "id": ass.id,
+                    "room_number": next((r.number for r in rooms if r.id == ass.room_id), None),
+                    "service_name": ass.service.name if ass.service else "Unknown",
+                    "charges": ass.service.charges if ass.service else 0,
+                    "status": ass.status,
+                    "created_at": ass.created_at.isoformat() if ass.created_at else None
+                })
+    
+    return {
+        "id": checkout.id,
+        "booking_id": checkout.booking_id,
+        "package_booking_id": checkout.package_booking_id,
+        "room_total": checkout.room_total,
+        "food_total": checkout.food_total,
+        "service_total": checkout.service_total,
+        "package_total": checkout.package_total,
+        "tax_amount": checkout.tax_amount,
+        "discount_amount": checkout.discount_amount,
+        "grand_total": checkout.grand_total,
+        "payment_method": checkout.payment_method,
+        "payment_status": checkout.payment_status,
+        "created_at": checkout.created_at.isoformat() if checkout.created_at else None,
+        "guest_name": checkout.guest_name,
+        "room_number": checkout.room_number,
+        "room_numbers": room_numbers,
+        "food_orders": food_orders,
+        "services": services,
+        "booking_details": booking_details
+    }
+
 @router.get("/active-rooms", response_model=List[dict])
 def get_active_rooms(db: Session = Depends(get_db), current_user: User = Depends(get_current_user), skip: int = 0, limit: int = 20):
     """
@@ -198,10 +305,14 @@ def _calculate_bill_for_single_room(db: Session, room_number: str):
         charges.room_charges = (room.price or 0) * stay_days
     
     # Get food and service charges for THIS ROOM ONLY
+    # Include food orders with billing_status "unbilled" or NULL (for orders created before billing_status was added)
+    # Exclude only orders that are explicitly marked as "billed"
     unbilled_food_order_items = (db.query(FoodOrderItem)
                                  .join(FoodOrder)
                                  .options(joinedload(FoodOrderItem.food_item))
-                                 .filter(FoodOrder.room_id == room.id, FoodOrder.billing_status == "unbilled")
+                                 .filter(FoodOrder.room_id == room.id, 
+                                        or_(FoodOrder.billing_status == "unbilled", 
+                                            FoodOrder.billing_status.is_(None)))
                                  .all())
     
     unbilled_services = db.query(AssignedService).options(joinedload(AssignedService.service)).filter(AssignedService.room_id == room.id, AssignedService.billing_status == "unbilled").all()
@@ -327,10 +438,14 @@ def _calculate_bill_for_entire_booking(db: Session, room_number: str):
     
     # Sum up additional food and service charges from all rooms
     # We need to get the individual items from the orders to display them.
+    # Include food orders with billing_status "unbilled" or NULL (for orders created before billing_status was added)
+    # Exclude only orders that are explicitly marked as "billed"
     unbilled_food_order_items = (db.query(FoodOrderItem)
                                  .join(FoodOrder)
                                  .options(joinedload(FoodOrderItem.food_item))
-                                 .filter(FoodOrder.room_id.in_(room_ids), FoodOrder.billing_status == "unbilled")
+                                 .filter(FoodOrder.room_id.in_(room_ids), 
+                                        or_(FoodOrder.billing_status == "unbilled", 
+                                            FoodOrder.billing_status.is_(None)))
                                  .all())
 
     unbilled_services = db.query(AssignedService).options(joinedload(AssignedService.service)).filter(AssignedService.room_id.in_(room_ids), AssignedService.billing_status == "unbilled").all()

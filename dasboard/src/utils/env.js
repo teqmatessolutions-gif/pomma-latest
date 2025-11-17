@@ -19,13 +19,17 @@ export const getMediaBaseUrl = () => {
 };
 
 export const getApiBaseUrl = () => {
-  if (typeof window !== "undefined" && isPommaDeployment()) {
-    return `${window.location.origin}/pommaapi/api`;
-  }
+  // Prefer explicit env override in all environments (dev/prod)
   if (process.env.REACT_APP_API_BASE_URL) {
     return process.env.REACT_APP_API_BASE_URL;
   }
+  // For assets served under /pommaadmin or /pommaholidays in production,
+  // build absolute API path off the current origin.
+  if (typeof window !== "undefined" && isPommaDeployment()) {
+    return `${window.location.origin}/pommaapi/api`;
+  }
+  // Sensible defaults
   return process.env.NODE_ENV === "production"
-    ? "https://www.teqmates.com/api"
-    : "http://localhost:8000/api";
+    ? "https://www.teqmates.com/pommaapi/api"
+    : "http://127.0.0.1:8000/pommaapi/api";
 };

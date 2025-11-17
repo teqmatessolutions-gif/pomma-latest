@@ -165,10 +165,27 @@ const BookingDetailsModal = ({ booking, onClose, onImageClick, roomIdToRoom }) =
 };
 
 const ExtendBookingModal = ({ booking, onSave, onClose, feedback, isSubmitting }) => {
-  const [newCheckout, setNewCheckout] = useState(booking.check_out);
-  const minDate = booking.check_out;
+  // Safety check: ensure booking exists and has required properties
+  if (!booking || !booking.check_out || !booking.id) {
+    return (
+      <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg">
+          <p className="text-red-600">Error: Invalid booking data. Please close and try again.</p>
+          <button onClick={onClose} className="mt-4 w-full bg-indigo-600 text-white font-semibold py-2 rounded-md hover:bg-indigo-700 transition-colors">
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const [newCheckout, setNewCheckout] = useState(booking.check_out || '');
+  const minDate = booking.check_out || '';
 
   const handleSave = () => {
+    if (!booking.id || !newCheckout) {
+      return;
+    }
     // Pass both id (for state lookup) and display_id (for API call)
     // The parent component will handle converting to display ID
     onSave(booking.id, newCheckout);
@@ -197,16 +214,21 @@ const ExtendBookingModal = ({ booking, onSave, onClose, feedback, isSubmitting }
             <label className="text-sm font-medium text-gray-700 mb-1">New Check-out Date</label>
             <input
               type="date"
-              value={newCheckout}
-              onChange={(e) => setNewCheckout(e.target.value)}
-              min={minDate}
+              value={newCheckout || ''}
+              onChange={(e) => {
+                const newValue = e.target.value;
+                if (newValue) {
+                  setNewCheckout(newValue);
+                }
+              }}
+              min={minDate || ''}
               className="w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500"
             />
           </div>
         </div>
         <button
           onClick={handleSave}
-          disabled={isSubmitting || newCheckout <= minDate}
+          disabled={isSubmitting || !newCheckout || !minDate || newCheckout <= minDate}
           className="mt-6 w-full bg-indigo-600 text-white font-semibold py-2 rounded-md hover:bg-indigo-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
           {isSubmitting ? "Saving..." : "Save"}
@@ -449,10 +471,12 @@ const Bookings = () => {
       let availableRooms = allRooms;
       if (formData.checkIn && formData.checkOut) {
         availableRooms = allRooms.filter(room => {
-          // Check if room has any conflicting bookings (ignore cancelled, checked-out, and checked_out)
+          // Check if room has any conflicting bookings
+          // Only consider bookings with status "booked" or "checked-in" as conflicts
           const hasConflict = allBookings.some(booking => {
             const normalizedStatus = booking.status?.toLowerCase().replace(/_/g, '-');
-            if (normalizedStatus === "cancelled" || normalizedStatus === "checked-out") return false;
+            // Only check for "booked" or "checked-in" status - all other statuses are available
+            if (normalizedStatus !== "booked" && normalizedStatus !== "checked-in") return false;
             
             const bookingCheckIn = new Date(booking.check_in);
             const bookingCheckOut = new Date(booking.check_out);
@@ -521,10 +545,12 @@ const Bookings = () => {
   useEffect(() => {
     if (formData.checkIn && formData.checkOut && allRooms.length > 0) {
       const availableRooms = allRooms.filter(room => {
-        // Check if room has any conflicting bookings (ignore cancelled, checked-out, and checked_out)
+        // Check if room has any conflicting bookings
+        // Only consider bookings with status "booked" or "checked-in" as conflicts
         const hasConflict = bookings.some(booking => {
           const normalizedStatus = booking.status?.toLowerCase().replace(/_/g, '-');
-          if (normalizedStatus === "cancelled" || normalizedStatus === "checked-out") return false;
+          // Only check for "booked" or "checked-in" status - all other statuses are available
+          if (normalizedStatus !== "booked" && normalizedStatus !== "checked-in") return false;
           
           const bookingCheckIn = new Date(booking.check_in);
           const bookingCheckOut = new Date(booking.check_out);
@@ -552,11 +578,15 @@ const Bookings = () => {
   // Refilter rooms for package booking when dates change
   useEffect(() => {
     if (packageBookingForm.check_in && packageBookingForm.check_out && allRooms.length > 0) {
-      const availableRooms = allRooms.filter(room => {
-        // Check if room has any conflicting bookings (ignore cancelled, checked-out, and checked_out)
+      const selectedPackage = packages.find(p => p.id === parseInt(packageBookingForm.package_id));
+      
+      let availableRooms = allRooms.filter(room => {
+        // Check if room has any conflicting bookings
+        // Only consider bookings with status "booked" or "checked-in" as conflicts
         const hasConflict = bookings.some(booking => {
           const normalizedStatus = booking.status?.toLowerCase().replace(/_/g, '-');
-          if (normalizedStatus === "cancelled" || normalizedStatus === "checked-out") return false;
+          // Only check for "booked" or "checked-in" status - all other statuses are available
+          if (normalizedStatus !== "booked" && normalizedStatus !== "checked-in") return false;
           
           const bookingCheckIn = new Date(booking.check_in);
           const bookingCheckOut = new Date(booking.check_out);
@@ -564,23 +594,50 @@ const Bookings = () => {
           const requestedCheckOut = new Date(packageBookingForm.check_out);
           
           // Check if room is part of this booking
-          const isRoomInBooking = booking.rooms && booking.rooms.some(r => r.id === room.id);
+          const isRoomInBooking = booking.rooms && booking.rooms.some(r => {
+            // Handle both nested (r.room.id) and direct (r.id) room references
+            const roomId = r.room?.id || r.id;
+            return roomId === room.id;
+          });
           if (!isRoomInBooking) return false;
           
           // Check for date overlap
           return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
         });
         
+        // If there are no conflicting bookings for the selected dates, room is available
+        // Don't filter by room.status - availability is determined by booking conflicts, not status field
         return !hasConflict;
       });
       
+      // If package is selected and has room_types, filter by room types (case-insensitive)
+      if (selectedPackage && selectedPackage.booking_type === 'room_type' && selectedPackage.room_types) {
+        const allowedRoomTypes = selectedPackage.room_types.split(',').map(t => t.trim().toLowerCase());
+        availableRooms = availableRooms.filter(room => {
+          const roomType = room.type ? room.type.trim().toLowerCase() : '';
+          return allowedRoomTypes.includes(roomType);
+        });
+      }
+      // For whole_property, availableRooms remains all available rooms (no filtering)
+      
       // Update package rooms separately
       setPackageRooms(availableRooms);
+      
+      // If whole_property, automatically select all available rooms
+      if (selectedPackage && selectedPackage.booking_type === 'whole_property' && availableRooms.length > 0) {
+        setPackageBookingForm(prev => ({
+          ...prev,
+          room_ids: availableRooms.map(r => r.id)
+        }));
+      } else if (selectedPackage && selectedPackage.booking_type === 'room_type') {
+        // For room_type, clear selection if package changed or dates changed
+        // User will manually select rooms
+      }
     } else if (!packageBookingForm.check_in || !packageBookingForm.check_out) {
       // If no dates selected, show all available rooms
       setPackageRooms(allRooms.filter((r) => r.status === "Available"));
     }
-  }, [packageBookingForm.check_in, packageBookingForm.check_out, allRooms, bookings]);
+  }, [packageBookingForm.check_in, packageBookingForm.check_out, packageBookingForm.package_id, allRooms, bookings, packages]);
 
   const loadMoreBookings = async () => {
     if (!hasMoreBookings) return;
@@ -700,7 +757,28 @@ const Bookings = () => {
     return parseInt(formData.adults) + parseInt(formData.children);
   }, [formData.adults, formData.children]);
 
-  const handlePackageBookingChange = e => setPackageBookingForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  const handlePackageBookingChange = e => {
+    const { name, value } = e.target;
+    setPackageBookingForm(prev => {
+      const updated = { ...prev, [name]: value };
+      
+      // When package is selected, check its booking_type
+      if (name === 'package_id' && value) {
+        const selectedPackage = packages.find(p => p.id === parseInt(value));
+        if (selectedPackage) {
+          // If whole_property, automatically select all available rooms (will be handled in useEffect)
+          if (selectedPackage.booking_type === 'whole_property') {
+            updated.room_ids = [];
+          } else if (selectedPackage.booking_type === 'room_type') {
+            // Clear room selection when switching packages
+            updated.room_ids = [];
+          }
+        }
+      }
+      
+      return updated;
+    });
+  };
 
   const handlePackageRoomSelect = roomId => {
     setPackageBookingForm(prev => ({
@@ -736,39 +814,79 @@ const Bookings = () => {
         }
       }
 
-      // Calculate capacity for selected rooms in package booking
-      const selectedPackageRooms = packageBookingForm.room_ids
-        .map(id => rooms.find(r => r.id === id))
-        .filter(room => room !== null);
-      
-      const packageCapacity = {
-        adults: selectedPackageRooms.reduce((sum, room) => sum + room.adults, 0),
-        children: selectedPackageRooms.reduce((sum, room) => sum + room.children, 0)
-      };
-      
-      const adultsRequested = parseInt(packageBookingForm.adults);
-      const childrenRequested = parseInt(packageBookingForm.children);
-      
-      // Validate adults capacity
-      if (adultsRequested > packageCapacity.adults) {
-        showBannerMessage("error", `The number of adults (${adultsRequested}) exceeds the total adult capacity of the selected rooms (${packageCapacity.adults} adults max). Please select additional rooms or reduce the number of adults.`);
+      // Check if package is whole_property - skip room validation
+      const selectedPackage = packages.find(p => p.id === parseInt(packageBookingForm.package_id));
+      if (!selectedPackage) {
+        showBannerMessage("error", "Package not found. Please select a valid package.");
         setIsSubmitting(false);
         return;
       }
       
-      // Validate children capacity
-      if (childrenRequested > packageCapacity.children) {
-        showBannerMessage("error", `The number of children (${childrenRequested}) exceeds the total children capacity of the selected rooms (${packageCapacity.children} children max). Please select additional rooms or reduce the number of children.`);
-        setIsSubmitting(false);
-        return;
+      // Determine if it's whole_property
+      const isWholeProperty = selectedPackage.booking_type === 'whole_property';
+      
+      // For whole_property, get all available rooms and use them directly
+      let finalRoomIds = packageBookingForm.room_ids;
+      
+      if (isWholeProperty) {
+        // Use all available rooms from packageRooms (already filtered by availability)
+        const availableRoomIds = packageRooms.map(r => r.id);
+        
+        if (availableRoomIds.length === 0) {
+          showBannerMessage("error", "No rooms are available for the selected dates.");
+          setIsSubmitting(false);
+          return;
+        }
+        
+        // Use all available rooms for whole_property
+        finalRoomIds = availableRoomIds;
+      } else {
+        // For room_type packages, validate that at least one room is selected
+        if (packageBookingForm.room_ids.length === 0) {
+          showBannerMessage("error", "Please select at least one room for the package.");
+          setIsSubmitting(false);
+          return;
+        }
+        finalRoomIds = packageBookingForm.room_ids;
       }
+      
+      // --- CAPACITY VALIDATION ---
+      // Skip capacity validation for whole_property packages (they book entire property regardless of guest count)
+      if (!isWholeProperty) {
+        const selectedPackageRooms = finalRoomIds
+          .map(id => rooms.find(r => r.id === id))
+          .filter(room => room !== null);
+        
+        const packageCapacity = {
+          adults: selectedPackageRooms.reduce((sum, room) => sum + (room.adults || 0), 0),
+          children: selectedPackageRooms.reduce((sum, room) => sum + (room.children || 0), 0)
+        };
+        
+        const adultsRequested = parseInt(packageBookingForm.adults);
+        const childrenRequested = parseInt(packageBookingForm.children);
+        
+        // Validate adults capacity
+        if (adultsRequested > packageCapacity.adults) {
+          showBannerMessage("error", `The number of adults (${adultsRequested}) exceeds the total adult capacity of the selected rooms (${packageCapacity.adults} adults max). Please select additional rooms or reduce the number of adults.`);
+          setIsSubmitting(false);
+          return;
+        }
+        
+        // Validate children capacity
+        if (childrenRequested > packageCapacity.children) {
+          showBannerMessage("error", `The number of children (${childrenRequested}) exceeds the total children capacity of the selected rooms (${packageCapacity.children} children max). Please select additional rooms or reduce the number of children.`);
+          setIsSubmitting(false);
+          return;
+        }
+      }
+      // -------------------------
 
       const bookingData = {
         ...packageBookingForm,
         package_id: parseInt(packageBookingForm.package_id),
         adults: parseInt(packageBookingForm.adults),
         children: parseInt(packageBookingForm.children),
-        room_ids: packageBookingForm.room_ids.map(id => parseInt(id))
+        room_ids: finalRoomIds.map(id => parseInt(id)) // Use finalRoomIds (all available for whole_property, selected for room_type)
       };
       const response = await API.post("/packages/book", bookingData, authHeader());
       showBannerMessage("success", "Package booked successfully!");
@@ -1110,27 +1228,136 @@ const Bookings = () => {
     setIsSubmitting(true);
 
     try {
-      // Find the booking to determine if it's a package booking and get display ID
+      // Find the booking from the current bookings list to get basic info
       const booking = bookings.find(b => b.id === bookingId);
-      const isPackage = booking?.is_package || bookingToExtend?.is_package || false;
-      const displayId = generateBookingId(booking || bookingToExtend);
       
-      // Use the correct endpoint based on booking type, and use display ID
+      if (!booking || !booking.id) {
+        showBannerMessage("error", "Booking not found. Please refresh the page.");
+        setIsSubmitting(false);
+        setBookingToExtend(null);
+        return;
+      }
+      
+      // Determine booking type: 
+      // - Room bookings: standalone room bookings from 'bookings' table (is_package = false)
+      // - Package bookings: package bookings from 'package_bookings' table (is_package = true)
+      //   Note: Rooms booked as part of a package are treated as package bookings
+      const isPackage = booking.is_package || false;
+      const displayId = generateBookingId(booking);
+      
+      if (!displayId) {
+        showBannerMessage("error", "Invalid booking ID. Please refresh the page.");
+        setIsSubmitting(false);
+        setBookingToExtend(null);
+        return;
+      }
+      
+      // Fetch fresh booking details from API to get the most current status
+      let freshBooking = booking;
+      try {
+        const detailsResponse = await API.get(`/bookings/details/${displayId}?is_package=${isPackage}`, authHeader());
+        if (detailsResponse.data) {
+          freshBooking = { ...booking, ...detailsResponse.data, is_package: isPackage };
+        }
+      } catch (err) {
+        console.warn('Could not fetch fresh booking details, using cached data:', err);
+        // Continue with cached booking data
+      }
+      
+      // Validate booking status - only allow "booked" or "checked-in" statuses
+      if (!freshBooking.status) {
+        showBannerMessage("error", "Booking status is missing. Please refresh the page.");
+        setIsSubmitting(false);
+        setBookingToExtend(null);
+        return;
+      }
+      
+      // Normalize status: handle both "checked-in", "checked_in", "checked-out", "checked_out" formats
+      // Convert to lowercase and replace both hyphens and underscores with hyphens for consistent comparison
+      const rawStatusLower = freshBooking.status.toLowerCase().trim();
+      const normalizedStatus = rawStatusLower.replace(/[-_]/g, '-');
+      
+      // Debug: log the actual status for troubleshooting
+      console.log('Extend booking - Booking ID:', bookingId, 'Display ID:', displayId, 'Original status:', freshBooking.status, 'Raw lower:', rawStatusLower, 'Normalized:', normalizedStatus, 'Is Package:', isPackage);
+      
+      // Check if status is valid for extension (booked or checked-in)
+      // Handle multiple formats: "booked", "checked-in", "checked_in", "checked in"
+      // Note: "checked_out" is NOT allowed (that means guest has already left)
+      const isValidStatus = 
+        normalizedStatus === 'booked' || 
+        normalizedStatus === 'checked-in' ||
+        rawStatusLower === 'checked_in' ||
+        rawStatusLower === 'checked-in' ||
+        rawStatusLower === 'checked in';
+      
+        // Explicitly reject checked_out/checked-out statuses
+        // Be careful: "checked-in" normalizes to "checked-in", "checked-out" normalizes to "checked-out"
+        const isCheckedOut = (
+          normalizedStatus.includes('out') && normalizedStatus.startsWith('checked-') && normalizedStatus.endsWith('-out')
+        ) || ['checked_out', 'checked-out', 'checked out'].includes(rawStatusLower);
+        
+        if (isCheckedOut) {
+          showBannerMessage("error", `Cannot extend checkout for booking with status '${freshBooking.status}'. The guest has already checked out.`);
+          console.error('Booking already checked out:', { 
+            bookingId, 
+            displayId,
+            originalStatus: freshBooking.status, 
+            normalizedStatus,
+            rawStatusLower,
+            isCheckedOut,
+            isPackage: isPackage 
+          });
+          setIsSubmitting(false);
+          setBookingToExtend(null);
+          return;
+        }
+      
+      if (!isValidStatus) {
+        // Show more detailed error message
+        const statusDisplay = freshBooking.status || 'unknown';
+        showBannerMessage("error", `Cannot extend checkout for booking with status '${statusDisplay}'. Only 'booked' or 'checked-in' bookings can be extended.`);
+        console.error('Invalid status for extension:', { 
+          bookingId, 
+          displayId,
+          originalStatus: freshBooking.status, 
+          rawStatusLower,
+          normalizedStatus, 
+          isValidStatus,
+          isPackage: isPackage 
+        });
+        setIsSubmitting(false);
+        setBookingToExtend(null);
+        return;
+      }
+      
+      // Use the correct endpoint based on booking type
+      // Room bookings (from bookings table) use: /bookings/{id}/extend
+      // Package bookings (from package_bookings table) use: /packages/booking/{id}/extend
       const url = isPackage 
         ? `/packages/booking/${displayId}/extend?new_checkout=${newCheckoutDate}`
         : `/bookings/${displayId}/extend?new_checkout=${newCheckoutDate}`;
+      
+      console.log('Extending booking:', { 
+        bookingId, 
+        displayId, 
+        isPackage, 
+        url, 
+        status: freshBooking.status,
+        newCheckoutDate 
+      });
       
       await API.put(
         url,
         {},
         authHeader()
       );
+      
       showBannerMessage("success", "Booking checkout extended successfully!");
       setBookingToExtend(null);
       fetchData();
     } catch (err) {
       console.error("Booking extension error:", err);
-      const errorMessage = err.response?.data?.detail || err.response?.data?.message || "Failed to extend booking.";
+      const errorMessage = err.response?.data?.detail || err.response?.data?.message || err.message || "Failed to extend booking.";
       showBannerMessage("error", errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -1501,7 +1728,10 @@ const Bookings = () => {
               <div className="space-y-4 flex-grow">
                 <select name="package_id" value={packageBookingForm.package_id} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required>
                   <option value="">Select Package</option>
-                  {packages.map(p => (<option key={p.id} value={p.id}>{p.title} - {formatCurrency(p.price)}</option>))}
+                  {packages.map(p => {
+                    const bookingTypeLabel = p.booking_type === 'whole_property' ? ' (Whole Property)' : p.booking_type === 'room_type' ? ' (Selected Rooms)' : '';
+                    return <option key={p.id} value={p.id}>{p.title}{bookingTypeLabel} - {formatCurrency(p.price)}</option>;
+                  })}
                 </select>
                 <input name="guest_name" placeholder="Guest Name" value={packageBookingForm.guest_name} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
                 <input type="email" name="guest_email" placeholder="Guest Email" value={packageBookingForm.guest_email} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" />
@@ -1514,41 +1744,150 @@ const Bookings = () => {
                   <input type="number" name="adults" min={1} placeholder="Adults" value={packageBookingForm.adults} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
                   <input type="number" name="children" min={0} placeholder="Children" value={packageBookingForm.children} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" />
                 </div>
-                <div>
-                  <label className="block text-gray-600 font-medium mb-2">
-                    Select Rooms for Package
-                    {packageBookingForm.check_in && packageBookingForm.check_out && (
-                      <span className="text-xs text-gray-500 ml-2">
-                        ({packageBookingForm.check_in} to {packageBookingForm.check_out})
-                      </span>
-                    )}
-                  </label>
-                  {!packageBookingForm.check_in || !packageBookingForm.check_out ? (
-                    <div className="text-center py-8 text-gray-500 text-sm bg-gray-50 rounded-lg border">
-                      <p>Please select check-in and check-out dates first</p>
-                      <p className="text-xs mt-1">Available rooms will be shown here</p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-48 overflow-y-auto p-2 bg-gray-50 rounded-lg border">
-                      {packageRooms.length > 0 ? (
-                        packageRooms.map(room => (
-                          <div key={room.id} onClick={() => handlePackageRoomSelect(room.id)} className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200
-                                               ${packageBookingForm.room_ids.includes(room.id) ? 'bg-indigo-500 text-white border-indigo-600' : 'bg-white border-gray-300 hover:border-indigo-500'}
-                          `}>
-                            <p className="font-semibold">Room {room.number}</p>
-                            <p className={`text-sm ${packageBookingForm.room_ids.includes(room.id) ? 'text-indigo-200' : 'text-gray-600'}`}>{room.type}</p>
-                            <p className={`text-xs ${packageBookingForm.room_ids.includes(room.id) ? 'text-indigo-200' : 'text-gray-500'}`}>{formatCurrency(room.price)}/night</p>
+                {/* Room Selection - Only show for room_type packages */}
+                {(() => {
+                  const selectedPackage = packages.find(p => p.id === parseInt(packageBookingForm.package_id));
+                  
+                  if (!selectedPackage) {
+                    return null;
+                  }
+                  
+                  // Determine if it's whole_property:
+                  // 1. If booking_type is explicitly 'whole_property'
+                  // 2. If booking_type is not set AND room_types is not set (legacy packages without booking_type)
+                  const hasRoomTypes = selectedPackage.room_types && selectedPackage.room_types.trim().length > 0;
+                  const isWholeProperty = selectedPackage.booking_type === 'whole_property' || 
+                                         selectedPackage.booking_type === 'whole property' ||
+                                         (!selectedPackage.booking_type && !hasRoomTypes);
+                  
+                  // Hide room selection completely for whole_property
+                  if (isWholeProperty) {
+                    return (
+                      <div className="bg-indigo-50 border-2 border-indigo-300 rounded-lg p-4">
+                        <p className="text-sm font-semibold text-indigo-800">Whole Property Package</p>
+                        <p className="text-xs text-indigo-600 mt-1">
+                          All available rooms ({packageRooms.length} room{packageRooms.length !== 1 ? 's' : ''}) will be booked automatically for the selected dates.
+                        </p>
+                      </div>
+                    );
+                  }
+                  
+                  // Show room selection for room_type packages
+                  // If booking_type is explicitly 'room_type', always show room selection
+                  // If booking_type is not set but has room_types, treat as room_type
+                  const isRoomType = selectedPackage.booking_type === 'room_type' || 
+                                     (selectedPackage.booking_type !== 'whole_property' && hasRoomTypes);
+                  
+                  // If it's not whole_property and not clearly room_type, default to showing room selection
+                  // (for backward compatibility with packages that don't have booking_type set)
+                  if (!isWholeProperty && !isRoomType && !selectedPackage.booking_type) {
+                    // Legacy package without booking_type - show room selection by default
+                    return (
+                      <div>
+                        <label className="block text-gray-600 font-medium mb-2">
+                          Select Rooms for Package
+                          {packageBookingForm.check_in && packageBookingForm.check_out && (
+                            <span className="text-xs text-gray-500 ml-2">
+                              ({packageBookingForm.check_in} to {packageBookingForm.check_out})
+                            </span>
+                          )}
+                        </label>
+                        {!packageBookingForm.check_in || !packageBookingForm.check_out ? (
+                          <div className="text-center py-8 text-gray-500 text-sm bg-gray-50 rounded-lg border">
+                            <p>Please select check-in and check-out dates first</p>
+                            <p className="text-xs mt-1">Available rooms will be shown here</p>
                           </div>
-                        ))
+                        ) : (
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-48 overflow-y-auto p-2 bg-gray-50 rounded-lg border">
+                            {packageRooms.length > 0 ? (
+                              packageRooms.map(room => (
+                                <div key={room.id} onClick={() => handlePackageRoomSelect(room.id)} className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200
+                                                     ${packageBookingForm.room_ids.includes(room.id) ? 'bg-indigo-500 text-white border-indigo-600' : 'bg-white border-gray-300 hover:border-indigo-500'}
+                                `}>
+                                  <p className="font-semibold">Room {room.number}</p>
+                                  <p className={`text-sm ${packageBookingForm.room_ids.includes(room.id) ? 'text-indigo-200' : 'text-gray-600'}`}>{room.type}</p>
+                                  <p className={`text-xs ${packageBookingForm.room_ids.includes(room.id) ? 'text-indigo-200' : 'text-gray-500'}`}>{formatCurrency(room.price)}/night</p>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="col-span-full text-center py-4 text-gray-500">
+                                <p className="font-medium">No rooms available for the selected dates</p>
+                                <p className="text-sm mt-1">Please try different dates</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+                  
+                  // Show room selection for room_type packages
+                  if (!isRoomType) {
+                    return null; // Don't show room selection if package type is unclear
+                  }
+                  
+                  return (
+                    <div>
+                      <label className="block text-gray-600 font-medium mb-2">
+                        Select Rooms for Package
+                        {selectedPackage.room_types && (
+                          <span className="text-xs text-indigo-600 ml-2">
+                            (Filtered by: {selectedPackage.room_types})
+                          </span>
+                        )}
+                        {packageBookingForm.check_in && packageBookingForm.check_out && (
+                          <span className="text-xs text-gray-500 ml-2">
+                            ({packageBookingForm.check_in} to {packageBookingForm.check_out})
+                          </span>
+                        )}
+                      </label>
+                      {!packageBookingForm.check_in || !packageBookingForm.check_out ? (
+                        <div className="text-center py-8 text-gray-500 text-sm bg-gray-50 rounded-lg border">
+                          <p>Please select check-in and check-out dates first</p>
+                          <p className="text-xs mt-1">Available rooms will be shown here</p>
+                        </div>
                       ) : (
-                        <div className="col-span-full text-center py-4 text-gray-500">
-                          <p className="font-medium">No rooms available for the selected dates</p>
-                          <p className="text-sm mt-1">Please try different dates</p>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-48 overflow-y-auto p-2 bg-gray-50 rounded-lg border">
+                          {(() => {
+                            // Filter rooms by package's room_types (only for room_type packages with room_types set)
+                            // Use case-insensitive comparison to handle "Cottage" vs "cottage"
+                            let roomsToShow = packageRooms;
+                            if (selectedPackage.booking_type === 'room_type' && selectedPackage.room_types) {
+                              const allowedRoomTypes = selectedPackage.room_types.split(',').map(t => t.trim().toLowerCase());
+                              roomsToShow = packageRooms.filter(room => {
+                                const roomType = room.type ? room.type.trim().toLowerCase() : '';
+                                return allowedRoomTypes.includes(roomType);
+                              });
+                            }
+                            // If booking_type is 'room_type' but no room_types specified, show all available rooms
+                            
+                            return roomsToShow.length > 0 ? (
+                              roomsToShow.map(room => (
+                                <div key={room.id} onClick={() => handlePackageRoomSelect(room.id)} className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200
+                                                     ${packageBookingForm.room_ids.includes(room.id) ? 'bg-indigo-500 text-white border-indigo-600' : 'bg-white border-gray-300 hover:border-indigo-500'}
+                                `}>
+                                  <p className="font-semibold">Room {room.number}</p>
+                                  <p className={`text-sm ${packageBookingForm.room_ids.includes(room.id) ? 'text-indigo-200' : 'text-gray-600'}`}>{room.type}</p>
+                                  <p className={`text-xs ${packageBookingForm.room_ids.includes(room.id) ? 'text-indigo-200' : 'text-gray-500'}`}>{formatCurrency(room.price)}/night</p>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="col-span-full text-center py-4 text-gray-500">
+                                <p className="font-medium">No rooms available for the selected dates</p>
+                                {selectedPackage.room_types && (
+                                  <p className="text-sm mt-1">No rooms match the selected room types: {selectedPackage.room_types}</p>
+                                )}
+                                {!selectedPackage.room_types && (
+                                  <p className="text-sm mt-1">Please try different dates</p>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </div>
                       )}
                     </div>
-                  )}
-                </div>
+                  );
+                })()}
               </div>
               <button
                 type="submit"
@@ -1712,13 +2051,48 @@ const Bookings = () => {
                           Check-in
                         </button>
                         <button
-                          onClick={() => setBookingToExtend(b)}
+                          onClick={() => {
+                            // Safety check: ensure booking has required properties before opening modal
+                            if (!b || !b.id || !b.check_out) {
+                              showBannerMessage("error", "Invalid booking data. Please refresh the page.");
+                              return;
+                            }
+                            
+                            // Additional safety check: prevent extending checked-out bookings
+                            // Be careful: "checked-in" normalizes to "checked-in", "checked-out" normalizes to "checked-out"
+                            const rawStatusLower = b.status?.toLowerCase().trim() || '';
+                            const normalizedStatus = rawStatusLower.replace(/[-_]/g, '-');
+                            const isCheckedOut = (
+                              normalizedStatus.includes('out') && normalizedStatus.startsWith('checked-') && normalizedStatus.endsWith('-out')
+                            ) || ['checked_out', 'checked-out', 'checked out'].includes(rawStatusLower);
+                            
+                            if (isCheckedOut) {
+                              showBannerMessage("error", `Cannot extend checkout for booking with status '${b.status}'. The guest has already checked out.`);
+                              return;
+                            }
+                            
+                            setBookingToExtend(b);
+                          }}
                           className="bg-green-600 text-white px-2 sm:px-3 py-1 rounded-full text-xs font-semibold hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                           disabled={(() => {
-                            if (!b.status) return true;
-                            const normalizedStatus = b.status.toLowerCase().replace(/[-_]/g, '-');
-                            // Enable extend button for both "booked" and "checked-in" statuses
-                            return !["booked", "checked-in"].includes(normalizedStatus);
+                            if (!b || !b.status) return true;
+                            const rawStatusLower = b.status.toLowerCase().trim();
+                            const normalizedStatus = rawStatusLower.replace(/[-_]/g, '-');
+                            
+                            // Explicitly reject checked-out/checked_out statuses (guest has already left)
+                            // Be careful: "checked-in" normalizes to "checked-in", "checked-out" normalizes to "checked-out"
+                            const isCheckedOut = (
+                              normalizedStatus.includes('out') && normalizedStatus.startsWith('checked-') && normalizedStatus.endsWith('-out')
+                            ) || ['checked_out', 'checked-out', 'checked out'].includes(rawStatusLower);
+                            
+                            if (isCheckedOut) {
+                              return true; // Disable button for checked-out bookings
+                            }
+                            
+                            // Enable extend button for both "booked" and "checked-in" statuses (for both room and package bookings)
+                            // Handle both "checked-in" and "checked_in" formats
+                            const isValidStatus = normalizedStatus === 'booked' || normalizedStatus === 'checked-in';
+                            return !isValidStatus;
                           })()}
                         >
                           Extend

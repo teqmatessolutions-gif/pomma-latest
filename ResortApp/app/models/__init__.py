@@ -11,6 +11,17 @@ from .food_category import FoodCategory
 from .food_item import FoodItem
 from .payment import Payment
 from .suggestion import GuestSuggestion
+from .frontend import (
+    HeaderBanner,
+    CheckAvailability,
+    Gallery,
+    Review,
+    ResortInfo,
+    SignatureExperience,
+    PlanWedding,
+    NearbyAttraction,
+    NearbyAttractionBanner
+)
 
 
 # from .assigned_service import AssignedService  # <-- Remove or comment out this line

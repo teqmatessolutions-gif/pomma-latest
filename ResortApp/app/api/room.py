@@ -34,6 +34,18 @@ def create_room_test(
     adults: int = Form(2),
     children: int = Form(0),
     image: UploadFile = File(None),
+    air_conditioning: bool = Form(False),
+    wifi: bool = Form(False),
+    bathroom: bool = Form(False),
+    living_area: bool = Form(False),
+    terrace: bool = Form(False),
+    parking: bool = Form(False),
+    kitchen: bool = Form(False),
+    family_room: bool = Form(False),
+    bbq: bool = Form(False),
+    garden: bool = Form(False),
+    dining: bool = Form(False),
+    breakfast: bool = Form(False),
     db: Session = Depends(get_db)
 ):
     try:
@@ -56,7 +68,19 @@ def create_room_test(
             status=status,
             adults=adults,
             children=children,
-            image_url=f"/static/rooms/{filename}" if filename else None
+            image_url=f"/static/rooms/{filename}" if filename else None,
+            air_conditioning=air_conditioning,
+            wifi=wifi,
+            bathroom=bathroom,
+            living_area=living_area,
+            terrace=terrace,
+            parking=parking,
+            kitchen=kitchen,
+            family_room=family_room,
+            bbq=bbq,
+            garden=garden,
+            dining=dining,
+            breakfast=breakfast
         )
         db.add(db_room)
         db.commit()
@@ -132,6 +156,18 @@ def create_room(
     adults: int = Form(2),
     children: int = Form(0),
     image: UploadFile = File(None),
+    air_conditioning: bool = Form(False),
+    wifi: bool = Form(False),
+    bathroom: bool = Form(False),
+    living_area: bool = Form(False),
+    terrace: bool = Form(False),
+    parking: bool = Form(False),
+    kitchen: bool = Form(False),
+    family_room: bool = Form(False),
+    bbq: bool = Form(False),
+    garden: bool = Form(False),
+    dining: bool = Form(False),
+    breakfast: bool = Form(False),
     db: Session = Depends(get_db)
 ):
     try:
@@ -154,7 +190,19 @@ def create_room(
             status=status,
             adults=adults,
             children=children,
-            image_url=f"/static/rooms/{filename}" if filename else None
+            image_url=f"/static/rooms/{filename}" if filename else None,
+            air_conditioning=air_conditioning,
+            wifi=wifi,
+            bathroom=bathroom,
+            living_area=living_area,
+            terrace=terrace,
+            parking=parking,
+            kitchen=kitchen,
+            family_room=family_room,
+            bbq=bbq,
+            garden=garden,
+            dining=dining,
+            breakfast=breakfast
         )
         db.add(db_room)
         db.commit()
@@ -254,6 +302,18 @@ def update_room(
     adults: int = Form(None),
     children: int = Form(None),
     image: UploadFile = File(None),
+    air_conditioning: bool = Form(None),
+    wifi: bool = Form(None),
+    bathroom: bool = Form(None),
+    living_area: bool = Form(None),
+    terrace: bool = Form(None),
+    parking: bool = Form(None),
+    kitchen: bool = Form(None),
+    family_room: bool = Form(None),
+    bbq: bool = Form(None),
+    garden: bool = Form(None),
+    dining: bool = Form(None),
+    breakfast: bool = Form(None),
     db: Session = Depends(get_db)
 ):
     db_room = db.query(Room).filter(Room.id == room_id).first()
@@ -273,6 +333,32 @@ def update_room(
         db_room.adults = adults
     if children is not None:
         db_room.children = children
+    
+    # Update feature fields if provided
+    if air_conditioning is not None:
+        db_room.air_conditioning = air_conditioning
+    if wifi is not None:
+        db_room.wifi = wifi
+    if bathroom is not None:
+        db_room.bathroom = bathroom
+    if living_area is not None:
+        db_room.living_area = living_area
+    if terrace is not None:
+        db_room.terrace = terrace
+    if parking is not None:
+        db_room.parking = parking
+    if kitchen is not None:
+        db_room.kitchen = kitchen
+    if family_room is not None:
+        db_room.family_room = family_room
+    if bbq is not None:
+        db_room.bbq = bbq
+    if garden is not None:
+        db_room.garden = garden
+    if dining is not None:
+        db_room.dining = dining
+    if breakfast is not None:
+        db_room.breakfast = breakfast
 
     # Handle new image upload if provided
     if image:

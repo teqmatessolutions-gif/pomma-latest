@@ -288,6 +288,26 @@ def create_booking(booking: BookingCreate, db: Session = Depends(get_db), curren
         # If a guest with the same email and mobile exists, use their established name
         guest_name_to_use = existing_booking.guest_name
 
+    # Validate room capacity for adults and children separately
+    selected_rooms = db.query(Room).filter(Room.id.in_(booking.room_ids)).all()
+    if len(selected_rooms) != len(booking.room_ids):
+        raise HTTPException(status_code=400, detail="One or more selected rooms are invalid.")
+    
+    total_adult_capacity = sum(room.adults or 0 for room in selected_rooms)
+    total_children_capacity = sum(room.children or 0 for room in selected_rooms)
+    
+    if booking.adults > total_adult_capacity:
+        raise HTTPException(
+            status_code=400,
+            detail=f"The number of adults ({booking.adults}) exceeds the total adult capacity of the selected rooms ({total_adult_capacity} adults max). Please select additional rooms or reduce the number of adults."
+        )
+    
+    if booking.children > total_children_capacity:
+        raise HTTPException(
+            status_code=400,
+            detail=f"The number of children ({booking.children}) exceeds the total children capacity of the selected rooms ({total_children_capacity} children max). Please select additional rooms or reduce the number of children."
+        )
+
     # Check if rooms are available for the requested dates
     for room_id in booking.room_ids:
         # Check if room is already booked by regular bookings for overlapping dates (only check active bookings, not cancelled or checked-out)
@@ -495,6 +515,26 @@ def create_guest_booking(booking: BookingCreate, db: Session = Depends(get_db)):
         if existing_booking:
             # If a guest with the same email and mobile exists, use their established name
             guest_name_to_use = existing_booking.guest_name
+
+        # Validate room capacity for adults and children separately
+        selected_rooms = db.query(Room).filter(Room.id.in_(booking.room_ids)).all()
+        if len(selected_rooms) != len(booking.room_ids):
+            raise HTTPException(status_code=400, detail="One or more selected rooms are invalid.")
+        
+        total_adult_capacity = sum(room.adults or 0 for room in selected_rooms)
+        total_children_capacity = sum(room.children or 0 for room in selected_rooms)
+        
+        if booking.adults > total_adult_capacity:
+            raise HTTPException(
+                status_code=400,
+                detail=f"The number of adults ({booking.adults}) exceeds the total adult capacity of the selected rooms ({total_adult_capacity} adults max). Please select additional rooms or reduce the number of adults."
+            )
+        
+        if booking.children > total_children_capacity:
+            raise HTTPException(
+                status_code=400,
+                detail=f"The number of children ({booking.children}) exceeds the total children capacity of the selected rooms ({total_children_capacity} children max). Please select additional rooms or reduce the number of children."
+            )
 
         # Check if rooms are available for the requested dates
         for room_id in booking.room_ids:
@@ -726,7 +766,25 @@ def extend_checkout(booking_id: Union[str, int], new_checkout: str, db: Session 
         raise HTTPException(status_code=404, detail="Booking not found")
     
     # Check if booking is in a valid state for extension
-    if booking.status not in ['booked', 'checked-in', 'checked_in']:
+    # Normalize status: convert to lowercase and replace underscores/hyphens with hyphens for consistent comparison
+    raw_status_lower = booking.status.lower().strip() if booking.status else ''
+    normalized_status = raw_status_lower.replace('_', '-').replace(' ', '-')
+    
+    # Explicitly reject checked-out/checked_out statuses (guest has already left)
+    # Be careful: "checked-in" normalizes to "checked-in", "checked-out" normalizes to "checked-out"
+    # We need to check for "out" specifically, not just the normalized form
+    is_checked_out = (
+        'out' in normalized_status and normalized_status.startswith('checked-') and normalized_status.endswith('-out')
+    ) or raw_status_lower in ['checked_out', 'checked-out', 'checked out']
+    
+    if is_checked_out:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Cannot extend checkout for booking with status '{booking.status}'. The guest has already checked out."
+        )
+    
+    # Allow extension for 'booked' or 'checked-in' statuses (handle variations like 'checked_in', 'checked-in', 'Checked In', etc.)
+    if normalized_status not in ['booked', 'checked-in']:
         raise HTTPException(
             status_code=400, 
             detail=f"Cannot extend checkout for booking with status '{booking.status}'. Only 'booked' or 'checked-in' bookings can be extended."

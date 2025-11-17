@@ -9,6 +9,8 @@ class Package(Base):
     title = Column(String, nullable=False)
     description = Column(String)
     price = Column(Float, nullable=False)
+    booking_type = Column(String, default="room_type")  # "whole_property" or "room_type"
+    room_types = Column(String, nullable=True)  # Comma-separated list of room types (e.g., "Cottage,Non AC Double Room")
 
     # Relationships
     images = relationship("PackageImage", back_populates="package", cascade="all, delete-orphan")

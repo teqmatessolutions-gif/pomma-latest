@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Column, Integer, String, Float, Boolean
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -13,6 +13,20 @@ class Room(Base):
     image_url = Column(String, nullable=True)
     adults = Column(Integer, default=2)      # max adults allowed
     children = Column(Integer, default=0)    # max children allowed
+    
+    # Room features/amenities
+    air_conditioning = Column(Boolean, default=False)
+    wifi = Column(Boolean, default=False)
+    bathroom = Column(Boolean, default=False)
+    living_area = Column(Boolean, default=False)
+    terrace = Column(Boolean, default=False)
+    parking = Column(Boolean, default=False)
+    kitchen = Column(Boolean, default=False)
+    family_room = Column(Boolean, default=False)
+    bbq = Column(Boolean, default=False)
+    garden = Column(Boolean, default=False)
+    dining = Column(Boolean, default=False)
+    breakfast = Column(Boolean, default=False)
 
     # Association (one-to-many with BookingRoom)
     booking_rooms = relationship(
