@@ -1,31 +1,34 @@
-export const isPommaDeployment = () => {
+export const isResortDeployment = () => {
   if (typeof window === "undefined") {
     return false;
   }
   const path = window.location.pathname || "";
-  return path.startsWith("/pommaholidays") || path.startsWith("/pommaadmin");
+  return path.startsWith("/resort") || path.startsWith("/resortadmin");
 };
 
 export const getMediaBaseUrl = () => {
-  if (typeof window !== "undefined" && isPommaDeployment()) {
-    return `${window.location.origin}/pomma`;
+  if (typeof window !== "undefined" && isResortDeployment()) {
+    return `${window.location.origin}/resortfiles`;
   }
   if (process.env.REACT_APP_MEDIA_BASE_URL) {
     return process.env.REACT_APP_MEDIA_BASE_URL;
   }
   return process.env.NODE_ENV === "production"
     ? "https://www.teqmates.com"
-    : "http://localhost:8000";
+    : "http://localhost:8012";
 };
 
 export const getApiBaseUrl = () => {
-  if (typeof window !== "undefined" && isPommaDeployment()) {
-    return `${window.location.origin}/pommaapi/api`;
+  // For local development, always use localhost:8012
+  if (process.env.NODE_ENV !== "production") {
+    return "http://localhost:8012/api";
+  }
+  
+  if (typeof window !== "undefined" && isResortDeployment()) {
+    return `${window.location.origin}/resoapi/api`;
   }
   if (process.env.REACT_APP_API_BASE_URL) {
     return process.env.REACT_APP_API_BASE_URL;
   }
-  return process.env.NODE_ENV === "production"
-    ? "https://www.teqmates.com/api"
-    : "http://localhost:8000/api";
+  return "https://www.teqmates.com/resoapi/api";
 };
