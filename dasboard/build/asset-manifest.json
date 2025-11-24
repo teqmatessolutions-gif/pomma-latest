@@ -1,20 +1,20 @@
 {
   "files": {
-    "main.css": "/admin/static/css/main.b09f149c.css",
-    "main.js": "/admin/static/js/main.5ec5f326.js",
-    "static/js/239.a10cce29.chunk.js": "/admin/static/js/239.a10cce29.chunk.js",
-    "static/js/213.5813edc1.chunk.js": "/admin/static/js/213.5813edc1.chunk.js",
-    "static/js/455.be416728.chunk.js": "/admin/static/js/455.be416728.chunk.js",
-    "static/media/pommalogo.png": "/admin/static/media/pommalogo.29e80df92cc4eafda613.png",
-    "index.html": "/admin/index.html",
-    "main.b09f149c.css.map": "/admin/static/css/main.b09f149c.css.map",
-    "main.5ec5f326.js.map": "/admin/static/js/main.5ec5f326.js.map",
-    "239.a10cce29.chunk.js.map": "/admin/static/js/239.a10cce29.chunk.js.map",
-    "213.5813edc1.chunk.js.map": "/admin/static/js/213.5813edc1.chunk.js.map",
-    "455.be416728.chunk.js.map": "/admin/static/js/455.be416728.chunk.js.map"
+    "main.css": "/pommaadmin/static/css/main.b09f149c.css",
+    "main.js": "/pommaadmin/static/js/main.54455079.js",
+    "static/js/239.a10cce29.chunk.js": "/pommaadmin/static/js/239.a10cce29.chunk.js",
+    "static/js/213.5813edc1.chunk.js": "/pommaadmin/static/js/213.5813edc1.chunk.js",
+    "static/js/455.be416728.chunk.js": "/pommaadmin/static/js/455.be416728.chunk.js",
+    "static/media/pommalogo.png": "/pommaadmin/static/media/pommalogo.29e80df92cc4eafda613.png",
+    "index.html": "/pommaadmin/index.html",
+    "main.b09f149c.css.map": "/pommaadmin/static/css/main.b09f149c.css.map",
+    "main.54455079.js.map": "/pommaadmin/static/js/main.54455079.js.map",
+    "239.a10cce29.chunk.js.map": "/pommaadmin/static/js/239.a10cce29.chunk.js.map",
+    "213.5813edc1.chunk.js.map": "/pommaadmin/static/js/213.5813edc1.chunk.js.map",
+    "455.be416728.chunk.js.map": "/pommaadmin/static/js/455.be416728.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.b09f149c.css",
-    "static/js/main.5ec5f326.js"
+    "static/js/main.54455079.js"
   ]
 }

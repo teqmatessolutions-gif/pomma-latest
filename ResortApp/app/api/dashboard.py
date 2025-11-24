@@ -278,7 +278,7 @@ def get_summary(period: str = "all", db: Session = Depends(get_db)):
         "completed_services": services_query.filter(AssignedService.status == 'completed').count(),
         
         "food_orders": food_orders_query.count(),
-        "food_items_available": db.query(FoodItem).filter(FoodItem.available == "True").count(),
+        "food_items_available": db.query(FoodItem).filter(FoodItem.available == "true").count(),
         
         "total_expenses": total_expenses,
         "expense_count": expenses_query.count(),

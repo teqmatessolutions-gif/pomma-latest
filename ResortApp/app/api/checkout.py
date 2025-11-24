@@ -110,7 +110,7 @@ def get_checkout_details(checkout_id: int, db: Session = Depends(get_db), curren
                     "service_name": ass.service.name if ass.service else "Unknown",
                     "charges": ass.service.charges if ass.service else 0,
                     "status": ass.status,
-                    "created_at": ass.created_at.isoformat() if ass.created_at else None
+                    "created_at": ass.assigned_at.isoformat() if ass.assigned_at else None
                 })
     
     return {
