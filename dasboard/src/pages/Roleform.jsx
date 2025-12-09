@@ -11,7 +11,7 @@ const availablePermissions = [
     { label: "Rooms", value: "/rooms" },
     { label: "Services", value: "/services" },
     { label: "Food Orders", value: "/food-orders" },
-    { label: "Employee", value: "/employee" },
+    { label: "Employee", value: "/employee-management" },
     { label: "Role", value: "/roles" },
     { label: "Expenses", value: "/expenses" },
     { label: "Food Management", value: "/food-categories" },

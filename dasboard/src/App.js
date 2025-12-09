@@ -23,14 +23,26 @@ import UserHistory from "./pages/UserHistory.jsx";
 import EmployeeManagement from "./pages/EmployeeManagement.jsx";
 
 const getRouterBasename = () => {
+  // During build/SSR, use the PUBLIC_URL or default to /pommaadmin for production
   if (typeof window === "undefined") {
-    return "/admin";
+    return process.env.PUBLIC_URL || "/pommaadmin";
   }
+  
+  // Always check the actual path first
   const path = window.location.pathname || "";
+  
+  // If path includes /pommaadmin, use it (production)
   if (path.startsWith("/pommaadmin")) {
     return "/pommaadmin";
   }
-  return "/admin";
+  
+  // If path includes /admin, use it (old production path if still used)
+  if (path.startsWith("/admin")) {
+    return "/admin";
+  }
+  
+  // Default to root for localhost development
+  return "/";
 };
 
 function App() {

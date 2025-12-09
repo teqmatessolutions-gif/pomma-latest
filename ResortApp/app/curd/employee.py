@@ -58,10 +58,9 @@ def create_employee_with_image(
     name: str,
     role: str,
     salary: float,
-    join_date: str,
-    # ✅ Changed from image to image_url
-    image_url: str,
-    user_id: int,
+    join_date: date,
+    image_url: str = None,
+    user_id: int = None,
 ):
     # This part of the code is responsible for creating the new Employee object.
     new_employee = Employee(
@@ -69,7 +68,6 @@ def create_employee_with_image(
         role=role,
         salary=salary,
         join_date=join_date,
-        # ✅ Pass image_url to the correct model field
         image_url=image_url,
         user_id=user_id,
     )

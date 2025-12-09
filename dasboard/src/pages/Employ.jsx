@@ -33,13 +33,9 @@ const Employee = () => {
     fetchRoles();
   }, []);
 
-  const authHeader = () => ({
-    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-  });
-
   const fetchEmployees = async () => {
     try {
-      const res = await API.get("/employees?skip=0&limit=20", authHeader());
+      const res = await API.get("/employees?skip=0&limit=20");
       // Add random last 30 days salary trend for KPI hover charts
       const dataWithTrend = res.data.map((emp) => ({
         ...emp,
@@ -55,7 +51,7 @@ const Employee = () => {
 
   const fetchRoles = async () => {
     try {
-      const res = await API.get("/roles?limit=1000", authHeader()); // Fetch all roles for the dropdown
+      const res = await API.get("/roles?limit=1000"); // Fetch all roles for the dropdown
       setRoles(res.data);
     } catch (err) {
       console.error("Error fetching roles:", err);
@@ -104,17 +100,23 @@ const Employee = () => {
     }
 
     try {
+      let response;
       if (editId) {
-        await API.put(`/employees/${editId}`, data, authHeader());
+        response = await API.put(`/employees/${editId}`, data);
       } else {
-        await API.post("/employees", data, authHeader());
+        response = await API.post("/employees", data);
       }
+      console.log("✅ Employee saved successfully:", response.data);
+      alert("Employee saved successfully!");
       fetchEmployees();
       resetForm();
     } catch (err) {
       // More specific error handling
+      console.error("❌ Full error object:", err);
+      console.error("❌ Error response:", err.response);
+      console.error("❌ Error response data:", err.response?.data);
+      console.error("❌ Error status:", err.response?.status);
       const errorMessage = err.response?.data?.detail || "An error occurred while saving the employee.";
-      console.error("Error saving employee:", err.response || err);
       // Use a more user-friendly alert or a state-based message display
       alert(errorMessage);
     }
@@ -152,7 +154,7 @@ const Employee = () => {
 
   const handleDelete = async (id) => {
     if (window.confirm("Delete this employee?")) {
-      await API.delete(`/employees/${id}`, authHeader());
+      await API.delete(`/employees/${id}`);
       fetchEmployees();
     }
   };
@@ -162,7 +164,7 @@ const Employee = () => {
     const nextPage = page + 1;
     setIsFetchingMore(true);
     try {
-      const res = await API.get(`/employees?skip=${(nextPage - 1) * 20}&limit=20`, authHeader());
+      const res = await API.get(`/employees?skip=${(nextPage - 1) * 20}&limit=20`);
       const newEmployees = res.data || [];
       const dataWithTrend = newEmployees.map((emp) => ({ ...emp, trend: Array.from({ length: 30 }, () => Math.floor(Math.random() * 10000)) }));
       setEmployees(prev => [...prev, ...dataWithTrend]);

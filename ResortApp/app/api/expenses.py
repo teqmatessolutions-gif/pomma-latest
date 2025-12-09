@@ -76,3 +76,21 @@ def get_expense_image(filename: str):
     if not os.path.exists(filepath):
         raise HTTPException(status_code=404, detail="Image not found")
     return FileResponse(filepath)
+
+@router.delete("/{expense_id}")
+def delete_expense(expense_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    expense = expense_crud.get_expense_by_id(db, expense_id)
+    if not expense:
+        raise HTTPException(status_code=404, detail=f"Expense with ID {expense_id} not found")
+    
+    if expense.image:
+        try:
+            image_filename = expense.image.split("/")[-1] if "/" in expense.image else expense.image
+            image_path = os.path.join(UPLOAD_DIR, image_filename)
+            if os.path.exists(image_path):
+                os.remove(image_path)
+        except Exception as e:
+            print(f"Warning: Failed to delete image file: {str(e)}")
+    
+    expense_crud.delete_expense(db, expense_id)
+    return {"message": f"Expense {expense_id} deleted successfully"}

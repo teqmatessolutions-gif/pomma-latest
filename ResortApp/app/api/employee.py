@@ -28,7 +28,7 @@ def get_db():
 UPLOAD_DIR = "uploads/employees"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-@router.post("")
+@router.post("", response_model=Employee)
 def add_employee(
     db: Session = Depends(get_db),
     name: str = Form(...),
@@ -75,7 +75,7 @@ def add_employee(
             detail="Invalid date format. Use YYYY-MM-DD."
         )
 
-    return crud_employee.create_employee_with_image(
+    new_employee = crud_employee.create_employee_with_image(
         db,
         name=name,
         role=role,
@@ -84,6 +84,8 @@ def add_employee(
         image_url=image_url,
         user_id=new_user.id,
     )
+    print(f"✅ Employee created successfully: ID={new_employee.id}, Name={new_employee.name}")
+    return new_employee
 
 def _list_employees_impl(db: Session, current_user: User, skip: int = 0, limit: int = 20):
     """Helper function for list_employees"""
@@ -150,7 +152,7 @@ def update_employee(
     current_user: User = Depends(get_current_user),
 ):
     """Update employee details. Admin can change password and is_active status."""
-    if current_user.role.name != "admin":
+    if current_user.role.name.lower() != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admin can update employees")
     
     employee = db.query(EmployeeModel).options(joinedload(EmployeeModel.user)).filter(EmployeeModel.id == employee_id).first()
@@ -211,7 +213,7 @@ def update_employee(
 
 @router.delete("/{employee_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_employee(employee_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    if current_user.role.name != "admin":
+    if current_user.role.name.lower() != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admin can delete employees")
     
     deleted_employee = crud_employee.delete_employee(db, employee_id)

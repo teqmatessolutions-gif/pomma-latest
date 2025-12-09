@@ -14,6 +14,11 @@ if not os.getenv("DATABASE_URL"):
 
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
+# Default fallback if DATABASE_URL is not set
+if not SQLALCHEMY_DATABASE_URL:
+    SQLALCHEMY_DATABASE_URL = "postgresql://postgres:qwerty123@localhost:5432/pommadb"
+    print(f"Warning: DATABASE_URL not found in environment. Using default: {SQLALCHEMY_DATABASE_URL}")
+
 # Add SSL parameters and connection pool settings to fix connection issues
 # Increased pool size for production stability
 # SQLite doesn't support sslmode, so we check if it's SQLite

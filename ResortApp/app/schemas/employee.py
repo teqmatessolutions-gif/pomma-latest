@@ -36,6 +36,7 @@ class LeaveBase(BaseModel):
     from_date: date
     to_date: date
     reason: str
+    leave_type: Optional[str] = "Paid"  # Add leave_type field
 
 class LeaveCreate(LeaveBase):
     pass
@@ -43,6 +44,7 @@ class LeaveCreate(LeaveBase):
 class LeaveOut(LeaveBase):
     id: int
     status: str
+    leave_type: str  # Include leave_type in output
     class Config:
         from_attributes = True
 

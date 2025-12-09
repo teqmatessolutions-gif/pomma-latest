@@ -171,8 +171,8 @@ const Packages = () => {
   const fetchData = async () => {
     try {
       const [packageRes, roomRes, bookingRes] = await Promise.all([
-        api.get("/packages/"),
-        api.get("/rooms/"),
+        api.get("/packages"),
+        api.get("/rooms"),
         api.get("/packages/bookingsall")
       ]);
       const allRoomsData = roomRes.data || [];
@@ -323,7 +323,7 @@ const Packages = () => {
       selectedFiles.forEach(img => data.append("images", img));
       // Don't set Content-Type manually - axios will set it automatically with the correct boundary
       // This ensures the Authorization header from the interceptor is preserved
-      await api.post("/packages/", data);
+      await api.post("/packages", data);
       toast.success("Package created successfully!");
       setCreateForm({ 
         title: "", 

@@ -20,20 +20,22 @@ async def create_item(
     price: float = Form(...),
     available: bool = Form(...),
     category_id: int = Form(...),
-    images: list[UploadFile] = File(...),
+    images: list[UploadFile] = File(None),  # Make images optional
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     image_paths = []
-    for image in images:
-        # Generate unique filename
-        filename = f"food_{uuid.uuid4().hex}_{image.filename}"
-        path = os.path.join(UPLOAD_DIR, filename)
-        with open(path, "wb") as buffer:
-            shutil.copyfileobj(image.file, buffer)
-        # Store with leading slash for proper URL construction
-        web_path = f"/{UPLOAD_DIR}/{filename}".replace("\\", "/")
-        image_paths.append(web_path)
+    # Only process images if they are provided
+    if images and images[0].filename:  # Check if images exist and have filenames
+        for image in images:
+            # Generate unique filename
+            filename = f"food_{uuid.uuid4().hex}_{image.filename}"
+            path = os.path.join(UPLOAD_DIR, filename)
+            with open(path, "wb") as buffer:
+                shutil.copyfileobj(image.file, buffer)
+            # Store with leading slash for proper URL construction
+            web_path = f"/{UPLOAD_DIR}/{filename}".replace("\\", "/")
+            image_paths.append(web_path)
 
     item_data = FoodItemCreate(
         name=name, description=description, price=price,

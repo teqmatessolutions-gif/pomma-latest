@@ -28,6 +28,7 @@ const FoodItems = () => {
   const [price, setPrice] = useState("");
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [message, setMessage] = useState({ type: "", text: "" });
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [foodItems, setFoodItems] = useState([]);
@@ -54,7 +55,7 @@ const FoodItems = () => {
 
   const fetchFoodItems = async () => {
     try {
-      const res = await API.get("/food-items/", {
+      const res = await API.get("/food-items", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setFoodItems(res.data);
@@ -95,10 +96,30 @@ const FoodItems = () => {
     setImagePreviews([]);
     setEditingItemId(null);
     setAvailable(true);
+    setMessage({ type: "", text: "" });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validation
+    if (!name.trim()) {
+      setMessage({ type: "error", text: "Please enter food item name" });
+      return;
+    }
+    if (!description.trim()) {
+      setMessage({ type: "error", text: "Please enter description" });
+      return;
+    }
+    if (!price || parseFloat(price) <= 0) {
+      setMessage({ type: "error", text: "Please enter a valid price" });
+      return;
+    }
+    if (!selectedCategory) {
+      setMessage({ type: "error", text: "Please select a category" });
+      return;
+    }
+    
     const formData = new FormData();
     formData.append("name", name);
     formData.append("description", description);
@@ -109,18 +130,26 @@ const FoodItems = () => {
 
     try {
       if (editingItemId) {
-        await API.put(`/food-items/${editingItemId}/`, formData, {
+        await API.put(`/food-items/${editingItemId}`, formData, {
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
         });
+        setMessage({ type: "success", text: "Food item updated successfully!" });
       } else {
-        await API.post("/food-items/", formData, {
+        await API.post("/food-items", formData, {
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
         });
+        setMessage({ type: "success", text: "Food item created successfully!" });
       }
       fetchFoodItems();
       resetForm();
+      // Clear message after 3 seconds
+      setTimeout(() => setMessage({ type: "", text: "" }), 3000);
     } catch (err) {
       console.error("Failed to save food item", err);
+      const errorMsg = err.response?.data?.detail || err.message || "Failed to save food item. Please try again.";
+      setMessage({ type: "error", text: errorMsg });
+      // Clear error message after 5 seconds
+      setTimeout(() => setMessage({ type: "", text: "" }), 5000);
     }
   };
 
@@ -128,9 +157,14 @@ const FoodItems = () => {
     if (!window.confirm("Are you sure you want to delete this item?")) return;
     try {
       await API.delete(`/food-items/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      setMessage({ type: "success", text: "Food item deleted successfully!" });
       fetchFoodItems();
+      setTimeout(() => setMessage({ type: "", text: "" }), 3000);
     } catch (err) {
       console.error("Delete failed", err);
+      const errorMsg = err.response?.data?.detail || "Failed to delete food item";
+      setMessage({ type: "error", text: errorMsg });
+      setTimeout(() => setMessage({ type: "", text: "" }), 5000);
     }
   };
 
@@ -140,15 +174,32 @@ const FoodItems = () => {
         `/food-items/${item.id}/toggle-availability?available=${!item.available}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      const newStatus = !item.available ? "Available" : "Not Available";
+      setMessage({ type: "success", text: `Food item marked as ${newStatus}` });
       fetchFoodItems();
+      setTimeout(() => setMessage({ type: "", text: "" }), 3000);
     } catch (err) {
       console.error("Failed to toggle availability", err);
+      const errorMsg = err.response?.data?.detail || "Failed to update availability";
+      setMessage({ type: "error", text: errorMsg });
+      setTimeout(() => setMessage({ type: "", text: "" }), 5000);
     }
   };
 
   return (
     <DashboardLayout>
       <div className="p-6 flex flex-col items-center gap-8">
+        {/* Success/Error Message */}
+        {message.text && (
+          <div className={`w-full max-w-4xl p-4 rounded-lg text-center font-semibold ${
+            message.type === "success" 
+              ? "bg-green-100 text-green-800 border border-green-300" 
+              : "bg-red-100 text-red-800 border border-red-300"
+          }`}>
+            {message.text}
+          </div>
+        )}
+        
         {/* Food Item Form */}
         <form
           onSubmit={handleSubmit}

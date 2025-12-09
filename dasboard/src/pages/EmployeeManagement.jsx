@@ -20,46 +20,61 @@ const UserHistory = () => {
   const [error, setError] = useState("");
   const mediaBaseUrl = useMemo(() => getMediaBaseUrl(), []);
 
+  const fetchUsers = async () => {
+    try {
+      // Fetch both users and employees to show all users including admins
+      const [usersRes, employeesRes] = await Promise.all([
+        api.get("/users"),
+        api.get("/employees")
+      ]);
+      
+      const users = usersRes.data || [];
+      const employees = employeesRes.data || [];
+      
+      // Create a map of employees by user_id for quick lookup
+      const employeeMap = new Map();
+      employees.forEach(emp => {
+        if (emp.user_id) {
+          employeeMap.set(emp.user_id, emp);
+        }
+      });
+      
+      // Get set of user IDs that have employee records
+      const employeeUserIds = new Set(employees.map(emp => emp.user_id).filter(Boolean));
+      
+      // Filter users: Only include users who have employee records OR are admins
+      // Exclude guest users (users without employee records and not admins)
+      const filteredUsers = users.filter(user => {
+        const userRole = user.role?.name?.toLowerCase() || '';
+        const hasEmployeeRecord = employeeUserIds.has(user.id);
+        const isAdmin = userRole === 'admin';
+        
+        // Include if: has employee record OR is admin
+        return hasEmployeeRecord || isAdmin;
+      });
+      
+      // Combine users with their employee data
+      const combinedUsers = filteredUsers.map(user => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role?.name || 'Unknown',
+        phone: user.phone,
+        is_active: user.is_active,
+        // Add employee-specific data if available
+        salary: employeeMap.get(user.id)?.salary || null,
+        join_date: employeeMap.get(user.id)?.join_date || null,
+        image_url: employeeMap.get(user.id)?.image_url || null,
+        has_employee_record: employeeMap.has(user.id)
+      }));
+      
+      setUsers(combinedUsers);
+    } catch (err) {
+      console.error("Failed to fetch users:", err);
+    }
+  };
+
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        // Fetch both users and employees to show all users including admins
-        const [usersRes, employeesRes] = await Promise.all([
-          api.get("/users/"),
-          api.get("/employees")
-        ]);
-        
-        const users = usersRes.data || [];
-        const employees = employeesRes.data || [];
-        
-        // Create a map of employees by user_id for quick lookup
-        const employeeMap = new Map();
-        employees.forEach(emp => {
-          if (emp.user_id) {
-            employeeMap.set(emp.user_id, emp);
-          }
-        });
-        
-        // Combine users with their employee data
-        const combinedUsers = users.map(user => ({
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role?.name || 'Unknown',
-          phone: user.phone,
-          is_active: user.is_active,
-          // Add employee-specific data if available
-          salary: employeeMap.get(user.id)?.salary || null,
-          join_date: employeeMap.get(user.id)?.join_date || null,
-          image_url: employeeMap.get(user.id)?.image_url || null,
-          has_employee_record: employeeMap.has(user.id)
-        }));
-        
-        setUsers(combinedUsers);
-      } catch (err) {
-        console.error("Failed to fetch users:", err);
-      }
-    };
     fetchUsers();
   }, []);
 
@@ -177,17 +192,33 @@ const LeaveManagement = () => {
     const handleCreateLeave = async (e) => {
         e.preventDefault();
         try {
-            const response = await api.post('/employees/leave', leaveForm);
+            // Ensure employee_id is an integer
+            const leaveData = {
+                ...leaveForm,
+                employee_id: parseInt(leaveForm.employee_id)
+            };
+            
+            // Validate required fields
+            if (!leaveData.employee_id || !leaveData.from_date || !leaveData.to_date || !leaveData.reason) {
+                alert("Please fill in all required fields.");
+                return;
+            }
+            
+            const response = await api.post('/employees/leave', leaveData);
+            
             // If the new leave belongs to the currently viewed employee, add it to the list
             if (response.data.employee_id === parseInt(selectedEmployeeId)) {
                 setLeaves([response.data, ...leaves]);
             }
+            
             // Reset form and hide it
             setLeaveForm({ employee_id: '', from_date: '', to_date: '', reason: '', leave_type: 'Paid' });
             setShowCreateForm(false);
+            alert("Leave request created successfully!");
         } catch (err) {
             console.error("Failed to create leave", err);
-            alert("Failed to create leave request.");
+            const errorMessage = err.response?.data?.detail || err.response?.data?.message || err.message || "Failed to create leave request.";
+            alert(`Error: ${errorMessage}`);
         }
     };
 
@@ -835,14 +866,12 @@ const EmployeeListAndForm = () => {
     fetchRoles();
   }, []);
 
-  const authHeader = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
-
   const fetchEmployees = async () => {
     try {
       // Fetch both users and employees to show all users including admins
       const [usersRes, employeesRes] = await Promise.all([
-        api.get("/users/?skip=0&limit=20", authHeader()),
-        api.get("/employees?skip=0&limit=20", authHeader())
+        api.get("/users/?skip=0&limit=20"),
+        api.get("/employees?skip=0&limit=20")
       ]);
       
       const users = usersRes.data || [];
@@ -856,8 +885,22 @@ const EmployeeListAndForm = () => {
         }
       });
       
+      // Get set of user IDs that have employee records
+      const employeeUserIds = new Set(employees.map(emp => emp.user_id).filter(Boolean));
+      
+      // Filter users: Only include users who have employee records OR are admins
+      // Exclude guest users (users without employee records and not admins)
+      const filteredUsers = users.filter(user => {
+        const userRole = user.role?.name?.toLowerCase() || '';
+        const hasEmployeeRecord = employeeUserIds.has(user.id);
+        const isAdmin = userRole === 'admin';
+        
+        // Include if: has employee record OR is admin
+        return hasEmployeeRecord || isAdmin;
+      });
+      
       // Combine users with their employee data
-      const combinedUsers = users.map(user => ({
+      const combinedUsers = filteredUsers.map(user => ({
         id: user.id,
         name: user.name,
         email: user.email,
@@ -882,7 +925,7 @@ const EmployeeListAndForm = () => {
 
   const fetchRoles = async () => {
     try {
-      const res = await api.get("/roles?limit=1000", authHeader());
+      const res = await api.get("/roles?limit=1000");
       setRoles(res.data);
     } catch (err) {
       console.error("Error fetching roles:", err);
@@ -945,13 +988,13 @@ const EmployeeListAndForm = () => {
 
     try {
       if (editId) {
-        await api.put(`/employees/${editId}`, data, authHeader());
+        await api.put(`/employees/${editId}`, data);
       } else {
-        await api.post("/employees", data, authHeader());
+        await api.post("/employees", data);
       }
       fetchEmployees();
-      fetchUsers(); // Refresh users list
-      resetForm();
+            resetForm();
+      alert("Employee saved successfully!");
     } catch (err) {
       const errorMessage = err.response?.data?.detail || "An error occurred while saving the employee.";
       console.error("Error saving employee:", err.response || err);
@@ -994,10 +1037,9 @@ const EmployeeListAndForm = () => {
     try {
       const data = new FormData();
       data.append("is_active", String(!emp.is_active)); // Convert to string for FormData
-      await api.put(`/employees/${emp.id}`, data, authHeader());
+      await api.put(`/employees/${emp.id}`, data);
       fetchEmployees();
-      fetchUsers(); // Refresh users list
-    } catch (err) {
+          } catch (err) {
       const errorMessage = err.response?.data?.detail || "An error occurred while updating employee status.";
       console.error("Error updating employee:", err.response || err);
       alert(errorMessage);
@@ -1006,7 +1048,7 @@ const EmployeeListAndForm = () => {
 
   const handleDelete = async (id) => {
     if (window.confirm("Delete this employee?")) {
-      await api.delete(`/employees/${id}`, authHeader());
+      await api.delete(`/employees/${id}`);
       fetchEmployees();
     }
   };
@@ -1016,7 +1058,7 @@ const EmployeeListAndForm = () => {
     const nextPage = page + 1;
     setIsFetchingMore(true);
     try {
-      const res = await api.get(`/employees?skip=${(nextPage - 1) * 20}&limit=20`, authHeader());
+      const res = await api.get(`/employees?skip=${(nextPage - 1) * 20}&limit=20`);
       const newEmployees = res.data || [];
       const dataWithTrend = newEmployees.map((emp) => ({ ...emp, trend: Array.from({ length: 30 }, () => Math.floor(Math.random() * 10000)) }));
       setEmployees(prev => [...prev, ...dataWithTrend]);
@@ -1136,7 +1178,7 @@ const EmployeeListAndForm = () => {
           <tbody>
             {filteredEmployees.map((emp, i) => (
               <tr key={emp.id} className="hover:bg-gray-50">
-                <td className="p-1 sm:p-2 border text-center text-xs sm:text-sm">{i + 1}</td>
+                <td className="p-1 sm:p-2 border text-center text-xs sm:text-sm">{emp.id}</td>
                 <td className="p-1 sm:p-2 border">
                   {emp.image_url ? (
                     <img 

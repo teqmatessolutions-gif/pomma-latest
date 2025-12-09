@@ -39,11 +39,11 @@ export default function FoodOrders() {
           console.error("Error fetching rooms:", err);
           return { data: [] };
         }),
-        api.get("/employees/").catch(err => {
+        api.get("/employees").catch(err => {
           console.error("Error fetching employees:", err);
           return { data: [] };
         }),
-        api.get("/food-items/").catch(err => {
+        api.get("/food-items").catch(err => {
           console.error("Error fetching food items:", err);
           return { data: [] };
         }),
@@ -60,42 +60,43 @@ export default function FoodOrders() {
       setHasMore(ordersRes.data.length === 12);
       setEmployees(employeesRes.data);
       setFoodItems(foodItemsRes.data);
-      
+
       // Filter rooms to only show checked-in rooms (similar to Services page)
       const allRooms = roomsRes.data;
       const regularBookings = bookingsRes.data?.bookings || [];
       const packageBookings = (packageBookingsRes.data || []).map(pb => ({ ...pb, is_package: true }));
-      
+
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const checkedInRoomIds = new Set();
-      
+
       // Helper function to normalize status
       const normalizeStatus = (status) => {
         if (!status) return '';
         return status.toLowerCase().replace(/[-_\s]/g, '');
       };
-      
-      // Helper function to check if status is checked-in or booked (active booking)
-      const isActiveBooking = (status) => {
+
+      // Helper function to check if status is checked-in ONLY (not booked)
+      // For food orders, we only want rooms with guests currently checked in
+      const isCheckedIn = (status) => {
         if (!status) return false;
         const normalized = status.toLowerCase().replace(/[-_\s]/g, '');
-        // Accept: 'checkedin', 'checked-in', 'checked_in', 'checked in', or 'booked' (for active bookings)
-        // Exclude: 'cancelled', 'checkedout', 'checked-out', 'checked_out'
-        return (normalized === 'checkedin' || normalized === 'booked') && 
-               normalized !== 'cancelled' && 
-               !normalized.includes('checkedout');
+        // Accept ONLY: 'checkedin', 'checked-in', 'checked_in', 'checked in'
+        // Exclude: 'booked', 'cancelled', 'checkedout', 'checked-out', 'checked_out'
+        return normalized === 'checkedin' &&
+          normalized !== 'cancelled' &&
+          !normalized.includes('checkedout');
       };
-      
-      // Get room IDs from active regular bookings (checked-in or booked, not cancelled)
+
+      // Get room IDs from checked-in regular bookings (not booked, not cancelled)
       regularBookings.forEach(booking => {
-        if (isActiveBooking(booking.status)) {
+        if (isCheckedIn(booking.status)) {
           // Parse dates properly
           const checkInDate = new Date(booking.check_in);
           const checkOutDate = new Date(booking.check_out);
           checkInDate.setHours(0, 0, 0, 0);
           checkOutDate.setHours(0, 0, 0, 0);
-          
+
           // Check if booking is active (today is between check-in and check-out)
           // Also allow if check-out is today (room is still checked in)
           if (checkInDate <= today && checkOutDate >= today) {
@@ -104,32 +105,32 @@ export default function FoodOrders() {
                 // For regular bookings, room.id is the room ID directly
                 if (room && room.id) {
                   checkedInRoomIds.add(room.id);
-                  console.log(`Added active regular room: ${room.number || room.id} (ID: ${room.id}) from booking ${booking.id}, status: ${booking.status}`);
+                  console.log(`Added checked-in regular room: ${room.number || room.id} (ID: ${room.id}) from booking ${booking.id}, status: ${booking.status}`);
                 } else {
                   console.log(`Regular booking ${booking.id} room missing id:`, room);
                 }
               });
             } else {
-              console.log(`Regular booking ${booking.id} has active status but no rooms array or rooms is not an array`);
+              console.log(`Regular booking ${booking.id} is checked-in but has no rooms array or rooms is not an array`);
             }
           } else {
-            console.log(`Regular booking ${booking.id} is active but dates don't match: check_in=${checkInDate}, check_out=${checkOutDate}, today=${today}`);
+            console.log(`Regular booking ${booking.id} is checked-in but dates don't match: check_in=${checkInDate}, check_out=${checkOutDate}, today=${today}`);
           }
         } else {
-          console.log(`Regular booking ${booking.id} status '${booking.status}' is not active (normalized: '${normalizeStatus(booking.status)}')`);
+          console.log(`Regular booking ${booking.id} status '${booking.status}' is not checked-in (normalized: '${normalizeStatus(booking.status)}')`);
         }
       });
-      
-      // Get room IDs from active package bookings (checked-in or booked, not cancelled)
+
+      // Get room IDs from checked-in package bookings (not booked, not cancelled)
       // Note: Package bookings have rooms as PackageBookingRoomOut objects with a nested 'room' property
       packageBookings.forEach(booking => {
-        if (isActiveBooking(booking.status)) {
+        if (isCheckedIn(booking.status)) {
           // Parse dates properly
           const checkInDate = new Date(booking.check_in);
           const checkOutDate = new Date(booking.check_out);
           checkInDate.setHours(0, 0, 0, 0);
           checkOutDate.setHours(0, 0, 0, 0);
-          
+
           // Check if booking is active (today is between check-in and check-out)
           // Also allow if check-out is today (room is still checked in)
           if (checkInDate <= today && checkOutDate >= today) {
@@ -143,38 +144,38 @@ export default function FoodOrders() {
                 const roomId = room?.id || roomLink.room_id;
                 if (roomId) {
                   checkedInRoomIds.add(roomId);
-                  console.log(`Added active package room: ${room?.number || roomId} (ID: ${roomId}) from booking ${booking.id}, status: ${booking.status}`);
+                  console.log(`Added checked-in package room: ${room?.number || roomId} (ID: ${roomId}) from booking ${booking.id}, status: ${booking.status}`);
                 } else {
                   console.log(`Package booking ${booking.id} room link missing room data:`, roomLink);
                 }
               });
             } else {
-              console.log(`Package booking ${booking.id} has active status but no rooms array`);
+              console.log(`Package booking ${booking.id} is checked-in but has no rooms array`);
             }
           } else {
-            console.log(`Package booking ${booking.id} is active but dates don't match: check_in=${checkInDate}, check_out=${checkOutDate}, today=${today}`);
+            console.log(`Package booking ${booking.id} is checked-in but dates don't match: check_in=${checkInDate}, check_out=${checkOutDate}, today=${today}`);
           }
         } else {
-          console.log(`Package booking ${booking.id} status '${booking.status}' is not active (normalized: '${normalizeStatus(booking.status)}')`);
+          console.log(`Package booking ${booking.id} status '${booking.status}' is not checked-in (normalized: '${normalizeStatus(booking.status)}')`);
         }
       });
-      
+
       // Also check room status directly as a fallback
-      // Include rooms with status: checked-in, booked, occupied (regardless of booking status)
+      // Include rooms with status: checked-in or occupied ONLY (exclude booked)
       allRooms.forEach(room => {
         const roomStatusNormalized = normalizeStatus(room.status);
-        // Accept: checkedin, booked, occupied, checked-in (any variation)
-        if (roomStatusNormalized === 'checkedin' || 
-            roomStatusNormalized === 'booked' || 
-            roomStatusNormalized === 'occupied' ||
-            roomStatusNormalized.includes('checkedin')) {
+        // Accept ONLY: checkedin, occupied, checked-in (any variation)
+        // Exclude: booked (guest hasn't arrived yet)
+        if (roomStatusNormalized === 'checkedin' ||
+          roomStatusNormalized === 'occupied' ||
+          roomStatusNormalized.includes('checkedin')) {
           checkedInRoomIds.add(room.id);
         }
       });
-      
+
       // Filter rooms to only show checked-in/active rooms
       const checkedInRooms = allRooms.filter(room => checkedInRoomIds.has(room.id));
-      
+
       // Detailed debug logging (matching Services.jsx pattern)
       console.log(`Food Orders - Total checked-in room IDs: ${checkedInRoomIds.size}`, Array.from(checkedInRoomIds));
       console.log(`Food Orders - Filtered checked-in rooms: ${checkedInRooms.length}`, checkedInRooms.map(r => `${r.number || r.id} (status: ${r.status})`));
@@ -184,12 +185,12 @@ export default function FoodOrders() {
         checkedInRoomsCount: checkedInRooms.length,
         regularBookingsCount: regularBookings.length,
         packageBookingsCount: packageBookings.length,
-        activeRegularBookings: regularBookings.filter(b => isActiveBooking(b.status)).length,
-        activePackageBookings: packageBookings.filter(b => isActiveBooking(b.status)).length,
+        checkedInRegularBookings: regularBookings.filter(b => isCheckedIn(b.status)).length,
+        checkedInPackageBookings: packageBookings.filter(b => isCheckedIn(b.status)).length,
         today: today.toISOString(),
         allRoomStatuses: allRooms.map(r => ({ id: r.id, number: r.number, status: r.status }))
       });
-      
+
       setRooms(checkedInRooms);
     } catch (error) {
       console.error("Failed to fetch data:", error);
@@ -256,7 +257,7 @@ export default function FoodOrders() {
     };
 
     try {
-      await api.post("/food-orders/", payload);
+      await api.post("/food-orders", payload);
       fetchAll();
       setSelectedItems([]);
       setRoomId("");
@@ -363,21 +364,21 @@ export default function FoodOrders() {
           <h3 className="text-xl font-semibold text-gray-700 text-center">Create New Food Order</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <select
-  value={roomId}
-  onChange={(e) => setRoomId(e.target.value)}
-  className="border rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 text-black"
->
-  <option value="">Select Room</option>
-  {rooms.length === 0 ? (
-    <option disabled>No checked-in rooms available</option>
-  ) : (
-    rooms.map((room) => (
-      <option key={room.id} value={room.id}>
-        Room {room.number || room.room_number || room.id}
-      </option>
-    ))
-  )}
-</select>
+              value={roomId}
+              onChange={(e) => setRoomId(e.target.value)}
+              className="border rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 text-black"
+            >
+              <option value="">Select Room</option>
+              {rooms.length === 0 ? (
+                <option disabled>No checked-in rooms available</option>
+              ) : (
+                rooms.map((room) => (
+                  <option key={room.id} value={room.id}>
+                    Room {room.number || room.room_number || room.id}
+                  </option>
+                ))
+              )}
+            </select>
 
             <select
               value={employeeId}
@@ -428,7 +429,7 @@ export default function FoodOrders() {
           </div>
 
           <div className="text-lg font-semibold mt-2">Total: ₹{amount}</div>
-                 <button
+          <button
             onClick={handleSubmit}
             className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-2xl shadow-lg hover:scale-105 transform transition"
           >
@@ -474,9 +475,8 @@ export default function FoodOrders() {
                     Room: {roomData?.number || roomData?.room_number || order.room_id}
                   </h4>
                   <span
-                    className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                      statusColors[order.status] || "bg-gray-100 text-gray-800"
-                    }`}
+                    className={`px-3 py-1 rounded-full text-sm font-semibold ${statusColors[order.status] || "bg-gray-100 text-gray-800"
+                      }`}
                   >
                     {order.status.replace("_", " ")}
                   </span>

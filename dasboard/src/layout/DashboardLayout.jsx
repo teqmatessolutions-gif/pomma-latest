@@ -22,7 +22,7 @@ import {
   Briefcase,
   Sun,
 } from "lucide-react";
-import jwt_decode from "https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.esm.js";
+import { jwtDecode } from "jwt-decode";
 import pommaLogo from "../assets/pommalogo.png";
 
 import { CreditCard } from "lucide-react";
@@ -98,7 +98,7 @@ const getUserPermissions = () => {
     return { role: 'guest', permissions: [], user: null };
   }
   try {
-    const decodedUser = jwt_decode(token);
+    const decodedUser = jwtDecode(token);
     return {
       role: decodedUser?.role || 'guest',
       permissions: decodedUser?.permissions || [],
@@ -113,12 +113,31 @@ const getUserPermissions = () => {
 export const ProtectedRoute = ({ children, requiredPermission }) => {
   const { role, permissions } = getUserPermissions();
 
-  // Admin has access to everything.
-  // Otherwise, check if the user's permissions array includes the required permission.
-  const hasAccess = role === 'admin' || permissions.includes(requiredPermission);
+  // Check if user is authenticated
+  const token = localStorage.getItem("token");
+  if (!token || !role || role.toLowerCase() === 'guest') {
+    return <Navigate to="/" replace />;
+  }
+
+  // Normalize role to lowercase for comparison
+  const normalizedRole = role.toLowerCase();
+  
+  // Admin has access to everything
+  if (normalizedRole === 'admin') {
+    return <>{children}</>;
+  }
+  
+  // Check if the user's permissions array includes the required permission
+  // This allows any role (including manager) to access routes if they have the permission
+  // Also handle backward compatibility: /employee should grant access to /employee-management
+  let hasAccess = permissions && Array.isArray(permissions) && permissions.includes(requiredPermission);
+  
+  // Backward compatibility: if route is /employee-management, also check for /employee permission
+  if (!hasAccess && requiredPermission === '/employee-management') {
+    hasAccess = permissions && Array.isArray(permissions) && permissions.includes('/employee');
+  }
 
   if (!hasAccess) {
-    // Redirect to dashboard with a message instead of showing blank page
     return <Navigate to="/dashboard" replace />;
   }
   
@@ -243,12 +262,19 @@ export default function DashboardLayout({ children }) {
   ];
 
   const menuItems = allMenuItems.filter((item) => {
-    // Admin role has access to everything, regardless of permissions.
-    if (role === 'admin') {
+    // Admin role has access to everything, regardless of permissions (case-insensitive).
+    if (role && role.toLowerCase() === 'admin') {
       return true;
     }
     // For other roles, check if their permissions list includes the item's route.
-    return permissions.includes(item.to);
+    let hasPermission = permissions && permissions.includes(item.to);
+    
+    // Backward compatibility: if route is /employee-management, also check for /employee permission
+    if (!hasPermission && item.to === '/employee-management') {
+      hasPermission = permissions && permissions.includes('/employee');
+    }
+    
+    return hasPermission;
   });
 
   return (

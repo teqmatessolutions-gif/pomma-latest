@@ -11,7 +11,13 @@ const API = axios.create({
 // Automatically add token to headers
 API.interceptors.request.use((req) => {
   const token = localStorage.getItem("token");
-  if (token) req.headers.Authorization = `Bearer ${token}`;
+  console.log("🔑 Token from localStorage:", token ? "EXISTS" : "MISSING");
+  if (token) {
+    req.headers.Authorization = `Bearer ${token}`;
+    console.log("✅ Authorization header added");
+  } else {
+    console.log("❌ No token found, Authorization header NOT added");
+  }
   return req;
 });
 

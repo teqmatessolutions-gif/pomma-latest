@@ -43,9 +43,23 @@ def login(request: LoginRequest, db: Session = Depends(auth.get_db)):
             print(f"Login attempt: Invalid password for email: {request.email}")
             raise HTTPException(status_code=400, detail="Invalid credentials")
         
-        # Create access token
+        # Create access token with permissions
+        # Parse permissions if it's stored as JSON string
+        permissions = user.role.permissions if user.role.permissions else []
+        if isinstance(permissions, str):
+            import json
+            try:
+                permissions = json.loads(permissions)
+            except:
+                permissions = []
+        
+        token_data = {
+            "user_id": user.id,
+            "role": user.role.name,
+            "permissions": permissions
+        }
         access_token = auth.create_access_token(
-            data={"user_id": user.id, "role": user.role.name},
+            data=token_data,
             expires_delta=timedelta(hours=auth.ACCESS_TOKEN_EXPIRE_MINUTES),
         )
         print(f"Login successful: {request.email}")

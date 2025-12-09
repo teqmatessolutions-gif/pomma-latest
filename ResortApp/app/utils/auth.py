@@ -87,7 +87,8 @@ def get_current_user(
         print(f"ERROR in get_current_user (token decode): {str(e)}\n{traceback.format_exc()}")
         raise credentials_exception
     try:
-        user = db.query(User).filter(User.id == user_id).first()
+        from sqlalchemy.orm import joinedload
+        user = db.query(User).options(joinedload(User.role)).filter(User.id == user_id).first()
         if user is None:
             raise credentials_exception
         return user

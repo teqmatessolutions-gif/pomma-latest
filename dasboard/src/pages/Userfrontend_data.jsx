@@ -7,88 +7,113 @@ import { AnimatePresence, motion } from "framer-motion";
 
 // Get the correct base URL based on environment
 const getImageUrl = (imagePath) => {
-  if (!imagePath) {
-    console.warn('getImageUrl: imagePath is empty or null');
-    return '';
-  }
-  
-  // Already a full URL
-  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-    return imagePath;
-  }
-  
-  // Check if we're in a pomma deployment (pommaadmin)
-  const isPommaDeployment = () => {
-    if (typeof window === "undefined") {
-      return false;
+    if (!imagePath) {
+        console.warn('getImageUrl: imagePath is empty or null');
+        return '';
     }
-    const path = window.location.pathname || "";
-    return path.startsWith("/pommaholidays") || path.startsWith("/pommaadmin");
-  };
-  
-  // Get base URL - use /pomma prefix for pomma deployments
-  let baseUrl;
-  if (typeof window !== "undefined" && isPommaDeployment()) {
-    baseUrl = `${window.location.origin}/pomma`;
-  } else if (process.env.REACT_APP_MEDIA_BASE_URL) {
-    baseUrl = process.env.REACT_APP_MEDIA_BASE_URL;
-  } else {
-    baseUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://www.teqmates.com' 
-      : 'http://localhost:8000';
-  }
-  
-  // Normalize the path
-  let path = imagePath;
-  
-  // Remove leading/trailing whitespace
-  path = path.trim();
-  
-  // If path contains backslashes (Windows path), convert to forward slashes
-  path = path.replace(/\\/g, '/');
-  
-  // Remove double slashes (except after protocol)
-  path = path.replace(/([^:])\/\/+/g, '$1/');
-  
-  // Ensure path starts with /
-  if (!path.startsWith('/')) {
-    path = `/${path}`;
-  }
-  
-  // Handle old paths that might be incorrect
-  // If path doesn't start with /static/ or /uploads/, but contains 'static' or 'uploads', fix it
-  if (!path.startsWith('/static/') && !path.startsWith('/uploads/')) {
-    if (path.includes('static/uploads/')) {
-      // Path like /static/uploads/file.jpg (correct)
-      // Already good
-    } else if (path.includes('/uploads/')) {
-      // Path like /uploads/file.jpg, convert to /static/uploads/file.jpg
-      path = path.replace(/^\/uploads\//, '/static/uploads/');
-    } else if (path.includes('uploads/')) {
-      // Path like static/uploads/file.jpg (missing leading /)
-      path = `/static/${path}`;
-    } else {
-      // Try to add /static/ prefix if it looks like an upload path
-      // Check if it ends with common image extensions
-      const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
-      if (imageExtensions.some(ext => path.toLowerCase().endsWith(ext))) {
-        // If it's not already under static or uploads, assume it should be in static/uploads
-        if (!path.includes('static') && !path.includes('uploads')) {
-          const fileName = path.split('/').pop();
-          path = `/static/uploads/${fileName}`;
+
+    // Already a full URL
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+        return imagePath;
+    }
+
+    // Check if we're in a pomma deployment (pommaadmin)
+    // IMPORTANT: Must check localhost FIRST - even if path is /pommaadmin,
+    // localhost development should use port 8010, not /pomma
+    const isPommaDeployment = () => {
+        if (typeof window === "undefined") {
+            return false;
         }
-      }
+        // In localhost, NOT a Pomma deployment (even if path has /pommaadmin)
+        const hostname = window.location.hostname;
+        const isLocalhost = hostname === "localhost" ||
+            hostname === "127.0.0.1" ||
+            hostname.startsWith("192.168.");
+        if (isLocalhost) {
+            return false;
+        }
+        // Only for production deployments
+        const path = window.location.pathname || "";
+        return path.startsWith("/pommaholidays") || path.startsWith("/pommaadmin");
+    };
+
+    // Get base URL - check localhost FIRST
+    let baseUrl;
+    if (process.env.REACT_APP_MEDIA_BASE_URL) {
+        baseUrl = process.env.REACT_APP_MEDIA_BASE_URL;
+    } else if (typeof window !== "undefined") {
+        // Check localhost first (port 8010), even if running in /pommaadmin mode
+        const hostname = window.location.hostname;
+        const isLocalhost = hostname === "localhost" ||
+            hostname === "127.0.0.1" ||
+            hostname.startsWith("192.168.");
+
+        if (isLocalhost) {
+            baseUrl = 'http://localhost:8010';
+        } else if (isPommaDeployment()) {
+            baseUrl = `${window.location.origin}/pomma`;
+        } else {
+            baseUrl = process.env.NODE_ENV === 'production'
+                ? 'https://www.teqmates.com'
+                : 'http://localhost:8010';
+        }
+    } else {
+        baseUrl = process.env.NODE_ENV === 'production'
+            ? 'https://www.teqmates.com'
+            : 'http://localhost:8010';
     }
-  }
-  
-  const fullUrl = `${baseUrl}${path}`;
-  console.log(`getImageUrl: "${imagePath}" -> "${fullUrl}"`);
-  return fullUrl;
+
+    // Normalize the path
+    let path = imagePath;
+
+    // Remove leading/trailing whitespace
+    path = path.trim();
+
+    // If path contains backslashes (Windows path), convert to forward slashes
+    path = path.replace(/\\/g, '/');
+
+    // Remove double slashes (except after protocol)
+    path = path.replace(/([^:])\/\/+/g, '$1/');
+
+    // Ensure path starts with /
+    if (!path.startsWith('/')) {
+        path = `/${path}`;
+    }
+
+    // Handle old paths that might be incorrect
+    // If path doesn't start with /static/ or /uploads/, but contains 'static' or 'uploads', fix it
+    if (!path.startsWith('/static/') && !path.startsWith('/uploads/')) {
+        if (path.includes('static/uploads/')) {
+            // Path like /static/uploads/file.jpg (correct)
+            // Already good
+        } else if (path.includes('/uploads/')) {
+            // Path like /uploads/file.jpg, convert to /static/uploads/file.jpg
+            path = path.replace(/^\/uploads\//, '/static/uploads/');
+        } else if (path.includes('uploads/')) {
+            // Path like static/uploads/file.jpg (missing leading /)
+            path = `/static/${path}`;
+        } else {
+            // Try to add /static/ prefix if it looks like an upload path
+            // Check if it ends with common image extensions
+            const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+            if (imageExtensions.some(ext => path.toLowerCase().endsWith(ext))) {
+                // If it's not already under static or uploads, assume it should be in static/uploads
+                if (!path.includes('static') && !path.includes('uploads')) {
+                    const fileName = path.split('/').pop();
+                    path = `/static/uploads/${fileName}`;
+                }
+            }
+        }
+    }
+
+    const fullUrl = `${baseUrl}${path}`;
+    console.log(`getImageUrl: "${imagePath}" -> "${fullUrl}"`);
+    return fullUrl;
 };
 
 const ensureHttpUrl = (url) => {
-  if (!url) return "";
-  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+    if (!url) return "";
+    return /^https?:\/\//i.test(url) ? url : `https://${url}`;
 };
 
 const API_URL = process.env.NODE_ENV === 'production' ? 'https://www.teqmates.com' : 'http://localhost:8000';
@@ -227,14 +252,14 @@ export default function ResortCMS() {
                 nearbyAttrRes,
                 nearbyAttrBannerRes
             ] = await Promise.all([
-                api.get("/header-banner/"),
-                api.get("/gallery/"),
-                api.get("/reviews/"),
-                api.get("/resort-info/"),
-                api.get("/signature-experiences/"),
-                api.get("/plan-weddings/"),
-                api.get("/nearby-attractions/"),
-                api.get("/nearby-attraction-banners/"),
+                api.get("/header-banner"),
+                api.get("/gallery"),
+                api.get("/reviews"),
+                api.get("/resort-info"),
+                api.get("/signature-experiences"),
+                api.get("/plan-weddings"),
+                api.get("/nearby-attractions"),
+                api.get("/nearby-attraction-banners"),
             ]);
             setResortData({
                 banners: bannersRes.data || [],
@@ -265,7 +290,7 @@ export default function ResortCMS() {
                 const cleanEndpoint = endpoint.endsWith('/') ? endpoint.slice(0, -1) : endpoint;
                 await api.delete(`${cleanEndpoint}/${id}`);
                 toast.success(`${name} deleted successfully!`);
-                
+
                 // Remove from UI after successful deletion
                 setResortData(prev => {
                     if (endpoint.includes('header-banner')) {
@@ -287,7 +312,7 @@ export default function ResortCMS() {
                     }
                     return prev;
                 });
-                
+
                 // Optionally refresh to sync with server
                 fetchAll();
             } catch (err) {
@@ -338,12 +363,12 @@ export default function ResortCMS() {
                 data: payload,
             });
             toast.success(`${config.title} ${isEditing ? 'updated' : 'added'} successfully!`);
-            
+
             // Optimistically update the UI
             if (config.endpoint.includes('header-banner')) {
                 setResortData(prev => ({
                     ...prev,
-                    banners: isEditing 
+                    banners: isEditing
                         ? prev.banners.map(item => item.id === initialData.id ? response.data : item)
                         : [response.data, ...prev.banners]
                 }));
@@ -397,7 +422,7 @@ export default function ResortCMS() {
                         : [response.data, ...prev.nearbyAttractionBanners]
                 }));
             }
-            
+
             // Close modal after successful save
             setModalState({ isOpen: false, config: null, initialData: null });
         } catch (error) {
@@ -469,9 +494,9 @@ export default function ResortCMS() {
                         {resortData.gallery.length > 0 ? resortData.gallery.map(item => (
                             <div key={item.id} className="bg-gray-50 border rounded-lg p-4 space-y-3">
                                 {item.image_url ? (
-                                    <img 
-                                        src={getImageUrl(item.image_url)} 
-                                        alt={item.caption || 'Gallery image'} 
+                                    <img
+                                        src={getImageUrl(item.image_url)}
+                                        alt={item.caption || 'Gallery image'}
                                         className="w-full h-32 object-cover rounded-md shadow-sm"
                                         onError={(e) => {
                                             console.error('Failed to load gallery image:', item.image_url);
@@ -530,9 +555,9 @@ export default function ResortCMS() {
                         {resortData.signatureExperiences.length > 0 ? resortData.signatureExperiences.map(item => (
                             <div key={item.id} className="bg-gray-50 border rounded-lg p-4 space-y-3">
                                 {item.image_url ? (
-                                    <img 
-                                        src={getImageUrl(item.image_url)} 
-                                        alt={item.title || 'Signature experience'} 
+                                    <img
+                                        src={getImageUrl(item.image_url)}
+                                        alt={item.title || 'Signature experience'}
                                         className="w-full h-32 object-cover rounded-md shadow-sm"
                                         onError={(e) => {
                                             console.error('Failed to load signature experience image:', item.image_url);
@@ -559,9 +584,9 @@ export default function ResortCMS() {
                         {resortData.planWeddings.length > 0 ? resortData.planWeddings.map(item => (
                             <div key={item.id} className="bg-gray-50 border rounded-lg p-4 space-y-3">
                                 {item.image_url ? (
-                                    <img 
-                                        src={getImageUrl(item.image_url)} 
-                                        alt={item.title || 'Plan wedding'} 
+                                    <img
+                                        src={getImageUrl(item.image_url)}
+                                        alt={item.title || 'Plan wedding'}
                                         className="w-full h-32 object-cover rounded-md shadow-sm"
                                         onError={(e) => {
                                             console.error('Failed to load plan wedding image:', item.image_url);
@@ -617,9 +642,9 @@ export default function ResortCMS() {
                         {resortData.nearbyAttractions.length > 0 ? resortData.nearbyAttractions.map(item => (
                             <div key={item.id} className="bg-gray-50 border rounded-lg p-4 space-y-3">
                                 {item.image_url ? (
-                                    <img 
-                                        src={getImageUrl(item.image_url)} 
-                                        alt={item.title || 'Nearby attraction'} 
+                                    <img
+                                        src={getImageUrl(item.image_url)}
+                                        alt={item.title || 'Nearby attraction'}
                                         className="w-full h-32 object-cover rounded-md shadow-sm"
                                         onError={(e) => {
                                             console.error('Failed to load nearby attraction image:', item.image_url);

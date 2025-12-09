@@ -425,10 +425,10 @@ const Bookings = () => {
       }
 
       const [roomsRes, bookingsRes, packageBookingsRes, packageRes] = await Promise.all([
-        API.get("/rooms/", authHeader()),
+        API.get("/rooms", authHeader()),
         API.get("/bookings?skip=0&limit=20&order_by=id&order=desc", authHeader()), // Order by latest first
         API.get("/packages/bookingsall?skip=0&limit=500", authHeader()), // Reduced from 10000 to 500 for performance
-        API.get("/packages/", authHeader()),
+        API.get("/packages", authHeader()),
       ]);
 
       const allRooms = roomsRes.data;
@@ -705,17 +705,14 @@ const Bookings = () => {
         is_package: Boolean(rawBooking.is_package),
       };
 
-      const prefix = booking.is_package ? "PK" : "BK";
-      const displayId = (booking.display_id || `${prefix}-${String(booking.id ?? "").padStart(6, "0")}`)
-        .toString()
-        .trim()
-        .toUpperCase();
-
-      const key = `${prefix}_${displayId}`;
+      // Use a more reliable key: id + is_package combination
+      // This ensures same booking (same id, same type) is only kept once
+      const key = `${booking.is_package ? 'PK' : 'BK'}_${booking.id ?? 'unknown'}`;
 
       if (!map.has(key)) {
         map.set(key, booking);
       } else {
+        // If duplicate found, merge properties (keep the most complete version)
         const existing = map.get(key);
         map.set(key, { ...existing, ...booking });
       }
@@ -1021,20 +1018,66 @@ const Bookings = () => {
     return uniqueBookings
       .filter((b) => {
         // Normalize status values - handle both hyphens and underscores
-        let normalizedBookingStatus = b.status?.toLowerCase().trim();
-        let normalizedFilterStatus = statusFilter?.toLowerCase().trim();
+        const rawBookingStatus = b.status || '';
+        let normalizedBookingStatus = rawBookingStatus.toLowerCase().trim();
+        let normalizedFilterStatus = (statusFilter || '').toLowerCase().trim();
         
         // Normalize: replace underscores and hyphens with standard format
-        normalizedBookingStatus = normalizedBookingStatus?.replace(/[-_]/g, '-');
-        normalizedFilterStatus = normalizedFilterStatus?.replace(/[-_]/g, '-');
+        normalizedBookingStatus = normalizedBookingStatus.replace(/[-_]/g, '-');
+        normalizedFilterStatus = normalizedFilterStatus.replace(/[-_]/g, '-');
         
-        // Handle case variations and exact match - works for both regular and package bookings
-        const statusMatch = statusFilter === "All" || 
-          normalizedBookingStatus === normalizedFilterStatus ||
-          (normalizedBookingStatus === "checked-out" && normalizedFilterStatus === "checked-out") ||
-          (normalizedBookingStatus === "checked_out" && normalizedFilterStatus === "checked-out") ||
-          (normalizedBookingStatus === "checked-in" && normalizedFilterStatus === "checked-in") ||
-          (normalizedBookingStatus === "checked_in" && normalizedFilterStatus === "checked-in");
+        // Exact match only - no substring matching
+        let statusMatch = false;
+        if (statusFilter === "All") {
+          statusMatch = true;
+        } else {
+          // Normalize filter status for comparison
+          const filterStatusLower = statusFilter.toLowerCase().trim();
+          const normalizedStatus = normalizedBookingStatus;
+          
+          // Special handling for cancelled filter - be very strict
+          if (filterStatusLower === 'cancelled' || normalizedFilterStatus === 'cancelled') {
+            // First, check the raw status to see what we're dealing with
+            const rawStatusLower = (rawBookingStatus || '').toLowerCase().trim();
+            
+            // Check if it's a cancelled status (exact match only, no variations)
+            // Must be exactly "cancelled" or "canceled" (case-insensitive)
+            const isCancelled = 
+              rawStatusLower === 'cancelled' || 
+              rawStatusLower === 'canceled' ||
+              normalizedStatus === 'cancelled' || 
+              normalizedStatus === 'canceled';
+            
+            // Check if it's a checked-out status - be very explicit
+            // Backend uses "checked_out" (underscore) or "checked-out" (hyphen)
+            // We need to exclude ANY status that contains both "checked" and "out"
+            const rawHasChecked = rawStatusLower.includes('checked');
+            const rawHasOut = rawStatusLower.includes('out');
+            const normHasChecked = normalizedStatus.includes('checked');
+            const normHasOut = normalizedStatus.includes('out');
+            
+            const isCheckedOut = 
+              // Exact matches first
+              rawStatusLower === 'checked_out' ||
+              rawStatusLower === 'checked-out' ||
+              rawStatusLower === 'checkedout' ||
+              normalizedStatus === 'checked-out' ||
+              normalizedStatus === 'checked_out' ||
+              normalizedStatus === 'checkedout' ||
+              // Then check if it contains both words
+              (rawHasChecked && rawHasOut) ||
+              (normHasChecked && normHasOut);
+            
+            // Debug logging for cancelled filter - always log when filtering for cancelled
+            console.log(`[CANCELLED FILTER] Booking ${b.id || 'unknown'}: Raw="${rawBookingStatus}", RawLower="${rawStatusLower}", Normalized="${normalizedStatus}", Filter="${statusFilter}", IsCancelled=${isCancelled}, IsCheckedOut=${isCheckedOut}, WillMatch=${isCancelled && !isCheckedOut}`);
+            
+            // Only match if it's cancelled AND definitely not checked-out
+            statusMatch = isCancelled && !isCheckedOut;
+          } else {
+            // For all other statuses, exact match after normalization
+            statusMatch = normalizedBookingStatus === normalizedFilterStatus;
+          }
+        }
         const normalizedRoomFilterValue = roomNumberFilter === "All" ? null : String(roomNumberFilter).trim();
         const roomNumberMatch = !normalizedRoomFilterValue || (b.rooms && b.rooms.some((room) => extractRoomNumber(room) === normalizedRoomFilterValue));
         
@@ -1984,7 +2027,7 @@ const Bookings = () => {
               {filteredBookings.length > 0 ? (
                 filteredBookings.map((b, index) => (
                   <motion.tr
-                    key={b.id}
+                    key={`${b.is_package ? 'PK' : 'BK'}_${b.id}_${index}`}
                     className="hover:bg-gray-50 transition-colors"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
