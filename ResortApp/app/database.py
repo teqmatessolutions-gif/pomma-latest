@@ -14,11 +14,16 @@ if not os.getenv("DATABASE_URL"):
 
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
+# Provide default SQLite database if DATABASE_URL is not set
+if not SQLALCHEMY_DATABASE_URL:
+    SQLALCHEMY_DATABASE_URL = "sqlite:///./orchid.db"
+    print(f"Warning: DATABASE_URL not found in environment. Using default: {SQLALCHEMY_DATABASE_URL}")
+
 # Add SSL parameters and connection pool settings to fix connection issues
 # Increased pool size for production stability
 # SQLite doesn't support sslmode, so we check if it's SQLite
 connect_args = {}
-if not SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+if SQLALCHEMY_DATABASE_URL and not SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
     connect_args = {
         "sslmode": "disable",  # Disable SSL for local connections
         "connect_timeout": 10,  # Connection timeout in seconds
@@ -38,7 +43,7 @@ engine = create_engine(
     echo=False,  # Set to True for SQL query logging
     execution_options={
         "isolation_level": "READ COMMITTED"  # Better concurrency with read committed
-    } if not SQLALCHEMY_DATABASE_URL.startswith("sqlite") else {}
+    } if SQLALCHEMY_DATABASE_URL and not SQLALCHEMY_DATABASE_URL.startswith("sqlite") else {}
 )
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 Base = declarative_base()

@@ -9,8 +9,8 @@ import { useNavigate } from "react-router-dom";
 import autoTable from 'jspdf-autotable';
 // Make sure to place your logo in the specified path or update the path accordingly.
 import { useInfiniteScroll } from "./useInfiniteScroll";
-import logo from '../assets/logo.jpeg'; 
-import { formatCurrency } from '../utils/currency'; 
+import logo from '../assets/logo.jpeg';
+import { formatCurrency } from '../utils/currency';
 import { getApiBaseUrl } from "../utils/env";
 
 
@@ -93,7 +93,7 @@ const CheckoutDetailModal = React.memo(({ checkout, onClose }) => {
   }, [checkout]);
 
   if (!checkout) return null;
-  
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4 overflow-y-auto">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] p-6 relative animate-fade-in-up overflow-y-auto">
@@ -101,7 +101,7 @@ const CheckoutDetailModal = React.memo(({ checkout, onClose }) => {
           <X size={24} />
         </button>
         <h2 className="text-2xl font-bold text-gray-800 mb-4">Checkout Details (ID: {checkout.id})</h2>
-        
+
         {loading ? (
           <div className="text-center py-8">Loading details...</div>
         ) : details ? (
@@ -298,7 +298,7 @@ const Billing = () => {
   const [selectedCheckout, setSelectedCheckout] = useState(null);
   const [hasMoreCheckouts, setHasMoreCheckouts] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
-  
+
   // Filter and search states
   const [searchQuery, setSearchQuery] = useState("");
   const [guestNameFilter, setGuestNameFilter] = useState("");
@@ -366,7 +366,7 @@ const Billing = () => {
       // General search - search across ID, guest name, room number, booking ID
       if (searchQuery) {
         const searchLower = searchQuery.toLowerCase();
-        const matchesSearch = 
+        const matchesSearch =
           c.id.toString().toLowerCase().includes(searchLower) ||
           c.guest_name?.toLowerCase().includes(searchLower) ||
           c.room_number?.toLowerCase().includes(searchLower) ||
@@ -388,7 +388,7 @@ const Billing = () => {
       // Booking ID filter
       if (bookingIdFilter) {
         const bookingIdStr = bookingIdFilter.toLowerCase();
-        const matchesBookingId = 
+        const matchesBookingId =
           c.booking_id?.toString().toLowerCase().includes(bookingIdStr) ||
           c.package_booking_id?.toString().toLowerCase().includes(bookingIdStr);
         if (!matchesBookingId) return false;
@@ -548,10 +548,10 @@ const Billing = () => {
     setDiscount(0); // Reset discount when fetching a new bill
     try {
       // Extract actual room number from composite key if needed
-      const actualRoomNumber = roomNumber.includes('-') ? roomNumber.split('-')[1] : roomNumber;
+      const actualRoomNumber = roomNumber.includes('__') ? roomNumber.split('__')[1] : roomNumber;
       const res = await api.get(`/bill/${actualRoomNumber}?checkout_mode=${checkoutMode}`);
       if (res.data && res.data.room_numbers) {
-      setBillData(res.data);
+        setBillData(res.data);
         const roomCount = res.data.room_numbers.length;
         const modeText = checkoutMode === "single" ? "single room" : "all rooms in the booking";
         showBannerMessage("success", `Bill retrieved for ${roomCount} room(s) (${modeText}).`);
@@ -592,7 +592,7 @@ const Billing = () => {
     setLoading(true);
     try {
       // Extract actual room number from composite key if needed
-      const actualRoomNumber = roomNumber.includes('-') ? roomNumber.split('-')[1] : roomNumber;
+      const actualRoomNumber = roomNumber.includes('__') ? roomNumber.split('__')[1] : roomNumber;
       const res = await api.post(`/bill/checkout/${actualRoomNumber}`, {
         payment_method: paymentMethod,
         discount_amount: discountAmount,
@@ -798,8 +798,8 @@ const Billing = () => {
 
   return (
     <DashboardLayout>
-      <BannerMessage 
-        message={bannerMessage} 
+      <BannerMessage
+        message={bannerMessage}
         onClose={closeBannerMessage}
         autoDismiss={true}
         duration={5000}
@@ -823,12 +823,12 @@ const Billing = () => {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8">
-          <KpiCard title="Checkouts Today" value={kpiData.checkouts_today} icon={<Hash size={22} className="text-indigo-600"/>} color="bg-indigo-100" />
-          <KpiCard title="Total Checkouts" value={kpiData.checkouts_total} icon={<Hash size={22} className="text-green-600"/>} color="bg-green-100" />
-          <KpiCard title="Available Rooms" value={kpiData.available_rooms} icon={<BedDouble size={22} className="text-blue-600"/>} color="bg-blue-100" />
-          <KpiCard title="Booked Rooms" value={kpiData.booked_rooms} icon={<BedDouble size={22} className="text-red-600"/>} color="bg-red-100" />
-          <KpiCard title="Food Revenue Today" value={kpiData.food_revenue_today.toLocaleString()} prefix="₹" icon={<Utensils size={22} className="text-yellow-600"/>} color="bg-yellow-100" />
-          <KpiCard title="Package Bookings Today" value={kpiData.package_bookings_today} icon={<Package size={22} className="text-purple-600"/>} color="bg-purple-100" />
+          <KpiCard title="Checkouts Today" value={kpiData.checkouts_today} icon={<Hash size={22} className="text-indigo-600" />} color="bg-indigo-100" />
+          <KpiCard title="Total Checkouts" value={kpiData.checkouts_total} icon={<Hash size={22} className="text-green-600" />} color="bg-green-100" />
+          <KpiCard title="Available Rooms" value={kpiData.available_rooms} icon={<BedDouble size={22} className="text-blue-600" />} color="bg-blue-100" />
+          <KpiCard title="Booked Rooms" value={kpiData.booked_rooms} icon={<BedDouble size={22} className="text-red-600" />} color="bg-red-100" />
+          <KpiCard title="Food Revenue Today" value={kpiData.food_revenue_today.toLocaleString()} prefix="₹" icon={<Utensils size={22} className="text-yellow-600" />} color="bg-yellow-100" />
+          <KpiCard title="Package Bookings Today" value={kpiData.package_bookings_today} icon={<Package size={22} className="text-purple-600" />} color="bg-purple-100" />
         </div>
 
         {/* Charts */}
@@ -881,13 +881,13 @@ const Billing = () => {
                   setBillData(null);
                   return;
                 }
-                // Use composite key: booking_id-room_number-checkout_mode
-                const parts = value.split('-');
+                // Use composite key: booking_id__room_number__checkout_mode
+                const parts = value.split('__');
                 if (parts.length >= 3) {
                   const [bookingId, roomNum, mode] = parts;
-                  const selected = activeRooms.find(b => 
-                    b.booking_id.toString() === bookingId && 
-                    b.room_number === roomNum && 
+                  const selected = activeRooms.find(b =>
+                    b.booking_id.toString() === bookingId &&
+                    b.room_number === roomNum &&
                     b.checkout_mode === mode
                   );
                   setRoomNumber(value);
@@ -909,12 +909,12 @@ const Billing = () => {
             >
               <option value="">-- Select a Room or Booking to Checkout --</option>
               {activeRooms.map((booking, index) => {
-                // Create unique composite key: booking_id-room_number-checkout_mode
-                const uniqueValue = `${booking.booking_id}-${booking.room_number}-${booking.checkout_mode}`;
+                // Create unique composite key: booking_id__room_number__checkout_mode
+                const uniqueValue = `${booking.booking_id}__${booking.room_number}__${booking.checkout_mode}`;
                 return (
                   <option key={`${uniqueValue}-${index}`} value={uniqueValue}>
                     {booking.display_label || `${booking.room_numbers?.join(', ') || booking.room_number} (${booking.guest_name})`}
-                </option>
+                  </option>
                 );
               })}
             </select>
@@ -922,14 +922,14 @@ const Billing = () => {
               // Parse composite key to find the correct selection
               let selected = null;
               let actualMode = "multiple";
-              
-              if (roomNumber.includes('-')) {
-                const parts = roomNumber.split('-');
+
+              if (roomNumber.includes('__')) {
+                const parts = roomNumber.split('__');
                 if (parts.length >= 3) {
                   const [bookingId, roomNum, mode] = parts;
-                  selected = activeRooms.find(b => 
-                    b.booking_id.toString() === bookingId && 
-                    b.room_number === roomNum && 
+                  selected = activeRooms.find(b =>
+                    b.booking_id.toString() === bookingId &&
+                    b.room_number === roomNum &&
                     b.checkout_mode === mode
                   );
                   actualMode = selected?.checkout_mode || mode || "multiple";
@@ -939,7 +939,7 @@ const Billing = () => {
                 selected = activeRooms.find(b => b.room_number === roomNumber);
                 actualMode = selected?.checkout_mode || "multiple";
               }
-              
+
               const isMultiple = actualMode === "multiple";
               return (
                 <div className={`mt-2 p-3 ${isMultiple ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'} border rounded-lg text-sm ${isMultiple ? 'text-blue-800' : 'text-green-800'}`}>
@@ -973,7 +973,7 @@ const Billing = () => {
                 <p><span className="font-semibold">Stay:</span> {billData.stay_nights} nights</p>
                 <p><span className="font-semibold">Guests:</span> {billData.number_of_guests}</p>
               </div>
-              
+
               <div className="mt-4 pt-4 border-t">
                 <h3 className="font-bold text-gray-700 mb-2">Itemized Charges:</h3>
                 <ul className="list-disc list-inside space-y-1 text-gray-600">
@@ -1046,10 +1046,10 @@ const Billing = () => {
               </div>
               <div className="space-y-3">
                 <div className="flex space-x-2">
-                   <button onClick={() => generatePDF('print')} className="flex-1 bg-gray-500 text-white py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Print</button>
-                   <button onClick={() => generatePDF('download')} className="flex-1 bg-indigo-500 text-white py-2 rounded-lg font-semibold hover:bg-indigo-600 transition">Download</button>
-                   <button onClick={handleWhatsAppShare} className="flex-1 bg-green-500 text-white py-2 rounded-lg font-semibold hover:bg-green-600 transition">WhatsApp</button>
-                   <button onClick={handleEmailShare} className="flex-1 bg-blue-500 text-white py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Email</button>
+                  <button onClick={() => generatePDF('print')} className="flex-1 bg-gray-500 text-white py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Print</button>
+                  <button onClick={() => generatePDF('download')} className="flex-1 bg-indigo-500 text-white py-2 rounded-lg font-semibold hover:bg-indigo-600 transition">Download</button>
+                  <button onClick={handleWhatsAppShare} className="flex-1 bg-green-500 text-white py-2 rounded-lg font-semibold hover:bg-green-600 transition">WhatsApp</button>
+                  <button onClick={handleEmailShare} className="flex-1 bg-blue-500 text-white py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Email</button>
                 </div>
                 <button
                   onClick={handleCheckout}
@@ -1087,7 +1087,7 @@ const Billing = () => {
               <Filter size={18} className="text-indigo-600" />
               <h3 className="font-semibold text-gray-800">Filters & Search</h3>
             </div>
-            
+
             {/* General Search */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
@@ -1259,11 +1259,11 @@ const Billing = () => {
               </tbody>
             </table>
           </div>
-            {hasMoreCheckouts && (
-              <div ref={loadMoreRef} className="text-center p-4">
-                {isFetchingMore && <span className="text-indigo-600">Loading more checkouts...</span>}
-              </div>
-            )}
+          {hasMoreCheckouts && (
+            <div ref={loadMoreRef} className="text-center p-4">
+              {isFetchingMore && <span className="text-indigo-600">Loading more checkouts...</span>}
+            </div>
+          )}
         </div>
 
         <CheckoutDetailModal checkout={selectedCheckout} onClose={() => setSelectedCheckout(null)} />

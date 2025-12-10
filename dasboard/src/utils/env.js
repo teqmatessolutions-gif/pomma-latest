@@ -7,15 +7,17 @@ export const isPommaDeployment = () => {
 };
 
 export const getMediaBaseUrl = () => {
+  if (process.env.NODE_ENV !== "production") {
+    return process.env.REACT_APP_MEDIA_BASE_URL || "http://localhost:8012";
+  }
+
   if (typeof window !== "undefined" && isPommaDeployment()) {
     return `${window.location.origin}/pomma`;
   }
   if (process.env.REACT_APP_MEDIA_BASE_URL) {
     return process.env.REACT_APP_MEDIA_BASE_URL;
   }
-  return process.env.NODE_ENV === "production"
-    ? "https://www.teqmates.com"
-    : "http://localhost:8000";
+  return "https://www.teqmates.com";
 };
 
 export const getApiBaseUrl = () => {

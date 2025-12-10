@@ -135,13 +135,13 @@ const Packages = () => {
   const [bookingToCheckIn, setBookingToCheckIn] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingFilter, setBookingFilter] = useState({ guestName: "", status: "all", checkIn: "", checkOut: "" });
-  const [createForm, setCreateForm] = useState({ 
-    title: "", 
-    description: "", 
-    price: "", 
+  const [createForm, setCreateForm] = useState({
+    title: "",
+    description: "",
+    price: "",
     booking_type: "room_type",  // "whole_property" or "room_type"
     selected_room_types: [],  // Array of selected room types
-    images: [] 
+    images: []
   });
   const [editForm, setEditForm] = useState({
     title: "",
@@ -171,7 +171,7 @@ const Packages = () => {
   const fetchData = async () => {
     try {
       const [packageRes, roomRes, bookingRes] = await Promise.all([
-        api.get("/packages/"),
+        api.get("/packages"),
         api.get("/rooms/"),
         api.get("/packages/bookingsall")
       ]);
@@ -194,7 +194,7 @@ const Packages = () => {
   useEffect(() => {
     if (bookingForm.check_in && bookingForm.check_out && allRooms.length > 0) {
       const selectedPackage = packages.find(p => p.id === parseInt(bookingForm.package_id));
-      
+
       let availableRooms = allRooms.filter(room => {
         // Check if room has any conflicting bookings
         // Only consider bookings with status "booked" or "checked-in" as conflicts
@@ -202,25 +202,25 @@ const Packages = () => {
           const normalizedStatus = booking.status?.toLowerCase().replace(/_/g, '-');
           // Only check for "booked" or "checked-in" status - all other statuses are available
           if (normalizedStatus !== "booked" && normalizedStatus !== "checked-in") return false;
-          
+
           const bookingCheckIn = new Date(booking.check_in);
           const bookingCheckOut = new Date(booking.check_out);
           const requestedCheckIn = new Date(bookingForm.check_in);
           const requestedCheckOut = new Date(bookingForm.check_out);
-          
+
           // Check if room is part of this booking
           const isRoomInBooking = booking.rooms && booking.rooms.some(r => r.room.id === room.id);
           if (!isRoomInBooking) return false;
-          
+
           // Check for date overlap
           return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
         });
-        
+
         // If there are no conflicting bookings for the selected dates, room is available
         // Don't filter by room.status - availability is determined by booking conflicts, not status field
         return !hasConflict;
       });
-      
+
       // If package is selected and has room_types, filter by room types (case-insensitive)
       if (selectedPackage && selectedPackage.booking_type === 'room_type' && selectedPackage.room_types) {
         const allowedRoomTypes = selectedPackage.room_types.split(',').map(t => t.trim().toLowerCase());
@@ -229,9 +229,9 @@ const Packages = () => {
           return allowedRoomTypes.includes(roomType);
         });
       }
-      
+
       setRooms(availableRooms);
-      
+
       // If whole_property, automatically select all available rooms
       if (selectedPackage && selectedPackage.booking_type === 'whole_property' && availableRooms.length > 0) {
         setBookingForm(prev => ({
@@ -296,21 +296,21 @@ const Packages = () => {
   };
   const handleCreateSubmit = async e => {
     e.preventDefault();
-    
+
     // Check if user is logged in
     const token = localStorage.getItem("token");
     if (!token) {
       toast.error("Please log in to create a package");
       return;
     }
-    
+
     try {
       const data = new FormData();
       data.append("title", createForm.title);
       data.append("description", createForm.description);
       data.append("price", createForm.price);
       data.append("booking_type", createForm.booking_type || "room_type");
-      
+
       // If booking_type is room_type, append selected room types as comma-separated string
       if (createForm.booking_type === "room_type") {
         if (!createForm.selected_room_types || createForm.selected_room_types.length === 0) {
@@ -319,19 +319,19 @@ const Packages = () => {
         }
         data.append("room_types", createForm.selected_room_types.join(","));
       }
-      
+
       selectedFiles.forEach(img => data.append("images", img));
       // Don't set Content-Type manually - axios will set it automatically with the correct boundary
       // This ensures the Authorization header from the interceptor is preserved
-      await api.post("/packages/", data);
+      await api.post("/packages", data);
       toast.success("Package created successfully!");
-      setCreateForm({ 
-        title: "", 
-        description: "", 
-        price: "", 
+      setCreateForm({
+        title: "",
+        description: "",
+        price: "",
         booking_type: "room_type",
         selected_room_types: [],
-        images: [] 
+        images: []
       });
       setImagePreviews([]);
       setSelectedFiles([]);
@@ -397,7 +397,7 @@ const Packages = () => {
       data.append("description", editForm.description);
       data.append("price", editForm.price);
       data.append("booking_type", editForm.booking_type || "room_type");
-      
+
       if (editForm.booking_type === "room_type") {
         if (!editForm.selected_room_types || editForm.selected_room_types.length === 0) {
           toast.error("Please select at least one room type");
@@ -405,19 +405,19 @@ const Packages = () => {
         }
         data.append("room_types", editForm.selected_room_types.join(","));
       }
-      
+
       editSelectedFiles.forEach(img => data.append("images", img));
-      
+
       await api.put(`/packages/${editingPackage.id}`, data, { headers: { "Content-Type": "multipart/form-data" } });
       toast.success("Package updated successfully!");
       setEditingPackage(null);
-      setEditForm({ 
-        title: "", 
-        description: "", 
-        price: "", 
+      setEditForm({
+        title: "",
+        description: "",
+        price: "",
         booking_type: "room_type",
         selected_room_types: [],
-        images: [] 
+        images: []
       });
       setEditImagePreviews([]);
       setEditSelectedFiles([]);
@@ -450,7 +450,7 @@ const Packages = () => {
     const { name, value } = e.target;
     setBookingForm(prev => {
       const updated = { ...prev, [name]: value };
-      
+
       // When package is selected, check its booking_type
       if (name === 'package_id' && value) {
         const selectedPackage = packages.find(p => p.id === parseInt(value));
@@ -465,11 +465,11 @@ const Packages = () => {
           }
         }
       }
-      
+
       return updated;
     });
   };
-  
+
   const handleRoomSelect = roomId => {
     setBookingForm(prev => ({
       ...prev,
@@ -718,16 +718,15 @@ const Packages = () => {
                 <div className="p-6 flex flex-col flex-grow">
                   <h4 className="font-bold text-xl mb-2 text-gray-800">{pkg.title}</h4>
                   <p className="text-gray-600 text-base mb-3 flex-grow">{pkg.description}</p>
-                  
+
                   {/* Booking Type and Room Types Info */}
                   <div className="mb-3 space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-semibold text-gray-500">Booking Type:</span>
-                      <span className={`text-xs font-bold px-2 py-1 rounded ${
-                        pkg.booking_type === 'whole_property' 
-                          ? 'bg-purple-100 text-purple-700' 
+                      <span className={`text-xs font-bold px-2 py-1 rounded ${pkg.booking_type === 'whole_property'
+                          ? 'bg-purple-100 text-purple-700'
                           : 'bg-blue-100 text-blue-700'
-                      }`}>
+                        }`}>
                         {pkg.booking_type === 'whole_property' ? 'Whole Property' : pkg.booking_type === 'room_type' ? 'Selected Rooms' : 'Room Type'}
                       </span>
                     </div>
@@ -738,7 +737,7 @@ const Packages = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="flex justify-between items-center mt-auto pt-4 border-t border-gray-200">
                     <p className="text-green-600 font-bold text-2xl">₹{pkg.price.toLocaleString()}</p>
                     <div className="flex gap-2">
@@ -765,7 +764,7 @@ const Packages = () => {
               <input type="text" name="title" placeholder="Package Title" value={editForm.title} onChange={handleEditChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
               <textarea name="description" placeholder="Package Description" value={editForm.description} onChange={handleEditChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" rows="4" required />
               <input type="number" name="price" placeholder="Price (₹)" value={editForm.price} onChange={handleEditChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
-              
+
               {/* Booking Type Selection */}
               <div className="space-y-3">
                 <label className="block text-gray-700 font-medium">Booking Type</label>
@@ -827,7 +826,7 @@ const Packages = () => {
                   )}
                 </div>
               )}
-              
+
               <label className="block">
                 <span className="text-gray-600 font-medium">Add New Images (Optional):</span>
                 <input type="file" multiple accept="image/*" onChange={handleEditImageChange} className="mt-2 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all" />
@@ -871,108 +870,108 @@ const Packages = () => {
         {/* Create Package Form */}
         {!editingPackage && (
           <Card title="Create New Package">
-          <form onSubmit={handleCreateSubmit} className="space-y-6">
-            <input type="text" name="title" placeholder="Package Title" value={createForm.title} onChange={handleCreateChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
-            <textarea name="description" placeholder="Package Description" value={createForm.description} onChange={handleCreateChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" rows="4" required />
-            <input type="number" name="price" placeholder="Price (₹)" value={createForm.price} onChange={handleCreateChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
-            
-            {/* Booking Type Selection */}
-            <div className="space-y-3">
-              <label className="block text-gray-700 font-medium">Booking Type</label>
-              <div className="flex flex-col space-y-2">
-                <label className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                  <input
-                    type="radio"
-                    name="booking_type"
-                    value="whole_property"
-                    checked={createForm.booking_type === "whole_property"}
-                    onChange={handleCreateChange}
-                    className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
-                  />
-                  <span className="text-gray-700">Whole Property (Book entire property)</span>
-                </label>
-                <label className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                  <input
-                    type="radio"
-                    name="booking_type"
-                    value="room_type"
-                    checked={createForm.booking_type === "room_type"}
-                    onChange={handleCreateChange}
-                    className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
-                  />
-                  <span className="text-gray-700">Selected Room Type (Book specific room types)</span>
-                </label>
-              </div>
-            </div>
+            <form onSubmit={handleCreateSubmit} className="space-y-6">
+              <input type="text" name="title" placeholder="Package Title" value={createForm.title} onChange={handleCreateChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
+              <textarea name="description" placeholder="Package Description" value={createForm.description} onChange={handleCreateChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" rows="4" required />
+              <input type="number" name="price" placeholder="Price (₹)" value={createForm.price} onChange={handleCreateChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
 
-            {/* Room Type Selection (only show if booking_type is room_type) */}
-            {createForm.booking_type === "room_type" && (
+              {/* Booking Type Selection */}
               <div className="space-y-3">
-                <label className="block text-gray-700 font-medium">Select Room Types</label>
-                <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  {uniqueRoomTypes.length > 0 ? (
-                    uniqueRoomTypes.map((roomType) => (
-                      <label key={roomType} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
-                        <input
-                          type="checkbox"
-                          name="room_type"
-                          value={roomType}
-                          checked={createForm.selected_room_types?.includes(roomType) || false}
-                          onChange={handleCreateChange}
-                          className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 rounded"
-                        />
-                        <span className="text-sm text-gray-700">{roomType}</span>
-                      </label>
-                    ))
-                  ) : (
-                    <div className="col-span-2 text-sm text-gray-500 text-center py-2">
-                      No room types available
-                    </div>
+                <label className="block text-gray-700 font-medium">Booking Type</label>
+                <div className="flex flex-col space-y-2">
+                  <label className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                    <input
+                      type="radio"
+                      name="booking_type"
+                      value="whole_property"
+                      checked={createForm.booking_type === "whole_property"}
+                      onChange={handleCreateChange}
+                      className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span className="text-gray-700">Whole Property (Book entire property)</span>
+                  </label>
+                  <label className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                    <input
+                      type="radio"
+                      name="booking_type"
+                      value="room_type"
+                      checked={createForm.booking_type === "room_type"}
+                      onChange={handleCreateChange}
+                      className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span className="text-gray-700">Selected Room Type (Book specific room types)</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Room Type Selection (only show if booking_type is room_type) */}
+              {createForm.booking_type === "room_type" && (
+                <div className="space-y-3">
+                  <label className="block text-gray-700 font-medium">Select Room Types</label>
+                  <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    {uniqueRoomTypes.length > 0 ? (
+                      uniqueRoomTypes.map((roomType) => (
+                        <label key={roomType} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
+                          <input
+                            type="checkbox"
+                            name="room_type"
+                            value={roomType}
+                            checked={createForm.selected_room_types?.includes(roomType) || false}
+                            onChange={handleCreateChange}
+                            className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 rounded"
+                          />
+                          <span className="text-sm text-gray-700">{roomType}</span>
+                        </label>
+                      ))
+                    ) : (
+                      <div className="col-span-2 text-sm text-gray-500 text-center py-2">
+                        No room types available
+                      </div>
+                    )}
+                  </div>
+                  {createForm.selected_room_types && createForm.selected_room_types.length > 0 && (
+                    <p className="text-xs text-gray-500">
+                      Selected: {createForm.selected_room_types.join(", ")}
+                    </p>
                   )}
                 </div>
-                {createForm.selected_room_types && createForm.selected_room_types.length > 0 && (
-                  <p className="text-xs text-gray-500">
-                    Selected: {createForm.selected_room_types.join(", ")}
+              )}
+
+              <label className="block">
+                <span className="text-gray-600 font-medium">Package Images (Select multiple):</span>
+                <input type="file" multiple accept="image/*" onChange={handleCreateImageChange} className="mt-2 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all" />
+                {selectedFiles.length > 0 && (
+                  <p className="mt-2 text-sm text-gray-500">
+                    {selectedFiles.length} image{selectedFiles.length > 1 ? 's' : ''} selected
                   </p>
                 )}
-              </div>
-            )}
-            
-            <label className="block">
-              <span className="text-gray-600 font-medium">Package Images (Select multiple):</span>
-              <input type="file" multiple accept="image/*" onChange={handleCreateImageChange} className="mt-2 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all" />
-              {selectedFiles.length > 0 && (
-                <p className="mt-2 text-sm text-gray-500">
-                  {selectedFiles.length} image{selectedFiles.length > 1 ? 's' : ''} selected
-                </p>
-              )}
-            </label>
-            {imagePreviews.length > 0 && (
-              <div className="mt-4">
-                <p className="text-sm text-gray-600 font-medium mb-2">Image Previews:</p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  {imagePreviews.map((src, index) => (
-                    <div key={index} className="relative group">
-                      <img src={src} alt={`Preview ${index + 1}`} className="w-full h-32 object-cover rounded-lg shadow-md" />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveImage(index)}
-                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                        title="Remove image"
-                      >
-                        ×
-                      </button>
-                      <div className="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
-                        {index + 1}
+              </label>
+              {imagePreviews.length > 0 && (
+                <div className="mt-4">
+                  <p className="text-sm text-gray-600 font-medium mb-2">Image Previews:</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {imagePreviews.map((src, index) => (
+                      <div key={index} className="relative group">
+                        <img src={src} alt={`Preview ${index + 1}`} className="w-full h-32 object-cover rounded-lg shadow-md" />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(index)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                          title="Remove image"
+                        >
+                          ×
+                        </button>
+                        <div className="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
+                          {index + 1}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-            <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:-translate-y-1">Create Package 🚀</button>
-          </form>
-        </Card>
+              )}
+              <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:-translate-y-1">Create Package 🚀</button>
+            </form>
+          </Card>
         )}
 
         {/* Booking Form */}
@@ -997,7 +996,7 @@ const Packages = () => {
             {(() => {
               const selectedPackage = packages.find(p => p.id === parseInt(bookingForm.package_id));
               const isWholeProperty = selectedPackage && selectedPackage.booking_type === 'whole_property';
-              
+
               // Hide room selection completely for whole_property
               if (isWholeProperty) {
                 return (
@@ -1009,7 +1008,7 @@ const Packages = () => {
                   </div>
                 );
               }
-              
+
               // Show room selection for room_type packages
               return (
                 <div>
@@ -1030,12 +1029,12 @@ const Packages = () => {
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-48 overflow-y-auto p-2 bg-gray-50 rounded-lg border">
                       {availableRooms.length > 0 ? (
                         availableRooms.map(room => (
-                          <div 
-                            key={room.id} 
-                            onClick={() => handleRoomSelect(room.id)} 
+                          <div
+                            key={room.id}
+                            onClick={() => handleRoomSelect(room.id)}
                             className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200
-                              ${bookingForm.room_ids.includes(room.id) 
-                                ? 'bg-indigo-500 text-white border-indigo-600' 
+                              ${bookingForm.room_ids.includes(room.id)
+                                ? 'bg-indigo-500 text-white border-indigo-600'
                                 : 'bg-white border-gray-300 hover:border-indigo-500'
                               }
                             `}

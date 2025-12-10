@@ -82,7 +82,7 @@ const FoodManagement = () => {
 
   const fetchFoodItems = async () => {
     try {
-      const res = await API.get("/food-items/", {
+      const res = await API.get("/food-items", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setFoodItems(res.data);
@@ -140,12 +140,12 @@ const FoodManagement = () => {
 
     try {
       if (editingItemId) {
-        await API.put(`/food-items/${editingItemId}/`, formData, {
+        await API.put(`/food-items/${editingItemId}`, formData, {
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
         });
         toast.success("Food item updated successfully!");
       } else {
-        await API.post("/food-items/", formData, {
+        await API.post("/food-items", formData, {
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
         });
         toast.success("Food item added successfully!");
@@ -302,7 +302,7 @@ const FoodManagement = () => {
       <div className="p-6 space-y-12">
         <h1 className="text-3xl font-bold text-gray-800">Food & Beverage Management</h1>
         {error && <div className="p-4 mb-4 text-center text-red-700 bg-red-100 border border-red-200 rounded-lg">{error}</div>}
-        
+
         {/* KPI Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <KpiCard title="Total Food Items" value={totalItems} color="bg-gradient-to-r from-green-500 to-green-700" icon={<i className="fas fa-utensils"></i>} />

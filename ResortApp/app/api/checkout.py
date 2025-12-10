@@ -168,7 +168,7 @@ def get_active_rooms(db: Session = Depends(get_db), current_user: User = Depends
                 room_num = link.room.number
                 if room_num is None or (isinstance(room_num, str) and room_num.strip() == ""):
                     return None
-                return str(room_num).strip()
+                return str(room_num)
             except (AttributeError, Exception):
                 return None
         
@@ -255,7 +255,18 @@ def _calculate_bill_for_single_room(db: Session, room_number: str):
     # 1. Find the room
     room = db.query(Room).filter(Room.number == room_number).first()
     if not room:
-        raise HTTPException(status_code=404, detail="Room not found.")
+        # Fallback: Check if room in DB has a trailing space
+        room = db.query(Room).filter(Room.number == room_number + " ").first()
+    if not room:
+        # Fallback: Check if room in DB is stripped but input has space
+        room = db.query(Room).filter(Room.number == room_number.strip()).first()
+    
+    if not room:
+        # Check case insensitive
+        room = db.query(Room).filter(func.lower(Room.number) == room_number.lower().strip()).first()
+
+    if not room:
+        raise HTTPException(status_code=404, detail=f"Room '{room_number}' not found.")
     
     # 2. Find the active parent booking (regular or package) linked to this room
     booking, is_package = None, False
@@ -387,9 +398,21 @@ def _calculate_bill_for_entire_booking(db: Session, room_number: str):
     for all associated rooms and services.
     """
     # 1. Find the initial room to identify the parent booking
+    # 1. Find the initial room to identify the parent booking
     initial_room = db.query(Room).filter(Room.number == room_number).first()
     if not initial_room:
-        raise HTTPException(status_code=404, detail="Initial room not found.")
+        # Fallback: Check if room in DB has a trailing space
+        initial_room = db.query(Room).filter(Room.number == room_number + " ").first()
+    if not initial_room:
+        # Fallback: Check if room in DB is stripped but input has space
+        initial_room = db.query(Room).filter(Room.number == room_number.strip()).first()
+    
+    if not initial_room:
+        # Check case insensitive
+        initial_room = db.query(Room).filter(func.lower(Room.number) == room_number.lower().strip()).first()
+        
+    if not initial_room:
+        raise HTTPException(status_code=404, detail=f"Initial room '{room_number}' not found.")
 
     # 2. Find the active parent booking (regular or package) linked to this room
     booking, is_package = None, False

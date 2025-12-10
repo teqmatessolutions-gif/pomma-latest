@@ -7,15 +7,17 @@ export const isResortDeployment = () => {
 };
 
 export const getMediaBaseUrl = () => {
+  if (process.env.NODE_ENV !== "production") {
+    return process.env.REACT_APP_MEDIA_BASE_URL || "http://localhost:8012";
+  }
+
   if (typeof window !== "undefined" && isResortDeployment()) {
     return `${window.location.origin}/resortfiles`;
   }
   if (process.env.REACT_APP_MEDIA_BASE_URL) {
     return process.env.REACT_APP_MEDIA_BASE_URL;
   }
-  return process.env.NODE_ENV === "production"
-    ? "https://www.teqmates.com"
-    : "http://localhost:8012";
+  return "https://www.teqmates.com";
 };
 
 export const getApiBaseUrl = () => {
@@ -23,7 +25,7 @@ export const getApiBaseUrl = () => {
   if (process.env.NODE_ENV !== "production") {
     return "http://localhost:8012/api";
   }
-  
+
   if (typeof window !== "undefined" && isResortDeployment()) {
     return `${window.location.origin}/resoapi/api`;
   }

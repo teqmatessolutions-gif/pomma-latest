@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import DashboardLayout from "../layout/DashboardLayout";
 import API from "../services/api";
+import { getMediaBaseUrl } from "../utils/env";
 import * as XLSX from "xlsx";
 import { LineChart, Line, Tooltip, ResponsiveContainer } from "recharts";
 import CountUp from "react-countup";
@@ -15,9 +16,9 @@ const Employee = () => {
     role: "",
     salary: "",
     join_date: "",
-    email: "", 
-    phone: "", 
-    password: "", 
+    email: "",
+    phone: "",
+    password: "",
     image: null,
   });
   const [previewImage, setPreviewImage] = useState(null);
@@ -81,10 +82,10 @@ const Employee = () => {
     for (const field of requiredFields) {
       if (!form[field]) {
         alert(`Please fill in the required field: ${field}`);
-        return; 
+        return;
       }
     }
-    
+
     // ✅ Rebuild the FormData object explicitly
     const data = new FormData();
     data.append("name", form.name);
@@ -96,7 +97,7 @@ const Employee = () => {
 
     // ✅ Add phone and image fields if they exist
     if (form.phone) {
-        data.append("phone", form.phone);
+      data.append("phone", form.phone);
     }
 
     if (form.image) {
@@ -121,15 +122,15 @@ const Employee = () => {
   };
 
   const resetForm = () => {
-    setForm({ 
-      name: "", 
-      role: "", 
-      salary: "", 
-      join_date: "", 
-      email: "", 
+    setForm({
+      name: "",
+      role: "",
+      salary: "",
+      join_date: "",
+      email: "",
       phone: "",
       password: "",
-      image: null 
+      image: null
     });
     setPreviewImage(null);
     setEditId(null);
@@ -247,8 +248,8 @@ const Employee = () => {
           <h2 className="text-xl font-semibold mb-4">{editId ? "Edit" : "Create"} Employee</h2>
           <div className="grid grid-cols-1 gap-4">
             <label htmlFor="join_date" className="text-sm text-gray-600 mb-1">
-    Name <span className="text-red-500">*</span>
-  </label>
+              Name <span className="text-red-500">*</span>
+            </label>
             <input
               name="name"
               value={form.name}
@@ -258,8 +259,8 @@ const Employee = () => {
               required
             />
             <label htmlFor="join_date" className="text-sm text-gray-600 mb-1">
-   Role <span className="text-red-500">*</span>
-  </label>
+              Role <span className="text-red-500">*</span>
+            </label>
             <select
               name="role"
               value={form.role}
@@ -273,8 +274,8 @@ const Employee = () => {
               ))}
             </select>
             <label htmlFor="join_date" className="text-sm text-gray-600 mb-1">
-    Salary <span className="text-red-500">*</span>
-  </label>
+              Salary <span className="text-red-500">*</span>
+            </label>
             <input
               name="salary"
               type="number"
@@ -286,8 +287,8 @@ const Employee = () => {
 
             />
             <label htmlFor="join_date" className="text-sm text-gray-600 mb-1">
-    Joining Date <span className="text-red-500">*</span>
-  </label>
+              Joining Date <span className="text-red-500">*</span>
+            </label>
             <input
               type="date"
               name="join_date"
@@ -297,8 +298,8 @@ const Employee = () => {
               required
             />
             <label htmlFor="join_date" className="text-sm text-gray-600 mb-1">
-    Email <span className="text-red-500">*</span>
-  </label>
+              Email <span className="text-red-500">*</span>
+            </label>
             <input
               name="email"
               type="email"
@@ -309,8 +310,8 @@ const Employee = () => {
               required
             />
             <label htmlFor="join_date" className="text-sm text-gray-600 mb-1">
-    Phone <span className="text-red-500">*</span>
-  </label>
+              Phone <span className="text-red-500">*</span>
+            </label>
             <input
               name="phone"
               type="tel"
@@ -320,8 +321,8 @@ const Employee = () => {
               className="border px-3 py-2 rounded w-full"
             />
             <label htmlFor="join_date" className="text-sm text-gray-600 mb-1">
-    Password <span className="text-red-500">*</span>
-  </label>
+              Password <span className="text-red-500">*</span>
+            </label>
             <input
               name="password"
               type="password"
@@ -332,8 +333,8 @@ const Employee = () => {
               required
             />
             <label htmlFor="join_date" className="text-sm text-gray-600 mb-1">
-    Image <span className="text-red-500">*</span>
-  </label>
+              Image <span className="text-red-500">*</span>
+            </label>
             <input
               type="file"
               name="image"
@@ -395,7 +396,7 @@ const Employee = () => {
                 <td className="p-2 border text-center">{i + 1}</td>
                 <td className="p-2 border">
                   {emp.image_url ? (
-                    <img src={`http://localhost:8000/${emp.image_url}`} alt="Profile" className="w-10 h-10 rounded-full object-cover" />
+                    <img src={`${getMediaBaseUrl()}${emp.image_url.startsWith('/') ? '' : '/'}${emp.image_url}`} alt="Profile" className="w-10 h-10 rounded-full object-cover" />
                   ) : (
                     <span className="text-gray-400">No image</span>
                   )}
@@ -419,7 +420,7 @@ const Employee = () => {
                 </td>
               </tr>
             )}
-          </tbody>          
+          </tbody>
           {hasMore && filteredEmployees.length > 0 && (
             <tfoot>
               <tr>

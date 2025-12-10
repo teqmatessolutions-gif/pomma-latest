@@ -36,7 +36,13 @@ const getRouterBasename = () => {
 function App() {
   const basename = getRouterBasename();
   return (
-    <Router basename={basename}>
+    <Router 
+      basename={basename}
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/dashboard" element={

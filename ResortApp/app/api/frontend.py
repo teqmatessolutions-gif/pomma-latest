@@ -151,6 +151,12 @@ async def update_header_banner(
             
             image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
 
+        # If no new image provided, keep existing image_url
+        if image_url is None:
+            existing = crud.get_by_id(db, models.HeaderBanner, item_id)
+            if existing:
+                image_url = existing.image_url
+
         obj = schemas.HeaderBannerUpdate(
             title=title,
             subtitle=subtitle,
