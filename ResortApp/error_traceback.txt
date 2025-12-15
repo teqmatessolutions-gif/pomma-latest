@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\debug_checkout_function.py", line 28, in debug_function
+    result = get_checkout_details(checkout_id=16, db=db, current_user=current_user)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\app\api\checkout.py", line 72, in get_checkout_details
+    if room_ids:
+       ^^^^^^^^
+NameError: name 'room_ids' is not defined

@@ -7,6 +7,7 @@ import "chart.js/auto";
 export default function FoodOrders() {
   const [orders, setOrders] = useState([]);
   const [rooms, setRooms] = useState([]);
+  const [allRooms, setAllRooms] = useState([]); // Store all rooms for display lookup
   const [employees, setEmployees] = useState([]);
   const [foodItems, setFoodItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
@@ -18,6 +19,8 @@ export default function FoodOrders() {
   const [hasMore, setHasMore] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [page, setPage] = useState(1);
+  const [successMsg, setSuccessMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
   const statusColors = {
     pending: "bg-yellow-100 text-yellow-800",
@@ -60,6 +63,7 @@ export default function FoodOrders() {
       setHasMore(ordersRes.data.length === 12);
       setEmployees(employeesRes.data);
       setFoodItems(foodItemsRes.data);
+      setAllRooms(roomsRes.data); // Save full list for historical display
 
       // Filter rooms to only show checked-in rooms (similar to Services page)
       const allRooms = roomsRes.data;
@@ -167,7 +171,6 @@ export default function FoodOrders() {
         // Accept ONLY: checkedin, occupied, checked-in (any variation)
         // Exclude: booked (guest hasn't arrived yet)
         if (roomStatusNormalized === 'checkedin' ||
-          roomStatusNormalized === 'occupied' ||
           roomStatusNormalized.includes('checkedin')) {
           checkedInRoomIds.add(room.id);
         }
@@ -230,6 +233,12 @@ export default function FoodOrders() {
     calculateAmount(updated);
   };
 
+  const handleRemoveItem = (index) => {
+    const updated = selectedItems.filter((_, i) => i !== index);
+    setSelectedItems(updated);
+    calculateAmount(updated);
+  };
+
   const calculateAmount = (items) => {
     let total = 0;
     items.forEach((item) => {
@@ -241,7 +250,8 @@ export default function FoodOrders() {
 
   const handleSubmit = async () => {
     if (!roomId || !employeeId || selectedItems.length === 0) {
-      alert("Please select room, employee, and at least one food item.");
+      setErrorMsg("Please select room, employee, and at least one food item.");
+      setTimeout(() => setErrorMsg(""), 3000);
       return;
     }
 
@@ -263,9 +273,12 @@ export default function FoodOrders() {
       setRoomId("");
       setEmployeeId("");
       setAmount(0);
+      setSuccessMsg("Food order created successfully! 🍔");
+      setTimeout(() => setSuccessMsg(""), 3000);
     } catch (err) {
       console.error(err);
-      alert("Failed to submit order.");
+      setErrorMsg("Failed to submit order. Please try again.");
+      setTimeout(() => setErrorMsg(""), 3000);
     }
   };
 
@@ -275,14 +288,23 @@ export default function FoodOrders() {
       fetchAll();
     } catch (error) {
       console.error("Failed to update status:", error);
-      alert("Failed to update order status.");
+      setErrorMsg("Failed to update order status.");
+      setTimeout(() => setErrorMsg(""), 3000);
     }
   };
 
   // KPI Calculations
   const totalOrders = orders.length;
-  const totalRevenue = orders.reduce((sum, o) => sum + o.amount, 0);
+  // Exclude cancelled orders from revenue
+  const totalRevenue = orders
+    .filter((o) => o.status !== "cancelled")
+    .reduce((sum, o) => sum + o.amount, 0);
+
   const completedOrders = orders.filter((o) => o.status === "completed").length;
+  const cancelledOrders = orders.filter((o) => o.status === "cancelled").length;
+
+  // Pending = Total - Completed - Cancelled (Includes 'pending' and 'in_progress')
+  const pendingOrdersCount = totalOrders - completedOrders - cancelledOrders;
 
   // Chart Data
   const dailyOrdersData = {
@@ -355,13 +377,23 @@ export default function FoodOrders() {
 
           <div className="bg-white rounded-2xl shadow-xl p-5 flex flex-col items-center">
             <p className="text-sm font-medium text-gray-500">Pending Orders</p>
-            <p className="text-2xl font-bold text-yellow-600">{totalOrders - completedOrders}</p>
+            <p className="text-2xl font-bold text-yellow-600">{pendingOrdersCount}</p>
           </div>
         </div>
 
         {/* Create Order Form */}
         <div className="bg-white shadow-xl rounded-3xl p-8 w-full max-w-4xl mx-auto space-y-6">
           <h3 className="text-xl font-semibold text-gray-700 text-center">Create New Food Order</h3>
+          {successMsg && (
+            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative text-center">
+              <span className="block sm:inline">{successMsg}</span>
+            </div>
+          )}
+          {errorMsg && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-center">
+              <span className="block sm:inline">{errorMsg}</span>
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <select
               value={roomId}
@@ -417,6 +449,14 @@ export default function FoodOrders() {
                   onChange={(e) => handleItemChange(index, "quantity", e.target.value)}
                   className="border rounded-xl px-4 py-2 w-20 focus:ring-2 focus:ring-indigo-400"
                 />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveItem(index)}
+                  className="bg-red-500 hover:bg-red-600 text-white rounded-xl px-3 py-2 shadow transition"
+                  title="Remove Item"
+                >
+                  ✕
+                </button>
               </div>
             ))}
             <button
@@ -464,7 +504,8 @@ export default function FoodOrders() {
         {/* Orders List */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredOrders.map((order) => {
-            const roomData = rooms.find((r) => r.id === order.room_id);
+            // Use allRooms for lookup to ensure we find room details even if checked out
+            const roomData = allRooms.find((r) => r.id === order.room_id) || rooms.find((r) => r.id === order.room_id);
             return (
               <div
                 key={order.id}

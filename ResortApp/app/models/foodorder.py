@@ -13,10 +13,15 @@ class FoodOrder(Base):
     status = Column(String, default="active")
     billing_status = Column(String, default="unbilled")
     created_at = Column(DateTime, default=datetime.utcnow)
+    
+    booking_id = Column(Integer, ForeignKey("bookings.id"), nullable=True)
+    package_booking_id = Column(Integer, ForeignKey("package_bookings.id"), nullable=True)
 
     items = relationship("FoodOrderItem", back_populates="order", cascade="all, delete-orphan")
     employee = relationship("Employee")
     room = relationship("Room", back_populates="food_orders")
+    booking = relationship("Booking")
+    package_booking = relationship("PackageBooking")
 
 class FoodOrderItem(Base):
     __tablename__ = "food_order_items"
@@ -28,3 +33,7 @@ class FoodOrderItem(Base):
 
     order = relationship("FoodOrder", back_populates="items")
     food_item = relationship("FoodItem")
+
+    @property
+    def food_item_name(self):
+        return self.food_item.name if self.food_item else "Unknown"

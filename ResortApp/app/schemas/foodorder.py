@@ -1,4 +1,5 @@
 from pydantic import BaseModel, ConfigDict
+from datetime import datetime
 from typing import List, Optional
 
 class FoodOrderItemCreate(BaseModel):
@@ -20,15 +21,23 @@ class FoodOrderItemOut(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+from app.schemas.room import RoomOut
+from app.schemas.employee import Employee
+
 class FoodOrderOut(BaseModel):
     id: int
     room_id: int
     amount: float
     status: str
     assigned_employee_id: int
-    billing_status: str 
+    billing_status: str
+    created_at: Optional[datetime] = None
     items: List[FoodOrderItemOut]
-    guest_name: Optional[str] = None  # Added dynamically by CRUD function
+    guest_name: Optional[str] = None
+    
+    # Relationships
+    room: Optional[RoomOut] = None
+    employee: Optional[Employee] = None
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -1,5 +1,5 @@
 # booking.py
-from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, BackgroundTasks
 from sqlalchemy.orm import Session, joinedload, load_only
 from sqlalchemy import or_, and_
 from typing import List, Union
@@ -9,6 +9,7 @@ from app.models.booking import Booking, BookingRoom
 from app.models.user import User
 from app.models.room import Room
 from app.models.Package import Package, PackageBooking, PackageBookingRoom
+from app.models.frontend import ResortInfo
 from app.schemas.booking import BookingCreate, BookingOut
 from app.schemas.room import RoomOut
 from fastapi.responses import FileResponse
@@ -51,6 +52,13 @@ def get_bookings(db: Session = Depends(get_db), skip: int = 0, limit: int = 20, 
         # Convert to BookingOut format
         booking_results = []
         for booking in regular_bookings:
+            # Calculate total if 0 (legacy data)
+            calculated_total = booking.total_amount
+            if not calculated_total or calculated_total == 0:
+                stay_days = max(1, (booking.check_out - booking.check_in).days)
+                room_total = sum((br.room.price or 0) for br in booking.booking_rooms if br.room)
+                calculated_total = room_total * stay_days
+
             booking_out = BookingOut(
                 id=booking.id,
                 guest_name=booking.guest_name,
@@ -65,6 +73,7 @@ def get_bookings(db: Session = Depends(get_db), skip: int = 0, limit: int = 20, 
                 guest_photo_url=getattr(booking, 'guest_photo_url', None),
                 user=booking.user,
                 is_package=False,
+                total_amount=calculated_total,
                 rooms=[br.room for br in booking.booking_rooms if br.room]
             )
             booking_results.append(booking_out)
@@ -252,7 +261,7 @@ def get_or_create_guest_user(db: Session, email: str, mobile: str, name: str):
 # POST a new booking
 # -------------------------------
 @router.post("", response_model=BookingOut) # Changed from "/" to ""
-def create_booking(booking: BookingCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def create_booking(booking: BookingCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     # Find or create guest user based on email and mobile
     guest_user_id = None
     # Normalize email and mobile - convert empty strings to None, handle None safely
@@ -412,6 +421,19 @@ def create_booking(booking: BookingCreate, db: Session = Depends(get_db), curren
             # Format booking ID (BK-000001)
             formatted_booking_id = f"BK-{str(booking_with_rooms.id).zfill(6)}"
             
+            # Fetch Resort Info
+            resort_info_data = {}
+            try:
+                resort_info_obj = db.query(ResortInfo).filter(ResortInfo.is_active == True).first()
+                if resort_info_obj:
+                    resort_info_data = {
+                        "name": resort_info_obj.name,
+                        "support_email": resort_info_obj.support_email,
+                        "gst_no": resort_info_obj.gst_no
+                    }
+            except Exception as e:
+                print(f"Failed to fetch resort info: {str(e)}")
+
             email_html = create_booking_confirmation_email(
                 guest_name=guest_name_to_use,
                 booking_id=booking_with_rooms.id,
@@ -423,23 +445,28 @@ def create_booking(booking: BookingCreate, db: Session = Depends(get_db), curren
                 guests={'adults': booking.adults, 'children': booking.children},
                 guest_mobile=booking.guest_mobile,
                 room_charges=room_charges,
-                stay_nights=stay_nights
+                stay_nights=stay_nights,
+                resort_info=resort_info_data
             )
             
-            send_email(
+            # Use background task for email to prevent blocking response
+            resort_name = resort_info_data.get("name", "Elysian Retreat")
+            background_tasks.add_task(
+                send_email,
                 to_email=booking.guest_email,
-                subject=f"Booking Confirmation {formatted_booking_id} - Elysian Retreat",
+                subject=f"Booking Confirmation {formatted_booking_id} - {resort_name}",
                 html_content=email_html,
-                to_name=guest_name_to_use
+                to_name=guest_name_to_use,
+                sender_name=resort_name
             )
         except Exception as e:
             # Log error but don't fail the booking
-            print(f"Failed to send confirmation email: {str(e)}")
+            print(f"Failed to queue confirmation email: {str(e)}")
     
     return booking_out
 
 @router.post("/guest", response_model=BookingOut, summary="Create a booking as a guest")
-def create_guest_booking(booking: BookingCreate, db: Session = Depends(get_db)):
+def create_guest_booking(booking: BookingCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     """
     Public endpoint for guests to create a booking without authentication.
     """
@@ -620,6 +647,19 @@ def create_guest_booking(booking: BookingCreate, db: Session = Depends(get_db)):
                 
                 email_to_use = guest_email or booking.guest_email
                 if email_to_use:
+                    # Fetch Resort Info
+                    resort_info_data = {}
+                    try:
+                        resort_info_obj = db.query(ResortInfo).filter(ResortInfo.is_active == True).first()
+                        if resort_info_obj:
+                            resort_info_data = {
+                                "name": resort_info_obj.name,
+                                "support_email": resort_info_obj.support_email,
+                                "gst_no": resort_info_obj.gst_no
+                            }
+                    except Exception as e:
+                        print(f"Failed to fetch resort info: {str(e)}")
+
                     email_html = create_booking_confirmation_email(
                         guest_name=guest_name_to_use,
                         booking_id=db_booking.id,
@@ -631,18 +671,23 @@ def create_guest_booking(booking: BookingCreate, db: Session = Depends(get_db)):
                         guests={'adults': booking.adults, 'children': booking.children},
                         guest_mobile=guest_mobile or booking.guest_mobile,
                         room_charges=room_charges,
-                        stay_nights=stay_nights
+                        stay_nights=stay_nights,
+                        resort_info=resort_info_data
                     )
                     
-                    send_email(
+                    # Use background task for email
+                    resort_name = resort_info_data.get("name", "Elysian Retreat")
+                    background_tasks.add_task(
+                        send_email,
                         to_email=email_to_use,
-                        subject=f"Booking Confirmation {formatted_booking_id} - Elysian Retreat",
+                        subject=f"Booking Confirmation {formatted_booking_id} - {resort_name}",
                         html_content=email_html,
-                        to_name=guest_name_to_use
+                        to_name=guest_name_to_use,
+                        sender_name=resort_name
                     )
             except Exception as e:
                 # Log error but don't fail the booking
-                print(f"Failed to send confirmation email: {str(e)}")
+                print(f"Failed to queue confirmation email: {str(e)}")
         
         return booking_with_rooms
         
@@ -673,6 +718,7 @@ def check_in_booking(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    from datetime import date
     # Parse display ID (BK-000001) or accept numeric ID
     numeric_id, booking_type = parse_display_id(str(booking_id))
     if numeric_id is None:
@@ -683,8 +729,35 @@ def check_in_booking(
     booking = db.query(Booking).filter(Booking.id == booking_id).first()
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
-    if booking.status != "booked":
-        raise HTTPException(status_code=400, detail=f"Booking is not in 'booked' state. Current status: {booking.status}")
+    today = date.today()
+    if booking.check_in > today:
+        # early check-in: verify availability for the gap [today, booking.check_in)
+        gap_start = today
+        gap_end = booking.check_in
+        
+        # Check regular booking conflicts
+        # EXCLUDE the current booking from this check using Booking.id != booking.id
+        conflicting_regular = db.query(BookingRoom).join(Booking).filter(
+            BookingRoom.room_id.in_([br.room_id for br in booking.booking_rooms]),
+            Booking.status.in_(['booked', 'checked-in', 'checked_in']),
+            Booking.id != booking.id,  # Important: Don't conflict with self
+            Booking.check_in < gap_end,
+            Booking.check_out > gap_start
+        ).first()
+
+        # Check package booking conflicts
+        conflicting_package = db.query(PackageBookingRoom).join(PackageBooking).filter(
+            PackageBookingRoom.room_id.in_([br.room_id for br in booking.booking_rooms]),
+            PackageBooking.status.in_(['booked', 'checked-in', 'checked_in']),
+            PackageBooking.check_in < gap_end,
+            PackageBooking.check_out > gap_start
+        ).first()
+
+        if conflicting_regular or conflicting_package:
+             raise HTTPException(status_code=400, detail=f"Cannot check-in early. Rooms are overlapping with another booking between {gap_start} and {gap_end}.")
+        
+        # Update check-in date to today
+        booking.check_in = today
 
     # Save ID card image
     id_card_filename = f"id_{booking_id}_{uuid.uuid4().hex}.jpg"

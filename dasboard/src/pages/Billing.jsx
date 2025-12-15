@@ -9,8 +9,8 @@ import { useNavigate } from "react-router-dom";
 import autoTable from 'jspdf-autotable';
 // Make sure to place your logo in the specified path or update the path accordingly.
 import { useInfiniteScroll } from "./useInfiniteScroll";
-import logo from '../assets/logo.jpeg'; 
-import { formatCurrency } from '../utils/currency'; 
+import pommaLogo from '../assets/pommalogo.png';
+import { formatCurrency } from '../utils/currency';
 import { getApiBaseUrl } from "../utils/env";
 
 
@@ -93,7 +93,7 @@ const CheckoutDetailModal = React.memo(({ checkout, onClose }) => {
   }, [checkout]);
 
   if (!checkout) return null;
-  
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4 overflow-y-auto">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] p-6 relative animate-fade-in-up overflow-y-auto">
@@ -101,7 +101,7 @@ const CheckoutDetailModal = React.memo(({ checkout, onClose }) => {
           <X size={24} />
         </button>
         <h2 className="text-2xl font-bold text-gray-800 mb-4">Checkout Details (ID: {checkout.id})</h2>
-        
+
         {loading ? (
           <div className="text-center py-8">Loading details...</div>
         ) : details ? (
@@ -235,12 +235,27 @@ const CheckoutDetailModal = React.memo(({ checkout, onClose }) => {
                     <span className="font-medium">{formatCurrency(details.room_total)}</span>
                   </div>
                 )}
-                {details.package_total > 0 && (
-                  <div className="flex justify-between">
-                    <span>Package Charges:</span>
-                    <span className="font-medium">{formatCurrency(details.package_total)}</span>
-                  </div>
-                )}
+                {details.package_total > 0 && (() => {
+                  let breakdown = "";
+                  if (details.booking_details && details.booking_details.check_in && details.booking_details.check_out) {
+                    const start = new Date(details.booking_details.check_in);
+                    const end = new Date(details.booking_details.check_out);
+                    const nights = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24));
+                    if (nights > 0) {
+                      const rate = details.package_total / nights;
+                      breakdown = `(${formatCurrency(rate)} x ${nights} days)`;
+                    }
+                  }
+                  return (
+                    <div className="flex justify-between">
+                      <div>
+                        <span>Package Charges:</span>
+                        {breakdown && <span className="text-xs text-gray-500 ml-2">{breakdown}</span>}
+                      </div>
+                      <span className="font-medium">{formatCurrency(details.package_total)}</span>
+                    </div>
+                  );
+                })()}
                 {details.food_total > 0 && (
                   <div className="flex justify-between">
                     <span>Food Charges:</span>
@@ -298,7 +313,7 @@ const Billing = () => {
   const [selectedCheckout, setSelectedCheckout] = useState(null);
   const [hasMoreCheckouts, setHasMoreCheckouts] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
-  
+
   // Filter and search states
   const [searchQuery, setSearchQuery] = useState("");
   const [guestNameFilter, setGuestNameFilter] = useState("");
@@ -325,7 +340,11 @@ const Billing = () => {
     try {
       const response = await api.get(`/bill/checkouts?skip=${checkouts.length}&limit=20`);
       const newCheckouts = response.data || [];
-      setCheckouts(prev => [...prev, ...newCheckouts]);
+      setCheckouts(prev => {
+        const existingIds = new Set(prev.map(c => c.id));
+        const uniqueNew = newCheckouts.filter(c => !existingIds.has(c.id));
+        return [...prev, ...uniqueNew];
+      });
       if (newCheckouts.length < 20) {
         setHasMoreCheckouts(false);
       }
@@ -366,7 +385,7 @@ const Billing = () => {
       // General search - search across ID, guest name, room number, booking ID
       if (searchQuery) {
         const searchLower = searchQuery.toLowerCase();
-        const matchesSearch = 
+        const matchesSearch =
           c.id.toString().toLowerCase().includes(searchLower) ||
           c.guest_name?.toLowerCase().includes(searchLower) ||
           c.room_number?.toLowerCase().includes(searchLower) ||
@@ -388,7 +407,7 @@ const Billing = () => {
       // Booking ID filter
       if (bookingIdFilter) {
         const bookingIdStr = bookingIdFilter.toLowerCase();
-        const matchesBookingId = 
+        const matchesBookingId =
           c.booking_id?.toString().toLowerCase().includes(bookingIdStr) ||
           c.package_booking_id?.toString().toLowerCase().includes(bookingIdStr);
         if (!matchesBookingId) return false;
@@ -551,7 +570,7 @@ const Billing = () => {
       const actualRoomNumber = roomNumber.includes('-') ? roomNumber.split('-')[1] : roomNumber;
       const res = await api.get(`/bill/${actualRoomNumber}?checkout_mode=${checkoutMode}`);
       if (res.data && res.data.room_numbers) {
-      setBillData(res.data);
+        setBillData(res.data);
         const roomCount = res.data.room_numbers.length;
         const modeText = checkoutMode === "single" ? "single room" : "all rooms in the booking";
         showBannerMessage("success", `Bill retrieved for ${roomCount} room(s) (${modeText}).`);
@@ -635,48 +654,69 @@ const Billing = () => {
     }
   };
 
+  const handleCancelBill = () => {
+    setBillData(null);
+    setDiscount(0);
+    showBannerMessage("success", "Bill cancelled. You can select another room.");
+  };
+
   const generatePDF = (action = 'print') => {
     if (!billData) return;
 
     const doc = new jsPDF();
 
     // 1. Add Logo and Hotel Info
-    doc.addImage(logo, 'PNG', 14, 15, 30, 15); // Adjust position and size as needed
+    try {
+      doc.addImage(pommaLogo, 'PNG', 15, 10, 40, 20); // x, y, width, height
+    } catch (e) {
+      console.error("Could not add logo to PDF", e);
+    }
+
     doc.setFontSize(22);
     doc.setFont('helvetica', 'bold');
-    doc.text('Resort Invoice', 105, 25, { align: 'center' });
+    doc.text('Invoice', 105, 25, { align: 'center' });
+
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.text('Your Resort Name', 190, 20, { align: 'right' });
-    doc.text('123 Paradise Lane, Beach City', 190, 25, { align: 'right' });
-    doc.text('contact@yourresort.com', 190, 30, { align: 'right' });
+    doc.setTextColor(100, 100, 100);
+    doc.text('Pomma Resort', 195, 33, { align: 'right' });
+    doc.text('Munnar, Kerala', 195, 38, { align: 'right' });
+    doc.text('contact@pommaholidays.com', 195, 43, { align: 'right' });
+    doc.setTextColor(0, 0, 0); // Reset color
 
     // 2. Bill Details
+    // Horizontal Line separator
+    doc.setDrawColor(200, 200, 200); // Light gray
+    doc.line(14, 48, 196, 48);
+
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('Bill To:', 14, 45);
+    doc.text('Bill To:', 14, 58);
     doc.setFont('helvetica', 'normal');
-    doc.text(billData.guest_name, 14, 51);
-    doc.text(`Rooms: ${billData.room_numbers.join(', ')}`, 14, 57);
+    doc.text(billData.guest_name, 14, 64);
+    doc.text(`Rooms: ${billData.room_numbers.join(', ')}`, 14, 70);
 
     doc.setFont('helvetica', 'bold');
-    doc.text('Check-in:', 130, 45);
+    doc.text('Check-in:', 130, 58);
     doc.setFont('helvetica', 'normal');
-    doc.text(new Date(billData.check_in).toLocaleDateString(), 150, 45);
+    doc.text(new Date(billData.check_in).toLocaleDateString(), 155, 58);
     doc.setFont('helvetica', 'bold');
-    doc.text('Check-out:', 130, 51);
+    doc.text('Check-out:', 130, 64);
     doc.setFont('helvetica', 'normal');
-    doc.text(new Date(billData.check_out).toLocaleDateString(), 150, 51);
+    doc.text(new Date(billData.check_out).toLocaleDateString(), 155, 64);
 
     // 3. Itemized Charges Table
     const chargesBody = [];
     if (billData.charges.room_charges > 0) chargesBody.push(['Room Charges', `Stay for ${billData.stay_nights} nights`, formatCurrency(billData.charges.room_charges)]);
-    if (billData.charges.package_charges > 0) chargesBody.push(['Package Charges', `Package for ${billData.stay_nights} nights`, formatCurrency(billData.charges.package_charges)]);
+    if (billData.charges.package_charges > 0) {
+      const nightlyRate = billData.stay_nights > 0 ? billData.charges.package_charges / billData.stay_nights : 0;
+      chargesBody.push(['Package Charges', `Package for ${billData.stay_nights} nights (${formatCurrency(nightlyRate)} x ${billData.stay_nights})`, formatCurrency(billData.charges.package_charges)]);
+    }
     billData.charges.food_items.forEach(item => chargesBody.push([`Food: ${item.item_name}`, `Quantity: ${item.quantity}`, formatCurrency(item.amount)]));
     billData.charges.service_items.forEach(item => chargesBody.push([`Service: ${item.service_name}`, '', formatCurrency(item.charges)]));
 
     autoTable(doc, {
-      startY: 65,
+      startY: 85,
       head: [['Description', 'Details', 'Amount']],
       body: chargesBody,
       theme: 'striped',
@@ -747,7 +787,10 @@ const Billing = () => {
     text += `${line}\n`;
     text += `${bold('Itemized Charges:')}\n`;
     if (billData.charges.room_charges > 0) text += `Room Charges: ${formatCurrency(billData.charges.room_charges)}\n`;
-    if (billData.charges.package_charges > 0) text += `Package Charges: ${formatCurrency(billData.charges.package_charges)}\n`;
+    if (billData.charges.package_charges > 0) {
+      const nightlyRate = billData.stay_nights > 0 ? billData.charges.package_charges / billData.stay_nights : 0;
+      text += `Package Charges: ${formatCurrency(billData.charges.package_charges)} (${formatCurrency(nightlyRate)} x ${billData.stay_nights} nights)\n`;
+    }
 
     if (billData.charges.food_items.length > 0) {
       text += `\nFood & Beverage:\n`;
@@ -798,8 +841,8 @@ const Billing = () => {
 
   return (
     <DashboardLayout>
-      <BannerMessage 
-        message={bannerMessage} 
+      <BannerMessage
+        message={bannerMessage}
         onClose={closeBannerMessage}
         autoDismiss={true}
         duration={5000}
@@ -823,12 +866,12 @@ const Billing = () => {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8">
-          <KpiCard title="Checkouts Today" value={kpiData.checkouts_today} icon={<Hash size={22} className="text-indigo-600"/>} color="bg-indigo-100" />
-          <KpiCard title="Total Checkouts" value={kpiData.checkouts_total} icon={<Hash size={22} className="text-green-600"/>} color="bg-green-100" />
-          <KpiCard title="Available Rooms" value={kpiData.available_rooms} icon={<BedDouble size={22} className="text-blue-600"/>} color="bg-blue-100" />
-          <KpiCard title="Booked Rooms" value={kpiData.booked_rooms} icon={<BedDouble size={22} className="text-red-600"/>} color="bg-red-100" />
-          <KpiCard title="Food Revenue Today" value={kpiData.food_revenue_today.toLocaleString()} prefix="₹" icon={<Utensils size={22} className="text-yellow-600"/>} color="bg-yellow-100" />
-          <KpiCard title="Package Bookings Today" value={kpiData.package_bookings_today} icon={<Package size={22} className="text-purple-600"/>} color="bg-purple-100" />
+          <KpiCard title="Checkouts Today" value={kpiData.checkouts_today} icon={<Hash size={22} className="text-indigo-600" />} color="bg-indigo-100" />
+          <KpiCard title="Total Checkouts" value={kpiData.checkouts_total} icon={<Hash size={22} className="text-green-600" />} color="bg-green-100" />
+          <KpiCard title="Available Rooms" value={kpiData.available_rooms} icon={<BedDouble size={22} className="text-blue-600" />} color="bg-blue-100" />
+          <KpiCard title="Booked Rooms" value={kpiData.booked_rooms} icon={<BedDouble size={22} className="text-red-600" />} color="bg-red-100" />
+          <KpiCard title="Food Revenue Today" value={kpiData.food_revenue_today.toLocaleString()} prefix="₹" icon={<Utensils size={22} className="text-yellow-600" />} color="bg-yellow-100" />
+          <KpiCard title="Package Bookings Today" value={kpiData.package_bookings_today} icon={<Package size={22} className="text-purple-600" />} color="bg-purple-100" />
         </div>
 
         {/* Charts */}
@@ -885,9 +928,9 @@ const Billing = () => {
                 const parts = value.split('-');
                 if (parts.length >= 3) {
                   const [bookingId, roomNum, mode] = parts;
-                  const selected = activeRooms.find(b => 
-                    b.booking_id.toString() === bookingId && 
-                    b.room_number === roomNum && 
+                  const selected = activeRooms.find(b =>
+                    b.booking_id.toString() === bookingId &&
+                    b.room_number === roomNum &&
                     b.checkout_mode === mode
                   );
                   setRoomNumber(value);
@@ -914,7 +957,7 @@ const Billing = () => {
                 return (
                   <option key={`${uniqueValue}-${index}`} value={uniqueValue}>
                     {booking.display_label || `${booking.room_numbers?.join(', ') || booking.room_number} (${booking.guest_name})`}
-                </option>
+                  </option>
                 );
               })}
             </select>
@@ -922,14 +965,14 @@ const Billing = () => {
               // Parse composite key to find the correct selection
               let selected = null;
               let actualMode = "multiple";
-              
+
               if (roomNumber.includes('-')) {
                 const parts = roomNumber.split('-');
                 if (parts.length >= 3) {
                   const [bookingId, roomNum, mode] = parts;
-                  selected = activeRooms.find(b => 
-                    b.booking_id.toString() === bookingId && 
-                    b.room_number === roomNum && 
+                  selected = activeRooms.find(b =>
+                    b.booking_id.toString() === bookingId &&
+                    b.room_number === roomNum &&
                     b.checkout_mode === mode
                   );
                   actualMode = selected?.checkout_mode || mode || "multiple";
@@ -939,7 +982,7 @@ const Billing = () => {
                 selected = activeRooms.find(b => b.room_number === roomNumber);
                 actualMode = selected?.checkout_mode || "multiple";
               }
-              
+
               const isMultiple = actualMode === "multiple";
               return (
                 <div className={`mt-2 p-3 ${isMultiple ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'} border rounded-lg text-sm ${isMultiple ? 'text-blue-800' : 'text-green-800'}`}>
@@ -964,7 +1007,17 @@ const Billing = () => {
 
           {billData && (
             <div id="bill-details" className="bg-gray-50 border border-gray-200 p-4 rounded-xl mb-6 animate-fade-in">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Detailed Bill</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-800">Detailed Bill</h2>
+                <button
+                  onClick={handleCancelBill}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition duration-200 font-medium"
+                  title="Cancel and clear bill"
+                >
+                  <X size={18} />
+                  Cancel
+                </button>
+              </div>
               <div className="grid grid-cols-2 gap-x-4 gap-y-2 mb-4 text-sm">
                 <p><span className="font-semibold">Guest Name:</span> {billData.guest_name}</p>
                 <p><span className="font-semibold">Rooms:</span> {billData.room_numbers.join(', ')} ({billData.room_numbers.length})</p>
@@ -973,18 +1026,32 @@ const Billing = () => {
                 <p><span className="font-semibold">Stay:</span> {billData.stay_nights} nights</p>
                 <p><span className="font-semibold">Guests:</span> {billData.number_of_guests}</p>
               </div>
-              
+
               <div className="mt-4 pt-4 border-t">
-                <h3 className="font-bold text-gray-700 mb-2">Itemized Charges:</h3>
-                <ul className="list-disc list-inside space-y-1 text-gray-600">
-                  {billData.charges.room_charges > 0 && <li>Room Charges: {formatCurrency(billData.charges.room_charges)}</li>}
-                  {billData.charges.package_charges > 0 && <li>Package Charges: {formatCurrency(billData.charges.package_charges)}</li>}
+                <h3 className="font-bold text-gray-800 mb-2">Itemized Charges:</h3>
+                <ul className="list-disc list-inside space-y-1 text-gray-800">
+                  {billData.charges.room_charges > 0 && (() => {
+                    const roomRate = billData.stay_nights > 0 ? billData.charges.room_charges / billData.stay_nights : 0;
+                    return (
+                      <li>
+                        Room Charges: {formatCurrency(roomRate)} * {billData.stay_nights} nights = {formatCurrency(billData.charges.room_charges)}
+                      </li>
+                    );
+                  })()}
+                  {billData.charges.package_charges > 0 && (() => {
+                    const nightlyRate = billData.stay_nights > 0 ? billData.charges.package_charges / billData.stay_nights : 0;
+                    return (
+                      <li>
+                        Package Charges: {formatCurrency(nightlyRate)} * {billData.stay_nights} nights = {formatCurrency(billData.charges.package_charges)}
+                      </li>
+                    );
+                  })()}
                 </ul>
 
                 {billData.charges.food_items.length > 0 && (
                   <div className="mt-3">
-                    <h4 className="font-semibold text-gray-600">Food & Beverage:</h4>
-                    <ul className="list-decimal list-inside ml-4 text-xs text-gray-500">
+                    <h4 className="font-semibold text-gray-700">Food & Beverage:</h4>
+                    <ul className="list-decimal list-inside ml-4 text-sm text-gray-700">
                       {billData.charges.food_items.map((item, i) => <li key={i}>{item.item_name} (x{item.quantity}) - {formatCurrency(item.amount)}</li>)}
                     </ul>
                   </div>
@@ -992,26 +1059,26 @@ const Billing = () => {
 
                 {billData.charges.service_items.length > 0 && (
                   <div className="mt-3">
-                    <h4 className="font-semibold text-gray-600">Additional Services:</h4>
-                    <ul className="list-decimal list-inside ml-4 text-xs text-gray-500">
+                    <h4 className="font-semibold text-gray-700">Additional Services:</h4>
+                    <ul className="list-decimal list-inside ml-4 text-sm text-gray-700">
                       {billData.charges.service_items.map((item, i) => <li key={i}>{item.service_name} - {formatCurrency(item.charges)}</li>)}
                     </ul>
                   </div>
                 )}
 
                 <div className="mt-4 pt-4 border-t text-right space-y-1">
-                  <p className="text-sm text-gray-600">Subtotal: {formatCurrency(billData.charges.total_due)}</p>
+                  <p className="text-sm text-gray-700 font-medium">Subtotal: {formatCurrency(billData.charges.total_due)}</p>
                   {/* GST Breakdown */}
                   {billData.charges.room_gst > 0 && (
-                    <p className="text-xs text-gray-500">Room GST ({billData.charges.room_charges <= 7500 ? '12%' : '18%'}): +{formatCurrency(billData.charges.room_gst || 0)}</p>
+                    <p className="text-sm text-gray-700">Room GST ({billData.charges.room_charges <= 7500 ? '12%' : '18%'}): +{formatCurrency(billData.charges.room_gst || 0)}</p>
                   )}
                   {billData.charges.package_gst > 0 && (
-                    <p className="text-xs text-gray-500">Package GST ({billData.charges.package_charges <= 7500 ? '12%' : '18%'}): +{formatCurrency(billData.charges.package_gst || 0)}</p>
+                    <p className="text-sm text-gray-700">Package GST ({billData.charges.package_charges <= 7500 ? '12%' : '18%'}): +{formatCurrency(billData.charges.package_gst || 0)}</p>
                   )}
                   {billData.charges.food_gst > 0 && (
-                    <p className="text-xs text-gray-500">Food GST (5%): +{formatCurrency(billData.charges.food_gst || 0)}</p>
+                    <p className="text-sm text-gray-700">Food GST (5%): +{formatCurrency(billData.charges.food_gst || 0)}</p>
                   )}
-                  <p className="text-sm text-gray-600 font-semibold">Total GST: +{formatCurrency(billData.charges.total_gst || 0)}</p>
+                  <p className="text-sm text-gray-800 font-semibold">Total GST: +{formatCurrency(billData.charges.total_gst || 0)}</p>
                   {discount > 0 && (
                     <p className="text-sm text-green-600">Discount: -{formatCurrency(parseFloat(discount))}</p>
                   )}
@@ -1046,10 +1113,10 @@ const Billing = () => {
               </div>
               <div className="space-y-3">
                 <div className="flex space-x-2">
-                   <button onClick={() => generatePDF('print')} className="flex-1 bg-gray-500 text-white py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Print</button>
-                   <button onClick={() => generatePDF('download')} className="flex-1 bg-indigo-500 text-white py-2 rounded-lg font-semibold hover:bg-indigo-600 transition">Download</button>
-                   <button onClick={handleWhatsAppShare} className="flex-1 bg-green-500 text-white py-2 rounded-lg font-semibold hover:bg-green-600 transition">WhatsApp</button>
-                   <button onClick={handleEmailShare} className="flex-1 bg-blue-500 text-white py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Email</button>
+                  <button onClick={() => generatePDF('print')} className="flex-1 bg-gray-500 text-white py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Print</button>
+                  <button onClick={() => generatePDF('download')} className="flex-1 bg-indigo-500 text-white py-2 rounded-lg font-semibold hover:bg-indigo-600 transition">Download</button>
+                  <button onClick={handleWhatsAppShare} className="flex-1 bg-green-500 text-white py-2 rounded-lg font-semibold hover:bg-green-600 transition">WhatsApp</button>
+                  <button onClick={handleEmailShare} className="flex-1 bg-blue-500 text-white py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Email</button>
                 </div>
                 <button
                   onClick={handleCheckout}
@@ -1087,7 +1154,7 @@ const Billing = () => {
               <Filter size={18} className="text-indigo-600" />
               <h3 className="font-semibold text-gray-800">Filters & Search</h3>
             </div>
-            
+
             {/* General Search */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
@@ -1259,11 +1326,11 @@ const Billing = () => {
               </tbody>
             </table>
           </div>
-            {hasMoreCheckouts && (
-              <div ref={loadMoreRef} className="text-center p-4">
-                {isFetchingMore && <span className="text-indigo-600">Loading more checkouts...</span>}
-              </div>
-            )}
+          {hasMoreCheckouts && (
+            <div ref={loadMoreRef} className="text-center p-4">
+              {isFetchingMore && <span className="text-indigo-600">Loading more checkouts...</span>}
+            </div>
+          )}
         </div>
 
         <CheckoutDetailModal checkout={selectedCheckout} onClose={() => setSelectedCheckout(null)} />

@@ -89,7 +89,7 @@ const GuestProfile = () => {
         if (!path) return null;
         // Get the correct API base URL based on environment
         const apiBaseUrl = getApiBaseUrl();
-        
+
         // Package booking images start with 'id_pkg_' or 'guest_pkg_'
         if (path.startsWith('id_pkg_') || path.startsWith('guest_pkg_')) {
             return `${apiBaseUrl}/packages/booking/checkin-image/${path}`;
@@ -215,8 +215,8 @@ const GuestProfile = () => {
                                             <td className="p-3">{b.rooms.join(', ')}</td>
                                             <td className="p-3"><span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">{b.status}</span></td>
                                             <td className="p-3 flex items-center gap-4">
-                                                {b.id_card_image_url && <a href={getImageUrl(b.id_card_image_url)} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline flex items-center"><FileText size={16} className="mr-1"/> ID Card</a>}
-                                                {b.guest_photo_url && <a href={getImageUrl(b.guest_photo_url)} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline flex items-center"><Camera size={16} className="mr-1"/> Photo</a>}
+                                                {b.id_card_image_url && <a href={getImageUrl(b.id_card_image_url)} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline flex items-center"><FileText size={16} className="mr-1" /> ID Card</a>}
+                                                {b.guest_photo_url && <a href={getImageUrl(b.guest_photo_url)} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline flex items-center"><Camera size={16} className="mr-1" /> Photo</a>}
                                             </td>
                                         </tr>
                                     ))}
@@ -226,7 +226,7 @@ const GuestProfile = () => {
 
                         {/* Food Order History */}
                         <SectionCard title="Food Order History">
-                             <table className="min-w-full text-sm">
+                            <table className="min-w-full text-sm">
                                 <thead className="bg-gray-50">
                                     <tr>
                                         <th className="p-3 text-left">Order ID</th>
@@ -241,9 +241,12 @@ const GuestProfile = () => {
                                     {profile.food_orders.map(o => (
                                         <tr key={o.id}>
                                             <td className="p-3">#{o.id}</td>
-                                            <td className="p-3">{new Date(o.created_at).toLocaleString()}</td>
+                                            <td className="p-3">{(() => {
+                                                const dateStr = o.created_at.endsWith('Z') ? o.created_at : `${o.created_at}Z`;
+                                                return new Date(dateStr).toLocaleString();
+                                            })()}</td>
                                             <td className="p-3">{o.room_number || 'N/A'}</td>
-                                            <td className="p-3">{o.items.map(i => `${i.food_item?.name || 'Unknown Item'} (x${i.quantity})`).join(', ')}</td>
+                                            <td className="p-3">{o.items.map(i => `${i.food_item_name || 'Unknown Item'} (x${i.quantity})`).join(', ')}</td>
                                             <td className="p-3 text-right font-semibold">₹{o.amount.toFixed(2)}</td>
                                             <td className="p-3 text-center"><span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">{o.status}</span></td>
                                         </tr>
@@ -269,7 +272,10 @@ const GuestProfile = () => {
                                     {profile.services.map(s => (
                                         <tr key={s.id}>
                                             <td className="p-3">#{s.id}</td>
-                                            <td className="p-3">{new Date(s.assigned_at).toLocaleString()}</td>
+                                            <td className="p-3">{(() => {
+                                                const dateStr = s.assigned_at.endsWith('Z') ? s.assigned_at : `${s.assigned_at}Z`;
+                                                return new Date(dateStr).toLocaleString();
+                                            })()}</td>
                                             <td className="p-3">{s.service_name}</td>
                                             <td className="p-3">{s.room_number || 'N/A'}</td>
                                             <td className="p-3 text-right font-semibold">₹{(s.charges || 0).toFixed(2)}</td>

@@ -52,8 +52,8 @@ class BookingOut(BaseModel):
     id: int
     display_id: Optional[str] = None  # Format: BK-000001
     guest_name: str
-    guest_mobile: str
-    guest_email: str
+    guest_mobile: Optional[str] = None
+    guest_email: Optional[str] = None
     status: str
     check_in: date
     check_out: date
@@ -64,6 +64,7 @@ class BookingOut(BaseModel):
     guest_photo_url: Optional[str] = None
     user: Optional[UserOut] = None
     is_package: bool = False
+    total_amount: Optional[float] = 0.0
     # ----------------------------------------------------
     rooms: List[RoomOut] = []
     

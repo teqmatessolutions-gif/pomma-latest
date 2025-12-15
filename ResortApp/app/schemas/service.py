@@ -55,7 +55,7 @@ class AssignedServiceBase(BaseModel):
     room_id: int
 
 class AssignedServiceCreate(AssignedServiceBase):
-    pass
+    status: Optional[ServiceStatus] = ServiceStatus.pending
 
 class AssignedServiceUpdate(BaseModel):
     status: ServiceStatus

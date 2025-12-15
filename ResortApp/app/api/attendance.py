@@ -147,9 +147,23 @@ def get_work_logs_for_employee(employee_id: int, db: Session = Depends(get_db)):
             if end_dt > start_dt:
                 duration = end_dt - start_dt
                 duration_hours = duration.total_seconds() / 3600
+                print(f"DEBUG: Log {log.id} duration: {duration_hours}")
+            else:
+                print(f"DEBUG: Log {log.id} start {start_dt} >= end {end_dt}")
+        else:
+             print(f"DEBUG: Log {log.id} missing times: In={log.check_in_time}, Out={log.check_out_time}")
         
-        log_data = WorkingLogRecord.model_validate(log)
-        log_data.duration_hours = duration_hours
+        # Explicitly create model to ensure duration_hours is included
+        log_data = WorkingLogRecord(
+            id=log.id,
+            date=log.date,
+            check_in_time=log.check_in_time,
+            check_out_time=log.check_out_time,
+            location=log.location,
+            duration_hours=duration_hours
+        )
+        # log_data = WorkingLogRecord.model_validate(log)
+        # log_data.duration_hours = duration_hours
         results.append(log_data)
         
     return results

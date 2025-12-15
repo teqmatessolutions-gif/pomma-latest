@@ -193,7 +193,7 @@ const FormModal = ({ isOpen, onClose, onSubmit, fields, initialData, title, isMu
             >
                 <motion.div
                     initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }}
-                    className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl relative"
+                    className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto"
                 >
                     <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"><FaTimes size={20} /></button>
                     <h2 className="text-2xl font-bold text-gray-800 mb-6">{title}</h2>
@@ -327,7 +327,9 @@ export default function ResortCMS() {
 
     const handleFormSubmit = async (config, initialData, formData, file) => {
         const isEditing = initialData && initialData.id;
-        const endpoint = isEditing ? `${config.endpoint}/${initialData.id}` : config.endpoint;
+        // Remove trailing slash if present to avoid double slashes when appending ID
+        const baseEndpoint = config.endpoint.endsWith('/') ? config.endpoint.slice(0, -1) : config.endpoint;
+        const endpoint = isEditing ? `${baseEndpoint}/${initialData.id}` : config.endpoint;
         const method = isEditing ? 'put' : 'post';
 
         let payload = formData;
@@ -355,6 +357,7 @@ export default function ResortCMS() {
             }
             payload = cleanData;
         }
+
 
         try {
             const response = await api({
@@ -441,7 +444,7 @@ export default function ResortCMS() {
         banners: { title: "Header Banner", endpoint: "/header-banner/", fields: [{ name: "title", placeholder: "Banner Title" }, { name: "subtitle", placeholder: "Banner Description" }, { name: "image", type: "file" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: true },
         gallery: { title: "Gallery Image", endpoint: "/gallery/", fields: [{ name: "caption", placeholder: "Image Caption" }, { name: "image", type: "file" }], isMultipart: true },
         reviews: { title: "Review", endpoint: "/reviews/", fields: [{ name: "name", placeholder: "Customer Name" }, { name: "comment", placeholder: "Review Comment" }, { name: "rating", placeholder: "Rating (1-5)", type: "number" }], isMultipart: false },
-        resortInfo: { title: "Resort Info", endpoint: "/resort-info/", fields: [{ name: "name", placeholder: "Resort Name" }, { name: "address", placeholder: "Resort Address" }, { name: "facebook", placeholder: "Facebook URL" }, { name: "instagram", placeholder: "Instagram URL" }, { name: "twitter", placeholder: "Twitter URL" }, { name: "linkedin", placeholder: "LinkedIn URL" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: false },
+        resortInfo: { title: "Resort Info", endpoint: "/resort-info/", fields: [{ name: "name", placeholder: "Resort Name" }, { name: "address", placeholder: "Resort Address" }, { name: "gst_no", placeholder: "GST No" }, { name: "email", placeholder: "Email" }, { name: "support_email", placeholder: "Support Email" }, { name: "contact_no", placeholder: "Contact No" }, { name: "property_location", placeholder: "Property Location" }, { name: "facebook", placeholder: "Facebook URL" }, { name: "instagram", placeholder: "Instagram URL" }, { name: "twitter", placeholder: "Twitter URL" }, { name: "linkedin", placeholder: "LinkedIn URL" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: false },
         signatureExperiences: { title: "Signature Experience", endpoint: "/signature-experiences/", fields: [{ name: "title", placeholder: "Experience Title" }, { name: "description", placeholder: "Description", type: "textarea" }, { name: "image", type: "file" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: true },
         planWeddings: { title: "Plan Your Wedding", endpoint: "/plan-weddings/", fields: [{ name: "title", placeholder: "Title" }, { name: "description", placeholder: "Description", type: "textarea" }, { name: "image", type: "file" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: true },
         nearbyAttractions: { title: "Nearby Attraction", endpoint: "/nearby-attractions/", fields: [{ name: "title", placeholder: "Attraction Title" }, { name: "description", placeholder: "Description", type: "textarea" }, { name: "map_link", placeholder: "Google Maps Link (optional)" }, { name: "image", type: "file" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: true },
@@ -536,7 +539,14 @@ export default function ResortCMS() {
                             <div key={item.id} className="bg-gray-50 border rounded-lg p-4 space-y-2 col-span-full">
                                 <h4 className="text-lg font-bold text-gray-800">{item.name}</h4>
                                 <p className="text-sm text-gray-600">{item.address}</p>
-                                <p className="text-xs font-semibold">{item.is_active ? "🟢 Active" : "🔴 Inactive"}</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-700 mt-2">
+                                    {item.gst_no && <p><strong>GST:</strong> {item.gst_no}</p>}
+                                    {item.contact_no && <p><strong>Contact:</strong> {item.contact_no}</p>}
+                                    {item.email && <p><strong>Email:</strong> {item.email}</p>}
+                                    {item.support_email && <p><strong>Support:</strong> {item.support_email}</p>}
+                                    {item.property_location && <p><strong>Location:</strong> {item.property_location}</p>}
+                                </div>
+                                <p className="text-xs font-semibold mt-2">{item.is_active ? "🟢 Active" : "🔴 Inactive"}</p>
                                 <div className="flex gap-4 text-sm pt-2">
                                     {item.facebook && <a href={ensureHttpUrl(item.facebook)} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">Facebook</a>}
                                     {item.instagram && <a href={ensureHttpUrl(item.instagram)} target="_blank" rel="noreferrer" className="text-pink-600 hover:underline">Instagram</a>}

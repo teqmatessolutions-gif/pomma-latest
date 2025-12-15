@@ -241,7 +241,7 @@ def _get_rooms_impl(db: Session, skip: int = 0, limit: int = 20):
         # Skip room status update for large queries (limit > 100) to prevent timeouts
         # Status updates are expensive and can cause 30+ second delays with many rooms
         # For Food Orders page and other bulk operations, we don't need real-time status
-        if limit <= 100:
+        if limit <= 1000:
             # Update room statuses before fetching (non-blocking - continues even if update fails)
             try:
                 from app.utils.room_status import update_room_statuses

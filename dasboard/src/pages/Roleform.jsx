@@ -1,17 +1,18 @@
+
 // src/pages/RoleForm.jsx
 import React, { useState, useEffect } from "react";
 import API from "../services/api";
 import DashboardLayout from "../layout/DashboardLayout";
 import { Trash2, CheckCircle, XCircle, Edit } from "lucide-react";
 
-const availablePermissions = [
+const permissionCategories = {
+  "General": [
     { label: "Dashboard", value: "/dashboard" },
     { label: "Account", value: "/account" },
     { label: "Bookings", value: "/bookings" },
     { label: "Rooms", value: "/rooms" },
     { label: "Services", value: "/services" },
     { label: "Food Orders", value: "/food-orders" },
-    { label: "Employee", value: "/employee-management" },
     { label: "Role", value: "/roles" },
     { label: "Expenses", value: "/expenses" },
     { label: "Food Management", value: "/food-categories" },
@@ -20,7 +21,17 @@ const availablePermissions = [
     { label: "Packages", value: "/package" },
     { label: "Reports", value: "/report" },
     { label: "GuestProfiles", value: "/guestprofiles" },
-];
+  ],
+  "Employee Management": [
+    { label: "Page Access", value: "/employee-management" },
+    { label: "Manage Employees", value: "/employee-management/manage" },
+    { label: "Reports", value: "/employee-management/report" },
+    { label: "Leave Requests", value: "/employee-management/leave" },
+    { label: "Attendance & Hours", value: "/employee-management/attendance" },
+    { label: "Monthly Report", value: "/employee-management/monthly-report" },
+    { label: "Status Overview", value: "/employee-management/status-overview" },
+  ]
+};
 
 // Define roles that cannot be deleted from the UI
 const PROTECTED_ROLES = ['admin'];
@@ -151,7 +162,7 @@ const RoleForm = () => {
     <DashboardLayout>
       <div className="max-w-6xl mx-auto p-8 bg-gray-50 rounded-2xl shadow-lg space-y-10">
         <h2 className="text-4xl font-extrabold text-blue-900 text-center tracking-tight">Role Management</h2>
-        
+
         {/* Alerts for Success/Error */}
         {success && (
           <div className="flex items-center gap-2 p-4 text-sm font-medium text-green-700 bg-green-100 rounded-lg">
@@ -187,17 +198,24 @@ const RoleForm = () => {
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Permissions</label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 p-4 border rounded-lg bg-gray-50">
-                {availablePermissions.map((permission) => (
-                  <label key={permission.value} className="flex items-center gap-2 text-sm text-gray-800 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={form.permissions.includes(permission.value)}
-                      onChange={() => handlePermissionChange(permission.value)}
-                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    {permission.label}
-                  </label>
+              <div className="space-y-6">
+                {Object.entries(permissionCategories).map(([category, permissions]) => (
+                  <div key={category} className="bg-gray-50 p-4 rounded-lg border">
+                    <h4 className="font-semibold text-gray-800 mb-3 border-b pb-2">{category}</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                      {permissions.map((permission) => (
+                        <label key={permission.value} className="flex items-center gap-2 text-sm text-gray-800 cursor-pointer hover:bg-gray-100 p-1 rounded transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={form.permissions.includes(permission.value)}
+                            onChange={() => handlePermissionChange(permission.value)}
+                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          {permission.label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
@@ -221,7 +239,7 @@ const RoleForm = () => {
             </div>
           </form>
         </div>
-        
+
         {/* Existing Roles Table */}
         <div className="space-y-4 bg-white p-6 rounded-xl shadow-md">
           <h3 className="text-2xl font-semibold text-blue-800 border-b pb-4">Existing Roles</h3>

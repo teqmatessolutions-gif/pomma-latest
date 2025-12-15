@@ -7,6 +7,25 @@ import CountUp from "react-countup";
 import { motion } from "framer-motion";
 import { useInfiniteScroll } from "./useInfiniteScroll";
 
+const formatDateTimeIST = (dateString) => {
+  if (!dateString || dateString === '-') return '-';
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true
+    });
+  } catch (error) {
+    return dateString;
+  }
+};
+
 // --- Helper Components ---
 
 const KpiCard = ({ title, value, icon, prefix = "", suffix = "", loading }) => {
@@ -60,7 +79,7 @@ const DetailTable = ({ title, headers, data, loading, hasMore, loadMore, isSubmi
         <table className="min-w-full text-sm">
           <thead className="bg-gray-100 sticky top-0">
             <tr>
-              {headers.map((h) => <th key={h} className="px-4 py-2 text-left font-semibold text-gray-600">{h}</th>)}
+              {headers.map((h) => <th key={h} className="px-4 py-3 text-left text-sm font-semibold text-gray-700">{h}</th>)}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -154,11 +173,11 @@ export default function ReportsDashboard() {
         setDetailsLoading(true);
         // Reset pagination on period change
         setPagination({
-            roomBookings: { skip: 0, hasMore: true },
-            packageBookings: { skip: 0, hasMore: true },
-            foodOrders: { skip: 0, hasMore: true },
-            expenses: { skip: 0, hasMore: true },
-            employees: { skip: 0, hasMore: true },
+          roomBookings: { skip: 0, hasMore: true },
+          packageBookings: { skip: 0, hasMore: true },
+          foodOrders: { skip: 0, hasMore: true },
+          expenses: { skip: 0, hasMore: true },
+          employees: { skip: 0, hasMore: true },
         });
 
         const fromDate = getPeriodDate(period);
@@ -184,13 +203,13 @@ export default function ReportsDashboard() {
         const map = {};
         (roomsRes.data || []).forEach(r => { map[r.id] = r.number; });
         setRoomMap(map);
-        
+
         // Use a single state update to prevent blinking
         // Normalize food orders to include room_number and created_at if possible
         const normalizedFood = (foodOrdersRes.data || []).map(o => ({
           ...o,
           room_number: o.room_number || (o.room_id && map[o.room_id]) || '-',
-          created_at: o.created_at || o.createdAt || '-',
+          created_at: formatDateTimeIST(o.created_at || o.createdAt),
         }));
 
         // Normalize expenses to avoid N/A and ensure consistent keys
@@ -268,7 +287,7 @@ export default function ReportsDashboard() {
       });
       let newData = dataType === 'roomBookings' ? (response.data.bookings || []) : (response.data || []);
       if (dataType === 'foodOrders') {
-        newData = newData.map(o => ({ ...o, room_number: o.room_number || (o.room_id && roomMap[o.room_id]) || '-', created_at: o.created_at || o.createdAt || '-' }));
+        newData = newData.map(o => ({ ...o, room_number: o.room_number || (o.room_id && roomMap[o.room_id]) || '-', created_at: formatDateTimeIST(o.created_at || o.createdAt) }));
       }
 
       // Use functional update to prevent race conditions
@@ -349,7 +368,7 @@ export default function ReportsDashboard() {
           <KpiCard title="Room Bookings" value={kpiData.room_bookings || 0} loading={loading} icon={<BedDouble className="text-purple-500 w-8 h-8" />} />
           <KpiCard title="Package Bookings" value={kpiData.package_bookings || 0} loading={loading} icon={<Package className="text-indigo-500 w-8 h-8" />} />
           <KpiCard title="Total Bookings" value={kpiData.total_bookings || 0} loading={loading} icon={<Calendar className="text-blue-500 w-8 h-8" />} />
-          
+
           <KpiCard title="Food Orders" value={kpiData.food_orders || 0} loading={loading} icon={<Utensils className="text-orange-500 w-8 h-8" />} />
           <KpiCard title="Services Assigned" value={kpiData.assigned_services || 0} loading={loading} icon={<ConciergeBell className="text-teal-500 w-8 h-8" />} />
           <KpiCard title="Services Completed" value={kpiData.completed_services || 0} loading={loading} icon={<CheckCircle className="text-green-500 w-8 h-8" />} />

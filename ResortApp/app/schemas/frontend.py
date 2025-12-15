@@ -71,6 +71,11 @@ class ResortInfoBase(BaseSchema):
     instagram: str | None = None
     twitter: str | None = None
     linkedin: str | None = None
+    gst_no: str | None = None
+    email: str | None = None
+    support_email: str | None = None
+    contact_no: str | None = None
+    property_location: str | None = None
 
 class ResortInfoCreate(ResortInfoBase):
     pass

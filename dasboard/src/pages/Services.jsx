@@ -45,6 +45,10 @@ const Services = () => {
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [createSuccess, setCreateSuccess] = useState("");
+  const [assignSuccess, setAssignSuccess] = useState("");
+  const [createError, setCreateError] = useState("");
+  const [assignError, setAssignError] = useState("");
 
   // Fetch all data
   const fetchAll = async () => {
@@ -62,29 +66,29 @@ const Services = () => {
       setAssignedServices(aRes.data);
       setAllRooms(rRes.data);
       setEmployees(eRes.data);
-      
+
       // Combine regular and package bookings
       const regularBookings = bRes.data?.bookings || [];
       const packageBookings = (pbRes.data || []).map(pb => ({ ...pb, is_package: true }));
       setBookings([...regularBookings, ...packageBookings]);
-      
+
       // Filter rooms to only show checked-in rooms
       const today = new Date();
       today.setHours(0, 0, 0, 0); // Set to start of day for comparison
       const checkedInRoomIds = new Set();
-      
+
       // Helper function to normalize status (handle all variations)
       const normalizeStatus = (status) => {
         if (!status) return '';
         return status.toLowerCase().replace(/[-_\s]/g, '');
       };
-      
+
       // Helper function to check if status is checked-in
       const isCheckedIn = (status) => {
         const normalized = normalizeStatus(status);
         return normalized === 'checkedin';
       };
-      
+
       // Get room IDs from checked-in regular bookings
       regularBookings.forEach(booking => {
         console.log(`Checking regular booking ${booking.id}, status: ${booking.status}, rooms:`, booking.rooms);
@@ -94,7 +98,7 @@ const Services = () => {
           const checkOutDate = new Date(booking.check_out);
           checkInDate.setHours(0, 0, 0, 0);
           checkOutDate.setHours(0, 0, 0, 0);
-          
+
           // Check if booking is active (today is between check-in and check-out)
           // Also allow if check-out is today (room is still checked in)
           if (checkInDate <= today && checkOutDate >= today) {
@@ -117,7 +121,7 @@ const Services = () => {
           console.log(`Regular booking ${booking.id} status '${booking.status}' is not checked-in (normalized: '${normalizeStatus(booking.status)}')`);
         }
       });
-      
+
       // Get room IDs from checked-in package bookings
       // Note: Package bookings have rooms as PackageBookingRoomOut objects with a nested 'room' property
       packageBookings.forEach(booking => {
@@ -128,7 +132,7 @@ const Services = () => {
           const checkOutDate = new Date(booking.check_out);
           checkInDate.setHours(0, 0, 0, 0);
           checkOutDate.setHours(0, 0, 0, 0);
-          
+
           // Check if booking is active (today is between check-in and check-out)
           // Also allow if check-out is today (room is still checked in)
           if (checkInDate <= today && checkOutDate >= today) {
@@ -154,7 +158,7 @@ const Services = () => {
           console.log(`Package booking ${booking.id} status '${booking.status}' is not checked-in (normalized: '${normalizeStatus(booking.status)}')`);
         }
       });
-      
+
       // Also check room status directly as a fallback (in case booking status is not set correctly)
       rRes.data.forEach(room => {
         const roomStatusNormalized = normalizeStatus(room.status);
@@ -163,9 +167,9 @@ const Services = () => {
           console.log(`Added checked-in room from room status: ${room.number} (ID: ${room.id}), status: ${room.status}`);
         }
       });
-      
+
       console.log(`Total checked-in room IDs: ${checkedInRoomIds.size}`, Array.from(checkedInRoomIds));
-      
+
       // Filter rooms to only show checked-in rooms
       const checkedInRooms = rRes.data.filter(room => checkedInRoomIds.has(room.id));
       console.log(`Filtered checked-in rooms: ${checkedInRooms.length}`, checkedInRooms.map(r => `${r.number} (status: ${r.status})`));
@@ -221,7 +225,8 @@ const Services = () => {
   // Create service
   const handleCreate = async () => {
     if (!form.name || !form.description || !form.charges) {
-      alert("All fields are required");
+      setCreateError("All fields are required");
+      setTimeout(() => setCreateError(""), 3000);
       return;
     }
     try {
@@ -229,7 +234,7 @@ const Services = () => {
       formData.append('name', form.name);
       formData.append('description', form.description);
       formData.append('charges', parseFloat(form.charges));
-      
+
       // Append images
       selectedImages.forEach((image) => {
         formData.append('images', image);
@@ -244,16 +249,20 @@ const Services = () => {
       setSelectedImages([]);
       setImagePreviews([]);
       fetchAll();
+      setCreateSuccess("Service created successfully! ✨");
+      setTimeout(() => setCreateSuccess(""), 3000);
     } catch (err) {
-      console.error("Failed to create service", err);
-      alert("Failed to create service. Please try again.");
+      console.error("Failed to creating service", err);
+      setCreateError("Failed to create service. Please try again.");
+      setTimeout(() => setCreateError(""), 3000);
     }
   };
 
   // Assign service
   const handleAssign = async () => {
     if (!assignForm.service_id || !assignForm.employee_id || !assignForm.room_id) {
-      alert("Please select service, employee, and room");
+      setAssignError("Please select service, employee, and room");
+      setTimeout(() => setAssignError(""), 3000);
       return;
     }
     try {
@@ -265,8 +274,12 @@ const Services = () => {
       });
       setAssignForm({ service_id: "", employee_id: "", room_id: "", status: "pending" });
       fetchAll();
+      setAssignSuccess("Service assigned successfully! ✅");
+      setTimeout(() => setAssignSuccess(""), 3000);
     } catch (err) {
       console.error("Failed to assign service", err);
+      setAssignError("Failed to assign service. Please try again.");
+      setTimeout(() => setAssignError(""), 3000);
     }
   };
 
@@ -292,17 +305,19 @@ const Services = () => {
     );
   });
 
-  // KPI Data
   const totalServices = services.length;
   const totalAssigned = assignedServices.length;
   const completedCount = assignedServices.filter(s => s.status === "completed").length;
   const pendingCount = assignedServices.filter(s => s.status === "pending").length;
+  const cancelledCount = assignedServices.filter(s => s.status === "cancelled").length;
+  const inProgressCount = assignedServices.filter(s => s.status === "in_progress").length;
 
   // Pie chart for status
   const pieData = [
     { name: "Pending", value: pendingCount },
     { name: "Completed", value: completedCount },
-    { name: "In Progress", value: totalAssigned - pendingCount - completedCount },
+    { name: "In Progress", value: inProgressCount },
+    { name: "Cancelled", value: cancelledCount },
   ];
 
   // Bar chart for service assignments
@@ -340,6 +355,16 @@ const Services = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Create Service */}
           <Card title="Create New Service">
+            {createSuccess && (
+              <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4 text-center">
+                <span className="block sm:inline">{createSuccess}</span>
+              </div>
+            )}
+            {createError && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 text-center">
+                <span className="block sm:inline">{createError}</span>
+              </div>
+            )}
             <div className="space-y-3">
               <input
                 type="text"
@@ -390,6 +415,16 @@ const Services = () => {
 
           {/* Assign Service */}
           <Card title="Assign Service">
+            {assignSuccess && (
+              <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4 text-center">
+                <span className="block sm:inline">{assignSuccess}</span>
+              </div>
+            )}
+            {assignError && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 text-center">
+                <span className="block sm:inline">{assignError}</span>
+              </div>
+            )}
             <div className="space-y-3">
               <select
                 value={assignForm.service_id}
@@ -542,9 +577,10 @@ const Services = () => {
               <option value="pending">Pending</option>
               <option value="in_progress">In Progress</option>
               <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
             </select>
-            <input type="date" value={filters.from} onChange={(e) => setFilters({ ...filters, from: e.target.value })} className="border p-2 rounded-lg"/>
-            <input type="date" value={filters.to} onChange={(e) => setFilters({ ...filters, to: e.target.value })} className="border p-2 rounded-lg"/>
+            <input type="date" value={filters.from} onChange={(e) => setFilters({ ...filters, from: e.target.value })} className="border p-2 rounded-lg" />
+            <input type="date" value={filters.to} onChange={(e) => setFilters({ ...filters, to: e.target.value })} className="border p-2 rounded-lg" />
           </div>
           {loading ? (
             <div className="flex justify-center items-center h-48">
@@ -573,9 +609,15 @@ const Services = () => {
                           <option value="pending">Pending</option>
                           <option value="in_progress">In Progress</option>
                           <option value="completed">Completed</option>
+                          <option value="cancelled">Cancelled</option>
                         </select>
                       </td>
-                      <td className="p-3 border-t border-gray-200">{s.assigned_at && new Date(s.assigned_at).toLocaleString()}</td>
+                      <td className="p-3 border-t border-gray-200">
+                        {s.assigned_at && (() => {
+                          const dateStr = s.assigned_at.endsWith('Z') ? s.assigned_at : `${s.assigned_at}Z`;
+                          return new Date(dateStr).toLocaleString();
+                        })()}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

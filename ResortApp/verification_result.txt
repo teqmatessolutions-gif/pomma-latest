@@ -1,0 +1,11 @@
+Testing endpoints with token: False
+GET /reports/checkin-by-employee: 200
+GET /reports/service-charges: 200
+GET /reports/food-orders: 200
+GET /reports/expenses: 200
+GET /expenses: 200
+GET /food-orders: 200
+GET /bookings: 200
+GET /employees: 401
+Error response: b'{"detail":"Not authenticated"}'
+GET /packages/bookingsall: 200

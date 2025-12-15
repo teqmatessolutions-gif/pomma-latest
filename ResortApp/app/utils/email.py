@@ -23,7 +23,8 @@ def send_email(
     to_email: str,
     subject: str,
     html_content: str,
-    to_name: Optional[str] = None
+    to_name: Optional[str] = None,
+    sender_name: Optional[str] = None
 ) -> bool:
     """
     Send an email using SMTP.
@@ -33,6 +34,7 @@ def send_email(
         subject: Email subject
         html_content: HTML email content
         to_name: Optional recipient name
+        sender_name: Optional sender name (overrides config)
     
     Returns:
         bool: True if email sent successfully, False otherwise
@@ -45,10 +47,13 @@ def send_email(
             print(f"[Email] SMTP not configured. Would send email to {to_email}: {subject}")
             return False
         
+        # Determine sender name
+        from_name = sender_name or config['from_name']
+        
         # Create message
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
-        msg['From'] = f"{config['from_name']} <{config['from_email']}>"
+        msg['From'] = f"{from_name} <{config['from_email']}>"
         msg['To'] = to_email
         
         # Add HTML content
@@ -83,24 +88,17 @@ def create_booking_confirmation_email(
     guest_mobile: Optional[str] = None,
     room_charges: Optional[float] = None,
     package_charges: Optional[float] = None,
-    stay_nights: Optional[int] = None
+    stay_nights: Optional[int] = None,
+    resort_info: Optional[Dict] = None  # New argument
 ) -> str:
     """
     Create HTML email template for booking confirmation.
-    
-    Args:
-        guest_name: Guest's name
-        booking_id: Booking ID
-        booking_type: Type of booking ('room' or 'package')
-        check_in: Check-in date
-        check_out: Check-out date
-        rooms: List of room dictionaries with 'number' and 'type'
-        total_amount: Optional total amount
-        package_name: Optional package name
-    
-    Returns:
-        str: HTML email content
     """
+    # Defaults from resort_info or fallback
+    resort_name = resort_info.get("name") if resort_info and resort_info.get("name") else "Elysian Retreat"
+    support_email = resort_info.get("support_email") if resort_info and resort_info.get("support_email") else "info@elysianretreat.com"
+    gst_no = resort_info.get("gst_no") if resort_info and resort_info.get("gst_no") else None
+    
     if rooms:
         rooms_html = ''.join([
             f'<li><strong>Room {room.get("number", "N/A")}</strong> - {room.get("type", "N/A")} - ₹{room.get("price", 0):,.2f}/night</li>'
@@ -127,7 +125,7 @@ def create_booking_confirmation_email(
     # Format charges section
     charges_html = ""
     if total_amount or room_charges or package_charges:
-        charges_html = '<div class="booking-details"><h2 style="margin-top: 0; color: #f59e0b;">Booking Charges</h2>'
+        charges_html = '<div class="booking-details"><h2 style="margin-top: 0; color: #059669;">Booking Charges</h2>'
         
         if stay_nights:
             charges_html += f'<div class="detail-row"><span class="detail-label">Stay Duration:</span><span class="detail-value">{stay_nights} night(s)</span></div>'
@@ -143,7 +141,7 @@ def create_booking_confirmation_email(
             grand_total = total_amount + tax
             charges_html += f'<div class="detail-row"><span class="detail-label">Subtotal:</span><span class="detail-value">₹{total_amount:,.2f}</span></div>'
             charges_html += f'<div class="detail-row"><span class="detail-label">Tax (5%):</span><span class="detail-value">₹{tax:,.2f}</span></div>'
-            charges_html += f'<div class="detail-row" style="border-top: 2px solid #f59e0b; padding-top: 15px; margin-top: 15px;"><span class="detail-label" style="font-size: 18px;">Grand Total:</span><span class="detail-value" style="font-size: 18px; color: #f59e0b; font-weight: bold;">₹{grand_total:,.2f}</span></div>'
+            charges_html += f'<div class="detail-row" style="border-top: 2px solid #059669; padding-top: 15px; margin-top: 15px;"><span class="detail-label" style="font-size: 18px;">Grand Total:</span><span class="detail-value" style="font-size: 18px; color: #059669; font-weight: bold;">₹{grand_total:,.2f}</span></div>'
         
         charges_html += '</div>'
     
@@ -156,6 +154,11 @@ def create_booking_confirmation_email(
         if guest_mobile:
             guest_details_html += f'<br><span class="detail-label">Mobile:</span> {guest_mobile}'
         guest_details_html += '</span></div>'
+        
+    # GST Section
+    gst_html = ""
+    if gst_no:
+        gst_html = f'<div class="detail-row"><span class="detail-label">GST No:</span><span class="detail-value">{gst_no}</span></div>'
     
     html = f"""
     <!DOCTYPE html>
@@ -173,7 +176,7 @@ def create_booking_confirmation_email(
                 padding: 20px;
             }}
             .header {{
-                background: linear-gradient(135deg, #f59e0b, #d97706);
+                background: linear-gradient(135deg, #059669, #047857);
                 color: white;
                 padding: 30px;
                 text-align: center;
@@ -225,9 +228,9 @@ def create_booking_confirmation_email(
                 font-size: 14px;
             }}
             .highlight {{
-                background: #fef3c7;
+                background: #d1fae5;
                 padding: 15px;
-                border-left: 4px solid #f59e0b;
+                border-left: 4px solid #059669;
                 margin: 20px 0;
                 border-radius: 4px;
             }}
@@ -235,14 +238,14 @@ def create_booking_confirmation_email(
     </head>
     <body>
         <div class="header">
-            <h1>✨ Elysian Retreat</h1>
+            <h1>✨ {resort_name}</h1>
             <p>Booking Confirmation</p>
         </div>
         
         <div class="content">
             <p>Dear {guest_name},</p>
             
-            <p>Thank you for your booking! We are delighted to confirm your reservation at Elysian Retreat.</p>
+            <p>Thank you for your booking! We are delighted to confirm your reservation at {resort_name}.</p>
             
             <div class="highlight">
                 <strong>Booking ID: {formatted_booking_id}</strong><br>
@@ -250,7 +253,7 @@ def create_booking_confirmation_email(
             </div>
             
             <div class="booking-details">
-                <h2 style="margin-top: 0; color: #f59e0b;">Booking Details</h2>
+                <h2 style="margin-top: 0; color: #059669;">Booking Details</h2>
                 
                 <div class="detail-row">
                     <span class="detail-label">Booking ID:</span>
@@ -282,6 +285,7 @@ def create_booking_confirmation_email(
                         </ul>
                     </span>
                 </div>
+                {gst_html}
             </div>
             
             {charges_html}
@@ -292,18 +296,18 @@ def create_booking_confirmation_email(
                 • Check-in time is from 2:00 PM onwards<br>
                 • Check-out time is before 11:00 AM<br>
                 • Please bring a valid ID proof for verification<br>
-                • For any queries, please contact us at: <a href="mailto:info@elysianretreat.com">info@elysianretreat.com</a>
+                • For any queries, please contact us at: <a href="mailto:{support_email}">{support_email}</a>
             </div>
             
-            <p>We look forward to welcoming you and ensuring you have a memorable stay at Elysian Retreat!</p>
+            <p>We look forward to welcoming you and ensuring you have a memorable stay at {resort_name}!</p>
             
             <p>Warm regards,<br>
-            <strong>The Elysian Retreat Team</strong></p>
+            <strong>The {resort_name} Team</strong></p>
         </div>
         
         <div class="footer">
             <p>This is an automated confirmation email. Please do not reply to this email.</p>
-            <p>&copy; {datetime.now().year} Elysian Retreat. All rights reserved.</p>
+            <p>&copy; {datetime.now().year} {resort_name}. All rights reserved.</p>
         </div>
     </body>
     </html>

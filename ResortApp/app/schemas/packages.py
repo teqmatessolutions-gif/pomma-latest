@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, model_validator
-from datetime import date
+from datetime import date, datetime
 from typing import List, Optional
 
 
@@ -19,6 +19,7 @@ class PackageOut(BaseModel):
     booking_type: Optional[str] = "room_type"  # "whole_property" or "room_type"
     room_types: Optional[str] = None  # Comma-separated list of room types
     images: List[PackageImageOut] = Field(default_factory=list)
+    created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

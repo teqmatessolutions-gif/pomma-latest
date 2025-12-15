@@ -206,9 +206,23 @@ def book_package(db: Session, booking: PackageBookingCreate):
     
     is_whole_property = selected_package.booking_type == 'whole_property'
     
-    if not is_whole_property and booking.room_ids:
-        selected_rooms = db.query(Room).filter(Room.id.in_(booking.room_ids)).all()
-        if len(selected_rooms) != len(booking.room_ids):
+    if is_whole_property:
+        # For whole property packages, we MUST check availability for ALL rooms.
+        # Ignore whatever room_ids were sent (or not sent) by the frontend.
+        all_rooms = db.query(Room).all()
+        target_room_ids = [room.id for room in all_rooms]
+        if not target_room_ids:
+             raise HTTPException(status_code=400, detail="No rooms found in the system to book.")
+    else:
+        # For regular packages, use the user-selected rooms
+        target_room_ids = booking.room_ids
+        if not target_room_ids:
+            # If strictly room-type but no rooms selected (should be caught by schema validation usually)
+            pass 
+
+    if not is_whole_property and target_room_ids:
+        selected_rooms = db.query(Room).filter(Room.id.in_(target_room_ids)).all()
+        if len(selected_rooms) != len(target_room_ids):
             raise HTTPException(status_code=400, detail="One or more selected rooms are invalid.")
         
         total_adult_capacity = sum(room.adults or 0 for room in selected_rooms)
@@ -228,7 +242,9 @@ def book_package(db: Session, booking: PackageBookingCreate):
 
     # CRITICAL FIX: Check for conflicts BEFORE creating the booking
     # This prevents invalid bookings from being created in the database
-    for room_id in booking.room_ids:
+    # CRITICAL FIX: Check for conflicts BEFORE creating the booking
+    # This prevents invalid bookings from being created in the database
+    for room_id in target_room_ids:
         # Check for conflicts with package bookings (simplified overlap check: start1 < end2 AND start2 < end1)
         package_conflict = (
             db.query(PackageBookingRoom)
@@ -278,7 +294,8 @@ def book_package(db: Session, booking: PackageBookingCreate):
     db.refresh(db_booking)
 
     # Assign multiple rooms (conflicts already checked, safe to proceed)
-    for room_id in booking.room_ids:
+    # Assign multiple rooms (conflicts already checked, safe to proceed)
+    for room_id in target_room_ids:
         # Update the room's status to 'Booked'
         room_to_update = db.query(Room).filter(Room.id == room_id).first()
         if room_to_update:

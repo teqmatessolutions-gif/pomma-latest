@@ -34,7 +34,39 @@ def delete_service(db: Session, service_id: int):
     return False
 
 def create_assigned_service(db: Session, assigned: AssignedServiceCreate):
+    # Create instance but don't add yet
     db_assigned = AssignedService(**assigned.dict())
+    
+    # Auto-link to active booking
+    # Check regular booking
+    active_booking = (
+        db.query(Booking)
+        .join(BookingRoom)
+        .filter(BookingRoom.room_id == assigned.room_id)
+        .filter(Booking.status.in_(['checked-in', 'booked'])) # Include booked for pre-arrival assignment
+        .order_by(Booking.check_in.desc())
+        .first()
+    )
+    
+    # Check package booking
+    active_pkg_booking = (
+        db.query(PackageBooking)
+        .join(PackageBookingRoom)
+        .filter(PackageBookingRoom.room_id == assigned.room_id)
+        .filter(PackageBooking.status.in_(['checked-in', 'booked']))
+        .order_by(PackageBooking.check_in.desc())
+        .first()
+    )
+
+    # Determine which one is "current" based on date if both exist, or just pick the one found
+    # Prioritize 'checked-in' status if possible, but simplest is to pick the one that covers "today" or recent
+    # For now, simplistic logic: linked if found.
+    
+    if active_booking:
+        db_assigned.booking_id = active_booking.id
+    elif active_pkg_booking:
+        db_assigned.package_booking_id = active_pkg_booking.id
+
     db.add(db_assigned)
     db.commit()
     db.refresh(db_assigned)
@@ -42,41 +74,13 @@ def create_assigned_service(db: Session, assigned: AssignedServiceCreate):
 
 def get_assigned_services(db: Session, skip: int = 0, limit: int = 100):
     """
-    Get assigned services, but only for rooms that have checked-in bookings.
-    This ensures only active (checked-in) rooms are shown in the assigned services table.
+    Get all assigned services, ordered by assignment date (newest first).
     """
-    today = date.today()
-    
-    # Find all room IDs that have checked-in bookings (regular or package)
-    checked_in_room_ids = set()
-    
-    # Get rooms with checked-in regular bookings
-    regular_checked_in = db.query(BookingRoom.room_id).join(Booking).filter(
-        Booking.status.in_(['checked-in', 'checked_in']),
-        Booking.check_in <= today,
-        Booking.check_out > today
-    ).all()
-    checked_in_room_ids.update([r.room_id for r in regular_checked_in if r.room_id])
-    
-    # Get rooms with checked-in package bookings
-    package_checked_in = db.query(PackageBookingRoom.room_id).join(PackageBooking).filter(
-        PackageBooking.status.in_(['checked-in', 'checked_in']),
-        PackageBooking.check_in <= today,
-        PackageBooking.check_out > today
-    ).all()
-    checked_in_room_ids.update([r.room_id for r in package_checked_in if r.room_id])
-    
-    # Only return assigned services for checked-in rooms
-    if not checked_in_room_ids:
-        return []
-    
-    return db.query(AssignedService).filter(
-        AssignedService.room_id.in_(list(checked_in_room_ids))
-    ).options(
+    return db.query(AssignedService).options(
         joinedload(AssignedService.service),
         joinedload(AssignedService.employee),
         joinedload(AssignedService.room)
-    ).offset(skip).limit(limit).all()
+    ).order_by(AssignedService.assigned_at.desc()).offset(skip).limit(limit).all()
 
 def update_assigned_service_status(db: Session, assigned_id: int, update_data: AssignedServiceUpdate):
     assigned = db.query(AssignedService).filter(AssignedService.id == assigned_id).first()

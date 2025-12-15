@@ -1,0 +1,17 @@
+Status: 200
+Got 5 records.
+ID: 30, Guest: mathew
+  Total Amount (from API): 5000.0
+--------------------
+ID: 29, Guest: bhavya
+  Total Amount (from API): 6999.0
+--------------------
+ID: 28, Guest: jomin
+  Total Amount (from API): 2500.0
+--------------------
+ID: 27, Guest: Test Early B
+  Total Amount (from API): 5000.0
+--------------------
+ID: 26, Guest: Test Early A
+  Total Amount (from API): 5000.0
+--------------------

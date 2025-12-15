@@ -1,0 +1,17 @@
+Room 301 ID: 3
+Found 3 services for Room 301:
+  Service ID: 21, Name: massage
+    Assigned At: 2025-12-14 12:56:28.178189
+    Booking ID: 23
+    -> Linked to Booking ID 23 (Guest: subin, Status: checked_out)
+--------------------
+  Service ID: 28, Name: Adv trekking
+    Assigned At: 2025-12-14 14:21:25.381500
+    Booking ID: None
+    -> NO Booking ID Linked (Orphaned?)
+--------------------
+  Service ID: 27, Name: Grill
+    Assigned At: 2025-12-14 14:21:13.599280
+    Booking ID: None
+    -> NO Booking ID Linked (Orphaned?)
+--------------------

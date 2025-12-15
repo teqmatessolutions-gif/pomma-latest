@@ -11,8 +11,9 @@ from app.models.Package import Package, PackageBooking, PackageBookingRoom
 from app.models.foodorder import FoodOrder
 from app.models.food_item import FoodItem
 from app.models.expense import Expense
-from app.models.employee import Employee
+from app.models.employee import Employee, Attendance, WorkingLog
 from app.models.service import Service, AssignedService
+from app.models.user import User
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
@@ -35,7 +36,7 @@ def get_kpis(db: Session = Depends(get_db)):
 
         # Find rooms booked via regular bookings (include both 'booked' and 'checked-in' statuses)
         active_bookings = db.query(BookingRoom.room_id).join(Booking).filter(
-            Booking.status.in_(['booked', 'checked-in', 'checked_in']),  # Include checked-in status
+            Booking.status.in_(['booked', 'checked-in', 'checked_in', 'Booked', 'Checked-in', 'Checked-In', 'Checked_in', 'Checked_In']),
             Booking.check_in <= today,
             Booking.check_out > today,
         ).all()
@@ -43,7 +44,7 @@ def get_kpis(db: Session = Depends(get_db)):
 
         # Find rooms booked via package bookings (include both 'booked' and 'checked-in' statuses)
         active_package_bookings = db.query(PackageBookingRoom.room_id).join(PackageBooking).filter(
-            PackageBooking.status.in_(['booked', 'checked-in', 'checked_in']),  # Include checked-in status
+            PackageBooking.status.in_(['booked', 'checked-in', 'checked_in', 'Booked', 'Checked-in', 'Checked-In', 'Checked_in', 'Checked_In']),
             PackageBooking.check_in <= today,
             PackageBooking.check_out > today,
         ).all()
@@ -264,11 +265,34 @@ def get_summary(period: str = "all", db: Session = Depends(get_db)):
     services_query = apply_date_filter(db.query(AssignedService), AssignedService.assigned_at)
 
     # Employees
-    employees_query = apply_date_filter(db.query(Employee), Employee.join_date)
-    total_salary_query = db.query(func.sum(Employee.salary))
-    if start_date: # Only filter salary for active employees if there's a date range
-        total_salary_query = apply_date_filter(total_salary_query, Employee.join_date)
+    # Logic change based on user request:
+    # If period is "Today" (day), show count of employees present/working today.
+    # For other periods (Week, Month, All), show total active employee headcount.
+    
+    if period == "day":
+        # Count unique employees who have attendance or working logs today
+        present_today = db.query(WorkingLog.employee_id).filter(
+            WorkingLog.date >= start_date, 
+            WorkingLog.date < end_date
+        ).distinct()
+        
+        # Also check Attendance table just in case manually marked
+        attendance_today = db.query(Attendance.employee_id).filter(
+            Attendance.date >= start_date, 
+            Attendance.date < end_date,
+            Attendance.status.in_(['Present', 'Half Day'])
+        ).distinct()
+        
+        # internal union set
+        present_ids = set([r[0] for r in present_today.all()] + [r[0] for r in attendance_today.all()])
+        active_employees_count = len(present_ids)
+    else:
+        # Show total headcount of active employees
+        active_employees_count = db.query(Employee).join(User).filter(User.is_active == True).count()
 
+    # Calculate total salary of all active employees (monthly liability)
+    total_salary_query = db.query(func.sum(Employee.salary)).join(User).filter(User.is_active == True)
+    
     kpis = {
         "room_bookings": room_bookings_query.count(),
         "package_bookings": package_bookings_query.count(),
@@ -283,7 +307,7 @@ def get_summary(period: str = "all", db: Session = Depends(get_db)):
         "total_expenses": total_expenses,
         "expense_count": expenses_query.count(),
         
-        "active_employees": employees_query.count(),
+        "active_employees": active_employees_count,
         "total_salary": total_salary_query.scalar() or 0,
     }
 

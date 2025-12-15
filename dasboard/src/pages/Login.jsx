@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import pommaLogo from "../assets/pommalogo.png";
 
+import { jwtDecode } from "jwt-decode";
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -16,7 +18,57 @@ export default function LoginPage() {
       const response = await api.post("/auth/login", { email, password });
       if (response.data && response.data.access_token) {
         localStorage.setItem("token", response.data.access_token);
-        navigate("/dashboard", { replace: true });
+
+        // Dynamic Redirect Logic
+        try {
+          const decodedUser = jwtDecode(response.data.access_token);
+          const role = (decodedUser.role || '').toLowerCase();
+          const permissions = decodedUser.permissions || [];
+
+          // Define all dashboard routes in priority order
+          const routes = [
+            { path: "/dashboard", permission: "/dashboard" },
+            { path: "/bookings", permission: "/bookings" },
+            { path: "/rooms", permission: "/rooms" },
+            { path: "/services", permission: "/services" },
+            { path: "/food-orders", permission: "/food-orders" },
+            { path: "/expenses", permission: "/expenses" },
+            { path: "/billing", permission: "/billing" },
+            { path: "/roles", permission: "/roles" },
+            { path: "/users", permission: "/users" },
+            { path: "/food-categories", permission: "/food-categories" },
+            { path: "/food-items", permission: "/food-items" },
+            { path: "/account", permission: "/account" },
+            { path: "/package", permission: "/package" },
+            { path: "/report", permission: "/report" },
+            { path: "/guestprofiles", permission: "/guestprofiles" },
+            { path: "/user-history", permission: "/user-history" },
+            { path: "/employee-management", permission: "/employee-management" },
+            // Add other routes as needed
+          ];
+
+          if (role === 'admin') {
+            navigate("/dashboard", { replace: true });
+            return;
+          }
+
+          // Find the first route user has access to
+          const allowedRoute = routes.find(r => permissions.includes(r.permission));
+
+          if (allowedRoute) {
+            navigate(allowedRoute.path, { replace: true });
+          } else {
+            // Fallback if no specific permissions match (e.g. maybe just profile access)
+            // or show a "No Access" message. For now, try dashboard which might show 403/Forbidden if protected properly,
+            // or maybe better to stay here and show an error.
+            // Let's default to dashboard but it might be blank.
+            console.warn("No specific route permissions found. Defaulting to Dashboard.");
+            navigate("/dashboard", { replace: true });
+          }
+        } catch (decodeError) {
+          console.error("Token decode error:", decodeError);
+          navigate("/dashboard", { replace: true });
+        }
       } else {
         alert("Login failed: No token received from server.");
       }
@@ -56,9 +108,9 @@ export default function LoginPage() {
           <div className="relative">
             <div className="absolute inset-0 bg-emerald-100/30 rounded-full blur-xl"></div>
             <div className="relative bg-gradient-to-br from-emerald-50 to-green-50 p-4 rounded-2xl shadow-lg border border-emerald-200/50">
-              <img 
-                src={pommaLogo} 
-                alt="Pomma Holidays Logo" 
+              <img
+                src={pommaLogo}
+                alt="Pomma Holidays Logo"
                 className="h-28 md:h-32 w-auto object-contain drop-shadow-lg"
               />
             </div>

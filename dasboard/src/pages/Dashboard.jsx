@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback, memo } from "react";
+﻿import React, { useEffect, useMemo, useState, useCallback, memo } from "react";
 import { formatCurrency } from '../utils/currency';
 import API from "../services/api";
 import DashboardLayout from "../layout/DashboardLayout";
@@ -9,7 +9,7 @@ import {
 } from "recharts";
 
 // Import the new bubble animation CSS
-import "../styles/bubble-animation.css"; 
+import "../styles/bubble-animation.css";
 
 const COLORS = ["#6366F1", "#22C55E", "#F59E0B", "#EF4444", "#06B6D4", "#A78BFA", "#F43F5E", "#10B981", "#60A5FA", "#FBBF24"];
 
@@ -19,91 +19,109 @@ const Dashboard = () => {
 
   const [bookings, setBookings] = useState([]);
   const [rooms, setRooms] = useState([]);
+  const [allRooms, setAllRooms] = useState([]); // Added allRooms state
   const [expenses, setExpenses] = useState([]);
   const [foodOrders, setFoodOrders] = useState([]);
   const [assignedServices, setAssignedServices] = useState([]);
   const [billings, setBillings] = useState([]);
   const [packages, setPackages] = useState([]);
+  const [packageBookings, setPackageBookings] = useState([]);
 
   // ---------- Fetch Data Function ----------
   const fetchDashboardData = useCallback(async (showLoading = true) => {
-      try {
+    try {
       if (showLoading) {
         setLoading(true);
       }
-        setErr(null); // Clear any previous errors
-        
-        // Fetch all endpoints with individual error handling to prevent complete failure
-        // Reduced limits for better performance (pagination handles the rest)
-        const results = await Promise.allSettled([
-          API.get("/bookings?limit=500").catch(err => ({ error: err, data: { bookings: [] } })),
-          API.get("/rooms?limit=500").catch(err => ({ error: err, data: [] })),
-          API.get("/expenses?limit=500").catch(err => ({ error: err, data: [] })),
-          API.get("/food-orders?limit=500").catch(err => ({ error: err, data: [] })),
-          API.get("/services/assigned?limit=500").catch(err => ({ error: err, data: [] })),
-          API.get("/bill/checkouts?limit=500").catch(err => ({ error: err, data: [] })),
-          API.get("/packages?limit=500").catch(err => ({ error: err, data: [] })),
-        ]);
-        
-        // Process results individually - allow partial failures
-        if (results[0].status === 'fulfilled' && !results[0].value.error) {
-          setBookings(Array.isArray(results[0].value.data?.bookings) ? results[0].value.data.bookings : []);
-        } else {
-          console.error("Failed to load bookings:", results[0].value?.error || results[0].reason);
-          setBookings([]);
-        }
-        
-        if (results[1].status === 'fulfilled' && !results[1].value.error) {
-          setRooms(Array.isArray(results[1].value.data) ? results[1].value.data : []);
-        } else {
-          console.error("Failed to load rooms:", results[1].value?.error || results[1].reason);
-          setRooms([]);
-        }
-        
-        if (results[2].status === 'fulfilled' && !results[2].value.error) {
-          setExpenses(Array.isArray(results[2].value.data) ? results[2].value.data : []);
-        } else {
-          console.error("Failed to load expenses:", results[2].value?.error || results[2].reason);
-          setExpenses([]);
-        }
-        
-        if (results[3].status === 'fulfilled' && !results[3].value.error) {
-          setFoodOrders(Array.isArray(results[3].value.data) ? results[3].value.data : []);
-        } else {
-          console.error("Failed to load food orders:", results[3].value?.error || results[3].reason);
-          setFoodOrders([]);
-        }
-        
-        if (results[4].status === 'fulfilled' && !results[4].value.error) {
-          setAssignedServices(Array.isArray(results[4].value.data) ? results[4].value.data : []);
-        } else {
-          console.error("Failed to load services:", results[4].value?.error || results[4].reason);
-          setAssignedServices([]);
-        }
-        
-        if (results[5].status === 'fulfilled' && !results[5].value.error) {
-          setBillings(Array.isArray(results[5].value.data) ? results[5].value.data : []);
-        } else {
-          console.error("Failed to load billings:", results[5].value?.error || results[5].reason);
-          setBillings([]);
-        }
-        
-        if (results[6].status === 'fulfilled' && !results[6].value.error) {
-          setPackages(Array.isArray(results[6].value.data) ? results[6].value.data : []);
-        } else {
-          console.error("Failed to load packages:", results[6].value?.error || results[6].reason);
-          setPackages([]);
-        }
-        
-        // Set error message only if all requests failed
-        const allFailed = results.every(r => r.status === 'rejected' || (r.status === 'fulfilled' && r.value?.error));
-        if (allFailed) {
-          setErr("Failed to load dashboard data. Please check your connection and try again.");
-        }
-      } catch (e) {
-        console.error("Dashboard fetch error:", e);
-        setErr(e?.response?.data?.detail || "Failed to load dashboard data");
-      } finally {
+      setErr(null); // Clear any previous errors
+
+      // Fetch all endpoints with individual error handling to prevent complete failure
+      // Reduced limits for better performance (pagination handles the rest)
+      const results = await Promise.allSettled([
+        API.get("/bookings?limit=500").catch(err => ({ error: err, data: { bookings: [] } })),
+        API.get("/rooms?limit=2000").catch(err => ({ error: err, data: [] })),
+        API.get("/expenses?limit=500").catch(err => ({ error: err, data: [] })),
+        API.get("/food-orders?limit=500").catch(err => ({ error: err, data: [] })),
+        API.get("/services/assigned?limit=500").catch(err => ({ error: err, data: [] })),
+        API.get("/bill/checkouts?limit=500").catch(err => ({ error: err, data: [] })),
+        API.get("/packages?limit=500").catch(err => ({ error: err, data: [] })),
+        API.get("/packages/bookingsall?limit=500").catch(err => ({ error: err, data: [] })),
+      ]);
+
+      // Process results individually - allow partial failures
+      if (results[0].status === 'fulfilled' && !results[0].value.error) {
+        setBookings(Array.isArray(results[0].value.data?.bookings) ? results[0].value.data.bookings : []);
+      } else {
+        console.error("Failed to load bookings:", results[0].value?.error || results[0].reason);
+        setBookings([]);
+      }
+
+      if (results[1].status === 'fulfilled' && !results[1].value.error) {
+        const fetchedRooms = Array.isArray(results[1].value.data) ? results[1].value.data : [];
+        setAllRooms(fetchedRooms); // Set allRooms with the full list
+        // Filter rooms to only show checked-in rooms (similar to Services page)
+        const checkedInBookings = (Array.isArray(results[0].value.data?.bookings) ? results[0].value.data.bookings : [])
+          .filter(b => (b.status || "").toLowerCase().includes("checked-in"));
+        const checkedInRoomIds = new Set(checkedInBookings.map(b => b.room_id));
+        const checkedInRooms = fetchedRooms.filter(room => checkedInRoomIds.has(room.id));
+        setRooms(checkedInRooms); // Set rooms with filtered checked-in rooms
+      } else {
+        console.error("Failed to load rooms:", results[1].value?.error || results[1].reason);
+        setRooms([]);
+        setAllRooms([]);
+      }
+
+      if (results[2].status === 'fulfilled' && !results[2].value.error) {
+        setExpenses(Array.isArray(results[2].value.data) ? results[2].value.data : []);
+      } else {
+        console.error("Failed to load expenses:", results[2].value?.error || results[2].reason);
+        setExpenses([]);
+      }
+
+      if (results[3].status === 'fulfilled' && !results[3].value.error) {
+        setFoodOrders(Array.isArray(results[3].value.data) ? results[3].value.data : []);
+      } else {
+        console.error("Failed to load food orders:", results[3].value?.error || results[3].reason);
+        setFoodOrders([]);
+      }
+
+      if (results[4].status === 'fulfilled' && !results[4].value.error) {
+        setAssignedServices(Array.isArray(results[4].value.data) ? results[4].value.data : []);
+      } else {
+        console.error("Failed to load services:", results[4].value?.error || results[4].reason);
+        setAssignedServices([]);
+      }
+
+      if (results[5].status === 'fulfilled' && !results[5].value.error) {
+        setBillings(Array.isArray(results[5].value.data) ? results[5].value.data : []);
+      } else {
+        console.error("Failed to load billings:", results[5].value?.error || results[5].reason);
+        setBillings([]);
+      }
+
+      if (results[6].status === 'fulfilled' && !results[6].value.error) {
+        setPackages(Array.isArray(results[6].value.data) ? results[6].value.data : []);
+      } else {
+        console.error("Failed to load packages:", results[6].value?.error || results[6].reason);
+        setPackages([]);
+      }
+
+      if (results[7].status === 'fulfilled' && !results[7].value.error) {
+        setPackageBookings(Array.isArray(results[7].value.data) ? results[7].value.data : []);
+      } else {
+        console.error("Failed to load package bookings:", results[7].value?.error || results[7].reason);
+        setPackageBookings([]);
+      }
+
+      // Set error message only if all requests failed
+      const allFailed = results.every(r => r.status === 'rejected' || (r.status === 'fulfilled' && r.value?.error));
+      if (allFailed) {
+        setErr("Failed to load dashboard data. Please check your connection and try again.");
+      }
+    } catch (e) {
+      console.error("Dashboard fetch error:", e);
+      setErr(e?.response?.data?.detail || "Failed to load dashboard data");
+    } finally {
       if (showLoading) {
         setLoading(false);
       }
@@ -113,10 +131,10 @@ const Dashboard = () => {
   // ---------- Initial Data Fetch and Auto-Refresh ----------
   useEffect(() => {
     let mounted = true;
-    
+
     // Initial fetch with loading indicator
     fetchDashboardData(true);
-    
+
     // Set up auto-refresh every 5 minutes (300,000 milliseconds)
     const refreshInterval = setInterval(() => {
       if (mounted) {
@@ -124,7 +142,7 @@ const Dashboard = () => {
         fetchDashboardData(false);
       }
     }, 5 * 60 * 1000); // 5 minutes
-    
+
     return () => {
       mounted = false;
       clearInterval(refreshInterval);
@@ -135,29 +153,29 @@ const Dashboard = () => {
   const safeDate = useCallback((d) => (d ? new Date(d) : null), []);
   const fmtCurrency = useCallback((n, decimals = 0) => formatCurrency(Number(n || 0), true, decimals), []);
   const roomCounts = useMemo(() => {
-    const total = rooms.length;
+    const total = allRooms.length; // Use allRooms for total count
     // Room statuses are: "Available", "Occupied", "Maintenance"
-    const occupied = rooms.filter(r => {
+    const occupied = allRooms.filter(r => {
       const status = (r.status || r.current_status || "").toLowerCase();
-      return status.includes("occupied") || status.includes("booked");
+      return status.includes("occupied") || status.includes("booked") || status.includes("checked");
     }).length;
-    const available = rooms.filter(r => {
+    const available = allRooms.filter(r => {
       const status = (r.status || "").toLowerCase();
       return status.includes("avail");
     }).length;
-    const maintenance = rooms.filter(r => {
+    const maintenance = allRooms.filter(r => {
       const status = (r.status || "").toLowerCase();
       return status.includes("maintenance") || status.includes("maintain");
     }).length;
     // Ensure counts add up correctly
     const calculatedMaintenance = Math.max(0, total - occupied - available);
-    return { 
-      total, 
-      occupied, 
-      available, 
-      maintenance: maintenance > 0 ? maintenance : calculatedMaintenance 
+    return {
+      total,
+      occupied,
+      available,
+      maintenance: maintenance > 0 ? maintenance : calculatedMaintenance
     };
-  }, [rooms]);
+  }, [allRooms]); // Dependency changed to allRooms
   const revenue = useMemo(() => {
     const total = billings.reduce((s, b) => s + Number(b.grand_total || 0), 0);
     const now = new Date();
@@ -190,20 +208,27 @@ const Dashboard = () => {
     return { total, month };
   }, [expenses]);
   const bookingCounts = useMemo(() => {
-    const total = bookings.length;
-    const cancelled = bookings.filter(b => {
+    // Combine regular bookings and package bookings
+    const allBookings = [...bookings, ...packageBookings];
+    const total = allBookings.length;
+    const cancelled = allBookings.filter(b => {
       const status = (b.status || "").toLowerCase();
       return status.includes("cancel");
     }).length;
-    // Active bookings: exclude cancelled and checked-out
-    const active = bookings.filter(b => {
+    // Checked-in count
+    const checkedIn = allBookings.filter(b => {
       const status = (b.status || "").toLowerCase();
-      return !status.includes("cancel") && 
-             !status.includes("checked-out") && 
-             !status.includes("checked_out");
+      return status.includes("checked-in") || status.includes("checked_in");
     }).length;
-    return { total, active, cancelled };
-  }, [bookings]);
+    // Active bookings: all bookings that are not cancelled or checked-out
+    const active = allBookings.filter(b => {
+      const status = (b.status || "").toLowerCase();
+      return !status.includes("cancel") &&
+        !status.includes("checked-out") &&
+        !status.includes("checked_out");
+    }).length;
+    return { total, active, cancelled, checkedIn };
+  }, [bookings, packageBookings]);
   const revenueSeries = useMemo(() => {
     const map = new Map();
     billings.forEach(b => {
@@ -271,10 +296,12 @@ const Dashboard = () => {
     return Object.entries(bookingCounts).map(([name, count]) => ({ name, count }));
   }, [bookings, packages]);
   const latestBookings = useMemo(() => {
-    return [...bookings]
+    // Combine both regular and package bookings
+    const allBookings = [...bookings, ...packageBookings];
+    return allBookings
       .sort((a, b) => new Date(b.created_at || b.check_in) - new Date(a.created_at || a.check_in))
       .slice(0, 10);
-  }, [bookings]);
+  }, [bookings, packageBookings]);
   const latestBillings = useMemo(() => {
     return [...billings]
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
@@ -355,7 +382,7 @@ const Dashboard = () => {
           <KPICard label="Today Revenue" value={fmtCurrency(revenue.today)} sub="Today" />
           <KPICard label="This Month Revenue" value={fmtCurrency(revenue.month)} sub="Month" />
           <KPICard label="Total Expenses" value={fmtCurrency(expenseAgg.total)} sub="All time" />
-          <KPICard label="Bookings (Active)" value={`${bookingCounts.active}`} sub={`Cancelled: ${bookingCounts.cancelled}`} />
+          <KPICard label="Bookings (Active)" value={`${bookingCounts.active}`} sub={`Checked in: ${bookingCounts.checkedIn}`} />
           <KPICard label="Total Packages" value={packages.length} sub="All time" />
           <KPICard label="Rooms" value={`${roomCounts.occupied}/${roomCounts.total}`} sub="Occupied / Total" />
         </section>
@@ -499,14 +526,41 @@ const Dashboard = () => {
                   {latestBookings.map((b) => (
                     <tr key={b.id} className="border-t hover:bg-gray-50">
                       <Td className="text-xs sm:text-sm">{b.guest_name || b.guest || "-"}</Td>
-                      <Td className="text-xs sm:text-sm hidden sm:table-cell">{b.room?.number ? `#${b.room.number}${b.room?.type ? ` (${b.room.type})` : ''}` : (b.room_number || "-")}</Td>
+                      <Td className="text-xs sm:text-sm hidden sm:table-cell">
+                        {/* Handle both regular bookings and package bookings */}
+                        {(() => {
+                          // Regular booking with room object
+                          if (b.room?.number) {
+                            return `#${b.room.number}${b.room?.type ? ` (${b.room.type})` : ''}`;
+                          }
+                          // Regular booking with room_number field
+                          if (b.room_number) {
+                            return b.room_number;
+                          }
+                          // Package booking with rooms array
+                          if (b.rooms && Array.isArray(b.rooms) && b.rooms.length > 0) {
+                            const roomNumbers = b.rooms
+                              .map(r => {
+                                // Try different possible structures
+                                if (r.room && r.room.number) return r.room.number;
+                                if (r.room_number) return r.room_number;
+                                if (r.number) return r.number;
+                                return null;
+                              })
+                              .filter(num => num != null && num !== '');
+                            if (roomNumbers.length > 0) {
+                              return roomNumbers.join(', ');
+                            }
+                          }
+                          return "-";
+                        })()}
+                      </Td>
                       <Td className="text-xs sm:text-sm hidden lg:table-cell">{b.check_in}</Td>
                       <Td className="text-xs sm:text-sm hidden lg:table-cell">{b.check_out}</Td>
                       <Td>
-                        <span className={`px-2 py-1 text-xs rounded font-semibold ${
-                          String(b.status || "").toLowerCase().includes("cancel")
-                            ? "bg-red-100 text-red-600"
-                            : "bg-green-100 text-green-700"
+                        <span className={`px-2 py-1 text-xs rounded font-semibold ${String(b.status || "").toLowerCase().includes("cancel")
+                          ? "bg-red-100 text-red-600"
+                          : "bg-green-100 text-green-700"
                           }`}>
                           {b.status}
                         </span>
@@ -538,12 +592,11 @@ const Dashboard = () => {
                       <Td className="text-xs sm:text-sm hidden sm:table-cell">{c.room_number || "-"}</Td>
                       <Td className="text-xs sm:text-sm capitalize hidden md:table-cell">{String(c.payment_method || "").replace("_", " ")}</Td>
                       <Td className="uppercase">
-                        <span className={`px-2 py-1 text-xs rounded font-semibold ${
-                          String(c.payment_status || "").toLowerCase() === "paid"
-                            ? "bg-green-100 text-green-700"
-                            : String(c.payment_status || "").toLowerCase() === "pending"
-                              ? "bg-yellow-100 text-yellow-700"
-                              : "bg-gray-100 text-gray-700"
+                        <span className={`px-2 py-1 text-xs rounded font-semibold ${String(c.payment_status || "").toLowerCase() === "paid"
+                          ? "bg-green-100 text-green-700"
+                          : String(c.payment_status || "").toLowerCase() === "pending"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-gray-100 text-gray-700"
                           }`}>
                           {c.payment_status}
                         </span>
@@ -557,7 +610,7 @@ const Dashboard = () => {
             </div>
           </Card>
         </section>
-        
+
         {/* New tables section */}
         <section className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           <Card title="Latest Packages">
@@ -584,13 +637,13 @@ const Dashboard = () => {
               </table>
             </div>
           </Card>
-          
+
           <Card title="Recent Food Orders">
             <div className="overflow-x-auto w-full">
               <table className="min-w-full text-sm">
                 <thead>
                   <tr className="bg-gray-50 text-gray-700">
-                    <Th>Type</Th>
+                    <Th>Room No</Th>
                     <Th>Items</Th>
                     <Th>Status</Th>
                     <Th className="text-right">Amount</Th>
@@ -600,13 +653,12 @@ const Dashboard = () => {
                 <tbody>
                   {latestFood.map((o, idx) => (
                     <tr key={o.id || idx} className="border-t hover:bg-gray-50">
-                      <Td>{o.type || o.category || "-"}</Td>
+                      <Td>{allRooms.find(r => r.id === o.room_id)?.number || o.room_id || "-"}</Td>
                       <Td>{Array.isArray(o.items) ? o.items.length : (o.quantity || "-")}</Td>
                       <Td>
-                        <span className={`px-2 py-1 text-xs rounded font-semibold ${
-                          String(o.status || "").toLowerCase().includes("cancel")
-                            ? "bg-red-100 text-red-600"
-                            : "bg-blue-100 text-blue-700"
+                        <span className={`px-2 py-1 text-xs rounded font-semibold ${String(o.status || "").toLowerCase().includes("cancel")
+                          ? "bg-red-100 text-red-600"
+                          : "bg-blue-100 text-blue-700"
                           }`}>
                           {o.status || "NEW"}
                         </span>
@@ -683,3 +735,5 @@ const Td = memo(({ children, className = "" }) => (
 Td.displayName = 'Td';
 
 export default Dashboard;
+
+

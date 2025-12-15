@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import or_, func
+from sqlalchemy import or_, func, and_
 from typing import List
-from datetime import date, datetime
+from datetime import date, datetime, time
 
 # Assume your utility and model imports are set up correctly
 from app.utils.auth import get_db, get_current_user
@@ -11,7 +11,7 @@ from app.models.booking import Booking, BookingRoom
 from app.models.Package import Package, PackageBooking, PackageBookingRoom
 from app.models.user import User
 from app.models.foodorder import FoodOrder, FoodOrderItem
-from app.models.service import AssignedService, Service
+from app.models.service import AssignedService, Service, ServiceStatus
 from app.models.checkout import Checkout
 from app.schemas.checkout import BillSummary, BillBreakdown, CheckoutFull, CheckoutSuccess, CheckoutRequest
 
@@ -67,52 +67,167 @@ def get_checkout_details(checkout_id: int, db: Session = Depends(get_db), curren
                 "package_name": package_booking.package.title if package_booking.package else None
             }
     
-    # Get food orders for these rooms
+    # Link orphaned records (self-healing)
+    # If we find records for this room/date that are 'billed' but have no booking ID, claim them now.
+    room_ids = []
+    rooms = []
+    if room_numbers:
+        rooms = db.query(Room).filter(Room.number.in_(room_numbers)).all()
+        room_ids = [r.id for r in rooms]
+
+    if room_ids:
+        # Use 12:00 PM (noon) as the cutoff for auto-linking orphans on turnover days
+        # This prevents claiming items from a guest who checked out in the morning,
+        # or items from a guest who checks in later that afternoon (if looking at previous booking).
+        orphan_start = None
+        orphan_end = None
+        
+        if checkout.booking:
+            orphan_start = datetime.combine(checkout.booking.check_in, time(12, 0, 0))
+            orphan_end = datetime.combine(checkout.booking.check_out, time(12, 0, 0))
+        elif checkout.package_booking:
+            orphan_start = datetime.combine(checkout.package_booking.check_in, time(12, 0, 0))
+            orphan_end = datetime.combine(checkout.package_booking.check_out, time(12, 0, 0))
+        
+        if orphan_start and orphan_end:
+            # 1. Link Food Orders
+            orphan_orders_query = db.query(FoodOrder).filter(
+                FoodOrder.room_id.in_(room_ids),
+                FoodOrder.booking_id.is_(None),
+                FoodOrder.package_booking_id.is_(None),
+                FoodOrder.billing_status == 'billed',
+                FoodOrder.created_at >= orphan_start,
+                FoodOrder.created_at <= orphan_end
+            )
+            orphan_orders = orphan_orders_query.all()
+            if orphan_orders:
+                for order in orphan_orders:
+                    if checkout.booking_id:
+                        order.booking_id = checkout.booking_id
+                    elif checkout.package_booking_id:
+                        order.package_booking_id = checkout.package_booking_id
+                db.commit()
+
+            # 2. Link Assigned Services
+            orphan_services_query = db.query(AssignedService).filter(
+                AssignedService.room_id.in_(room_ids),
+                AssignedService.booking_id.is_(None),
+                AssignedService.package_booking_id.is_(None),
+                AssignedService.billing_status == 'billed',
+                AssignedService.assigned_at >= orphan_start,
+                AssignedService.assigned_at <= orphan_end
+            )
+            orphan_services = orphan_services_query.all()
+            if orphan_services:
+                for service in orphan_services:
+                    if checkout.booking_id:
+                        service.booking_id = checkout.booking_id
+                    elif checkout.package_booking_id:
+                        service.package_booking_id = checkout.package_booking_id
+                db.commit()
+
+    # Get food orders for these rooms (Strict ID Filter)
     food_orders = []
-    if room_numbers:
-        rooms = db.query(Room).filter(Room.number.in_(room_numbers)).all()
-        room_ids = [r.id for r in rooms]
-        if room_ids:
-            orders = db.query(FoodOrder).options(
-                joinedload(FoodOrder.items).joinedload(FoodOrderItem.food_item)
-            ).filter(FoodOrder.room_id.in_(room_ids)).all()
-            for order in orders:
-                food_orders.append({
-                    "id": order.id,
-                    "room_number": next((r.number for r in rooms if r.id == order.room_id), None),
-                    "amount": order.amount,
-                    "status": order.status,
-                    "created_at": order.created_at.isoformat() if order.created_at else None,
-                    "items": [
-                        {
-                            "item_name": item.food_item.name if item.food_item else "Unknown",
-                            "quantity": item.quantity,
-                            "price": item.food_item.price if item.food_item else 0,
-                            "total": item.quantity * (item.food_item.price if item.food_item else 0)
-                        }
-                        for item in order.items
-                    ]
-                })
     
-    # Get services for these rooms
+    # Calculate start date for filtering
+    start_date = None
+    if checkout.booking:
+        start_date = datetime.combine(checkout.booking.check_in, datetime.min.time())
+    elif checkout.package_booking:
+        start_date = datetime.combine(checkout.package_booking.check_in, datetime.min.time())
+
+    query = db.query(FoodOrder).options(
+        joinedload(FoodOrder.items).joinedload(FoodOrderItem.food_item)
+    )
+
+    conditions = []
+    if checkout.booking_id:
+        conditions.append(FoodOrder.booking_id == checkout.booking_id)
+    elif checkout.package_booking_id:
+        conditions.append(FoodOrder.package_booking_id == checkout.package_booking_id)
+    else:
+        # Fallback for legacy data without IDs
+        conditions.append(FoodOrder.room_id.in_(room_ids)) 
+
+    # Apply date filter if available to exclude stale data
+    if start_date:
+        conditions.append(FoodOrder.created_at >= start_date)
+
+    query = query.filter(and_(*conditions))
+    
+    # Helper to ensure UTC Z suffix
+    def format_utc(dt):
+        if not dt:
+            return None
+        # Assume stored as UTC naive. Return isoformat with Z.
+        return dt.isoformat() + "Z"
+
+    # Exclude cancelled orders from history view
+    query = query.filter(FoodOrder.status != 'cancelled')
+    
+    orders = query.all()
+    for order in orders:
+        food_orders.append({
+            "id": order.id,
+            "room_number": next((r.number for r in rooms if r.id == order.room_id), None),
+            "amount": order.amount,
+            "status": order.status,
+            "created_at": format_utc(order.created_at),
+            "items": [
+                {
+                    "item_name": item.food_item.name if item.food_item else "Unknown",
+                    "quantity": item.quantity,
+                    "price": item.food_item.price if item.food_item else 0,
+                    "total": item.quantity * (item.food_item.price if item.food_item else 0)
+                }
+                for item in order.items
+            ]
+    })
+    
+    # Get services for these rooms (Strict ID Filter)
     services = []
-    if room_numbers:
-        rooms = db.query(Room).filter(Room.number.in_(room_numbers)).all()
-        room_ids = [r.id for r in rooms]
-        if room_ids:
-            assigned_services = db.query(AssignedService).options(
-                joinedload(AssignedService.service)
-            ).filter(AssignedService.room_id.in_(room_ids)).all()
-            for ass in assigned_services:
-                services.append({
-                    "id": ass.id,
-                    "room_number": next((r.number for r in rooms if r.id == ass.room_id), None),
-                    "service_name": ass.service.name if ass.service else "Unknown",
-                    "charges": ass.service.charges if ass.service else 0,
-                    "status": ass.status,
-                    "created_at": ass.assigned_at.isoformat() if ass.assigned_at else None
-                })
+    query = db.query(AssignedService).options(
+        joinedload(AssignedService.service)
+    )
+
+    conditions = []
+    if checkout.booking_id:
+            conditions.append(AssignedService.booking_id == checkout.booking_id)
+    elif checkout.package_booking_id:
+            conditions.append(AssignedService.package_booking_id == checkout.package_booking_id)
+    else:
+         conditions.append(AssignedService.room_id.in_(room_ids))
+
+    # Apply date filter if available to exclude stale data
+    if start_date:
+        conditions.append(AssignedService.assigned_at >= start_date)
+
+    query = query.filter(and_(*conditions))
+
+    # Exclude cancelled services from history view
+    query = query.filter(AssignedService.status != ServiceStatus.cancelled)
+
+    assigned_services = query.all()
+    for ass in assigned_services:
+        services.append({
+            "id": ass.id,
+            "room_number": next((r.number for r in rooms if r.id == ass.room_id), None),
+            "service_name": ass.service.name if ass.service else "Unknown",
+            "charges": ass.service.charges if ass.service else 0,
+            "status": ass.status,
+            "created_at": format_utc(ass.assigned_at),
+        })
     
+    # Fallback for guest name if missing on checkout record
+    guest_name = checkout.guest_name
+    if not guest_name:
+        if booking_details and checkout.booking_id:
+             booking = db.query(Booking).filter(Booking.id == checkout.booking_id).first()
+             if booking: guest_name = booking.guest_name
+        elif booking_details and checkout.package_booking_id:
+             pkg_booking = db.query(PackageBooking).filter(PackageBooking.id == checkout.package_booking_id).first()
+             if pkg_booking: guest_name = pkg_booking.guest_name
+
     return {
         "id": checkout.id,
         "booking_id": checkout.booking_id,
@@ -126,8 +241,9 @@ def get_checkout_details(checkout_id: int, db: Session = Depends(get_db), curren
         "grand_total": checkout.grand_total,
         "payment_method": checkout.payment_method,
         "payment_status": checkout.payment_status,
-        "created_at": checkout.created_at.isoformat() if checkout.created_at else None,
-        "guest_name": checkout.guest_name,
+        "created_at": format_utc(checkout.created_at),
+        "checkout_date": format_utc(checkout.checkout_date),
+        "guest_name": guest_name,
         "room_number": checkout.room_number,
         "room_numbers": room_numbers,
         "food_orders": food_orders,
@@ -263,7 +379,11 @@ def _calculate_bill_for_single_room(db: Session, room_number: str):
     booking_link = (db.query(BookingRoom)
                     .join(Booking)
                     .options(joinedload(BookingRoom.booking))
-                    .filter(BookingRoom.room_id == room.id, Booking.status.in_(['checked-in', 'checked_in', 'booked']))
+                    .filter(BookingRoom.room_id == room.id, 
+                            or_(
+                                Booking.status.in_(['checked-in', 'checked_in']),
+                                and_(Booking.status == 'booked', Booking.check_in <= date.today())
+                            ))
                     .order_by(Booking.id.desc()).first())
     
     if booking_link:
@@ -274,7 +394,11 @@ def _calculate_bill_for_single_room(db: Session, room_number: str):
         package_link = (db.query(PackageBookingRoom)
                         .join(PackageBooking)
                         .options(joinedload(PackageBookingRoom.package_booking))
-                        .filter(PackageBookingRoom.room_id == room.id, PackageBooking.status.in_(['checked-in', 'checked_in', 'booked']))
+                        .filter(PackageBookingRoom.room_id == room.id, 
+                                or_(
+                                    PackageBooking.status.in_(['checked-in', 'checked_in']),
+                                    and_(PackageBooking.status == 'booked', PackageBooking.check_in <= date.today())
+                                ))
                         .order_by(PackageBooking.id.desc()).first())
         if package_link:
             booking = package_link.package_booking
@@ -335,9 +459,14 @@ def _calculate_bill_for_single_room(db: Session, room_number: str):
                                  .filter(FoodOrder.room_id == room.id, 
                                         or_(FoodOrder.billing_status == "unbilled", 
                                             FoodOrder.billing_status.is_(None)))
+                                 .filter(FoodOrder.status != "cancelled")
                                  .all())
     
-    unbilled_services = db.query(AssignedService).options(joinedload(AssignedService.service)).filter(AssignedService.room_id == room.id, AssignedService.billing_status == "unbilled").all()
+    unbilled_services = db.query(AssignedService).options(joinedload(AssignedService.service)).filter(
+        AssignedService.room_id == room.id, 
+        AssignedService.billing_status == "unbilled",
+        AssignedService.status != ServiceStatus.cancelled
+    ).all()
     
     charges.food_charges = sum(item.quantity * item.food_item.price for item in unbilled_food_order_items if item.food_item)
     charges.service_charges = sum(ass.service.charges for ass in unbilled_services)
@@ -400,7 +529,11 @@ def _calculate_bill_for_entire_booking(db: Session, room_number: str):
     booking_link = (db.query(BookingRoom)
                     .join(Booking)
                     .options(joinedload(BookingRoom.booking)) # Eager load the booking
-                    .filter(BookingRoom.room_id == initial_room.id, Booking.status.in_(['checked-in', 'checked_in', 'booked']))
+                    .filter(BookingRoom.room_id == initial_room.id, 
+                            or_(
+                                Booking.status.in_(['checked-in', 'checked_in']),
+                                and_(Booking.status == 'booked', Booking.check_in <= date.today())
+                            ))
                     .order_by(Booking.id.desc()).first())
 
     if booking_link:
@@ -412,7 +545,11 @@ def _calculate_bill_for_entire_booking(db: Session, room_number: str):
         package_link = (db.query(PackageBookingRoom)
                         .join(PackageBooking)
                         .options(joinedload(PackageBookingRoom.package_booking)) # Eager load the booking
-                        .filter(PackageBookingRoom.room_id == initial_room.id, PackageBooking.status.in_(['checked-in', 'checked_in', 'booked']))
+                        .filter(PackageBookingRoom.room_id == initial_room.id, 
+                                or_(
+                                    PackageBooking.status.in_(['checked-in', 'checked_in']),
+                                    and_(PackageBooking.status == 'booked', PackageBooking.check_in <= date.today())
+                                ))
                         .order_by(PackageBooking.id.desc()).first())
         if package_link:
             booking = package_link.package_booking
@@ -488,9 +625,14 @@ def _calculate_bill_for_entire_booking(db: Session, room_number: str):
                                  .filter(FoodOrder.room_id.in_(room_ids), 
                                         or_(FoodOrder.billing_status == "unbilled", 
                                             FoodOrder.billing_status.is_(None)))
+                                 .filter(FoodOrder.status != "cancelled")
                                  .all())
 
-    unbilled_services = db.query(AssignedService).options(joinedload(AssignedService.service)).filter(AssignedService.room_id.in_(room_ids), AssignedService.billing_status == "unbilled").all()
+    unbilled_services = db.query(AssignedService).options(joinedload(AssignedService.service)).filter(
+        AssignedService.room_id.in_(room_ids), 
+        AssignedService.billing_status == "unbilled",
+        AssignedService.status != ServiceStatus.cancelled
+    ).all()
 
     # Calculate total food charges from the individual items.
     charges.food_charges = sum(item.quantity * item.food_item.price for item in unbilled_food_order_items if item.food_item)
@@ -671,8 +813,17 @@ def process_booking_checkout(room_number: str, request: CheckoutRequest, db: Ses
             db.add(new_checkout)
             
             # Update only this room's related records
-            db.query(FoodOrder).filter(FoodOrder.room_id == room.id, FoodOrder.billing_status == "unbilled").update({"billing_status": "billed"})
-            db.query(AssignedService).filter(AssignedService.room_id == room.id, AssignedService.billing_status == "unbilled").update({"billing_status": "billed"})
+            # Also update the booking/package linkage to ensure they appear in the receipts/details
+            update_data = {"billing_status": "billed"}
+            if not is_package:
+                update_data["booking_id"] = booking.id
+                update_data["package_booking_id"] = None
+            else:
+                update_data["booking_id"] = None
+                update_data["package_booking_id"] = booking.id
+
+            db.query(FoodOrder).filter(FoodOrder.room_id == room.id, FoodOrder.billing_status == "unbilled").update(update_data)
+            db.query(AssignedService).filter(AssignedService.room_id == room.id, AssignedService.billing_status == "unbilled").update(update_data)
             
             # Update room status only (don't change booking status)
             room.status = "Available"
@@ -777,8 +928,17 @@ def process_booking_checkout(room_number: str, request: CheckoutRequest, db: Ses
             db.add(new_checkout)
 
             # Atomically update all related records
-            db.query(FoodOrder).filter(FoodOrder.room_id.in_(room_ids), FoodOrder.billing_status == "unbilled").update({"billing_status": "billed"})
-            db.query(AssignedService).filter(AssignedService.room_id.in_(room_ids), AssignedService.billing_status == "unbilled").update({"billing_status": "billed"})
+            # Ensure items are linked to this booking so they show up in details
+            update_data = {"billing_status": "billed"}
+            if not is_package:
+                update_data["booking_id"] = booking.id
+                update_data["package_booking_id"] = None
+            else:
+                update_data["booking_id"] = None
+                update_data["package_booking_id"] = booking.id
+
+            db.query(FoodOrder).filter(FoodOrder.room_id.in_(room_ids), FoodOrder.billing_status == "unbilled").update(update_data)
+            db.query(AssignedService).filter(AssignedService.room_id.in_(room_ids), AssignedService.billing_status == "unbilled").update(update_data)
             
             booking.status = "checked_out"
             db.query(Room).filter(Room.id.in_(room_ids)).update({"status": "Available"})

@@ -165,6 +165,10 @@ def get_user_history(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    # Get associated employee ID if exists
+    employee = db.query(models.Employee).filter(models.Employee.user_id == user_id).first()
+    employee_id = employee.id if employee else None
+
     activities = []
 
     # Helper to apply date filter
@@ -201,7 +205,9 @@ def get_user_history(
         ))
 
     # 3. Food Orders assigned to user
-    food_orders_query = db.query(models.FoodOrder).filter(models.FoodOrder.assigned_employee_id == user_id)
+    # Use employee_id for filtering if available, otherwise this will return empty
+    query_id = employee_id if employee_id else -1
+    food_orders_query = db.query(models.FoodOrder).filter(models.FoodOrder.assigned_employee_id == query_id)
     food_orders = apply_date_filter(food_orders_query, models.FoodOrder.created_at).all()
     food_orders_query = food_orders_query.options(joinedload(models.FoodOrder.room))
     for fo in food_orders:
@@ -212,7 +218,7 @@ def get_user_history(
         ))
 
     # 4. Services assigned to user
-    services_query = db.query(models.AssignedService).filter(models.AssignedService.employee_id == user_id)
+    services_query = db.query(models.AssignedService).filter(models.AssignedService.employee_id == query_id)
     assigned_services = apply_date_filter(services_query, models.AssignedService.assigned_at).all()
     for s in assigned_services:
         activities.append(UserActivityItem(
@@ -222,7 +228,7 @@ def get_user_history(
         ))
 
     # 5. Expenses submitted by user
-    expenses_query = db.query(models.Expense).filter(models.Expense.employee_id == user_id)
+    expenses_query = db.query(models.Expense).filter(models.Expense.employee_id == query_id)
     expenses = apply_date_filter(expenses_query, models.expense.Expense.date).all()
     for e in expenses:
         activities.append(UserActivityItem(
@@ -375,7 +381,9 @@ def get_all_room_bookings(
     limit: int = 20
 ):
     """Retrieves a list of all standard room bookings."""
-    query = db.query(models.Booking)
+    query = db.query(models.Booking).options(
+        joinedload(models.Booking.booking_rooms).joinedload(models.BookingRoom.room)
+    )
     if from_date:
         query = query.filter(models.Booking.check_in >= from_date)
     if to_date:
@@ -388,7 +396,10 @@ def get_all_room_bookings(
     response = []
     for b in bookings:
         stay_days = max(1, (b.check_out - b.check_in).days)
-        room_total = sum(r.room.price for r in b.booking_rooms if r.room) * stay_days
+        room_total = sum((r.room.price or 0) for r in b.booking_rooms if r.room) * stay_days
+        print(f"DEBUG REPORT: Booking {b.id} ({b.guest_name}) - Rooms: {len(b.booking_rooms)}, Days: {stay_days}, Total: {room_total}")
+        
+        booking_out = booking_schema.BookingOut.model_validate(b)
         
         booking_out = booking_schema.BookingOut.model_validate(b)
         # The schema might have total_amount, but we'll override it with our calculation
@@ -603,41 +614,115 @@ def _get_guest_profile_data(db: Session, email: Optional[str], mobile: Optional[
         ))
         all_room_ids.update([pbr.room_id for pbr in pb.rooms])
 
-    # 4. Fetch all food orders and services associated with the guest's rooms
+    # 4. Fetch all food orders and services associated with the guest's specific bookings
     food_orders_history = []
-    if all_room_ids:
-        food_orders = db.query(models.FoodOrder).options(
+    services_history = []
+    
+    # Collect booking IDs and date ranges for filtering
+    # Format: {room_id: [(check_in, check_out), ...]}
+    room_booking_dates = {}
+    guest_booking_ids = [b.id for b in regular_bookings]
+    guest_pkg_booking_ids = [pb.id for pb in package_bookings]
+    
+    for b in regular_bookings:
+        # Only consider active or past bookings for date-based matching
+        # Future bookings (status='booked') should not claim orphan services/orders
+        if b.status in ['booked']: 
+            continue
+            
+        for br in b.booking_rooms:
+            if br.room_id:
+                if br.room_id not in room_booking_dates:
+                    room_booking_dates[br.room_id] = []
+                room_booking_dates[br.room_id].append((b.check_in, b.check_out))
+                all_room_ids.add(br.room_id)
+
+    for pb in package_bookings:
+        if pb.status in ['booked']: 
+            continue
+            
+        for pbr in pb.rooms:
+            if pbr.room_id:
+                if pbr.room_id not in room_booking_dates:
+                    room_booking_dates[pbr.room_id] = []
+                room_booking_dates[pbr.room_id].append((pb.check_in, pb.check_out))
+                all_room_ids.add(pbr.room_id)
+
+    if all_room_ids or guest_booking_ids or guest_pkg_booking_ids:
+        # Fetch POTENTIAL records based on IDs or Room IDs (we will filter by date/ID in Python for robust accuracy)
+        
+        # FOOD ORDERS
+        potential_orders = db.query(models.FoodOrder).options(
             joinedload(models.FoodOrder.items).joinedload(models.FoodOrderItem.food_item),
-        ).filter(models.FoodOrder.room_id.in_(all_room_ids)).all()
+        ).filter(
+            (models.FoodOrder.booking_id.in_(guest_booking_ids)) | 
+            (models.FoodOrder.package_booking_id.in_(guest_pkg_booking_ids)) |
+            (models.FoodOrder.room_id.in_(all_room_ids))
+        ).all()
         
         room_map = {r.id: r.number for r in db.query(models.Room).filter(models.Room.id.in_(all_room_ids)).all()}
 
-        for order in food_orders:
-            food_orders_history.append(GuestFoodOrderHistory(
-                id=order.id,
-                room_number=room_map.get(order.room_id),
-                amount=order.amount,
-                status=order.status,
-                created_at=order.created_at,
-                items=[item for item in order.items]
-            ))
+        for order in potential_orders:
+            include_order = False
+            
+            # 1. Direct Link Match (Always include if explicitly linked, even if booking is 'booked')
+            if order.booking_id in guest_booking_ids or order.package_booking_id in guest_pkg_booking_ids:
+                include_order = True
+            
+            # 2. Legacy/Fallback: Date & Room Match (Only for active/past bookings)
+            elif not order.booking_id and not order.package_booking_id:
+                if order.room_id in room_booking_dates and order.created_at:
+                    order_date = order.created_at.date()
+                    for check_in, check_out in room_booking_dates[order.room_id]:
+                        if check_in <= order_date <= check_out:
+                            include_order = True
+                            break
+            
+            if include_order:
+                food_orders_history.append(GuestFoodOrderHistory(
+                    id=order.id,
+                    room_number=room_map.get(order.room_id),
+                    amount=order.amount,
+                    status=order.status,
+                    created_at=order.created_at,
+                    items=[item for item in order.items]
+                ))
 
-    services_history = []
-    if all_room_ids:
-        assigned_services = db.query(models.AssignedService).options(
+        # SERVICES
+        potential_services = db.query(models.AssignedService).options(
             joinedload(models.AssignedService.service),
             joinedload(models.AssignedService.room)
-        ).filter(models.AssignedService.room_id.in_(all_room_ids)).all()
+        ).filter(
+            (models.AssignedService.booking_id.in_(guest_booking_ids)) |
+            (models.AssignedService.package_booking_id.in_(guest_pkg_booking_ids)) |
+            (models.AssignedService.room_id.in_(all_room_ids))
+        ).all()
 
-        for service in assigned_services:
-            services_history.append(GuestServiceHistory(
-                id=service.id,
-                service_name=service.service.name if service.service else None,
-                room_number=service.room.number if service.room else None,
-                charges=service.service.charges if service.service else 0,
-                status=service.status,
-                assigned_at=service.assigned_at
-            ))
+        for service in potential_services:
+            include_service = False
+            
+            # 1. Direct Link Match
+            if service.booking_id in guest_booking_ids or service.package_booking_id in guest_pkg_booking_ids:
+                include_service = True
+
+            # 2. Legacy/Fallback: Date & Room Match
+            elif not service.booking_id and not service.package_booking_id:
+                if service.room_id in room_booking_dates and service.assigned_at:
+                    service_date = service.assigned_at.date()
+                    for check_in, check_out in room_booking_dates[service.room_id]:
+                        if check_in <= service_date <= check_out:
+                            include_service = True
+                            break
+            
+            if include_service:
+                services_history.append(GuestServiceHistory(
+                    id=service.id,
+                    service_name=service.service.name if service.service else None,
+                    room_number=service.room.number if service.room else None,
+                    charges=service.service.charges if service.service else 0,
+                    status=service.status,
+                    assigned_at=service.assigned_at
+                ))
 
     # 5. Assemble the final profile
     return GuestProfileOut(

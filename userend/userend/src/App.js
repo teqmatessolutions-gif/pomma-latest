@@ -131,7 +131,7 @@ const themes = {
     forest: {
         id: 'forest',
         name: 'Forest',
-        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-tree-pine"><path d="M17 19h2c.5 0 1-.5 1-1V9c0-2-3-3-3-3H8c-3 0-4 1.5-4 4.5v3.5c0 1.5 1 2 2 2h2"/><path d="M14 15v.5"/><path d="M13 14v.5"/><path d="M12 13v.5"/><path d="M11 12v.5"/><path d="M10 11v.5"/><path d="M9 10v.5"/><path d="M8 9v.5"/><path d="M17 14v.5"/><path d="M16 13v.5"/><path d="M15 12v.5"/><path d="M14 11v.5"/><path d="M13 10v.5"/><path d="M12 9v.5"/><path d="M11 8v.5"/><path d="M10 7v.5"/><path d="M9 6v.5"/><path d="M15 18v1"/><path d="M14 17v1"/><path d="M13 16v1"/><path d="M12 15v1"/><path d="M11 14v1"/><path d="M10 13v1"/><path d="M9 12v1"/><path d="M8 11v1"/><path d="M7 10v1"/><path d="M6 9v1"/><path d="M18 17v1"/><path d="M17 16v1"/><path d="M16 15v1"/><path d="M15 14v1"/><path d="M14 13v1"/><path d="M13 12v1"/><path d="M12 11v1"/><path d="M11 10v1"/><path d="M10 9v1"/><path d="M19 18v1"/><path d="M18 17v1"/><path d="M17 16v1"/><path d="M16 15v1"/><path d="M15 14v1"/><path d="M14 13v1"/><path d="M13 12v1"/><path d="M22 19v2"/><path d="M20 18v1"/><path d="M18 17v1"/><path d="M16 16v1"/><path d="M14 15v1"/><path d="M12 14v1"/><path d="M10 13v1"/><path d="M8 12v1"/><path d="M6 11v1"/><path d="M4 10v1"/><path d="M2 9v1"/><path d="M2 21h20"/><path d="m14 12-2-4-2 4"/><path d="m13 8-1-4-1 4"/><path d="M14 12c.5-1 1.5-2 2.5-3"/><path d="M10 12c-.5-1-1.5-2-2.5-3"/><path d="M12 22v-8"/><path d="m10 16-2 3"/><path d="m14 16 2 3"/></svg>,
+        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-tree-pine"><path d="M17 19h2c.5 0 1-.5 1-1V9c0-2-3-3-3-3H8c-3 0-4 1.5-4 4.5v3.5c0 1.5 1 2 2 2h2" /><path d="M14 15v.5" /><path d="M13 14v.5" /><path d="M12 13v.5" /><path d="M11 12v.5" /><path d="M10 11v.5" /><path d="M9 10v.5" /><path d="M8 9v.5" /><path d="M17 14v.5" /><path d="M16 13v.5" /><path d="M15 12v.5" /><path d="M14 11v.5" /><path d="M13 10v.5" /><path d="M12 9v.5" /><path d="M11 8v.5" /><path d="M10 7v.5" /><path d="M9 6v.5" /><path d="M15 18v1" /><path d="M14 17v1" /><path d="M13 16v1" /><path d="M12 15v1" /><path d="M11 14v1" /><path d="M10 13v1" /><path d="M9 12v1" /><path d="M8 11v1" /><path d="M7 10v1" /><path d="M6 9v1" /><path d="M18 17v1" /><path d="M17 16v1" /><path d="M16 15v1" /><path d="M15 14v1" /><path d="M14 13v1" /><path d="M13 12v1" /><path d="M12 11v1" /><path d="M11 10v1" /><path d="M10 9v1" /><path d="M19 18v1" /><path d="M18 17v1" /><path d="M17 16v1" /><path d="M16 15v1" /><path d="M15 14v1" /><path d="M14 13v1" /><path d="M13 12v1" /><path d="M22 19v2" /><path d="M20 18v1" /><path d="M18 17v1" /><path d="M16 16v1" /><path d="M14 15v1" /><path d="M12 14v1" /><path d="M10 13v1" /><path d="M8 12v1" /><path d="M6 11v1" /><path d="M4 10v1" /><path d="M2 9v1" /><path d="M2 21h20" /><path d="m14 12-2-4-2 4" /><path d="m13 8-1-4-1 4" /><path d="M14 12c.5-1 1.5-2 2.5-3" /><path d="M10 12c-.5-1-1.5-2-2.5-3" /><path d="M12 22v-8" /><path d="m10 16-2 3" /><path d="m14 16 2 3" /></svg>,
         bgPrimary: "bg-green-50",
         bgSecondary: "bg-green-100",
         bgCard: "bg-neutral-50",
@@ -160,7 +160,7 @@ const themes = {
     rose: {
         id: 'rose',
         name: 'Rose',
-        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-flower"><path d="M12 7.5a4.5 4.5 0 1 1 4.5 4.5H12a4.5 4.5 0 1 1-4.5-4.5H12z"/><path d="M12 12a4.5 4.5 0 1 1 4.5 4.5H12a4.5 4.5 0 1 1-4.5-4.5H12z"/><path d="M12 12a4.5 4.5 0 1 1-4.5-4.5H12a4.5 4.5 0 1 1 4.5 4.5H12z"/><path d="M12 12a4.5 4.5 0 1 1 4.5 4.5H12a4.5 4.5 0 1 1-4.5-4.5H12z"/><path d="M7.5 12H12a4.5 4.5 0 0 0 4.5-4.5v-3a4.5 4.5 0 1 1 0 9v3a4.5 4.5 0 1 1 0-9h-4.5a4.5 4.5 0 0 0-4.5 4.5V12z"/></svg>,
+        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-flower"><path d="M12 7.5a4.5 4.5 0 1 1 4.5 4.5H12a4.5 4.5 0 1 1-4.5-4.5H12z" /><path d="M12 12a4.5 4.5 0 1 1 4.5 4.5H12a4.5 4.5 0 1 1-4.5-4.5H12z" /><path d="M12 12a4.5 4.5 0 1 1-4.5-4.5H12a4.5 4.5 0 1 1 4.5 4.5H12z" /><path d="M12 12a4.5 4.5 0 1 1 4.5 4.5H12a4.5 4.5 0 1 1-4.5-4.5H12z" /><path d="M7.5 12H12a4.5 4.5 0 0 0 4.5-4.5v-3a4.5 4.5 0 1 1 0 9v3a4.5 4.5 0 1 1 0-9h-4.5a4.5 4.5 0 0 0-4.5 4.5V12z" /></svg>,
         bgPrimary: "bg-pink-50",
         bgSecondary: "bg-pink-100",
         bgCard: "bg-neutral-50",
@@ -189,7 +189,7 @@ const themes = {
     slate: {
         id: 'slate',
         name: 'Slate',
-        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-cloud"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/></svg>,
+        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-cloud"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" /></svg>,
         bgPrimary: "bg-gray-950",
         bgSecondary: "bg-gray-900",
         bgCard: "bg-neutral-50",
@@ -218,7 +218,7 @@ const themes = {
     sunrise: {
         id: 'sunrise',
         name: 'Sunrise',
-        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sunrise"><path d="M12 2v2"/><path d="m5 10 1-1"/><path d="m19 10 1-1"/><path d="M12 16a6 6 0 0 0 0 12"/><path d="m3 16 1-1"/><path d="m21 16-1-1"/><path d="m8 20 2-2"/><path d="m16 20-2-2"/></svg>,
+        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sunrise"><path d="M12 2v2" /><path d="m5 10 1-1" /><path d="m19 10 1-1" /><path d="M12 16a6 6 0 0 0 0 12" /><path d="m3 16 1-1" /><path d="m21 16-1-1" /><path d="m8 20 2-2" /><path d="m16 20-2-2" /></svg>,
         bgPrimary: "bg-orange-50",
         bgSecondary: "bg-yellow-100",
         bgCard: "bg-neutral-50",
@@ -247,7 +247,7 @@ const themes = {
     lavender: {
         id: 'lavender',
         name: 'Lavender',
-        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-lavender"><path d="M14.5 16.5c-2.4-1-4.2-2-5.5-2.5-1.5-.5-3.6-1-4.5-2-.8-1-1.3-2.2-1-3.5C3.3 6.7 4 6 5 6c1.1 0 2.4.8 3.5 2.5 1.2 1.9 2 4.2 2.5 5.5.5 1.5 1 3.6 2 4.5 1 .8 2.2 1.3 3.5 1C17.3 17.3 18 16.6 18 15.6c0-1.1-.8-2.4-2.5-3.5-1.9-1.2-4.2-2-5.5-2.5-1.5-.5-3.6-1-4.5-2-.8-1-1.3-2.2-1-3.5.3-1.3 1-2 2-2 1.1 0 2.4.8 3.5 2.5 1.9 1.2 4.2 2 5.5 2.5 1.5.5 3.6 1 4.5 2 .8 1 1.3 2.2 1 3.5-.3 1.3-1 2-2 2-1.1 0-2.4-.8-3.5-2.5-1.9-1.2-4.2-2-5.5-2.5-1.5-.5-3.6-1-4.5-2-.8-1-1.3-2.2-1-3.5-.3-1.3-1-2-2-2-1.1 0-2.4-.8-3.5-2.5"/><path d="M12 12c-2.4-1-4.2-2-5.5-2.5-1.5-.5-3.6-1-4.5-2-.8-1-1.3-2.2-1-3.5.3-1.3 1-2 2-2 1.1 0 2.4.8 3.5 2.5 1.9 1.2 4.2 2 5.5 2.5 1.5.5 3.6 1 4.5 2 .8 1 1.3 2.2 1 3.5-.3 1.3-1 2-2 2-1.1 0-2.4-.8-3.5-2.5-1.9-1.2-4.2-2-5.5-2.5-1.5-.5-3.6-1-4.5-2-.8-1-1.3-2.2-1-3.5-.3-1.3-1-2-2-2-1.1 0-2.4-.8-3.5-2.5"/></svg>,
+        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-lavender"><path d="M14.5 16.5c-2.4-1-4.2-2-5.5-2.5-1.5-.5-3.6-1-4.5-2-.8-1-1.3-2.2-1-3.5C3.3 6.7 4 6 5 6c1.1 0 2.4.8 3.5 2.5 1.2 1.9 2 4.2 2.5 5.5.5 1.5 1 3.6 2 4.5 1 .8 2.2 1.3 3.5 1C17.3 17.3 18 16.6 18 15.6c0-1.1-.8-2.4-2.5-3.5-1.9-1.2-4.2-2-5.5-2.5-1.5-.5-3.6-1-4.5-2-.8-1-1.3-2.2-1-3.5.3-1.3 1-2 2-2 1.1 0 2.4.8 3.5 2.5 1.9 1.2 4.2 2 5.5 2.5 1.5.5 3.6 1 4.5 2 .8 1 1.3 2.2 1 3.5-.3 1.3-1 2-2 2-1.1 0-2.4-.8-3.5-2.5-1.9-1.2-4.2-2-5.5-2.5-1.5-.5-3.6-1-4.5-2-.8-1-1.3-2.2-1-3.5-.3-1.3-1-2-2-2-1.1 0-2.4-.8-3.5-2.5" /><path d="M12 12c-2.4-1-4.2-2-5.5-2.5-1.5-.5-3.6-1-4.5-2-.8-1-1.3-2.2-1-3.5.3-1.3 1-2 2-2 1.1 0 2.4.8 3.5 2.5 1.9 1.2 4.2 2 5.5 2.5 1.5.5 3.6 1 4.5 2 .8 1 1.3 2.2 1 3.5-.3 1.3-1 2-2 2-1.1 0-2.4-.8-3.5-2.5-1.9-1.2-4.2-2-5.5-2.5-1.5-.5-3.6-1-4.5-2-.8-1-1.3-2.2-1-3.5-.3-1.3-1-2-2-2-1.1 0-2.4-.8-3.5-2.5" /></svg>,
         bgPrimary: "bg-indigo-950",
         bgSecondary: "bg-indigo-900",
         bgCard: "bg-neutral-50",
@@ -276,7 +276,7 @@ const themes = {
     desert: {
         id: 'desert',
         name: 'Desert',
-        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sunrise"><path d="M12 2v2"/><path d="m5 10 1-1"/><path d="m19 10 1-1"/><path d="M12 16a6 6 0 0 0 0 12"/><path d="m3 16 1-1"/><path d="m21 16-1-1"/><path d="m8 20 2-2"/><path d="m16 20-2-2"/></svg>,
+        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sunrise"><path d="M12 2v2" /><path d="m5 10 1-1" /><path d="m19 10 1-1" /><path d="M12 16a6 6 0 0 0 0 12" /><path d="m3 16 1-1" /><path d="m21 16-1-1" /><path d="m8 20 2-2" /><path d="m16 20-2-2" /></svg>,
         bgPrimary: "bg-stone-100",
         bgSecondary: "bg-stone-200",
         bgCard: "bg-neutral-50",
@@ -305,7 +305,7 @@ const themes = {
     pomma: {
         id: 'pomma',
         name: 'Pomma',
-        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-leaf"><path d="M2 13c3.5-3.5 12-5 18 0 0 0-4 4-8 8s-8-4-10-6z"/></svg>,
+        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-leaf"><path d="M2 13c3.5-3.5 12-5 18 0 0 0-4 4-8 8s-8-4-10-6z" /></svg>,
         bgPrimary: "bg-[#f9f4ea]",
         bgSecondary: "bg-[#f1e7d8]",
         bgCard: "bg-white/95",
@@ -338,7 +338,7 @@ const themes = {
     grape: {
         id: 'grape',
         name: 'Grape',
-        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-grape"><path d="M22 6c0 4-4 8-10 8S2 10 2 6"/><path d="M12 14c-6 0-10 4-10 8s4 8 10 8"/><path d="M22 14c-6 0-10 4-10 8s4 8 10 8"/></svg>,
+        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-grape"><path d="M22 6c0 4-4 8-10 8S2 10 2 6" /><path d="M12 14c-6 0-10 4-10 8s4 8 10 8" /><path d="M22 14c-6 0-10 4-10 8s4 8 10 8" /></svg>,
         bgPrimary: "bg-purple-950",
         bgSecondary: "bg-purple-900",
         bgCard: "bg-neutral-50",
@@ -367,7 +367,7 @@ const themes = {
     sky: {
         id: 'sky',
         name: 'Sky',
-        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-cloud-sun"><path d="M12 2v2"/><path d="m4.9 10 1-1"/><path d="m19.1 10-1-1"/><path d="M14 16a6 6 0 0 0 0 12"/><path d="m3 16 1-1"/><path d="m21 16-1-1"/><path d="m8 20 2-2"/><path d="m16 20-2-2"/></svg>,
+        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-cloud-sun"><path d="M12 2v2" /><path d="m4.9 10 1-1" /><path d="m19.1 10-1-1" /><path d="M14 16a6 6 0 0 0 0 12" /><path d="m3 16 1-1" /><path d="m21 16-1-1" /><path d="m8 20 2-2" /><path d="m16 20-2-2" /></svg>,
         bgPrimary: "bg-sky-50",
         bgSecondary: "bg-sky-100",
         bgCard: "bg-neutral-50",
@@ -396,7 +396,7 @@ const themes = {
     fire: {
         id: 'fire',
         name: 'Fire',
-        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-flame"><path d="M18 10c-1.2-1.2-3-2-5-2-1.2 0-2.8.8-4 2-1.2 1.2-2 3-2 5-2.2 2.2-2.5 4.5-2.5 5.5s.8 1.5 1.5 1.5c.7 0 1.5-.8 1.5-1.5s.3-3.3 2.5-5.5c1.2-1.2 3-2 5-2 1.2 0 2.8.8 4 2 1.2 1.2 2 3 2 5 2.2 2.2 2.5 4.5 2.5 5.5s-.8 1.5-1.5 1.5c-.7 0-1.5-.8-1.5-1.5s-.3-3.3-2.5-5.5z"/></svg>,
+        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-flame"><path d="M18 10c-1.2-1.2-3-2-5-2-1.2 0-2.8.8-4 2-1.2 1.2-2 3-2 5-2.2 2.2-2.5 4.5-2.5 5.5s.8 1.5 1.5 1.5c.7 0 1.5-.8 1.5-1.5s.3-3.3 2.5-5.5c1.2-1.2 3-2 5-2 1.2 0 2.8.8 4 2 1.2 1.2 2 3 2 5 2.2 2.2 2.5 4.5 2.5 5.5s-.8 1.5-1.5 1.5c-.7 0-1.5-.8-1.5-1.5s-.3-3.3-2.5-5.5z" /></svg>,
         bgPrimary: "bg-red-950",
         bgSecondary: "bg-red-900",
         bgCard: "bg-neutral-50",
@@ -425,7 +425,7 @@ const themes = {
     mint: {
         id: 'mint',
         name: 'Mint',
-        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-leaf"><path d="M2 13c3.5-3.5 12-5 18 0 0 0-4 4-8 8s-8-4-10-6z"/></svg>,
+        icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-leaf"><path d="M2 13c3.5-3.5 12-5 18 0 0 0-4 4-8 8s-8-4-10-6z" /></svg>,
         bgPrimary: "bg-teal-50",
         bgSecondary: "bg-teal-100",
         bgCard: "bg-neutral-50",
@@ -479,7 +479,7 @@ const BackgroundAnimation = ({ theme }) => {
             case 'mint': bubbleColor = "bg-emerald-400"; break;
             default: bubbleColor = "bg-neutral-400";
         }
-        
+
         const direction = Math.floor(Math.random() * 4);
         let style = {
             width: size,
@@ -862,7 +862,7 @@ export default function App() {
     const bannerRef = useRef(null);
     const chatMessagesRef = useRef(null);
     const isBannerVisible = useOnScreen(bannerRef);
-    
+
     const ITEM_PLACEHOLDER = "https://placehold.co/400x300/2d3748/cbd5e0?text=Image+Not+Available";
 
     // Helper function to get correct image URL
@@ -1149,8 +1149,8 @@ export default function App() {
                     }
                 });
             });
-        }, { 
-            threshold: 0.1, 
+        }, {
+            threshold: 0.1,
             rootMargin: '50px' // Reduced from 100px for better performance
         });
 
@@ -1162,15 +1162,15 @@ export default function App() {
     const handleOpenPackageBookingForm = (packageId) => {
         // Always prioritize dates from bookingData (selected on previous page) over packageBookingData
         setPackageBookingData(prev => {
-            const checkIn = (bookingData.check_in && bookingData.check_in.trim() !== '') 
-                ? bookingData.check_in 
+            const checkIn = (bookingData.check_in && bookingData.check_in.trim() !== '')
+                ? bookingData.check_in
                 : (prev.check_in && prev.check_in.trim() !== '' ? prev.check_in : '');
-            const checkOut = (bookingData.check_out && bookingData.check_out.trim() !== '') 
-                ? bookingData.check_out 
+            const checkOut = (bookingData.check_out && bookingData.check_out.trim() !== '')
+                ? bookingData.check_out
                 : (prev.check_out && prev.check_out.trim() !== '' ? prev.check_out : '');
-            
+
             return {
-                ...prev, 
+                ...prev,
                 package_id: packageId,
                 check_in: checkIn,
                 check_out: checkOut
@@ -1260,46 +1260,46 @@ export default function App() {
 
     // Check room availability based on selected dates - only show available rooms
     const [roomAvailability, setRoomAvailability] = useState({});
-    
+
     // Optimized room availability calculation with useMemo and debouncing
     const roomAvailabilityMemo = useMemo(() => {
         if (!bookingData.check_in || !bookingData.check_out || allRooms.length === 0) {
             return {};
         }
-        
+
         // Calculate availability for each room (memoized for performance)
         const availability = {};
         const requestedCheckIn = new Date(bookingData.check_in);
         const requestedCheckOut = new Date(bookingData.check_out);
-        
+
         allRooms.forEach(room => {
             // Check conflicts with regular bookings
             const hasRegularConflict = bookings.some(booking => {
                 const normalizedStatus = booking.status?.toLowerCase().replace(/_/g, '-');
                 // Only check for "booked" or "checked-in" status
                 if (normalizedStatus !== "booked" && normalizedStatus !== "checked-in") return false;
-                
+
                 const bookingCheckIn = new Date(booking.check_in);
                 const bookingCheckOut = new Date(booking.check_out);
-                
+
                 const isRoomInBooking = booking.rooms && booking.rooms.some(r => {
                     const roomId = r.room?.id || r.id;
                     return roomId === room.id;
                 });
                 if (!isRoomInBooking) return false;
-                
+
                 return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
             });
-            
+
             // Check conflicts with package bookings
             const hasPackageConflict = packageBookings.some(packageBooking => {
                 const normalizedStatus = packageBooking.status?.toLowerCase().replace(/_/g, '-');
                 // Only check for "booked" or "checked-in" status
                 if (normalizedStatus !== "booked" && normalizedStatus !== "checked-in") return false;
-                
+
                 const bookingCheckIn = new Date(packageBooking.check_in);
                 const bookingCheckOut = new Date(packageBooking.check_out);
-                
+
                 const isRoomInBooking = packageBooking.rooms && packageBooking.rooms.some(r => {
                     // For package bookings, r.id is PackageBookingRoom.id, not room.id
                     // We need to use r.room_id (direct field) or r.room.id (nested object)
@@ -1307,15 +1307,15 @@ export default function App() {
                     return roomId === room.id;
                 });
                 if (!isRoomInBooking) return false;
-                
+
                 return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
             });
-            
+
             availability[room.id] = !hasRegularConflict && !hasPackageConflict;
         });
         return availability;
     }, [bookingData.check_in, bookingData.check_out, allRooms, bookings, packageBookings]);
-    
+
     // Update state with debouncing to prevent excessive re-renders
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -1338,26 +1338,26 @@ export default function App() {
 
     // Package booking availability - optimized with useMemo
     const [packageRoomAvailability, setPackageRoomAvailability] = useState({});
-    
+
     const packageRoomAvailabilityMemo = useMemo(() => {
         if (!packageBookingData.check_in || !packageBookingData.check_out || allRooms.length === 0 || !isPackageBookingFormOpen || !packageBookingData.package_id) {
             return {};
         }
-        
+
         // Get the selected package to check booking_type and room_types
         const selectedPackage = packages.find(p => p.id === packageBookingData.package_id);
         if (!selectedPackage) return {};
-        
+
         // Calculate availability for each room for package booking (memoized for performance)
         const availability = {};
         let roomsToCheck = allRooms;
-        
+
         // Determine if it's whole_property (same logic as UI)
         const hasRoomTypes = selectedPackage.room_types && selectedPackage.room_types.trim().length > 0;
-        const isWholeProperty = selectedPackage.booking_type === 'whole_property' || 
-                               selectedPackage.booking_type === 'whole property' ||
-                               (!selectedPackage.booking_type && !hasRoomTypes);
-        
+        const isWholeProperty = selectedPackage.booking_type === 'whole_property' ||
+            selectedPackage.booking_type === 'whole property' ||
+            (!selectedPackage.booking_type && !hasRoomTypes);
+
         // Filter by room_types if it's NOT whole_property (i.e., it's room_type)
         // For whole_property, check ALL rooms
         if (!isWholeProperty && selectedPackage.room_types) {
@@ -1368,21 +1368,21 @@ export default function App() {
             });
         }
         // For whole_property, roomsToCheck remains allRooms (no filtering)
-        
+
         // Check availability for each room
         const requestedCheckIn = new Date(packageBookingData.check_in);
         const requestedCheckOut = new Date(packageBookingData.check_out);
-        
+
         roomsToCheck.forEach(room => {
             // Check conflicts with regular bookings
             const hasRegularConflict = bookings.some(booking => {
                 const normalizedStatus = booking.status?.toLowerCase().replace(/_/g, '-');
                 // Only check for "booked" or "checked-in" status
                 if (normalizedStatus !== "booked" && normalizedStatus !== "checked-in") return false;
-                
+
                 const bookingCheckIn = new Date(booking.check_in);
                 const bookingCheckOut = new Date(booking.check_out);
-                
+
                 // Check if this room is part of the booking
                 const isRoomInBooking = booking.rooms && booking.rooms.some(r => {
                     // For regular bookings, r.id is the room.id directly
@@ -1390,20 +1390,20 @@ export default function App() {
                     return roomId === room.id;
                 });
                 if (!isRoomInBooking) return false;
-                
+
                 // Check for date overlap
                 return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
             });
-            
+
             // Check conflicts with package bookings
             const hasPackageConflict = packageBookings.some(packageBooking => {
                 const normalizedStatus = packageBooking.status?.toLowerCase().replace(/_/g, '-');
                 // Only check for "booked" or "checked-in" status
                 if (normalizedStatus !== "booked" && normalizedStatus !== "checked-in") return false;
-                
+
                 const bookingCheckIn = new Date(packageBooking.check_in);
                 const bookingCheckOut = new Date(packageBooking.check_out);
-                
+
                 // Check if this room is part of the package booking
                 const isRoomInBooking = packageBooking.rooms && packageBooking.rooms.some(r => {
                     // For package bookings, r.id is PackageBookingRoom.id, not room.id
@@ -1412,40 +1412,40 @@ export default function App() {
                     return roomId === room.id;
                 });
                 if (!isRoomInBooking) return false;
-                
+
                 // Check for date overlap
                 return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
             });
-            
+
             // Room is available if there are no conflicting bookings (regular or package) for the selected dates
             availability[room.id] = !hasRegularConflict && !hasPackageConflict;
         });
-        
+
         return availability;
     }, [packageBookingData.check_in, packageBookingData.check_out, packageBookingData.package_id, allRooms, bookings, packageBookings, isPackageBookingFormOpen, packages]);
-    
+
     // Update state with debouncing to prevent excessive re-renders
     // Also auto-select all available rooms for whole_property packages
     useEffect(() => {
         const timer = setTimeout(() => {
             setPackageRoomAvailability(packageRoomAvailabilityMemo);
-            
+
             // Auto-select all available rooms for whole_property packages
             if (packageBookingData.package_id && packageBookingData.check_in && packageBookingData.check_out) {
                 const selectedPackage = packages.find(p => p.id === packageBookingData.package_id);
                 if (selectedPackage) {
                     // Determine if it's whole_property (same logic as UI)
                     const hasRoomTypes = selectedPackage.room_types && selectedPackage.room_types.trim().length > 0;
-                    const isWholeProperty = selectedPackage.booking_type === 'whole_property' || 
-                                           selectedPackage.booking_type === 'whole property' ||
-                                           (!selectedPackage.booking_type && !hasRoomTypes);
-                    
+                    const isWholeProperty = selectedPackage.booking_type === 'whole_property' ||
+                        selectedPackage.booking_type === 'whole property' ||
+                        (!selectedPackage.booking_type && !hasRoomTypes);
+
                     if (isWholeProperty) {
                         // Get all available room IDs (rooms that are available for the selected dates)
                         const availableRoomIds = Object.keys(packageRoomAvailabilityMemo)
                             .filter(roomId => packageRoomAvailabilityMemo[roomId] === true)
                             .map(id => parseInt(id));
-                        
+
                         // Always update room_ids for whole_property to ensure all available rooms are selected
                         setPackageBookingData(prev => ({
                             ...prev,
@@ -1461,12 +1461,12 @@ export default function App() {
     // Handlers for form submissions
     const handleRoomBookingSubmit = async (e) => {
         e.preventDefault();
-        
+
         // Prevent multiple submissions
         if (isBookingLoading) {
             return;
         }
-        
+
         setIsBookingLoading(true);
         setBookingMessage({ type: null, text: "" });
 
@@ -1482,7 +1482,7 @@ export default function App() {
             const checkOutDate = new Date(bookingData.check_out);
             const timeDiff = checkOutDate.getTime() - checkInDate.getTime();
             const daysDiff = timeDiff / (1000 * 3600 * 24);
-            
+
             if (daysDiff < 1) {
                 showBannerMessage("error", "Minimum 1 day booking is mandatory. Check-out date must be at least 1 day after check-in date.");
                 setIsBookingLoading(false);
@@ -1496,17 +1496,17 @@ export default function App() {
             adults: selectedRoomDetails.reduce((sum, room) => sum + (room.adults || 0), 0),
             children: selectedRoomDetails.reduce((sum, room) => sum + (room.children || 0), 0)
         };
-        
+
         const adultsRequested = parseInt(bookingData.adults);
         const childrenRequested = parseInt(bookingData.children);
-        
+
         // Validate adults capacity
         if (adultsRequested > roomCapacity.adults) {
             showBannerMessage("error", `The number of adults (${adultsRequested}) exceeds the total adult capacity of the selected rooms (${roomCapacity.adults} adults max). Please select additional rooms or reduce the number of adults.`);
             setIsBookingLoading(false);
             return;
         }
-        
+
         // Validate children capacity
         if (childrenRequested > roomCapacity.children) {
             showBannerMessage("error", `The number of children (${childrenRequested}) exceeds the total children capacity of the selected rooms (${roomCapacity.children} children max). Please select additional rooms or reduce the number of children.`);
@@ -1549,12 +1549,12 @@ export default function App() {
 
     const handlePackageBookingSubmit = async (e) => {
         e.preventDefault();
-        
+
         // Prevent multiple submissions
         if (isBookingLoading) {
             return;
         }
-        
+
         setIsBookingLoading(true);
         setBookingMessage({ type: null, text: "" });
 
@@ -1565,16 +1565,16 @@ export default function App() {
             setIsBookingLoading(false);
             return;
         }
-        
+
         // Determine if it's whole_property (same logic as UI)
         const hasRoomTypes = selectedPackage.room_types && selectedPackage.room_types.trim().length > 0;
-        const isWholeProperty = selectedPackage.booking_type === 'whole_property' || 
-                               selectedPackage.booking_type === 'whole property' ||
-                               (!selectedPackage.booking_type && !hasRoomTypes);
-        
+        const isWholeProperty = selectedPackage.booking_type === 'whole_property' ||
+            selectedPackage.booking_type === 'whole property' ||
+            (!selectedPackage.booking_type && !hasRoomTypes);
+
         // For whole_property, get all available rooms and use them directly
         let finalRoomIds = packageBookingData.room_ids;
-        
+
         if (isWholeProperty) {
             // For whole_property, get ALL available rooms from the system
             // Check availability for all rooms based on selected dates
@@ -1585,33 +1585,33 @@ export default function App() {
                         const normalizedStatus = booking.status?.toLowerCase().replace(/_/g, '-');
                         // Only check for "booked" or "checked-in" status
                         if (normalizedStatus !== "booked" && normalizedStatus !== "checked-in") return false;
-                        
+
                         const bookingCheckIn = new Date(booking.check_in);
                         const bookingCheckOut = new Date(booking.check_out);
                         const requestedCheckIn = new Date(packageBookingData.check_in);
                         const requestedCheckOut = new Date(packageBookingData.check_out);
-                        
+
                         // Check if this room is part of the booking
                         const isRoomInBooking = booking.rooms && booking.rooms.some(r => {
                             const roomId = r.room?.id || r.id;
                             return roomId === room.id;
                         });
                         if (!isRoomInBooking) return false;
-                        
+
                         // Check for date overlap
                         return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
                     });
-                    
+
                     return !hasConflict; // Room is available if no conflicts
                 })
                 .map(room => room.id);
-            
+
             if (availableRoomIds.length === 0) {
                 showBannerMessage("error", "No rooms are available for the selected dates.");
                 setIsBookingLoading(false);
                 return;
             }
-            
+
             // Use all available rooms for whole_property
             finalRoomIds = availableRoomIds;
         } else {
@@ -1630,7 +1630,7 @@ export default function App() {
             const checkOutDate = new Date(packageBookingData.check_out);
             const timeDiff = checkOutDate.getTime() - checkInDate.getTime();
             const daysDiff = timeDiff / (1000 * 3600 * 24);
-            
+
             if (daysDiff < 1) {
                 showBannerMessage("error", "Minimum 1 day booking is mandatory. Check-out date must be at least 1 day after check-in date.");
                 setIsBookingLoading(false);
@@ -1646,17 +1646,17 @@ export default function App() {
                 adults: selectedRoomDetails.reduce((sum, room) => sum + (room.adults || 0), 0),
                 children: selectedRoomDetails.reduce((sum, room) => sum + (room.children || 0), 0)
             };
-            
+
             const adultsRequested = parseInt(packageBookingData.adults);
             const childrenRequested = parseInt(packageBookingData.children);
-            
+
             // Validate adults capacity
             if (adultsRequested > packageCapacity.adults) {
                 showBannerMessage("error", `The number of adults (${adultsRequested}) exceeds the total adult capacity of the selected rooms (${packageCapacity.adults} adults max). Please select additional rooms or reduce the number of adults.`);
                 setIsBookingLoading(false);
                 return;
             }
-            
+
             // Validate children capacity
             if (childrenRequested > packageCapacity.children) {
                 showBannerMessage("error", `The number of children (${childrenRequested}) exceeds the total children capacity of the selected rooms (${packageCapacity.children} children max). Please select additional rooms or reduce the number of children.`);
@@ -1668,33 +1668,33 @@ export default function App() {
 
         try {
             const API_BASE_URL = getApiBaseUrl();
-            
+
             // Validate required fields
             if (!packageBookingData.package_id) {
                 showBannerMessage("error", "Package ID is missing. Please select a package.");
                 setIsBookingLoading(false);
                 return;
             }
-            
+
             if (!packageBookingData.check_in || !packageBookingData.check_out) {
                 showBannerMessage("error", "Please select check-in and check-out dates.");
                 setIsBookingLoading(false);
                 return;
             }
-            
+
             if (!packageBookingData.guest_name) {
                 showBannerMessage("error", "Please enter your full name.");
                 setIsBookingLoading(false);
                 return;
             }
-            
+
             // Email and mobile are optional in the schema, but we'll recommend at least one
             if (!packageBookingData.guest_email && !packageBookingData.guest_mobile) {
                 showBannerMessage("error", "Please provide at least an email address or mobile number.");
                 setIsBookingLoading(false);
                 return;
             }
-            
+
             const payload = {
                 package_id: parseInt(packageBookingData.package_id),
                 room_ids: finalRoomIds.map(id => parseInt(id)), // Use finalRoomIds (all available for whole_property, selected for room_type)
@@ -1706,9 +1706,9 @@ export default function App() {
                 adults: parseInt(packageBookingData.adults) || 1,
                 children: parseInt(packageBookingData.children) || 0,
             };
-            
+
             console.log("Package Booking Payload:", payload); // Debug log
-            
+
             const response = await fetch(`${API_BASE_URL}/packages/book/guest`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1727,10 +1727,10 @@ export default function App() {
                 try {
                     const contentType = response.headers.get("content-type");
                     if (contentType && contentType.includes("application/json")) {
-                const errorData = await response.json();
+                        const errorData = await response.json();
                         console.error("Package Booking Error Response:", errorData);
-                        
-                // Check if it's a validation error from the backend
+
+                        // Check if it's a validation error from the backend
                         if (errorData.detail) {
                             if (typeof errorData.detail === 'string') {
                                 errorMessage = errorData.detail;
@@ -1738,7 +1738,7 @@ export default function App() {
                                 // Handle Pydantic validation errors
                                 const errors = errorData.detail.map(err => `${err.loc?.join('.')}: ${err.msg}`).join(', ');
                                 errorMessage = `Validation error: ${errors}`;
-                } else {
+                            } else {
                                 errorMessage = JSON.stringify(errorData.detail);
                             }
                         }
@@ -1760,7 +1760,7 @@ export default function App() {
             setIsBookingLoading(false);
         }
     };
-    
+
     const handleServiceBookingSubmit = async (e) => {
         e.preventDefault();
         setIsBookingLoading(true);
@@ -1799,9 +1799,9 @@ export default function App() {
         setBookingMessage({ type: null, text: "" });
 
         const itemsPayload = Object.entries(foodOrderData.items)
-                                .filter(([, quantity]) => quantity > 0)
-                                .map(([food_item_id, quantity]) => ({ food_item_id: parseInt(food_item_id), quantity }));
-        
+            .filter(([, quantity]) => quantity > 0)
+            .map(([food_item_id, quantity]) => ({ food_item_id: parseInt(food_item_id), quantity }));
+
         if (itemsPayload.length === 0) {
             showBannerMessage("error", "Please select at least one food item.");
             setIsBookingLoading(false);
@@ -1815,7 +1815,7 @@ export default function App() {
             assigned_employee_id: 0,
             billing_status: "unbilled"
         };
-        
+
         try {
             const API_BASE_URL = getApiBaseUrl();
             const response = await fetch(`${API_BASE_URL}/food-orders/`, {
@@ -1842,7 +1842,7 @@ export default function App() {
             setIsBookingLoading(false);
         }
     };
-    
+
     const handleSendMessage = async (e) => {
         e.preventDefault();
         if (!userMessage.trim() || isChatLoading) return;
@@ -1856,9 +1856,9 @@ export default function App() {
             // Replace with your actual Gemini API key
             const apiKey = "YOUR_GEMINI_API_KEY";
             if (apiKey === "YOUR_GEMINI_API_KEY") {
-                 setChatHistory(prev => [...prev, { role: "model", parts: [{ text: "Please replace 'YOUR_GEMINI_API_KEY' with your actual API key in App.js." }] }]);
-                 setIsChatLoading(false);
-                 return;
+                setChatHistory(prev => [...prev, { role: "model", parts: [{ text: "Please replace 'YOUR_GEMINI_API_KEY' with your actual API key in App.js." }] }]);
+                setIsChatLoading(false);
+                return;
             }
 
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
@@ -1977,30 +1977,29 @@ export default function App() {
 
             <div className={`relative ${theme.bgPrimary} ${theme.textPrimary} font-sans min-h-screen transition-colors duration-500`}>
                 <BackgroundAnimation theme={theme} />
-                
+
                 {/* Banner Message - High z-index to appear above all modals and overlays */}
                 {bannerMessage.text && (
-                    <div 
-                        className={`fixed top-0 left-0 right-0 z-[99999] p-4 text-white text-center font-medium shadow-2xl transform transition-all duration-300 ${
-                            bannerMessage.type === 'success' ? 'bg-green-600' : 
-                            bannerMessage.type === 'error' ? 'bg-red-600' : 
-                            bannerMessage.type === 'warning' ? 'bg-yellow-600' : 
-                            'bg-blue-600'
-                        }`}
-                        style={{ 
+                    <div
+                        className={`fixed top-0 left-0 right-0 z-[99999] p-4 text-white text-center font-medium shadow-2xl transform transition-all duration-300 ${bannerMessage.type === 'success' ? 'bg-green-600' :
+                            bannerMessage.type === 'error' ? 'bg-red-600' :
+                                bannerMessage.type === 'warning' ? 'bg-yellow-600' :
+                                    'bg-blue-600'
+                            }`}
+                        style={{
                             zIndex: 99999,
                             pointerEvents: 'auto'
                         }}
                     >
                         <div className="flex items-center justify-center relative max-w-7xl mx-auto">
                             <span className="mr-2">
-                                {bannerMessage.type === 'success' ? '✅' : 
-                                 bannerMessage.type === 'error' ? '❌' : 
-                                 bannerMessage.type === 'warning' ? '⚠️' : 
-                                 'ℹ️'}
+                                {bannerMessage.type === 'success' ? '✅' :
+                                    bannerMessage.type === 'error' ? '❌' :
+                                        bannerMessage.type === 'warning' ? '⚠️' :
+                                            'ℹ️'}
                             </span>
                             <span className="flex-1">{bannerMessage.text}</span>
-                            <button 
+                            <button
                                 onClick={() => setBannerMessage({ type: null, text: "" })}
                                 className="ml-4 p-1 rounded-full hover:bg-white/20 transition-colors"
                                 aria-label="Close message"
@@ -2010,14 +2009,14 @@ export default function App() {
                         </div>
                     </div>
                 )}
-                
-                <header className={`fixed left-0 right-0 z-50 bg-gradient-to-r from-[#0f5132] to-[#1a7042] shadow-lg h-20 ${bannerMessage.text ? 'top-16' : 'top-0'} transition-all duration-300`} style={{ boxShadow: '0 4px 6px -1px rgba(15, 81, 50, 0.3), 0 2px 4px -1px rgba(26, 112, 66, 0.2)' }}>
+
+                <header className={`fixed left-0 right-0 z-50 bg-gradient-to-r from-[#0f5132]/90 to-[#1a7042]/90 backdrop-blur-md shadow-lg h-20 ${bannerMessage.text ? 'top-16' : 'top-0'} transition-all duration-300`} style={{ boxShadow: '0 4px 6px -1px rgba(15, 81, 50, 0.3), 0 2px 4px -1px rgba(26, 112, 66, 0.2)' }}>
                     <div className="container mx-auto px-4 sm:px-6 md:px-12 h-full flex items-center justify-between text-white">
-                <div className="flex items-center space-x-3 text-white h-full">
-                            <img 
-                                src={logoSrc} 
-                                alt="Pomma Holidays logo" 
-                        className="w-40 h-full object-contain"
+                        <div className="flex items-center space-x-3 text-white h-full">
+                            <img
+                                src={logoSrc}
+                                alt="Pomma Holidays logo"
+                                className="w-40 h-full object-contain"
                                 loading="lazy"
                                 onError={() => {
                                     setLogoIndex((prev) => {
@@ -2028,8 +2027,8 @@ export default function App() {
                             />
                         </div>
                         <nav className="flex items-center space-x-4">
-                            <button 
-                                onClick={() => { setShowAmenities(false); setIsGeneralBookingOpen(true); }} 
+                            <button
+                                onClick={() => { setShowAmenities(false); setIsGeneralBookingOpen(true); }}
                                 className="px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-[#0f5132] to-[#1a7042] rounded-full shadow-lg hover:from-[#136640] hover:to-[#218051] transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#c99c4e]"
                             >
                                 Book Now
@@ -2039,89 +2038,88 @@ export default function App() {
                 </header>
 
                 <main className="w-full max-w-full pt-0 space-y-0 relative z-10 overflow-hidden">
-                  {/* Luxury Hero Banner Section */}
-<div
-  ref={bannerRef}
-  className="relative w-full h-screen overflow-hidden"
->
-                {bannerData.length > 0 ? (
-                        <>
-            {/* Banner Images with Fade Transition and Slow Movement */}
-            {bannerData.map((banner, index) => (
-                <img
-                    key={banner.id}
-                    src={getImageUrl(banner.image_url)}
-                    onError={(e) => { e.target.src = ITEM_PLACEHOLDER; console.error('Banner image failed to load:', banner.image_url); }}
-                    alt={banner.title}
-                    className={`absolute inset-0 w-[110%] h-[110%] object-cover object-center transition-all duration-[10000ms] ease-in-out ${index === currentBannerIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-110'} animate-[slow-pan_20s_ease-in-out_infinite]`}
-                    style={{
-                        animationDelay: `${index * 2}s`,
-                        animationDirection: index % 2 === 0 ? 'alternate' : 'alternate-reverse'
-                    }}
-                />
-            ))}
+                    {/* Luxury Hero Banner Section */}
+                    <div
+                        ref={bannerRef}
+                        className="relative w-full h-screen overflow-hidden"
+                    >
+                        {bannerData.length > 0 ? (
+                            <>
+                                {/* Banner Images with Fade Transition and Slow Movement */}
+                                {bannerData.map((banner, index) => (
+                                    <img
+                                        key={banner.id}
+                                        src={getImageUrl(banner.image_url)}
+                                        onError={(e) => { e.target.src = ITEM_PLACEHOLDER; console.error('Banner image failed to load:', banner.image_url); }}
+                                        alt={banner.title}
+                                        className={`absolute inset-0 w-[110%] h-[110%] object-cover object-center transition-all duration-[10000ms] ease-in-out ${index === currentBannerIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-110'} animate-[slow-pan_20s_ease-in-out_infinite]`}
+                                        style={{
+                                            animationDelay: `${index * 2}s`,
+                                            animationDirection: index % 2 === 0 ? 'alternate' : 'alternate-reverse'
+                                        }}
+                                    />
+                                ))}
 
-            {/* Luxury Gradient Overlay with Premium Content */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0c3d26]/60 via-[#0f5132]/30 to-transparent flex items-center justify-center text-center px-6">
-                <div className="relative w-full max-w-5xl">
-                    {bannerData.map((banner, index) => (
-                        <div key={banner.id} className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-1000 ease-in-out ${index === currentBannerIndex ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-                            <div className="mb-4 inline-block px-6 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/30 animate-[fadeInUp_1s_ease-out]">
-                                <span className="text-[#0f5132] text-sm font-semibold tracking-[0.35em] uppercase">
-                                    ✦ Nature Meets Luxury ✦
-                                </span>
-                            </div>
-                            <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-tight drop-shadow-2xl text-white mb-6 animate-[fadeInUp_1.2s_ease-out]">
-                                <span className="bg-gradient-to-r from-white via-[#f5e6c9] to-white bg-clip-text text-transparent inline-block animate-[gentle-glow_3s_ease-in-out_infinite]">
-                                    {banner.title}
-                                </span>
-                            </h1>
-                            <p className="mt-4 text-xl md:text-2xl text-[#f5ece0] max-w-4xl mx-auto leading-relaxed drop-shadow-lg px-4 animate-[fadeInUp_1.4s_ease-out]">
-                                {banner.subtitle}
-                            </p>
-                            <div className="mt-10 flex flex-wrap justify-center gap-4 animate-[fadeInUp_1.6s_ease-out]">
-                                <button
-                                    type="button"
-                                    onClick={() => { setShowAmenities(false); setIsGeneralBookingOpen(true); }}
-                                    className="group px-10 py-4 bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white font-semibold text-lg rounded-full shadow-2xl hover:from-[#136640] hover:to-[#218051] transition-all duration-300 transform hover:scale-110 hover:shadow-[0_20px_45px_rgba(12,61,38,0.45)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d8b471]/60 focus:ring-offset-[#0f5132] animate-[gentle-pulse_2s_ease-in-out_infinite]"
-                                >
-                                    <span className="flex items-center gap-2">
-                                        Book Your Stay
-                                        <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                                    </span>
-                                </button>
-                                <a href="#packages" className="px-10 py-4 bg-white/10 backdrop-blur-sm text-white font-semibold text-lg rounded-full border-2 border-white/40 hover:bg-white/20 transition-all duration-300">
-                                    View Packages
-                                </a>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
+                                {/* Luxury Gradient Overlay with Premium Content */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#0c3d26]/40 via-[#0f5132]/10 to-transparent flex items-center justify-center text-center px-6">
+                                    <div className="relative w-full max-w-5xl">
+                                        {bannerData.map((banner, index) => (
+                                            <div key={banner.id} className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-1000 ease-in-out ${index === currentBannerIndex ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                                                <div className="mb-4 inline-block px-6 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/30 animate-[fadeInUp_1s_ease-out]">
+                                                    <span className="text-[#0f5132] text-sm font-semibold tracking-[0.35em] uppercase">
+                                                        ✦ Nature Meets Luxury ✦
+                                                    </span>
+                                                </div>
+                                                <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-tight drop-shadow-2xl text-white mb-6 animate-[fadeInUp_1.2s_ease-out]">
+                                                    <span className="bg-gradient-to-r from-white via-[#f5e6c9] to-white bg-clip-text text-transparent inline-block animate-[gentle-glow_3s_ease-in-out_infinite]">
+                                                        {banner.title}
+                                                    </span>
+                                                </h1>
+                                                <p className="mt-4 text-xl md:text-2xl text-[#f5ece0] max-w-4xl mx-auto leading-relaxed drop-shadow-lg px-4 animate-[fadeInUp_1.4s_ease-out]">
+                                                    {banner.subtitle}
+                                                </p>
+                                                <div className="mt-10 flex flex-wrap justify-center gap-4 animate-[fadeInUp_1.6s_ease-out]">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => { setShowAmenities(false); setIsGeneralBookingOpen(true); }}
+                                                        className="group px-10 py-4 bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white font-semibold text-lg rounded-full shadow-2xl hover:from-[#136640] hover:to-[#218051] transition-all duration-300 transform hover:scale-110 hover:shadow-[0_20px_45px_rgba(12,61,38,0.45)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#d8b471]/60 focus:ring-offset-[#0f5132] animate-[gentle-pulse_2s_ease-in-out_infinite]"
+                                                    >
+                                                        <span className="flex items-center gap-2">
+                                                            Book Your Stay
+                                                            <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                                        </span>
+                                                    </button>
+                                                    <a href="#packages" className="px-10 py-4 bg-white/10 backdrop-blur-sm text-white font-semibold text-lg rounded-full border-2 border-white/40 hover:bg-white/20 transition-all duration-300">
+                                                        View Packages
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
 
-            {/* Luxury Navigation Dots - Only show if multiple banners */}
-            {bannerData.length > 1 && (
-                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex space-x-3 z-20">
-                {bannerData.map((_, index) => (
-                    <button
-                        key={index}
-                        onClick={() => setCurrentBannerIndex(index)}
-                        className={`transition-all duration-300 ${
-                            index === currentBannerIndex
-                                ? "w-12 h-1 bg-[#d8b471] rounded-full shadow-[0_0_12px_rgba(216,180,113,0.6)]"
-                                : "w-8 h-1 bg-white/40 hover:bg-white/70 rounded-full"
-                        }`}
-                    />
-                ))}
-            </div>
-            )}
-        </>
-    ) : (
-        <div className={`w-full h-full flex items-center justify-center ${theme.placeholderBg} ${theme.placeholderText}`}>
-            No banner images available.
-        </div>
-    )}
-</div>
+                                {/* Luxury Navigation Dots - Only show if multiple banners */}
+                                {bannerData.length > 1 && (
+                                    <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex space-x-3 z-20">
+                                        {bannerData.map((_, index) => (
+                                            <button
+                                                key={index}
+                                                onClick={() => setCurrentBannerIndex(index)}
+                                                className={`transition-all duration-300 ${index === currentBannerIndex
+                                                    ? "w-12 h-1 bg-[#d8b471] rounded-full shadow-[0_0_12px_rgba(216,180,113,0.6)]"
+                                                    : "w-8 h-1 bg-white/40 hover:bg-white/70 rounded-full"
+                                                    }`}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <div className={`w-full h-full flex items-center justify-center ${theme.placeholderBg} ${theme.placeholderText}`}>
+                                No banner images available.
+                            </div>
+                        )}
+                    </div>
 
                     {/* Exclusive Deals Section - Pomma Holidays Style */}
                     <section id="packages" className="bg-gradient-to-b from-[#f4ede1] via-[#f9f4ea] to-white py-20 transition-colors duration-500">
@@ -2145,7 +2143,7 @@ export default function App() {
                                         const imgIndex = packageImageIndex[featuredPkg.id] || 0;
                                         const currentImage = featuredPkg.images && featuredPkg.images[imgIndex];
                                         return (
-                                            <div 
+                                            <div
                                                 key={featuredPkg.id}
                                                 className={`${theme.bgCard} rounded-3xl overflow-hidden shadow-2xl border ${theme.border} transition-all duration-500 hover:shadow-3xl reveal`}
                                                 style={{ transitionDelay: '80ms' }}
@@ -2153,12 +2151,12 @@ export default function App() {
                                                 <div className="flex flex-col md:flex-row items-stretch">
                                                     {/* Large Image Section - Left */}
                                                     <div className="w-full md:w-1/2 h-80 md:h-[500px] overflow-hidden relative">
-                                                    <img 
-                                                            src={currentImage ? getImageUrl(currentImage.image_url) : ITEM_PLACEHOLDER} 
-                                                            alt={featuredPkg.title} 
-                                                            className="w-full h-full object-cover transition-transform duration-700 hover:scale-110 reveal" 
+                                                        <img
+                                                            src={currentImage ? getImageUrl(currentImage.image_url) : ITEM_PLACEHOLDER}
+                                                            alt={featuredPkg.title}
+                                                            className="w-full h-full object-cover transition-transform duration-700 hover:scale-110 reveal"
                                                             loading="lazy"
-                                                            onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }} 
+                                                            onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                                         />
                                                         {/* Price badge - large card */}
                                                         <div className="absolute bottom-4 left-4 bg-[#0f5132]/90 text-white font-extrabold text-2xl md:text-3xl px-4 py-2 rounded-xl shadow-lg border border-white/20 backdrop-blur-sm">
@@ -2180,7 +2178,7 @@ export default function App() {
                                                             </div>
                                                         )}
                                                     </div>
-                                                    
+
                                                     {/* Content Section - Right */}
                                                     <div className={`w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center ${theme.bgCard}`}>
                                                         <h3 className={`text-4xl md:text-5xl font-extrabold ${theme.textPrimary} mb-2 leading-tight`}>
@@ -2203,10 +2201,10 @@ export default function App() {
                                                                 <span className={`text-lg ${theme.textSecondary} font-normal ml-2`}>/package</span>
                                                             </p>
                                                         </div>
-                                                        
+
                                                         <div className="flex items-center justify-between flex-wrap gap-4">
                                                             <button
-                                                                onClick={() => handleOpenPackageBookingForm(featuredPkg.id)} 
+                                                                onClick={() => handleOpenPackageBookingForm(featuredPkg.id)}
                                                                 className="px-8 py-3 bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white font-semibold rounded-full shadow-lg hover:from-[#136640] hover:to-[#218051] transition-all duration-300 transform hover:scale-105 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#c99c4e]/70"
                                                             >
                                                                 Book Now
@@ -2222,29 +2220,29 @@ export default function App() {
                                     {/* Smaller Packages Grid - Only show if more than 1 package */}
                                     {packages.length > 1 && (
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    {packages.slice(1).map((pkg) => {
-                                        const imgIndex = packageImageIndex[pkg.id] || 0;
-                                        const currentImage = pkg.images && pkg.images[imgIndex];
-                                        return (
-                                            <div 
-                                                key={pkg.id} 
-                                                onClick={() => handleOpenPackageBookingForm(pkg.id)}
-                                                className={`group relative ${theme.bgCard} rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 border ${theme.border} cursor-pointer reveal`}
-                                                style={{ transitionDelay: `${(imgIndex % 5) * 70}ms` }}
-                                            >
+                                            {packages.slice(1).map((pkg) => {
+                                                const imgIndex = packageImageIndex[pkg.id] || 0;
+                                                const currentImage = pkg.images && pkg.images[imgIndex];
+                                                return (
+                                                    <div
+                                                        key={pkg.id}
+                                                        onClick={() => handleOpenPackageBookingForm(pkg.id)}
+                                                        className={`group relative ${theme.bgCard} rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 border ${theme.border} cursor-pointer reveal`}
+                                                        style={{ transitionDelay: `${(imgIndex % 5) * 70}ms` }}
+                                                    >
                                                         {/* Image Container */}
-                                                    <div className="relative h-64 overflow-hidden">
-                                                    <img 
-                                                                src={currentImage ? getImageUrl(currentImage.image_url) : ITEM_PLACEHOLDER} 
-                                                        alt={pkg.title} 
-                                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 reveal" 
-                                                        loading="lazy"
-                                                        onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }} 
-                                                    />
-                                                    {/* Price badge - always visible */}
-                                                    <div className="absolute bottom-3 left-3 bg-[#0f5132]/90 text-white font-extrabold text-lg px-3 py-1 rounded-lg shadow-md border border-white/20 backdrop-blur-sm">
-                                                        {formatCurrency(pkg.price || 0)}
-                                                    </div>
+                                                        <div className="relative h-64 overflow-hidden">
+                                                            <img
+                                                                src={currentImage ? getImageUrl(currentImage.image_url) : ITEM_PLACEHOLDER}
+                                                                alt={pkg.title}
+                                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 reveal"
+                                                                loading="lazy"
+                                                                onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
+                                                            />
+                                                            {/* Price badge - always visible */}
+                                                            <div className="absolute bottom-3 left-3 bg-[#0f5132]/90 text-white font-extrabold text-lg px-3 py-1 rounded-lg shadow-md border border-white/20 backdrop-blur-sm">
+                                                                {formatCurrency(pkg.price || 0)}
+                                                            </div>
                                                             {/* Quick Book button overlay */}
                                                             <button
                                                                 type="button"
@@ -2253,32 +2251,32 @@ export default function App() {
                                                             >
                                                                 Book Now
                                                             </button>
-                                                    {/* Image Slider Dots */}
-                                                    {pkg.images && pkg.images.length > 1 && (
-                                                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/60 backdrop-blur-sm px-3 py-2 rounded-full z-10">
-                                                            {pkg.images.map((_, imgIdx) => (
-                                                                <button
-                                                                    key={imgIdx}
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        setPackageImageIndex(prev => ({ ...prev, [pkg.id]: imgIdx }));
-                                                                    }}
-                                                                    className={`w-2 h-2 rounded-full transition-all ${imgIdx === imgIndex ? 'bg-white' : 'bg-white/40'}`}
-                                                                />
-                                                            ))}
-                                                        </div>
-                                                    )}
+                                                            {/* Image Slider Dots */}
+                                                            {pkg.images && pkg.images.length > 1 && (
+                                                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/60 backdrop-blur-sm px-3 py-2 rounded-full z-10">
+                                                                    {pkg.images.map((_, imgIdx) => (
+                                                                        <button
+                                                                            key={imgIdx}
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                setPackageImageIndex(prev => ({ ...prev, [pkg.id]: imgIdx }));
+                                                                            }}
+                                                                            className={`w-2 h-2 rounded-full transition-all ${imgIdx === imgIndex ? 'bg-white' : 'bg-white/40'}`}
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                            )}
                                                         </div>
 
                                                         {/* Content - Simplified like Mountain Shadows */}
                                                         <div className={`p-6 ${theme.bgCard}`}>
                                                             <h3 className={`text-xl md:text-2xl font-extrabold ${theme.textPrimary} mb-2 leading-tight`}>
-                                                            {pkg.title}
-                                                        </h3>
+                                                                {pkg.title}
+                                                            </h3>
                                                             {pkg.duration && (
                                                                 <p className={`text-base ${theme.textSecondary} font-medium mb-2`}>
                                                                     {pkg.duration}
-                                                        </p>
+                                                                </p>
                                                             )}
                                                             {/* Price */}
                                                             <div className="mb-4 pt-3 border-t border-gray-200">
@@ -2290,21 +2288,21 @@ export default function App() {
                                                             </div>
                                                             {/* CTA Row */}
                                                             <div className="mt-4 flex items-center justify-between">
-                                                            <button 
+                                                                <button
                                                                     type="button"
                                                                     onClick={(e) => { e.stopPropagation(); handleOpenPackageBookingForm(pkg.id); }}
                                                                     className="px-5 py-2 rounded-full bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white font-semibold shadow-md hover:from-[#136640] hover:to-[#218051] transition-all duration-300"
-                                                            >
+                                                                >
                                                                     Book Now
-                                                            </button>
+                                                                </button>
                                                                 <span className={`text-sm ${theme.textSecondary}`}>
                                                                     Tap card to book
                                                                 </span>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
+                                                );
+                                            })}
                                         </div>
                                     )}
                                 </div>
@@ -2313,7 +2311,7 @@ export default function App() {
                             )}
                         </div>
                     </section>
-                    
+
                     {/* Luxury Villa Showcase Section */}
                     <section id="rooms-section" className="bg-gradient-to-b from-white via-[#f4ede1] to-[#efe1ce] py-20 transition-colors duration-500">
                         <div className="w-full mx-auto px-2 sm:px-4 md:px-6">
@@ -2339,8 +2337,8 @@ export default function App() {
                                             <p className={`text-sm ${theme.textSecondary}`}>
                                                 Select check-in and check-out dates above to check room availability for your stay
                                             </p>
-                                            <button 
-                                                onClick={() => { setShowAmenities(false); setIsGeneralBookingOpen(true); }} 
+                                            <button
+                                                onClick={() => { setShowAmenities(false); setIsGeneralBookingOpen(true); }}
                                                 className={`px-4 py-2 text-xs font-semibold ${theme.buttonBg} ${theme.buttonText} rounded-full shadow hover:shadow-md transition-all duration-300 transform hover:scale-105`}
                                             >
                                                 Select Dates
@@ -2369,164 +2367,163 @@ export default function App() {
                                             Showing all <span className="font-semibold ${theme.textPrimary}">{rooms.length}</span> rooms
                                         </p>
                                     </div>
-                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                                         {rooms.map((room, index) => (
-                                        <div
-                                            key={room.id} 
-                                            className={`group relative ${theme.bgCard} rounded-2xl overflow-hidden luxury-shadow transition-all duration-300 transition-all duration-500 transform hover:-translate-y-2 border ${theme.cardBorder || theme.border}`}
-                                        >
-                                            {/* Image Container with Overlay */}
-                                            <div className="relative h-48 overflow-hidden">
-                                                <img 
-                                                    src={getImageUrl(room.image_url)} 
-                                                    alt={room.type} 
-                                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                                                    onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }} 
-                                                />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-                                                
-                                                {/* Luxury Badge */}
-                                                <div className="absolute top-4 left-4">
-                                                    <span className="px-4 py-2 bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white text-xs font-semibold uppercase tracking-[0.3em] rounded-full shadow-lg">
-                                                        Premium Villa
-                                                    </span>
-                                                </div>
+                                            <div
+                                                key={room.id}
+                                                className={`group relative ${theme.bgCard} rounded-2xl overflow-hidden luxury-shadow transition-all duration-300 transition-all duration-500 transform hover:-translate-y-2 border ${theme.cardBorder || theme.border}`}
+                                            >
+                                                {/* Image Container with Overlay */}
+                                                <div className="relative h-48 overflow-hidden">
+                                                    <img
+                                                        src={getImageUrl(room.image_url)}
+                                                        alt={room.type}
+                                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                        onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
+                                                    />
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
-                                                {/* Availability Badge - Only show when dates are selected */}
-                                                {bookingData.check_in && bookingData.check_out && (
-                                                <div className="absolute top-4 right-4">
-                                                        {roomAvailability[room.id] ? (
-                                                            <span className="px-4 py-2 rounded-full text-xs font-bold shadow-lg bg-green-500 text-white">
-                                                                Available
-                                                    </span>
-                                                        ) : (
-                                                            <span className="px-4 py-2 rounded-full text-xs font-bold shadow-lg bg-red-500 text-white">
-                                                                Booked
-                                                            </span>
-                                                        )}
-                                                </div>
-                                                )}
-
-                                                {/* Hover Effect Overlay */}
-                                                <div className="absolute inset-0 bg-transparent group-hover:bg-[#0f5132]/10 transition-all duration-500" />
-                                            </div>
-
-                                            {/* Content */}
-                                            <div className="p-4 space-y-4">
-                                                <h3 className={`text-2xl font-bold ${theme.textCardPrimary || theme.textPrimary} group-hover:${theme.textCardAccent || theme.textAccent} transition-colors`}>
-                                                    {room.type}
-                                                </h3>
-                                                <div className={`flex items-center gap-2 text-sm ${theme.textCardSecondary || theme.textSecondary}`}>
-                                                    <BedDouble className={`w-5 h-5 ${theme.textCardAccent || theme.textAccent}`} />
-                                                    <span>Room #{room.number}</span>
-                                                </div>
-                                                
-                                                {/* Features */}
-                                                {(room.air_conditioning || room.wifi || room.bathroom || room.living_area || room.terrace || room.parking || room.kitchen || room.family_room || room.bbq || room.garden || room.dining || room.breakfast) && (
-                                                    <div className="flex flex-wrap items-center gap-2 text-sm mt-2">
-                                                        {room.air_conditioning && (
-                                                            <span className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
-                                                                <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                                                                AC
-                                                    </span>
-                                                        )}
-                                                        {room.wifi && (
-                                                            <span className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
-                                                                <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                                                                WiFi
-                                                    </span>
-                                                        )}
-                                                        {room.bathroom && (
-                                                            <span className="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs">
-                                                                <span className="w-2 h-2 rounded-full bg-purple-500"></span>
-                                                                Bathroom
-                                                            </span>
-                                                        )}
-                                                        {room.living_area && (
-                                                            <span className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs">
-                                                                <span className="w-2 h-2 rounded-full bg-orange-500"></span>
-                                                                Living
-                                                            </span>
-                                                        )}
-                                                        {room.terrace && (
-                                                            <span className="flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs">
-                                                                <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
-                                                                Terrace
-                                                            </span>
-                                                        )}
-                                                        {room.parking && (
-                                                            <span className="flex items-center gap-1 px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs">
-                                                                <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
-                                                                Parking
-                                                            </span>
-                                                        )}
-                                                        {room.kitchen && (
-                                                            <span className="flex items-center gap-1 px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-xs">
-                                                                <span className="w-2 h-2 rounded-full bg-pink-500"></span>
-                                                                Kitchen
-                                                            </span>
-                                                        )}
-                                                        {room.family_room && (
-                                                            <span className="flex items-center gap-1 px-2 py-1 bg-teal-100 text-teal-700 rounded-full text-xs">
-                                                                <span className="w-2 h-2 rounded-full bg-teal-500"></span>
-                                                                Family
-                                                            </span>
-                                                        )}
-                                                        {room.bbq && (
-                                                            <span className="flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs">
-                                                                <span className="w-2 h-2 rounded-full bg-red-500"></span>
-                                                                BBQ
-                                                            </span>
-                                                        )}
-                                                        {room.garden && (
-                                                            <span className="flex items-center gap-1 px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs">
-                                                                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                                                Garden
-                                                            </span>
-                                                        )}
-                                                        {room.dining && (
-                                                            <span className="flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-xs">
-                                                                <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                                                                Dining
-                                                            </span>
-                                                        )}
-                                                        {room.breakfast && (
-                                                            <span className="flex items-center gap-1 px-2 py-1 bg-cyan-100 text-cyan-700 rounded-full text-xs">
-                                                                <span className="w-2 h-2 rounded-full bg-cyan-500"></span>
-                                                                Breakfast
-                                                            </span>
-                                                        )}
-                                                </div>
-                                                )}
-
-                                                {/* Price */}
-                                                <div className={`flex items-baseline justify-between pt-2 border-t ${theme.cardBorder || theme.border}`}>
-                                                    <div>
-                                                        <p className={`text-sm ${theme.textCardSecondary || theme.textSecondary}`}>Starting from</p>
-                                                        <p className={`text-3xl font-extrabold ${theme.textCardAccent || theme.textAccent}`}>
-                                                            {formatCurrency(room.price)}
-                                                            <span className={`text-sm ${theme.textCardSecondary || theme.textSecondary} font-normal`}>/night</span>
-                                                        </p>
+                                                    {/* Luxury Badge */}
+                                                    <div className="absolute top-4 left-4">
+                                                        <span className="px-4 py-2 bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white text-xs font-semibold uppercase tracking-[0.3em] rounded-full shadow-lg">
+                                                            Premium Villa
+                                                        </span>
                                                     </div>
+
+                                                    {/* Availability Badge - Only show when dates are selected */}
+                                                    {bookingData.check_in && bookingData.check_out && (
+                                                        <div className="absolute top-4 right-4">
+                                                            {roomAvailability[room.id] ? (
+                                                                <span className="px-4 py-2 rounded-full text-xs font-bold shadow-lg bg-green-500 text-white">
+                                                                    Available
+                                                                </span>
+                                                            ) : (
+                                                                <span className="px-4 py-2 rounded-full text-xs font-bold shadow-lg bg-red-500 text-white">
+                                                                    Booked
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    )}
+
+                                                    {/* Hover Effect Overlay */}
+                                                    <div className="absolute inset-0 bg-transparent group-hover:bg-[#0f5132]/10 transition-all duration-500" />
                                                 </div>
 
-                                                {/* CTA Button */}
-                                                <button 
-                                                    onClick={() => handleOpenRoomBookingForm(room.id)} 
-                                                    disabled={bookingData.check_in && bookingData.check_out && !roomAvailability[room.id]}
-                                                    className={`w-full mt-4 px-6 py-3 font-bold rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2 ${
-                                                        bookingData.check_in && bookingData.check_out && !roomAvailability[room.id]
+                                                {/* Content */}
+                                                <div className="p-4 space-y-4">
+                                                    <h3 className={`text-2xl font-bold ${theme.textCardPrimary || theme.textPrimary} group-hover:${theme.textCardAccent || theme.textAccent} transition-colors`}>
+                                                        {room.type}
+                                                    </h3>
+                                                    <div className={`flex items-center gap-2 text-sm ${theme.textCardSecondary || theme.textSecondary}`}>
+                                                        <BedDouble className={`w-5 h-5 ${theme.textCardAccent || theme.textAccent}`} />
+                                                        <span>Room #{room.number}</span>
+                                                    </div>
+
+                                                    {/* Features */}
+                                                    {(room.air_conditioning || room.wifi || room.bathroom || room.living_area || room.terrace || room.parking || room.kitchen || room.family_room || room.bbq || room.garden || room.dining || room.breakfast) && (
+                                                        <div className="flex flex-wrap items-center gap-2 text-sm mt-2">
+                                                            {room.air_conditioning && (
+                                                                <span className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
+                                                                    <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                                                                    AC
+                                                                </span>
+                                                            )}
+                                                            {room.wifi && (
+                                                                <span className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
+                                                                    <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                                                                    WiFi
+                                                                </span>
+                                                            )}
+                                                            {room.bathroom && (
+                                                                <span className="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs">
+                                                                    <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                                                                    Bathroom
+                                                                </span>
+                                                            )}
+                                                            {room.living_area && (
+                                                                <span className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs">
+                                                                    <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                                                                    Living
+                                                                </span>
+                                                            )}
+                                                            {room.terrace && (
+                                                                <span className="flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs">
+                                                                    <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                                                                    Terrace
+                                                                </span>
+                                                            )}
+                                                            {room.parking && (
+                                                                <span className="flex items-center gap-1 px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs">
+                                                                    <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                                                                    Parking
+                                                                </span>
+                                                            )}
+                                                            {room.kitchen && (
+                                                                <span className="flex items-center gap-1 px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-xs">
+                                                                    <span className="w-2 h-2 rounded-full bg-pink-500"></span>
+                                                                    Kitchen
+                                                                </span>
+                                                            )}
+                                                            {room.family_room && (
+                                                                <span className="flex items-center gap-1 px-2 py-1 bg-teal-100 text-teal-700 rounded-full text-xs">
+                                                                    <span className="w-2 h-2 rounded-full bg-teal-500"></span>
+                                                                    Family
+                                                                </span>
+                                                            )}
+                                                            {room.bbq && (
+                                                                <span className="flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs">
+                                                                    <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                                                                    BBQ
+                                                                </span>
+                                                            )}
+                                                            {room.garden && (
+                                                                <span className="flex items-center gap-1 px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs">
+                                                                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                                                    Garden
+                                                                </span>
+                                                            )}
+                                                            {room.dining && (
+                                                                <span className="flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-xs">
+                                                                    <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                                                                    Dining
+                                                                </span>
+                                                            )}
+                                                            {room.breakfast && (
+                                                                <span className="flex items-center gap-1 px-2 py-1 bg-cyan-100 text-cyan-700 rounded-full text-xs">
+                                                                    <span className="w-2 h-2 rounded-full bg-cyan-500"></span>
+                                                                    Breakfast
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    )}
+
+                                                    {/* Price */}
+                                                    <div className={`flex items-baseline justify-between pt-2 border-t ${theme.cardBorder || theme.border}`}>
+                                                        <div>
+                                                            <p className={`text-sm ${theme.textCardSecondary || theme.textSecondary}`}>Starting from</p>
+                                                            <p className={`text-3xl font-extrabold ${theme.textCardAccent || theme.textAccent}`}>
+                                                                {formatCurrency(room.price)}
+                                                                <span className={`text-sm ${theme.textCardSecondary || theme.textSecondary} font-normal`}>/night</span>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* CTA Button */}
+                                                    <button
+                                                        onClick={() => handleOpenRoomBookingForm(room.id)}
+                                                        disabled={bookingData.check_in && bookingData.check_out && !roomAvailability[room.id]}
+                                                        className={`w-full mt-4 px-6 py-3 font-bold rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2 ${bookingData.check_in && bookingData.check_out && !roomAvailability[room.id]
                                                             ? 'bg-gray-400 text-gray-700 cursor-not-allowed opacity-50'
                                                             : 'bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white hover:from-[#136640] hover:to-[#218051] hover:shadow-[0_18px_35px_rgba(12,61,38,0.35)]'
-                                                    }`}
-                                                >
-                                                    {bookingData.check_in && bookingData.check_out && !roomAvailability[room.id] ? 'Not Available' : 'Book Now'}
-                                                    <ChevronRight className="w-5 h-5" />
-                                                </button>
+                                                            }`}
+                                                    >
+                                                        {bookingData.check_in && bookingData.check_out && !roomAvailability[room.id] ? 'Not Available' : 'Book Now'}
+                                                        <ChevronRight className="w-5 h-5" />
+                                                    </button>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
-                                </div>
+                                        ))}
+                                    </div>
                                 </>
                             ) : (
                                 <div className="text-center py-12">
@@ -2559,7 +2556,7 @@ export default function App() {
                                 <div className="relative max-w-6xl mx-auto">
                                     {/* Carousel Container */}
                                     <div className="relative h-[400px] sm:h-[460px] lg:h-[520px]">
-                                        {[ -2, -1, 0, 1, 2 ].map((offset) => {
+                                        {[-2, -1, 0, 1, 2].map((offset) => {
                                             if (totalSignatureExperiences === 1 && offset !== 0) return null;
                                             const experience = totalSignatureExperiences
                                                 ? activeSignatureExperiences[(signatureIndex + offset + totalSignatureExperiences) % totalSignatureExperiences]
@@ -2574,9 +2571,9 @@ export default function App() {
                                                 .slice(0, 3);
 
                                             return (
-                                        <div 
+                                                <div
                                                     key={`${experience.id}-${offset}`}
-                                                        className="absolute top-1/2 left-1/2 w-[72%] sm:w-[60%] lg:w-[50%] max-w-xl transition-all duration-700 ease-[cubic-bezier(.4,.0,.2,1)] will-change-transform"
+                                                    className="absolute top-1/2 left-1/2 w-[72%] sm:w-[60%] lg:w-[50%] max-w-xl transition-all duration-700 ease-[cubic-bezier(.4,.0,.2,1)] will-change-transform"
                                                     style={{
                                                         ...style,
                                                         pointerEvents: offset === 0 ? 'auto' : 'none'
@@ -2585,11 +2582,11 @@ export default function App() {
                                                     <div
                                                         className={`relative group h-[400px] sm:h-[460px] lg:h-[520px] rounded-[32px] overflow-hidden bg-black shadow-[0_35px_80px_rgba(12,61,38,0.35)] transition-transform duration-700 ease-[cubic-bezier(.4,.0,.2,1)] will-change-transform ${offset === 0 ? '' : 'scale-[0.9] opacity-70 blur-[1.5px]'}`}
                                                     >
-                                                        <img 
+                                                        <img
                                                             src={getImageUrl(experience.image_url)}
                                                             alt={experience.title}
                                                             className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1500ms] ease-out group-hover:scale-[1.12]"
-                                                            onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }} 
+                                                            onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                                         />
                                                         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/60 to-transparent" />
                                                         <div className="absolute top-6 left-6 z-10">
@@ -2616,7 +2613,7 @@ export default function App() {
                                                 </div>
                                             );
                                         })}
-                                        </div>
+                                    </div>
 
                                     {/* Carousel Controls */}
                                     {totalSignatureExperiences > 1 && (
@@ -2648,11 +2645,10 @@ export default function App() {
                                                     key={exp.id}
                                                     onClick={() => setSignatureIndex(idx)}
                                                     type="button"
-                                                    className={`w-3 h-3 rounded-full transition-all ${
-                                                        idx === signatureIndex
-                                                            ? 'bg-[#0f5132]'
-                                                            : 'bg-[#c99c4e]/40 hover:bg-[#c99c4e]/70'
-                                                    }`}
+                                                    className={`w-3 h-3 rounded-full transition-all ${idx === signatureIndex
+                                                        ? 'bg-[#0f5132]'
+                                                        : 'bg-[#c99c4e]/40 hover:bg-[#c99c4e]/70'
+                                                        }`}
                                                     aria-label={`Go to experience ${idx + 1}`}
                                                 />
                                             ))}
@@ -2676,9 +2672,9 @@ export default function App() {
                                 <div key={wedding.id}>
                                     {/* Background Images with Animation and Auto-Change */}
                                     <div className="absolute inset-0">
-                                        <img 
-                                            src={getImageUrl(wedding.image_url)} 
-                                            alt={wedding.title} 
+                                        <img
+                                            src={getImageUrl(wedding.image_url)}
+                                            alt={wedding.title}
                                             className={`absolute inset-0 w-[110%] h-[110%] object-cover object-center transition-all duration-[10000ms] ease-in-out ${index === currentWeddingIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-110'} animate-[slow-pan_20s_ease-in-out_infinite]`}
                                             style={{
                                                 animationDelay: `${index * 2}s`,
@@ -2700,15 +2696,15 @@ export default function App() {
                                                 </span>
                                             </div>
 
-                        {/* Main Title */}
+                                            {/* Main Title */}
                                             <h2 className="text-3xl md:text-5xl lg:text-7xl font-extrabold mb-6 animate-[fadeInUp_1.2s_ease-out] drop-shadow-2xl leading-tight">
-                                                {wedding.title.split(' ').slice(0, 3).join(' ')}<br/>
+                                                {wedding.title.split(' ').slice(0, 3).join(' ')}<br />
                                                 <span className="bg-gradient-to-r from-white via-[#f5e6c9] to-white bg-clip-text text-transparent">
                                                     {wedding.title.split(' ').slice(3).join(' ') || 'WEDDING DESTINATION'}
                                                 </span>
                                             </h2>
 
-                        {/* Description */}
+                                            {/* Description */}
                                             <p className="text-base md:text-xl lg:text-2xl text-white/90 max-w-4xl mx-auto leading-relaxed mb-8 animate-[fadeInUp_1.4s_ease-out] drop-shadow-lg">
                                                 {wedding.description}
                                             </p>
@@ -2716,7 +2712,7 @@ export default function App() {
                                     </div>
                                 </div>
                             ))}
-                            
+
                             {/* Navigation Dots */}
                             {planWeddings.filter(w => w.is_active).length > 1 && (
                                 <div className="absolute bottom-4 md:bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2 z-20">
@@ -2724,11 +2720,10 @@ export default function App() {
                                         <button
                                             key={index}
                                             onClick={() => setCurrentWeddingIndex(index)}
-                                            className={`transition-all duration-300 ${
-                                                index === currentWeddingIndex
-                                                    ? "w-12 h-1 bg-[#d8b471] rounded-full shadow-[0_0_12px_rgba(216,180,113,0.6)]"
-                                                    : "w-8 h-1 bg-white/40 hover:bg-white/70 rounded-full"
-                                            }`}
+                                            className={`transition-all duration-300 ${index === currentWeddingIndex
+                                                ? "w-12 h-1 bg-[#d8b471] rounded-full shadow-[0_0_12px_rgba(216,180,113,0.6)]"
+                                                : "w-8 h-1 bg-white/40 hover:bg-white/70 rounded-full"
+                                                }`}
                                             aria-label={`Go to slide ${index + 1}`}
                                         />
                                     ))}
@@ -2756,7 +2751,7 @@ export default function App() {
                             {services.length > 0 ? (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                                     {services.slice(0, 3).map((service) => (
-                                        <div 
+                                        <div
                                             key={service.id}
                                             className="relative group overflow-hidden rounded-[26px] bg-white shadow-[0_18px_35px_rgba(12,61,38,0.18)] transition-transform duration-500 hover:-translate-y-3"
                                         >
@@ -2780,8 +2775,8 @@ export default function App() {
                                             </div>
                                             <div className="p-6 space-y-4">
                                                 <p className="text-sm text-[#4f6f62] leading-relaxed">
-                                                        {service.description}
-                                                    </p>
+                                                    {service.description}
+                                                </p>
                                                 <button
                                                     type="button"
                                                     onClick={() => handleOpenServiceBookingForm(service.id)}
@@ -2790,7 +2785,7 @@ export default function App() {
                                                     Explore Service
                                                     <ChevronRight className="w-4 h-4" />
                                                 </button>
-                                                </div>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -2828,18 +2823,16 @@ export default function App() {
                                                     key={category}
                                                     type="button"
                                                     onClick={() => setSelectedFoodCategory(category)}
-                                                    className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center gap-2 ${
-                                                        selectedFoodCategory === category
-                                                            ? 'bg-[#0f5132] text-white shadow'
-                                                            : 'bg-white text-[#0f5132] border border-[#d8c9ac] hover:bg-[#0f5132]/10'
-                                                    }`}
+                                                    className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center gap-2 ${selectedFoodCategory === category
+                                                        ? 'bg-[#0f5132] text-white shadow'
+                                                        : 'bg-white text-[#0f5132] border border-[#d8c9ac] hover:bg-[#0f5132]/10'
+                                                        }`}
                                                 >
                                                     <span>{category}</span>
-                                                    <span className={`text-xs px-2 py-0.5 rounded-full ${
-                                                        selectedFoodCategory === category
-                                                            ? 'bg-white/20 text-white'
-                                                            : 'bg-[#0f5132]/10 text-[#0f5132]'
-                                                    }`}>
+                                                    <span className={`text-xs px-2 py-0.5 rounded-full ${selectedFoodCategory === category
+                                                        ? 'bg-white/20 text-white'
+                                                        : 'bg-[#0f5132]/10 text-[#0f5132]'
+                                                        }`}>
                                                         {count}
                                                     </span>
                                                 </button>
@@ -2852,16 +2845,16 @@ export default function App() {
                                             {displayedFoodItems.map((food) => {
                                                 const categoryName = food.category?.name || food.category_name || 'Uncategorized';
                                                 return (
-                                                    <div 
+                                                    <div
                                                         key={food.id}
                                                         className={`group relative ${theme.bgCard} rounded-2xl overflow-hidden luxury-shadow transition-all duration-300 transform hover:-translate-y-2 border ${theme.cardBorder || theme.border}`}
                                                     >
                                                         <div className="relative h-40 overflow-hidden">
-                                                            <img 
-                                                                src={getImageUrl(food.images?.[0]?.image_url)} 
-                                                                alt={food.name} 
-                                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                                                                onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }} 
+                                                            <img
+                                                                src={getImageUrl(food.images?.[0]?.image_url)}
+                                                                alt={food.name}
+                                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                                onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                                             />
                                                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                                                             <div className="absolute top-3 left-3 px-3 py-1 bg-black/40 text-white text-xs font-semibold rounded-full backdrop-blur-sm">
@@ -2922,21 +2915,21 @@ export default function App() {
 
                             {/* Gallery Grid */}
                             {galleryImages.length > 0 ? (
-                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 auto-rows-auto gap-4" style={{overflow: 'visible'}}>
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 auto-rows-auto gap-4" style={{ overflow: 'visible' }}>
                                     {galleryImages.map((image, index) => (
-                                        <div 
-                                            key={image.id} 
+                                        <div
+                                            key={image.id}
                                             className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 reveal"
                                             style={{ height: getGalleryCardHeight(index), transitionDelay: `${(index % 5) * 70}ms` }}
                                         >
-                                            <img 
-                                                src={getImageUrl(image.image_url)} 
-                                                alt={image.caption || 'Gallery image'} 
-                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                                            <img
+                                                src={getImageUrl(image.image_url)}
+                                                alt={image.caption || 'Gallery image'}
+                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                                 loading="lazy"
-                                                onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }} 
+                                                onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                             />
-                                            
+
                                             {/* Overlay on Hover */}
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end justify-center p-6">
                                                 {image.caption && (
@@ -2955,7 +2948,7 @@ export default function App() {
                             {/* View More Button removed: grid now wraps into multiple rows automatically */}
                         </div>
                     </section>
-                    
+
                     {/* Nearby Attractions Feature Banner */}
                     {totalNearbyAttractionBanners > 0 && (
                         <section className="relative w-full h-[520px] md:h-[620px] overflow-hidden rounded-3xl mt-20 mb-10 bg-[#0f5132]/5">
@@ -2996,11 +2989,10 @@ export default function App() {
                                         <button
                                             key={index}
                                             onClick={() => setCurrentAttractionBannerIndex(index)}
-                                            className={`transition-all duration-300 ${
-                                                index === currentAttractionBannerIndex
-                                                    ? "w-12 h-1 bg-[#d8b471] rounded-full shadow-[0_0_12px_rgba(216,180,113,0.6)]"
-                                                    : "w-8 h-1 bg-white/40 hover:bg-white/70 rounded-full"
-                                            }`}
+                                            className={`transition-all duration-300 ${index === currentAttractionBannerIndex
+                                                ? "w-12 h-1 bg-[#d8b471] rounded-full shadow-[0_0_12px_rgba(216,180,113,0.6)]"
+                                                : "w-8 h-1 bg-white/40 hover:bg-white/70 rounded-full"
+                                                }`}
                                             aria-label={`Show attraction ${index + 1}`}
                                             type="button"
                                         />
@@ -3013,34 +3005,34 @@ export default function App() {
                     {/* Nearby Attractions Section - Mountain Shadows Style */}
                     {nearbyAttractions.length > 0 && nearbyAttractions.some(a => a.is_active) && (
                         <section className={`bg-gradient-to-b ${theme.bgCard} ${theme.bgSecondary} py-20 transition-colors duration-500`}>
-                        <div className="w-full mx-auto px-2 sm:px-4 md:px-6">
+                            <div className="w-full mx-auto px-2 sm:px-4 md:px-6">
                                 <div className="text-center mb-16">
-                                <span className="inline-block px-6 py-2 bg-[#0f5132]/10 text-[#0f5132] text-sm font-semibold tracking-[0.35em] uppercase rounded-full border border-[#d8c9ac] mb-4">
-                                    ✦ Explore ✦
-                                </span>
+                                    <span className="inline-block px-6 py-2 bg-[#0f5132]/10 text-[#0f5132] text-sm font-semibold tracking-[0.35em] uppercase rounded-full border border-[#d8c9ac] mb-4">
+                                        ✦ Explore ✦
+                                    </span>
                                     <h2 className={`text-4xl md:text-5xl font-extrabold ${theme.textPrimary} mb-4`}>
-                                    NEARBY ATTRACTIONS
-                                </h2>
-                            </div>
+                                        NEARBY ATTRACTIONS
+                                    </h2>
+                                </div>
 
                                 {/* Split Layout - Image Left, Text Right or vice versa */}
                                 <div className="space-y-12">
                                     {nearbyAttractions.filter(attr => attr.is_active).map((attraction, index) => (
-                                    <div 
-                                            key={attraction.id} 
+                                        <div
+                                            key={attraction.id}
                                             className={`${theme.bgCard} rounded-3xl overflow-hidden shadow-2xl border ${theme.border} transition-all duration-500 hover:shadow-3xl`}
-                                    >
+                                        >
                                             <div className={`flex flex-col ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} items-stretch`}>
                                                 {/* Image Section */}
                                                 <div className="w-full md:w-1/2 overflow-hidden flex items-center justify-center">
-                                            <img 
-                                                        src={getImageUrl(attraction.image_url)} 
-                                                        alt={attraction.title} 
-                                                        className="w-full h-auto object-contain transition-transform duration-700 hover:scale-105" 
-                                                onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }} 
-                                            />
-                                            </div>
-                                                
+                                                    <img
+                                                        src={getImageUrl(attraction.image_url)}
+                                                        alt={attraction.title}
+                                                        className="w-full h-auto object-contain transition-transform duration-700 hover:scale-105"
+                                                        onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
+                                                    />
+                                                </div>
+
                                                 {/* Content Section */}
                                                 <div className={`w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center ${theme.bgCard}`}>
                                                     <h3 className={`text-3xl md:text-4xl font-extrabold ${theme.textPrimary} mb-4 leading-tight`}>
@@ -3064,12 +3056,12 @@ export default function App() {
                                                         </a>
                                                     )}
                                                 </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    </section>
+                        </section>
                     )}
 
 
@@ -3079,7 +3071,7 @@ export default function App() {
                             <Quote className={`inline-block mr-3 mb-1 ${iconStyle}`} /> What Our Guests Say
                         </h2>
                         <div className="w-full overflow-hidden" >
-                           <div className="flex gap-4 animate-[auto-scroll-bobbing-reverse_90s_linear_infinite] hover:[animation-play-state:paused]" >
+                            <div className="flex gap-4 animate-[auto-scroll-bobbing-reverse_90s_linear_infinite] hover:[animation-play-state:paused]" >
                                 {reviews.length > 0 ? [...reviews, ...reviews].map((review, index) => (
                                     <div key={`${review.id}-${index}`} className={`group flex-none w-80 md:w-96 ${theme.bgCard} rounded-2xl p-4 shadow-2xl border ${theme.border}`} >
                                         <div className="flex justify-center mb-4" >
@@ -3142,7 +3134,7 @@ export default function App() {
                         </div>
                     </div>
                 )}
-                
+
                 {/* General Booking Modal - Date Selection First */}
                 {isGeneralBookingOpen && (
                     <div className="fixed inset-0 z-[100] bg-neutral-950/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -3156,50 +3148,50 @@ export default function App() {
                                 <div className="flex space-x-4">
                                     <div className="space-y-2 w-1/2">
                                         <label className={`block text-sm font-medium ${theme.textSecondary}`}>Check-in Date</label>
-                                        <input 
-                                            type="date" 
-                                            name="check_in" 
-                                            value={bookingData.check_in} 
-                                            onChange={handleRoomBookingChange} 
-                                            min={new Date().toISOString().split('T')[0]} 
-                                            required 
-                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-[#0f5132] transition-colors`} 
+                                        <input
+                                            type="date"
+                                            name="check_in"
+                                            value={bookingData.check_in}
+                                            onChange={handleRoomBookingChange}
+                                            min={new Date().toISOString().split('T')[0]}
+                                            required
+                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-[#0f5132] transition-colors`}
                                         />
                                     </div>
                                     <div className="space-y-2 w-1/2">
                                         <label className={`block text-sm font-medium ${theme.textSecondary}`}>Check-out Date</label>
-                                        <input 
-                                            type="date" 
-                                            name="check_out" 
-                                            value={bookingData.check_out} 
-                                            onChange={handleRoomBookingChange} 
-                                            min={bookingData.check_in || new Date().toISOString().split('T')[0]} 
-                                            required 
-                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-[#0f5132] transition-colors`} 
+                                        <input
+                                            type="date"
+                                            name="check_out"
+                                            value={bookingData.check_out}
+                                            onChange={handleRoomBookingChange}
+                                            min={bookingData.check_in || new Date().toISOString().split('T')[0]}
+                                            required
+                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-[#0f5132] transition-colors`}
                                         />
                                     </div>
                                 </div>
                                 {bookingData.check_in && bookingData.check_out && (
                                     <div className="pt-4 space-y-3 border-top border-gray-200 dark:border-neutral-700">
                                         <p className={`text-sm ${theme.textSecondary} text-center`}>Continue with booking:</p>
-                                        <button 
-                                            onClick={() => { setIsGeneralBookingOpen(false); setShowAmenities(false); setIsRoomBookingFormOpen(true); }} 
+                                        <button
+                                            onClick={() => { setIsGeneralBookingOpen(false); setShowAmenities(false); setIsRoomBookingFormOpen(true); }}
                                             className={`w-full py-3 rounded-full ${theme.buttonBg} ${theme.buttonText} font-bold shadow-lg ${theme.buttonHover} transition-colors flex items-center justify-center space-x-2`}
                                         >
                                             <BedDouble className="w-5 h-5" />
                                             <span>Book a Room</span>
                                         </button>
-                                        <button 
-                                            onClick={() => { 
+                                        <button
+                                            onClick={() => {
                                                 setIsGeneralBookingOpen(false);
                                                 setShowAmenities(false);
-                                                setPackageBookingData(prev => ({ 
+                                                setPackageBookingData(prev => ({
                                                     ...prev,
                                                     check_in: bookingData.check_in || prev.check_in || '',
                                                     check_out: bookingData.check_out || prev.check_out || ''
                                                 }));
-                                                setIsPackageSelectionOpen(true); 
-                                            }} 
+                                                setIsPackageSelectionOpen(true);
+                                            }}
                                             className={`w-full py-3 rounded-full ${theme.buttonBg} ${theme.buttonText} font-bold shadow-lg ${theme.buttonHover} transition-colors flex items-center justify-center space-x-2`}
                                         >
                                             <Package className="w-5 h-5" />
@@ -3279,26 +3271,26 @@ export default function App() {
                                 <div className="flex space-x-4">
                                     <div className="space-y-2 w-1/2">
                                         <label className={`block text-sm font-medium ${theme.textSecondary}`}>Check-in Date</label>
-                                        <input 
-                                            type="date" 
-                                            name="check_in" 
-                                            value={bookingData.check_in || ''} 
-                                            onChange={handleRoomBookingChange} 
-                                            min={new Date().toISOString().split('T')[0]} 
-                                            required 
-                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-[#0f5132] transition-colors`} 
+                                        <input
+                                            type="date"
+                                            name="check_in"
+                                            value={bookingData.check_in || ''}
+                                            onChange={handleRoomBookingChange}
+                                            min={new Date().toISOString().split('T')[0]}
+                                            required
+                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-[#0f5132] transition-colors`}
                                         />
                                     </div>
                                     <div className="space-y-2 w-1/2">
                                         <label className={`block text-sm font-medium ${theme.textSecondary}`}>Check-out Date</label>
-                                        <input 
-                                            type="date" 
-                                            name="check_out" 
-                                            value={bookingData.check_out || ''} 
-                                            onChange={handleRoomBookingChange} 
-                                            min={bookingData.check_in || new Date().toISOString().split('T')[0]} 
-                                            required 
-                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-[#0f5132] transition-colors`} 
+                                        <input
+                                            type="date"
+                                            name="check_out"
+                                            value={bookingData.check_out || ''}
+                                            onChange={handleRoomBookingChange}
+                                            min={bookingData.check_in || new Date().toISOString().split('T')[0]}
+                                            required
+                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-[#0f5132] transition-colors`}
                                         />
                                     </div>
                                 </div>
@@ -3312,34 +3304,34 @@ export default function App() {
                                     ) : (
                                         <>
                                             <p className={`text-xs ${theme.textSecondary} mb-2`}>Showing rooms available from {bookingData.check_in} to {bookingData.check_out}</p>
-                                    <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-48 overflow-y-auto p-3 rounded-xl ${theme.bgSecondary}`}>
+                                            <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-48 overflow-y-auto p-3 rounded-xl ${theme.bgSecondary}`}>
                                                 {rooms.length > 0 ? (
                                                     rooms.map(room => (
-                                                <div key={room.id} onClick={() => handleRoomSelection(room.id)}
-                                                    className={`rounded-lg border-2 cursor-pointer transition-all duration-200 overflow-hidden ${bookingData.room_ids.includes(room.id) ? `${theme.buttonBg} ${theme.buttonText} border-transparent` : `${theme.bgCard} ${theme.textPrimary} ${theme.border} hover:border-[#c99c4e]`}`}
-                                                >
-                                                    <img 
-                                                        src={getImageUrl(room.image_url)} 
-                                                        alt={room.type} 
-                                                        className="w-full h-20 object-cover" 
-                                                        onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }} 
-                                                    />
-                                                    <div className="p-2 text-center">
-                                                        <p className="font-semibold text-xs">Room {room.number}</p>
-                                                        <p className="text-xs opacity-80">{room.type}</p>
-                                                        <p className="text-xs opacity-60 mt-1">Max: {room.adults}A, {room.children}C</p>
-                                                        <p className="text-xs font-bold mt-1">{formatCurrency(room.price)}</p>
-                                                    </div>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div className="col-span-full text-center py-8 text-gray-500">
+                                                        <div key={room.id} onClick={() => handleRoomSelection(room.id)}
+                                                            className={`rounded-lg border-2 cursor-pointer transition-all duration-200 overflow-hidden ${bookingData.room_ids.includes(room.id) ? `${theme.buttonBg} ${theme.buttonText} border-transparent` : `${theme.bgCard} ${theme.textPrimary} ${theme.border} hover:border-[#c99c4e]`}`}
+                                                        >
+                                                            <img
+                                                                src={getImageUrl(room.image_url)}
+                                                                alt={room.type}
+                                                                className="w-full h-20 object-cover"
+                                                                onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
+                                                            />
+                                                            <div className="p-2 text-center">
+                                                                <p className="font-semibold text-xs">Room {room.number}</p>
+                                                                <p className="text-xs opacity-80">{room.type}</p>
+                                                                <p className="text-xs opacity-60 mt-1">Max: {room.adults}A, {room.children}C</p>
+                                                                <p className="text-xs font-bold mt-1">{formatCurrency(room.price)}</p>
+                                                            </div>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="col-span-full text-center py-8 text-gray-500">
                                                         <BedDouble className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                                                         <p className="text-sm font-semibold mb-1">No rooms available</p>
                                                         <p className="text-xs">No rooms are available for the selected dates. Please try different dates.</p>
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
                                         </>
                                     )}
                                 </div>
@@ -3409,46 +3401,46 @@ export default function App() {
                                 <div className="flex space-x-4">
                                     <div className="space-y-2 w-1/2">
                                         <label className={`block text-sm font-medium ${theme.textSecondary}`}>Check-in Date</label>
-                                        <input 
-                                            type="date" 
-                                            name="check_in" 
-                                            value={packageBookingData.check_in || ''} 
-                                            onChange={handlePackageBookingChange} 
-                                            min={new Date().toISOString().split('T')[0]} 
-                                            required 
-                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors`} 
+                                        <input
+                                            type="date"
+                                            name="check_in"
+                                            value={packageBookingData.check_in || ''}
+                                            onChange={handlePackageBookingChange}
+                                            min={new Date().toISOString().split('T')[0]}
+                                            required
+                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors`}
                                         />
                                     </div>
                                     <div className="space-y-2 w-1/2">
                                         <label className={`block text-sm font-medium ${theme.textSecondary}`}>Check-out Date</label>
-                                        <input 
-                                            type="date" 
-                                            name="check_out" 
-                                            value={packageBookingData.check_out || ''} 
-                                            onChange={handlePackageBookingChange} 
-                                            min={packageBookingData.check_in || new Date().toISOString().split('T')[0]} 
-                                            required 
-                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors`} 
+                                        <input
+                                            type="date"
+                                            name="check_out"
+                                            value={packageBookingData.check_out || ''}
+                                            onChange={handlePackageBookingChange}
+                                            min={packageBookingData.check_in || new Date().toISOString().split('T')[0]}
+                                            required
+                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors`}
                                         />
                                     </div>
                                 </div>
                                 {/* Room Selection - Only show for room_type packages */}
                                 {(() => {
                                     const selectedPackage = packages.find(p => p.id === packageBookingData.package_id);
-                                    
+
                                     if (!selectedPackage) {
                                         return null;
                                     }
-                                    
+
                                     // Determine if it's whole_property:
                                     // 1. If booking_type is explicitly 'whole_property'
                                     // 2. If booking_type is not set AND room_types is not set (legacy whole_property)
                                     // 3. If booking_type is null/undefined and room_types is null/undefined/empty
                                     const hasRoomTypes = selectedPackage.room_types && selectedPackage.room_types.trim().length > 0;
-                                    const isWholeProperty = selectedPackage.booking_type === 'whole_property' || 
-                                                           selectedPackage.booking_type === 'whole property' ||
-                                                           (!selectedPackage.booking_type && !hasRoomTypes);
-                                    
+                                    const isWholeProperty = selectedPackage.booking_type === 'whole_property' ||
+                                        selectedPackage.booking_type === 'whole property' ||
+                                        (!selectedPackage.booking_type && !hasRoomTypes);
+
                                     // Show room selection for both room_type and whole_property packages
                                     return (
                                         <div className="space-y-2">
@@ -3475,7 +3467,7 @@ export default function App() {
                                                         {(() => {
                                                             // Filter rooms based on package type
                                                             let roomsToShow = rooms;
-                                                            
+
                                                             if (isWholeProperty) {
                                                                 // For whole_property: Show ALL available rooms
                                                                 roomsToShow = rooms;
@@ -3496,29 +3488,29 @@ export default function App() {
                                                                     </div>
                                                                 );
                                                             }
-                                                            
+
                                                             // Filter to only show available rooms (check availability)
                                                             roomsToShow = roomsToShow.filter(room => {
                                                                 // Check if room is available based on packageRoomAvailability
                                                                 const isAvailable = packageRoomAvailability[room.id] === true;
                                                                 return isAvailable;
                                                             });
-                                                            
+
                                                             return roomsToShow.length > 0 ? (
                                                                 roomsToShow.map(room => {
                                                                     // For whole_property, all available rooms are auto-selected, but still show them
                                                                     const isSelected = packageBookingData.room_ids.includes(room.id);
                                                                     return (
-                                                                        <div 
-                                                                            key={room.id} 
+                                                                        <div
+                                                                            key={room.id}
                                                                             onClick={() => !isWholeProperty ? handlePackageRoomSelection(room.id) : null}
                                                                             className={`rounded-lg border-2 transition-all duration-200 overflow-hidden ${!isWholeProperty ? 'cursor-pointer' : 'cursor-default'} ${isSelected ? `${theme.buttonBg} ${theme.buttonText} border-transparent` : `${theme.bgCard} ${theme.textPrimary} ${theme.border} ${!isWholeProperty ? 'hover:border-[#c99c4e]' : ''}`}`}
                                                                         >
-                                                                            <img 
-                                                                                src={getImageUrl(room.image_url)} 
-                                                                                alt={room.type} 
-                                                                                className="w-full h-20 object-cover" 
-                                                                                onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }} 
+                                                                            <img
+                                                                                src={getImageUrl(room.image_url)}
+                                                                                alt={room.type}
+                                                                                className="w-full h-20 object-cover"
+                                                                                onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                                                             />
                                                                             <div className="p-2 text-center">
                                                                                 <p className="font-semibold text-xs">Room {room.number}</p>
@@ -3596,7 +3588,7 @@ export default function App() {
                                             const imgIndex = packageImageIndex[pkg.id] || 0;
                                             const currentImage = pkg.images && pkg.images[imgIndex];
                                             return (
-                                                <div 
+                                                <div
                                                     key={pkg.id}
                                                     onClick={() => {
                                                         handleOpenPackageBookingForm(pkg.id);
@@ -3606,11 +3598,11 @@ export default function App() {
                                                 >
                                                     {/* Image Container */}
                                                     <div className="relative h-48 overflow-hidden">
-                                                        <img 
-                                                            src={currentImage ? getImageUrl(currentImage.image_url) : ITEM_PLACEHOLDER} 
-                                                            alt={pkg.title} 
-                                                            className="w-full h-full object-cover transition-transform duration-700 hover:scale-110" 
-                                                            onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }} 
+                                                        <img
+                                                            src={currentImage ? getImageUrl(currentImage.image_url) : ITEM_PLACEHOLDER}
+                                                            alt={pkg.title}
+                                                            className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
+                                                            onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                                         />
                                                         {/* Image Slider Dots */}
                                                         {pkg.images && pkg.images.length > 1 && (
@@ -3642,7 +3634,7 @@ export default function App() {
                                                             <span className={`text-2xl font-extrabold ${theme.textCardAccent || theme.textAccent}`}>
                                                                 {formatCurrency(pkg.price || 0)}
                                                             </span>
-                                                            <button 
+                                                            <button
                                                                 className={`px-6 py-2 text-sm font-bold ${theme.buttonBg} ${theme.buttonText} rounded-full shadow-lg ${theme.buttonHover} transition-all duration-300 transform hover:scale-105`}
                                                             >
                                                                 Select
@@ -3663,7 +3655,7 @@ export default function App() {
                         </div>
                     </div>
                 )}
-                
+
                 {/* Service Booking Modal */}
                 {isServiceBookingFormOpen && (
                     <div className="fixed inset-0 z-[100] bg-neutral-950/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -3705,7 +3697,7 @@ export default function App() {
                         </div>
                     </div>
                 )}
-                
+
                 {/* Food Order Modal */}
                 {isFoodOrderFormOpen && (
                     <div className="fixed inset-0 z-[100] bg-neutral-950/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -3751,7 +3743,7 @@ export default function App() {
                         </div>
                     </div>
                 )}
-                
+
                 <footer className="bg-[#0f5132] text-white py-8 px-4 md:px-12 mt-12">
                     <div className="container mx-auto flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
                         {resortInfo && (
@@ -3759,7 +3751,7 @@ export default function App() {
                                 <div className="text-center md:text-left">
                                     <h3 className="text-xl font-bold tracking-tight text-white">{resortInfo.name}</h3>
                                     <p className="text-sm text-white/80 mt-1">{resortInfo.address}</p>
-                                    <p className="text-xs text-white/70 mt-2">&copy; 2024 Elysian Retreat. All Rights Reserved.</p>
+                                    <p className="text-xs text-white/70 mt-2">&copy; 2025 Pomma Holidays. All Rights Reserved.</p>
                                 </div>
                                 <div className="flex space-x-4 text-white/80">
                                     <a href={formatUrl(resortInfo.facebook)} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors"><Facebook /></a>
@@ -3771,9 +3763,9 @@ export default function App() {
                         )}
                     </div>
                     <div className="mt-6 pt-6 border-t border-white/20 text-center">
-                        <a 
-                            href="https://teqmates.com" 
-                            target="_blank" 
+                        <a
+                            href="https://teqmates.com"
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="text-sm text-white/70 hover:text-white transition-colors"
                         >

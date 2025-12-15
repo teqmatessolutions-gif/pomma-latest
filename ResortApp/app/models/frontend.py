@@ -55,6 +55,11 @@ class ResortInfo(Base):
     twitter = Column(String(255))
     linkedin = Column(String(255))
     is_active = Column(Boolean, default=True)
+    gst_no = Column(String(50))
+    email = Column(String(100))
+    support_email = Column(String(100))
+    contact_no = Column(String(20))
+    property_location = Column(String(255))
 
 
 # Signature Experiences

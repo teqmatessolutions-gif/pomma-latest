@@ -32,7 +32,7 @@ def update_room_statuses(db: Session):
                     # Normalize status values to handle both formats
                     active_booking = db.query(BookingRoom).join(Booking).filter(
                         BookingRoom.room_id == room.id,
-                        Booking.status.in_(['booked', 'checked-in', 'checked_in']),
+                        Booking.status.in_(['booked', 'checked-in', 'checked_in', 'Booked', 'Checked-in', 'Checked-In', 'Checked_in', 'Checked_In']),
                         Booking.check_in <= today,
                         Booking.check_out > today
                     ).first()
@@ -41,7 +41,7 @@ def update_room_statuses(db: Session):
                     from app.models.Package import PackageBooking, PackageBookingRoom
                     active_package_booking = db.query(PackageBookingRoom).join(PackageBooking).filter(
                         PackageBookingRoom.room_id == room.id,
-                        PackageBooking.status.in_(['booked', 'checked-in', 'checked_in']),
+                        PackageBooking.status.in_(['booked', 'checked-in', 'checked_in', 'Booked', 'Checked-in', 'Checked-In', 'Checked_in', 'Checked_In']),
                         PackageBooking.check_in <= today,
                         PackageBooking.check_out > today
                     ).first()
@@ -66,7 +66,7 @@ def update_room_statuses(db: Session):
                         # Check if booking has ended today or before
                         past_booking = db.query(BookingRoom).join(Booking).filter(
                             BookingRoom.room_id == room.id,
-                            Booking.status.in_(['booked', 'checked-in', 'checked_in']),
+                            Booking.status.in_(['booked', 'checked-in', 'checked_in', 'Booked', 'Checked-in', 'Checked-In', 'Checked_in', 'Checked_In']),
                             Booking.check_out <= today
                         ).first()
                         

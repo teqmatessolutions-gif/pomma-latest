@@ -21,7 +21,7 @@ const ActivitySection = ({ title, activities, icon }) => {
   if (!activities || activities.length === 0) return null;
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="bg-white p-6 rounded-xl shadow-md"
@@ -154,7 +154,7 @@ const UserHistory = () => {
 
         {/* History Timeline */}
         {history && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="bg-white p-6 rounded-xl shadow-md mt-8"
@@ -187,7 +187,7 @@ const ActivityCard = ({ activity }) => (
       <div>
         <p className="text-xs text-gray-500">{new Date(activity.activity_date).toLocaleString()}</p>
         <h4 className="font-bold text-gray-800">{activity.type}</h4>
-        <p className="text-sm text-gray-600">{activity.description}</p>
+        <p className="text-sm text-gray-900">{activity.description}</p>
         <div className="text-xs mt-2 flex items-center gap-4 flex-wrap">
           {activity.amount != null && <span className="font-semibold text-green-600">Amount: {formatCurrency(activity.amount)}</span>}
           {activity.status && <span className="px-2 py-0.5 rounded-full bg-gray-200 text-gray-800 font-medium">{activity.status}</span>}

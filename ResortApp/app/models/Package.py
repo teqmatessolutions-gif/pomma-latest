@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, Date, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, Date, ForeignKey, DateTime, func
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -11,6 +11,7 @@ class Package(Base):
     price = Column(Float, nullable=False)
     booking_type = Column(String, default="room_type")  # "whole_property" or "room_type"
     room_types = Column(String, nullable=True)  # Comma-separated list of room types (e.g., "Cottage,Non AC Double Room")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships
     images = relationship("PackageImage", back_populates="package", cascade="all, delete-orphan")

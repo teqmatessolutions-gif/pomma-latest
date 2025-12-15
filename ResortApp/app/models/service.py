@@ -30,10 +30,15 @@ class AssignedService(Base):
     assigned_at = Column(DateTime, default=datetime.utcnow)
     status = Column(Enum(ServiceStatus), default=ServiceStatus.pending)
     billing_status = Column(String, default="unbilled")
+    
+    booking_id = Column(Integer, ForeignKey("bookings.id"), nullable=True)
+    package_booking_id = Column(Integer, ForeignKey("package_bookings.id"), nullable=True)
 
     service = relationship("Service")
     employee = relationship("Employee")
     room = relationship("Room")
+    booking = relationship("Booking")
+    package_booking = relationship("PackageBooking")
 
 
 class ServiceImage(Base):

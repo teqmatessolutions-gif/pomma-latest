@@ -1,0 +1,10 @@
+Checking Employee ID: 50
+❌ Employee 50 NOT FOUND in database.
+--- All Employees in DB ---
+ID: 35, Name: daion, Role: Manager
+ID: 36, Name: basil, Role: massage
+ID: 37, Name: alphi, Role: Waiter
+---------------------------
+
+Checking Role: 'Manager'
+✅ Role 'Manager' found. ID: 3

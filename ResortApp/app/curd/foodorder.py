@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.models.foodorder import FoodOrder, FoodOrderItem
 from app.models.booking import Booking, BookingRoom
 from app.models.Package import PackageBooking, PackageBookingRoom
@@ -38,12 +38,43 @@ def get_guest_for_room(room_id, db: Session):
     return None
 
 def create_food_order(db: Session, order_data: FoodOrderCreate):
+    # Find active booking (regular or package) for the room to associate with the order
+    active_booking_id = None
+    active_package_booking_id = None
+    
+    # Check regular bookings first
+    regular_booking = (
+        db.query(Booking)
+        .join(BookingRoom)
+        .filter(BookingRoom.room_id == order_data.room_id)
+        .filter(Booking.status.in_(["checked-in", "booked"]))
+        .order_by(Booking.id.desc())
+        .first()
+    )
+    
+    if regular_booking:
+        active_booking_id = regular_booking.id
+    else:
+        # Check package bookings
+        package_booking = (
+            db.query(PackageBooking)
+            .join(PackageBookingRoom)
+            .filter(PackageBookingRoom.room_id == order_data.room_id)
+            .filter(PackageBooking.status.in_(["checked-in", "booked"]))
+            .order_by(PackageBooking.id.desc())
+            .first()
+        )
+        if package_booking:
+            active_package_booking_id = package_booking.id
+
     order = FoodOrder(
         room_id=order_data.room_id,
         amount=order_data.amount,
         assigned_employee_id=order_data.assigned_employee_id,
         status="active",
-        billing_status="unbilled"
+        billing_status="unbilled",
+        booking_id=active_booking_id,
+        package_booking_id=active_package_booking_id
     )
     db.add(order)
     db.commit()
@@ -61,12 +92,25 @@ def create_food_order(db: Session, order_data: FoodOrderCreate):
     return order
 
 def get_food_orders(db: Session, skip: int = 0, limit: int = 100):
-    orders = db.query(FoodOrder).offset(skip).limit(limit).all()
+    # Eager load relationships
+    # Eager load relationships including bookings for historical guest data
+    orders = db.query(FoodOrder).options(
+        joinedload(FoodOrder.items).joinedload(FoodOrderItem.food_item),
+        joinedload(FoodOrder.room),
+        joinedload(FoodOrder.employee),
+        joinedload(FoodOrder.booking),
+        joinedload(FoodOrder.package_booking)
+    ).offset(skip).limit(limit).all()
+
     for order in orders:
-        for item in order.items:
-            item.food_item_name = item.food_item.name if item.food_item else "Unknown"
-        # Add guest_name by looking up active bookings for the room
-        if hasattr(order, 'room_id') and order.room_id:
+        # Priority 1: Check linked regular booking
+        if order.booking:
+             order.guest_name = order.booking.guest_name
+        # Priority 2: Check linked package booking
+        elif order.package_booking:
+             order.guest_name = order.package_booking.guest_name
+        # Priority 3: Fallback to current room status (legacy/active check)
+        elif hasattr(order, 'room_id') and order.room_id:
             guest_name = get_guest_for_room(order.room_id, db)
             if guest_name:
                 order.guest_name = guest_name

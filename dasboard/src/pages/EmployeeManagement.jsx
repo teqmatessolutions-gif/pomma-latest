@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { toast, Toaster } from 'react-hot-toast';
 import { formatCurrency } from '../utils/currency';
 import DashboardLayout from "../layout/DashboardLayout";
 import api from "../services/api";
@@ -9,6 +10,18 @@ import { LineChart, Line, Tooltip, ResponsiveContainer } from "recharts";
 import CountUp from "react-countup";
 import BannerMessage from "../components/BannerMessage";
 import { getMediaBaseUrl } from "../utils/env";
+import { jwtDecode } from "jwt-decode";
+
+const getCurrentUser = () => {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+  try {
+    return jwtDecode(token);
+  } catch (error) {
+    console.error("Invalid token:", error);
+    return null;
+  }
+};
 
 const UserHistory = () => {
   const [users, setUsers] = useState([]);
@@ -27,10 +40,10 @@ const UserHistory = () => {
         api.get("/users"),
         api.get("/employees")
       ]);
-      
+
       const users = usersRes.data || [];
       const employees = employeesRes.data || [];
-      
+
       // Create a map of employees by user_id for quick lookup
       const employeeMap = new Map();
       employees.forEach(emp => {
@@ -38,23 +51,23 @@ const UserHistory = () => {
           employeeMap.set(emp.user_id, emp);
         }
       });
-      
+
       // Get set of user IDs that have employee records
       const employeeUserIds = new Set(employees.map(emp => emp.user_id).filter(Boolean));
-      
+
       // Filter users: Only include users who have employee records OR are admins
       // Exclude guest users (users without employee records and not admins)
       const filteredUsers = users.filter(user => {
         const userRole = user.role?.name?.toLowerCase() || '';
         const hasEmployeeRecord = employeeUserIds.has(user.id);
         const isAdmin = userRole === 'admin';
-        
+
         // Include if: has employee record OR is admin
         return hasEmployeeRecord || isAdmin;
       });
-      
+
       // Combine users with their employee data
-      const combinedUsers = filteredUsers.map(user => ({
+      let combinedUsers = filteredUsers.map(user => ({
         id: user.id,
         name: user.name,
         email: user.email,
@@ -67,7 +80,13 @@ const UserHistory = () => {
         image_url: employeeMap.get(user.id)?.image_url || null,
         has_employee_record: employeeMap.has(user.id)
       }));
-      
+
+      // Filter for non-admin users to only see themselves
+      const currentUser = getCurrentUser();
+      if (currentUser && currentUser.role?.toLowerCase() !== 'admin') {
+        combinedUsers = combinedUsers.filter(u => u.id === currentUser.user_id);
+      }
+
       setUsers(combinedUsers);
     } catch (err) {
       console.error("Failed to fetch users:", err);
@@ -94,7 +113,7 @@ const UserHistory = () => {
       if (toDate && toDate.trim() !== "") {
         params.to_date = toDate;
       }
-      
+
       const response = await api.get("/reports/user-history", { params });
       setHistory(response.data);
     } catch (err) {
@@ -140,7 +159,17 @@ const UserHistory = () => {
                 <p className="text-xs text-gray-500">{new Date(activity.activity_date).toLocaleString()}</p>
                 <h4 className="font-bold">{activity.type}</h4>
                 <p className="text-sm">{activity.description}</p>
-                {activity.amount != null && <span className="text-sm font-semibold text-green-600">Amount: {formatCurrency(activity.amount)}</span>}
+                <div className="flex justify-between items-center mt-2">
+                  {activity.amount != null && <span className="text-sm font-semibold text-green-600">Amount: {formatCurrency(activity.amount)}</span>}
+                  {activity.status && (
+                    <span className={`text-xs px-2 py-1 rounded capitalize ${activity.status === 'completed' || activity.status === 'paid' || activity.status === 'active' ? 'bg-green-100 text-green-800' :
+                      activity.status === 'pending' || activity.status === 'booked' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                      {activity.status}
+                    </span>
+                  )}
+                </div>
               </div>
             )) : <p>No activities found.</p>}
           </div>
@@ -151,149 +180,164 @@ const UserHistory = () => {
 };
 
 const LeaveManagement = () => {
-    const [leaves, setLeaves] = useState([]);
-    const [employees, setEmployees] = useState([]);
-    const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
-    const [showCreateForm, setShowCreateForm] = useState(false);
-    const [leaveForm, setLeaveForm] = useState({
-        employee_id: '',
-        from_date: '',
-        to_date: '',
-        reason: '',
-        leave_type: 'Paid' // Default to 'Paid'
+  const [leaves, setLeaves] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [leaveForm, setLeaveForm] = useState({
+    employee_id: '',
+    from_date: '',
+    to_date: '',
+    reason: '',
+    leave_type: 'Paid' // Default to 'Paid'
+  });
+
+  useEffect(() => {
+    const currentUser = getCurrentUser();
+    api.get('/employees')
+      .then(res => {
+        let employeeData = res.data;
+        if (currentUser && currentUser.role?.toLowerCase() !== 'admin') {
+          // Filter to only show the logged-in user's employee record
+          employeeData = employeeData.filter(emp => emp.user_id === currentUser.user_id);
+        }
+        setEmployees(employeeData);
+
+        // Auto-select if only one option (for non-admins)
+        if (employeeData.length === 1) {
+          setSelectedEmployeeId(employeeData[0].id);
+        }
+      })
+      .catch(err => console.error(err));
+  }, []);
+
+  useEffect(() => {
+    if (selectedEmployeeId) {
+      // When a user is selected to view leaves, also set it for the create form
+      setLeaveForm(prev => ({ ...prev, employee_id: selectedEmployeeId }));
+      api.get(`/employees/leave/${selectedEmployeeId}`)
+        .then(res => setLeaves(res.data))
+        .catch(err => console.error("Failed to fetch leaves", err));
+    } else {
+      setLeaves([]);
+    }
+  }, [selectedEmployeeId]);
+
+  const handleStatusUpdate = (leaveId, status) => {
+    api.put(`/employees/leave/${leaveId}/status/${status}`).then(res => {
+      setLeaves(leaves.map(l => l.id === leaveId ? res.data : l));
     });
+  };
 
-    useEffect(() => {
-        api.get('/employees').then(res => setEmployees(res.data));
-    }, []);
+  const handleLeaveFormChange = (e) => {
+    setLeaveForm({ ...leaveForm, [e.target.name]: e.target.value });
+  };
 
-    useEffect(() => {
-        if (selectedEmployeeId) {
-            // When a user is selected to view leaves, also set it for the create form
-            setLeaveForm(prev => ({ ...prev, employee_id: selectedEmployeeId }));
-            api.get(`/employees/leave/${selectedEmployeeId}`)
-               .then(res => setLeaves(res.data))
-               .catch(err => console.error("Failed to fetch leaves", err));
-        } else {
-            setLeaves([]);
-        }
-    }, [selectedEmployeeId]);
+  const handleCreateLeave = async (e) => {
+    e.preventDefault();
+    try {
+      // Ensure employee_id is an integer
+      const leaveData = {
+        ...leaveForm,
+        employee_id: parseInt(leaveForm.employee_id)
+      };
 
-    const handleStatusUpdate = (leaveId, status) => {
-        api.put(`/employees/leave/${leaveId}/status/${status}`).then(res => {
-            setLeaves(leaves.map(l => l.id === leaveId ? res.data : l));
-        });
-    };
+      // Validate required fields
+      if (!leaveData.employee_id || !leaveData.from_date || !leaveData.to_date || !leaveData.reason) {
+        alert("Please fill in all required fields.");
+        return;
+      }
 
-    const handleLeaveFormChange = (e) => {
-        setLeaveForm({ ...leaveForm, [e.target.name]: e.target.value });
-    };
+      const response = await api.post('/employees/leave', leaveData);
 
-    const handleCreateLeave = async (e) => {
-        e.preventDefault();
-        try {
-            // Ensure employee_id is an integer
-            const leaveData = {
-                ...leaveForm,
-                employee_id: parseInt(leaveForm.employee_id)
-            };
-            
-            // Validate required fields
-            if (!leaveData.employee_id || !leaveData.from_date || !leaveData.to_date || !leaveData.reason) {
-                alert("Please fill in all required fields.");
-                return;
-            }
-            
-            const response = await api.post('/employees/leave', leaveData);
-            
-            // If the new leave belongs to the currently viewed employee, add it to the list
-            if (response.data.employee_id === parseInt(selectedEmployeeId)) {
-                setLeaves([response.data, ...leaves]);
-            }
-            
-            // Reset form and hide it
-            setLeaveForm({ employee_id: '', from_date: '', to_date: '', reason: '', leave_type: 'Paid' });
-            setShowCreateForm(false);
-            alert("Leave request created successfully!");
-        } catch (err) {
-            console.error("Failed to create leave", err);
-            const errorMessage = err.response?.data?.detail || err.response?.data?.message || err.message || "Failed to create leave request.";
-            alert(`Error: ${errorMessage}`);
-        }
-    };
+      // If the new leave belongs to the currently viewed employee, add it to the list
+      if (response.data.employee_id === parseInt(selectedEmployeeId)) {
+        setLeaves([response.data, ...leaves]);
+      }
 
-    return (
-        <div className="space-y-4">
-            {/* Create Leave Form Section */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-                <button onClick={() => setShowCreateForm(!showCreateForm)} className="font-semibold text-indigo-600">
-                    {showCreateForm ? '▼ Hide Form' : '▶ Create Leave Entry'}
-                </button>
-                {showCreateForm && (
-                    <motion.form onSubmit={handleCreateLeave} initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4 space-y-3">
-                        <select name="employee_id" value={leaveForm.employee_id} onChange={handleLeaveFormChange} className="w-full p-2 border rounded-md" required>
-                            <option value="">-- Select Employee --</option>
-                            {employees.map(emp => <option key={emp.id} value={emp.id}>{emp.name}</option>)}
-                        </select>
-                        <select name="leave_type" value={leaveForm.leave_type} onChange={handleLeaveFormChange} className="w-full p-2 border rounded-md" required>
-                            <option value="Paid">Paid Leave</option>
-                            <option value="Sick">Sick Leave</option>
-                            <option value="Unpaid">Unpaid Leave</option>
-                        </select>
-                        <div className="grid grid-cols-2 gap-4">
-                            <input type="date" name="from_date" value={leaveForm.from_date} onChange={handleLeaveFormChange} className="w-full p-2 border rounded-md" required />
-                            <input type="date" name="to_date" value={leaveForm.to_date} onChange={handleLeaveFormChange} className="w-full p-2 border rounded-md" required />
-                        </div>
-                        <input type="text" name="reason" placeholder="Reason for leave" value={leaveForm.reason} onChange={handleLeaveFormChange} className="w-full p-2 border rounded-md" required />
-                        <button type="submit" className="w-full bg-green-600 text-white px-4 py-2 rounded-md">Submit Leave</button>
-                    </motion.form>
-                )}
-            </div>
+      // Reset form and hide it
+      setLeaveForm({ employee_id: '', from_date: '', to_date: '', reason: '', leave_type: 'Paid' });
+      setShowCreateForm(false);
+      alert("Leave request created successfully!");
+    } catch (err) {
+      console.error("Failed to create leave", err);
+      const errorMessage = err.response?.data?.detail || err.response?.data?.message || err.message || "Failed to create leave request.";
+      alert(`Error: ${errorMessage}`);
+    }
+  };
 
-            {/* View Leaves Section */}
-            <h3 className="text-lg font-semibold pt-4 border-t">View Existing Leaves</h3>
-            <select value={selectedEmployeeId} onChange={e => setSelectedEmployeeId(e.target.value)} className="w-full p-2 border rounded-md">
-                <option value="">Select Employee to view leaves</option>
-                {employees.map(emp => <option key={emp.id} value={emp.id}>{emp.name}</option>)}
+  return (
+    <div className="space-y-4">
+      {/* Create Leave Form Section */}
+      <div className="bg-gray-50 p-4 rounded-lg">
+        <button onClick={() => setShowCreateForm(!showCreateForm)} className="font-semibold text-indigo-600">
+          {showCreateForm ? '▼ Hide Form' : '▶ Create Leave Entry'}
+        </button>
+        {showCreateForm && (
+          <motion.form onSubmit={handleCreateLeave} initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4 space-y-3">
+            <select name="employee_id" value={leaveForm.employee_id} onChange={handleLeaveFormChange} className="w-full p-2 border rounded-md" required>
+              <option value="">-- Select Employee --</option>
+              {employees.map(emp => <option key={emp.id} value={emp.id}>{emp.name}</option>)}
             </select>
-            <div className="overflow-x-auto max-h-96">
-                {selectedEmployeeId && leaves.length === 0 && (
-                    <p className="text-center text-gray-500 py-4">No leave records found for this employee.</p>
-                )}
-                <table className="min-w-full bg-white">
-                    <thead className="bg-gray-100">
-                        <tr>
-                            <th className="py-2 px-4">From</th>
-                            <th className="py-2 px-4">To</th>
-                            <th className="py-2 px-4">Reason</th>
-                            <th className="py-2 px-4">Type</th>
-                            <th className="py-2 px-4">Status</th>
-                            <th className="py-2 px-4">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {leaves.length > 0 && leaves.map(leave => (
-                            <tr key={leave.id} className="border-b">
-                                <td className="py-2 px-4">{leave.from_date}</td>
-                                <td className="py-2 px-4">{leave.to_date}</td>
-                                <td className="py-2 px-4">{leave.reason}</td>
-                                <td className="py-2 px-4">{leave.leave_type}</td>
-                                <td className="py-2 px-4">{leave.status}</td>
-                                <td className="py-2 px-4 space-x-2">
-                                    {leave.status === 'pending' && (
-                                        <>
-                                            <button onClick={() => handleStatusUpdate(leave.id, 'approved')} className="text-green-600">Approve</button>
-                                            <button onClick={() => handleStatusUpdate(leave.id, 'rejected')} className="text-red-600">Reject</button>
-                                        </>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+            <select name="leave_type" value={leaveForm.leave_type} onChange={handleLeaveFormChange} className="w-full p-2 border rounded-md" required>
+              <option value="Paid">Paid Leave</option>
+              <option value="Sick">Sick Leave</option>
+              <option value="Unpaid">Unpaid Leave</option>
+            </select>
+            <div className="grid grid-cols-2 gap-4">
+              <input type="date" name="from_date" value={leaveForm.from_date} onChange={handleLeaveFormChange} className="w-full p-2 border rounded-md" required />
+              <input type="date" name="to_date" value={leaveForm.to_date} onChange={handleLeaveFormChange} className="w-full p-2 border rounded-md" required />
             </div>
-        </div>
-    );
+            <input type="text" name="reason" placeholder="Reason for leave" value={leaveForm.reason} onChange={handleLeaveFormChange} className="w-full p-2 border rounded-md" required />
+            <button type="submit" className="w-full bg-green-600 text-white px-4 py-2 rounded-md">Submit Leave</button>
+          </motion.form>
+        )}
+      </div>
+
+      {/* View Leaves Section */}
+      <h3 className="text-lg font-semibold pt-4 border-t">View Existing Leaves</h3>
+      <select value={selectedEmployeeId} onChange={e => setSelectedEmployeeId(e.target.value)} className="w-full p-2 border rounded-md">
+        <option value="">Select Employee to view leaves</option>
+        {employees.map(emp => <option key={emp.id} value={emp.id}>{emp.name}</option>)}
+      </select>
+      <div className="overflow-x-auto max-h-96">
+        {selectedEmployeeId && leaves.length === 0 && (
+          <p className="text-center text-gray-500 py-4">No leave records found for this employee.</p>
+        )}
+        <table className="min-w-full bg-white">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="py-2 px-4">From</th>
+              <th className="py-2 px-4">To</th>
+              <th className="py-2 px-4">Reason</th>
+              <th className="py-2 px-4">Type</th>
+              <th className="py-2 px-4">Status</th>
+              <th className="py-2 px-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {leaves.length > 0 && leaves.map(leave => (
+              <tr key={leave.id} className="border-b">
+                <td className="py-2 px-4">{leave.from_date}</td>
+                <td className="py-2 px-4">{leave.to_date}</td>
+                <td className="py-2 px-4">{leave.reason}</td>
+                <td className="py-2 px-4">{leave.leave_type}</td>
+                <td className="py-2 px-4">{leave.status}</td>
+                <td className="py-2 px-4 space-x-2">
+                  {leave.status === 'pending' && (
+                    <>
+                      <button onClick={() => handleStatusUpdate(leave.id, 'approved')} className="text-green-600">Approve</button>
+                      <button onClick={() => handleStatusUpdate(leave.id, 'rejected')} className="text-red-600">Reject</button>
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 };
 
 const AttendanceTracking = () => {
@@ -318,28 +362,76 @@ const AttendanceTracking = () => {
   const [selectedDay, setSelectedDay] = useState(null); // Stores the date string of the expanded day
 
   useEffect(() => {
-    api.get('/employees').then(res => setEmployees(res.data));
+    const currentUser = getCurrentUser();
+    api.get('/employees')
+      .then(res => {
+        let employeeData = res.data;
+        if (currentUser && currentUser.role?.toLowerCase() !== 'admin') {
+          // Filter to only show the logged-in user's employee record
+          employeeData = employeeData.filter(emp => emp.user_id === currentUser.user_id);
+        }
+        setEmployees(employeeData);
+
+        // Auto-select if only one option (for non-admins)
+        if (employeeData.length === 1) {
+          setSelectedEmployeeId(employeeData[0].id);
+        }
+      })
+      .catch(err => console.error(err));
   }, []);
+
+  const [elapsedTime, setElapsedTime] = useState(null);
+
+  const fetchWorkLogs = () => {
+    if (!selectedEmployeeId) return;
+    setLoading(true);
+    api.get(`/attendance/work-logs/${selectedEmployeeId}`).then(res => {
+      setWorkLogs(res.data || []);
+      if (!res.data || res.data.length === 0) {
+        console.log("No work logs found for this employee");
+      }
+    }).catch(err => {
+      console.error("Failed to fetch data", err);
+      const errorMsg = err.response?.data?.detail;
+      const message = typeof errorMsg === 'string' ? errorMsg : 'Failed to fetch employee records';
+      showBannerMessage("error", message);
+      setWorkLogs([]);
+    }).finally(() => setLoading(false));
+  };
+
 
   useEffect(() => {
     if (selectedEmployeeId) {
-      setLoading(true);
-      api.get(`/attendance/work-logs/${selectedEmployeeId}`).then(res => { // This endpoint provides duration_hours
-        setWorkLogs(res.data || []);
-        if (!res.data || res.data.length === 0) {
-          console.log("No work logs found for this employee");
-        }
-      }).catch(err => {
-        console.error("Failed to fetch data", err);
-        const errorMsg = err.response?.data?.detail;
-        const message = typeof errorMsg === 'string' ? errorMsg : 'Failed to fetch employee records';
-        showBannerMessage("error", message);
-        setWorkLogs([]);
-      }).finally(() => setLoading(false));
+      fetchWorkLogs();
     } else {
       setWorkLogs([]);
     }
   }, [selectedEmployeeId]);
+
+  // Live Timer Effect
+  useEffect(() => {
+    const openLog = workLogs.find(log => !log.check_out_time);
+
+    if (openLog) {
+      const intervalId = setInterval(() => {
+        const startDateTime = new Date(`${openLog.date}T${openLog.check_in_time}`);
+        const now = new Date();
+        const diff = now - startDateTime;
+
+        if (!isNaN(diff) && diff >= 0) {
+          const hours = Math.floor(diff / 3600000);
+          const minutes = Math.floor((diff % 3600000) / 60000);
+          const seconds = Math.floor((diff % 60000) / 1000);
+          setElapsedTime(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+        }
+      }, 1000);
+
+      return () => clearInterval(intervalId);
+    } else {
+      setElapsedTime(null);
+    }
+  }, [workLogs]);
+
 
   const showMessage = (text, type) => {
     showBannerMessage(type, text);
@@ -348,8 +440,8 @@ const AttendanceTracking = () => {
   const handleClockIn = async () => {
     if (!selectedEmployeeId) return showMessage('Please select an employee.', 'error');
     try {
-      const response = await api.post('/attendance/clock-in', { employee_id: selectedEmployeeId, location });
-      setWorkLogs([response.data, ...workLogs]);
+      await api.post('/attendance/clock-in', { employee_id: selectedEmployeeId, location });
+      fetchWorkLogs(); // Refetch to look active immediately
       showMessage('Clocked in successfully.', 'success');
     } catch (err) {
       const errorMsg = err.response?.data?.detail;
@@ -360,21 +452,20 @@ const AttendanceTracking = () => {
 
   const handleClockOut = async () => {
     if (!selectedEmployeeId) return showMessage('Please select an employee.', 'error');
-    
+
     // Check if there's an open clock-in before attempting clock-out
-    const hasOpenClockIn = workLogs.some(log => 
+    const hasOpenClockIn = workLogs.some(log =>
       log.check_out_time === null || log.check_out_time === undefined
     );
-    
+
     if (!hasOpenClockIn) {
       return showMessage('Please clock in first before clocking out.', 'error');
     }
-    
+
     try {
-      // Corrected to use POST and send employee_id in the body, matching the backend implementation
-      const response = await api.post('/attendance/clock-out', { employee_id: selectedEmployeeId });
-      // Update the log in the state with the returned data which includes the check_out_time
-      setWorkLogs(workLogs.map(log => log.id === response.data.id ? response.data : log).sort((a, b) => new Date(b.date) - new Date(a.date) || b.id - a.id));
+      await api.post('/attendance/clock-out', { employee_id: selectedEmployeeId });
+      fetchWorkLogs(); // Refetch to get updated duration and totals
+      setElapsedTime(null); // Stop timer immediately
       showMessage('Clocked out successfully.', 'success');
     } catch (err) {
       const errorMsg = err.response?.data?.detail;
@@ -392,14 +483,14 @@ const AttendanceTracking = () => {
       const hours = log.duration_hours || 0;
       acc[date].totalHours += hours;
       acc[date].logs.push(log);
-      
+
       // Separate completed and open logs for better display
       if (log.check_out_time && hours > 0) {
         acc[date].completedLogs.push(log);
       } else if (!log.check_out_time) {
         acc[date].openLogs.push(log);
       }
-      
+
       return acc;
     }, {});
 
@@ -407,7 +498,7 @@ const AttendanceTracking = () => {
       const totalHours = data.totalHours;
       let status = 'Absent';
       let statusDescription = '';
-      
+
       // Determine status based on total working hours
       if (totalHours >= 8) {
         status = 'Present';
@@ -422,16 +513,16 @@ const AttendanceTracking = () => {
         status = 'Absent';
         statusDescription = 'No attendance recorded';
       }
-      
+
       // Calculate summary stats
       const completedHours = data.completedLogs.reduce((sum, log) => sum + (log.duration_hours || 0), 0);
       const openLogsCount = data.openLogs.length;
       const completedLogsCount = data.completedLogs.length;
-      
-      return { 
-        date, 
-        totalHours, 
-        status, 
+
+      return {
+        date,
+        totalHours,
+        status,
         statusDescription,
         logs: data.logs,
         completedLogs: data.completedLogs,
@@ -453,8 +544,8 @@ const AttendanceTracking = () => {
 
   return (
     <div className="space-y-6">
-      <BannerMessage 
-        message={bannerMessage} 
+      <BannerMessage
+        message={bannerMessage}
         onClose={closeBannerMessage}
         autoDismiss={true}
         duration={5000}
@@ -469,17 +560,22 @@ const AttendanceTracking = () => {
           {/* Live Clock-in/Out Section */}
           <div className="bg-gray-50 p-4 rounded-lg space-y-4">
             <h3 className="text-lg font-semibold">Live Attendance</h3>
-            
+
             {/* Status Indicator */}
             {(() => {
               const hasOpenClockIn = workLogs.some(log => log.check_out_time === null || log.check_out_time === undefined);
               return (
                 <div className={`p-2 rounded-md text-center text-sm font-semibold ${hasOpenClockIn ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                   Status: {hasOpenClockIn ? '🟢 Clocked In' : '⚪ Not Clocked In'}
+                  {hasOpenClockIn && elapsedTime && (
+                    <div className="mt-1 text-lg font-mono font-bold">
+                      ⏱ {elapsedTime}
+                    </div>
+                  )}
                 </div>
               );
             })()}
-            
+
             <div className="space-y-2">
               <label htmlFor="location-select" className="block text-sm font-medium text-gray-700">Location</label>
               <select id="location-select" value={location} onChange={e => setLocation(e.target.value)} className="w-full p-2 border rounded-md">
@@ -512,181 +608,181 @@ const AttendanceTracking = () => {
               </div>
             )}
             {!loading && workLogs.length > 0 && (
-            <div className="space-y-4">
-              {/* Summary Cards */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                {(() => {
-                  const totalDays = dailyAttendance.length;
-                  const presentDays = dailyAttendance.filter(d => d.status === 'Present').length;
-                  const halfDays = dailyAttendance.filter(d => d.status === 'Half Day').length;
-                  const totalHours = dailyAttendance.reduce((sum, d) => sum + d.totalHours, 0);
-                  
-                  return (
-                    <>
-                      <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                        <p className="text-xs text-blue-600 font-medium">Total Days</p>
-                        <p className="text-lg font-bold text-blue-800">{totalDays}</p>
-                      </div>
-                      <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-                        <p className="text-xs text-green-600 font-medium">Present Days</p>
-                        <p className="text-lg font-bold text-green-800">{presentDays}</p>
-                      </div>
-                      <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-                        <p className="text-xs text-yellow-600 font-medium">Half Days</p>
-                        <p className="text-lg font-bold text-yellow-800">{halfDays}</p>
-                      </div>
-                      <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
-                        <p className="text-xs text-purple-600 font-medium">Total Hours</p>
-                        <p className="text-lg font-bold text-purple-800">{totalHours.toFixed(2)}</p>
-                      </div>
-                    </>
-                  );
-                })()}
-              </div>
+              <div className="space-y-4">
+                {/* Summary Cards */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                  {(() => {
+                    const totalDays = dailyAttendance.length;
+                    const presentDays = dailyAttendance.filter(d => d.status === 'Present').length;
+                    const halfDays = dailyAttendance.filter(d => d.status === 'Half Day').length;
+                    const totalHours = dailyAttendance.reduce((sum, d) => sum + d.totalHours, 0);
 
-              {/* Attendance Table */}
-              <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-lg">
-                <table className="min-w-full bg-white text-sm">
-                  <thead className="bg-gray-100 sticky top-0 z-10">
-                    <tr>
-                      <th className="py-3 px-4 text-left font-semibold text-gray-700 border-b">Date</th>
-                      <th className="py-3 px-4 text-left font-semibold text-gray-700 border-b">Total Hours</th>
-                      <th className="py-3 px-4 text-left font-semibold text-gray-700 border-b">Status</th>
-                      <th className="py-3 px-4 text-left font-semibold text-gray-700 border-b">Sessions</th>
-                      <th className="py-3 px-4 text-left font-semibold text-gray-700 border-b">Details</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {dailyAttendance.map(day => (
-                      <React.Fragment key={day.date}>
-                        <tr
-                          className="border-b hover:bg-gray-50 cursor-pointer transition-colors"
-                          onClick={() => setSelectedDay(selectedDay === day.date ? null : day.date)}
-                        >
-                          <td className="py-3 px-4 font-medium text-gray-800">
-                            {new Date(day.date).toLocaleDateString('en-US', { 
-                              weekday: 'short', 
-                              year: 'numeric', 
-                              month: 'short', 
-                              day: 'numeric' 
-                            })}
-                          </td>
-                          <td className="py-3 px-4">
-                            <div className="flex flex-col">
-                              <span className="font-semibold text-gray-900">{day.totalHours.toFixed(2)} hrs</span>
-                              {day.completedHours > 0 && day.openLogsCount > 0 && (
-                                <span className="text-xs text-gray-500">
-                                  {day.completedHours.toFixed(2)} completed
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="py-3 px-4">
-                            <div className="flex flex-col gap-1">
-                              <span className={`px-3 py-1 rounded-md text-xs font-semibold border ${getStatusColor(day.status)}`}>
-                                {day.status}
-                              </span>
-                              <span className="text-xs text-gray-500">{day.statusDescription}</span>
-                            </div>
-                          </td>
-                          <td className="py-3 px-4">
-                            <div className="flex flex-col gap-1">
-                              <span className="text-xs">
-                                <span className="font-semibold text-green-600">{day.completedLogsCount}</span> completed
-                              </span>
-                              {day.openLogsCount > 0 && (
-                                <span className="text-xs">
-                                  <span className="font-semibold text-orange-600">{day.openLogsCount}</span> open
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="py-3 px-4">
-                            <button className="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
-                              {selectedDay === day.date ? '▲ Hide Details' : '▼ Show Details'}
-                            </button>
-                          </td>
-                        </tr>
-                        {selectedDay === day.date && (
-                          <tr>
-                            <td colSpan="5" className="p-0 bg-gray-50">
-                              <div className="p-4 border-t-2 border-gray-200">
-                                <div className="flex items-center justify-between mb-3">
-                                  <h4 className="font-semibold text-gray-800">Detailed Logs for {day.date}</h4>
+                    return (
+                      <>
+                        <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                          <p className="text-xs text-blue-600 font-medium">Total Days</p>
+                          <p className="text-lg font-bold text-blue-800">{totalDays}</p>
+                        </div>
+                        <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                          <p className="text-xs text-green-600 font-medium">Present Days</p>
+                          <p className="text-lg font-bold text-green-800">{presentDays}</p>
+                        </div>
+                        <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                          <p className="text-xs text-yellow-600 font-medium">Half Days</p>
+                          <p className="text-lg font-bold text-yellow-800">{halfDays}</p>
+                        </div>
+                        <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
+                          <p className="text-xs text-purple-600 font-medium">Total Hours</p>
+                          <p className="text-lg font-bold text-purple-800">{totalHours.toFixed(2)}</p>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+
+                {/* Attendance Table */}
+                <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-lg">
+                  <table className="min-w-full bg-white text-sm">
+                    <thead className="bg-gray-100 sticky top-0 z-10">
+                      <tr>
+                        <th className="py-3 px-4 text-left font-semibold text-gray-700 border-b">Date</th>
+                        <th className="py-3 px-4 text-left font-semibold text-gray-700 border-b">Total Hours</th>
+                        <th className="py-3 px-4 text-left font-semibold text-gray-700 border-b">Status</th>
+                        <th className="py-3 px-4 text-left font-semibold text-gray-700 border-b">Sessions</th>
+                        <th className="py-3 px-4 text-left font-semibold text-gray-700 border-b">Details</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dailyAttendance.map(day => (
+                        <React.Fragment key={day.date}>
+                          <tr
+                            className="border-b hover:bg-gray-50 cursor-pointer transition-colors"
+                            onClick={() => setSelectedDay(selectedDay === day.date ? null : day.date)}
+                          >
+                            <td className="py-3 px-4 font-medium text-gray-800">
+                              {new Date(day.date).toLocaleDateString('en-US', {
+                                weekday: 'short',
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                              })}
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex flex-col">
+                                <span className="font-semibold text-gray-900">{day.totalHours.toFixed(2)} hrs</span>
+                                {day.completedHours > 0 && day.openLogsCount > 0 && (
                                   <span className="text-xs text-gray-500">
-                                    Total: {day.totalHours.toFixed(2)} hours | 
-                                    Completed: {day.completedHours.toFixed(2)} hours
-                                    {day.openLogsCount > 0 && ` | Open: ${day.openLogsCount} session(s)`}
+                                    {day.completedHours.toFixed(2)} completed
                                   </span>
-                                </div>
-                                <div className="overflow-x-auto">
-                                  <table className="min-w-full bg-white text-xs border border-gray-200 rounded-lg">
-                                    <thead className="bg-gray-100">
-                                      <tr>
-                                        <th className="py-2 px-3 text-left font-semibold text-gray-700 border-b">Check-in Time</th>
-                                        <th className="py-2 px-3 text-left font-semibold text-gray-700 border-b">Check-out Time</th>
-                                        <th className="py-2 px-3 text-left font-semibold text-gray-700 border-b">Location</th>
-                                        <th className="py-2 px-3 text-left font-semibold text-gray-700 border-b">Duration</th>
-                                        <th className="py-2 px-3 text-left font-semibold text-gray-700 border-b">Status</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {day.logs.length > 0 ? day.logs.map((log, logIndex) => {
-                                        const isOpen = !log.check_out_time;
-                                        const hours = log.duration_hours || 0;
-                                        return (
-                                          <tr key={logIndex} className={`border-b last:border-b-0 ${isOpen ? 'bg-orange-50' : ''}`}>
-                                            <td className="py-2 px-3 font-medium">{log.check_in_time || 'N/A'}</td>
-                                            <td className="py-2 px-3">
-                                              {log.check_out_time || (
-                                                <span className="text-orange-600 font-medium">In Progress...</span>
-                                              )}
-                                            </td>
-                                            <td className="py-2 px-3">
-                                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                                                {log.location || 'N/A'}
-                                              </span>
-                                            </td>
-                                            <td className="py-2 px-3">
-                                              {hours > 0 ? (
-                                                <span className="font-semibold">{hours.toFixed(2)} hrs</span>
-                                              ) : (
-                                                <span className="text-gray-400">-</span>
-                                              )}
-                                            </td>
-                                            <td className="py-2 px-3">
-                                              {isOpen ? (
-                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
-                                                  Open
-                                                </span>
-                                              ) : (
-                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                                                  Completed
-                                                </span>
-                                              )}
-                                            </td>
-                                          </tr>
-                                        );
-                                      }) : (
-                                        <tr>
-                                          <td colSpan="5" className="py-4 text-center text-gray-500">
-                                            No logs available for this date
-                                          </td>
-                                        </tr>
-                                      )}
-                                    </tbody>
-                                  </table>
-                                </div>
+                                )}
                               </div>
                             </td>
+                            <td className="py-3 px-4">
+                              <div className="flex flex-col gap-1">
+                                <span className={`px-3 py-1 rounded-md text-xs font-semibold border ${getStatusColor(day.status)}`}>
+                                  {day.status}
+                                </span>
+                                <span className="text-xs text-gray-500">{day.statusDescription}</span>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex flex-col gap-1">
+                                <span className="text-xs">
+                                  <span className="font-semibold text-green-600">{day.completedLogsCount}</span> completed
+                                </span>
+                                {day.openLogsCount > 0 && (
+                                  <span className="text-xs">
+                                    <span className="font-semibold text-orange-600">{day.openLogsCount}</span> open
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <button className="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                {selectedDay === day.date ? '▲ Hide Details' : '▼ Show Details'}
+                              </button>
+                            </td>
                           </tr>
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </tbody>
-                </table>
+                          {selectedDay === day.date && (
+                            <tr>
+                              <td colSpan="5" className="p-0 bg-gray-50">
+                                <div className="p-4 border-t-2 border-gray-200">
+                                  <div className="flex items-center justify-between mb-3">
+                                    <h4 className="font-semibold text-gray-800">Detailed Logs for {day.date}</h4>
+                                    <span className="text-xs text-gray-500">
+                                      Total: {day.totalHours.toFixed(2)} hours |
+                                      Completed: {day.completedHours.toFixed(2)} hours
+                                      {day.openLogsCount > 0 && ` | Open: ${day.openLogsCount} session(s)`}
+                                    </span>
+                                  </div>
+                                  <div className="overflow-x-auto">
+                                    <table className="min-w-full bg-white text-xs border border-gray-200 rounded-lg">
+                                      <thead className="bg-gray-100">
+                                        <tr>
+                                          <th className="py-2 px-3 text-left font-semibold text-gray-700 border-b">Check-in Time</th>
+                                          <th className="py-2 px-3 text-left font-semibold text-gray-700 border-b">Check-out Time</th>
+                                          <th className="py-2 px-3 text-left font-semibold text-gray-700 border-b">Location</th>
+                                          <th className="py-2 px-3 text-left font-semibold text-gray-700 border-b">Duration</th>
+                                          <th className="py-2 px-3 text-left font-semibold text-gray-700 border-b">Status</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {day.logs.length > 0 ? day.logs.map((log, logIndex) => {
+                                          const isOpen = !log.check_out_time;
+                                          const hours = log.duration_hours || 0;
+                                          return (
+                                            <tr key={logIndex} className={`border-b last:border-b-0 ${isOpen ? 'bg-orange-50' : ''}`}>
+                                              <td className="py-2 px-3 font-medium">{log.check_in_time || 'N/A'}</td>
+                                              <td className="py-2 px-3">
+                                                {log.check_out_time || (
+                                                  <span className="text-orange-600 font-medium">In Progress...</span>
+                                                )}
+                                              </td>
+                                              <td className="py-2 px-3">
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                  {log.location || 'N/A'}
+                                                </span>
+                                              </td>
+                                              <td className="py-2 px-3">
+                                                {hours > 0 ? (
+                                                  <span className="font-semibold">{hours.toFixed(2)} hrs</span>
+                                                ) : (
+                                                  <span className="text-gray-400">-</span>
+                                                )}
+                                              </td>
+                                              <td className="py-2 px-3">
+                                                {isOpen ? (
+                                                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
+                                                    Open
+                                                  </span>
+                                                ) : (
+                                                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                                    Completed
+                                                  </span>
+                                                )}
+                                              </td>
+                                            </tr>
+                                          );
+                                        }) : (
+                                          <tr>
+                                            <td colSpan="5" className="py-4 text-center text-gray-500">
+                                              No logs available for this date
+                                            </td>
+                                          </tr>
+                                        )}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
             )}
           </div>
         </div>
@@ -696,155 +792,170 @@ const AttendanceTracking = () => {
 };
 
 const MonthlyReport = () => {
-    const [employees, setEmployees] = useState([]);
-    const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
-    const [report, setReport] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [date, setDate] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM format
+  const [employees, setEmployees] = useState([]);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
+  const [report, setReport] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM format
 
-    useEffect(() => {
-        api.get('/employees').then(res => setEmployees(res.data));
-    }, []);
-
-    useEffect(() => {
-        if (selectedEmployeeId) {
-            fetchReport();
+  useEffect(() => {
+    const currentUser = getCurrentUser();
+    api.get('/employees')
+      .then(res => {
+        let employeeData = res.data;
+        if (currentUser && currentUser.role?.toLowerCase() !== 'admin') {
+          // Filter to only show the logged-in user's employee record
+          employeeData = employeeData.filter(emp => emp.user_id === currentUser.user_id);
         }
-    }, [selectedEmployeeId, date]);
+        setEmployees(employeeData);
 
-    const fetchReport = async () => {
-        if (!selectedEmployeeId) return;
-        setLoading(true);
-        const [yearStr, monthStr] = date.split('-');
-        const year = parseInt(yearStr, 10);
-        const month = parseInt(monthStr, 10);
-        try {
-            const response = await api.get(`/attendance/monthly-report/${selectedEmployeeId}`, {
-                params: { year, month }
-            });
-            setReport(response.data);
-        } catch (error) {
-            console.error("Failed to fetch monthly report", error);
-            const errorMsg = error.response?.data?.detail;
-            const message = typeof errorMsg === 'string' ? errorMsg : 'Failed to load monthly report';
-            console.error(message);
-            setReport(null);
-        } finally {
-            setLoading(false);
+        // Auto-select if only one option (for non-admins)
+        if (employeeData.length === 1) {
+          setSelectedEmployeeId(employeeData[0].id);
         }
-    };
+      })
+      .catch(err => console.error(err));
+  }, []);
 
-    const ReportCard = ({ title, value, colorClass }) => (
-        <div className={`p-4 rounded-lg shadow ${colorClass}`}>
-            <p className="text-sm font-medium">{title}</p>
-            <p className="text-2xl font-bold">{value}</p>
-        </div>
-    );
+  useEffect(() => {
+    if (selectedEmployeeId) {
+      fetchReport();
+    }
+  }, [selectedEmployeeId, date]);
 
-    return (
-        <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
-                <select value={selectedEmployeeId} onChange={e => setSelectedEmployeeId(e.target.value)} className="w-full p-2 border rounded-md">
-                    <option value="">-- Select Employee --</option>
-                    {employees.map(emp => <option key={emp.id} value={emp.id}>{emp.name}</option>)}
-                </select>
-                <input type="month" value={date} onChange={e => setDate(e.target.value)} className="w-full p-2 border rounded-md" />
+  const fetchReport = async () => {
+    if (!selectedEmployeeId) return;
+    setLoading(true);
+    const [yearStr, monthStr] = date.split('-');
+    const year = parseInt(yearStr, 10);
+    const month = parseInt(monthStr, 10);
+    try {
+      const response = await api.get(`/attendance/monthly-report/${selectedEmployeeId}`, {
+        params: { year, month }
+      });
+      setReport(response.data);
+    } catch (error) {
+      console.error("Failed to fetch monthly report", error);
+      const errorMsg = error.response?.data?.detail;
+      const message = typeof errorMsg === 'string' ? errorMsg : 'Failed to load monthly report';
+      console.error(message);
+      setReport(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const ReportCard = ({ title, value, colorClass }) => (
+    <div className={`p-4 rounded-lg shadow ${colorClass}`}>
+      <p className="text-sm font-medium">{title}</p>
+      <p className="text-2xl font-bold">{value}</p>
+    </div>
+  );
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+        <select value={selectedEmployeeId} onChange={e => setSelectedEmployeeId(e.target.value)} className="w-full p-2 border rounded-md">
+          <option value="">-- Select Employee --</option>
+          {employees.map(emp => <option key={emp.id} value={emp.id}>{emp.name}</option>)}
+        </select>
+        <input type="month" value={date} onChange={e => setDate(e.target.value)} className="w-full p-2 border rounded-md" />
+      </div>
+
+      {loading && <p>Loading report...</p>}
+
+      {report && !loading && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+          <h3 className="text-xl font-bold">Monthly Report for {report.year && report.month ? new Date(report.year, report.month - 1).toLocaleString('default', { month: 'long', year: 'numeric' }) : date}</h3>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <ReportCard title="Total Days" value={report.total_days || 0} colorClass="bg-blue-100 text-blue-800" />
+            <ReportCard title="Present Days" value={report.present_days || 0} colorClass="bg-green-100 text-green-800" />
+            <ReportCard title="Paid Leaves" value={report.paid_leaves_taken || 0} colorClass="bg-yellow-100 text-yellow-800" />
+            <ReportCard title="Unpaid/Absent" value={report.unpaid_leaves || 0} colorClass="bg-red-100 text-red-800" />
+          </div>
+
+          <div className="bg-white p-4 rounded-lg shadow">
+            <h4 className="font-semibold mb-2">Annual Leave Balance</h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="font-medium">Paid Leave</p>
+                <p>Balance: <span className="font-bold">{report.paid_leave_balance || 0}</span> / {report.total_paid_leaves_year || 0}</p>
+              </div>
+              <div>
+                <p className="font-medium">Sick Leave</p>
+                <p>Balance: <span className="font-bold">{report.sick_leave_balance || 0}</span> / {report.total_sick_leaves_year || 0}</p>
+              </div>
             </div>
+          </div>
 
-            {loading && <p>Loading report...</p>}
-
-            {report && !loading && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-                    <h3 className="text-xl font-bold">Monthly Report for {report.year && report.month ? new Date(report.year, report.month - 1).toLocaleString('default', { month: 'long', year: 'numeric' }) : date}</h3>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <ReportCard title="Total Days" value={report.total_days || 0} colorClass="bg-blue-100 text-blue-800" />
-                        <ReportCard title="Present Days" value={report.present_days || 0} colorClass="bg-green-100 text-green-800" />
-                        <ReportCard title="Paid Leaves" value={report.paid_leaves_taken || 0} colorClass="bg-yellow-100 text-yellow-800" />
-                        <ReportCard title="Unpaid/Absent" value={report.unpaid_leaves || 0} colorClass="bg-red-100 text-red-800" />
-                    </div>
-
-                    <div className="bg-white p-4 rounded-lg shadow">
-                        <h4 className="font-semibold mb-2">Annual Leave Balance</h4>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <p className="font-medium">Paid Leave</p>
-                                <p>Balance: <span className="font-bold">{report.paid_leave_balance || 0}</span> / {report.total_paid_leaves_year || 0}</p>
-                            </div>
-                            <div>
-                                <p className="font-medium">Sick Leave</p>
-                                <p>Balance: <span className="font-bold">{report.sick_leave_balance || 0}</span> / {report.total_sick_leaves_year || 0}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white p-4 rounded-lg shadow">
-                        <h4 className="font-semibold mb-2">Salary Calculation for the Month</h4>
-                        <div className="grid grid-cols-3 gap-4 text-center">
-                            <div>
-                                <p className="font-medium text-gray-600">Base Salary</p><p className="font-bold text-lg">{formatCurrency(report.base_salary || 0)}</p>
-                            </div>
-                            <div>
-                                <p className="font-medium text-red-600">Deductions (Unpaid)</p><p className="font-bold text-lg text-red-500">- {formatCurrency(report.deductions || 0)}</p>
-                            </div>
-                            <div>
-                                <p className="font-medium text-green-600">Net Salary</p><p className="font-bold text-xl text-green-700">{formatCurrency(report.net_salary || 0)}</p>
-                            </div>
-                        </div>
-                    </div>
-                </motion.div>
-            )}
-        </div>
-    );
+          <div className="bg-white p-4 rounded-lg shadow">
+            <h4 className="font-semibold mb-2">Salary Calculation for the Month</h4>
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <p className="font-medium text-gray-600">Base Salary</p><p className="font-bold text-lg">{formatCurrency(report.base_salary || 0)}</p>
+              </div>
+              <div>
+                <p className="font-medium text-red-600">Deductions (Unpaid)</p><p className="font-bold text-lg text-red-500">- {formatCurrency(report.deductions || 0)}</p>
+              </div>
+              <div>
+                <p className="font-medium text-green-600">Net Salary</p><p className="font-bold text-xl text-green-700">{formatCurrency(report.net_salary || 0)}</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </div>
+  );
 };
 
 const StatusOverview = () => {
-    const [overview, setOverview] = useState(null);
-    const [loading, setLoading] = useState(true);
+  const [overview, setOverview] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        api.get('/employees/status-overview')
-            .then(res => setOverview(res.data))
-            .catch(err => console.error("Failed to fetch status overview", err))
-            .finally(() => setLoading(false));
-    }, []);
+  useEffect(() => {
+    api.get('/employees/status-overview')
+      .then(res => setOverview(res.data))
+      .catch(err => console.error("Failed to fetch status overview", err))
+      .finally(() => setLoading(false));
+  }, []);
 
-    const EmployeeList = ({ title, employees, colorClass }) => (
-        <div className={`p-4 rounded-lg shadow-sm ${colorClass}`}>
-            <h4 className="font-bold text-lg mb-2">{title} ({employees.length})</h4>
-            {employees.length > 0 ? (
-                <ul className="space-y-1 text-sm max-h-60 overflow-y-auto">
-                    {employees.map(emp => (
-                        <li key={emp.id} className="flex justify-between items-center p-1.5 rounded hover:bg-white/50">
-                            <span>{emp.name}</span>
-                            <span className="text-xs text-gray-600">{emp.role}</span>
-                        </li>
-                    ))}
-                </ul>
-            ) : (
-                <p className="text-sm text-gray-500 italic">No employees in this category.</p>
-            )}
-        </div>
-    );
+  const EmployeeList = ({ title, employees, colorClass }) => (
+    <div className={`p-4 rounded-lg shadow-sm ${colorClass}`}>
+      <h4 className="font-bold text-lg mb-2">{title} ({employees.length})</h4>
+      {employees.length > 0 ? (
+        <ul className="space-y-1 text-sm max-h-60 overflow-y-auto">
+          {employees.map(emp => (
+            <li key={emp.id} className="flex justify-between items-center p-1.5 rounded hover:bg-white/50">
+              <span>{emp.name}</span>
+              <span className="text-xs text-gray-600">{emp.role}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-sm text-gray-500 italic">No employees in this category.</p>
+      )}
+    </div>
+  );
 
-    if (loading) return <p>Loading employee overview...</p>;
-    if (!overview) return <p>Could not load data.</p>;
+  if (loading) return <p>Loading employee overview...</p>;
+  if (!overview) return <p>Could not load data.</p>;
 
-    return (
-        <AnimatePresence>
-            <motion.div 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            >
-                <EmployeeList title="Active Employees" employees={overview.active_employees} colorClass="bg-green-50 text-green-900" />
-                <EmployeeList title="On Paid Leave" employees={overview.on_paid_leave} colorClass="bg-blue-50 text-blue-900" />
-                <EmployeeList title="On Sick Leave" employees={overview.on_sick_leave} colorClass="bg-yellow-50 text-yellow-900" />
-                <EmployeeList title="On Unpaid Leave" employees={overview.on_unpaid_leave} colorClass="bg-orange-50 text-orange-900" />
-                <EmployeeList title="Inactive Employees" employees={overview.inactive_employees} colorClass="bg-red-50 text-red-900" />
-            </motion.div>
-        </AnimatePresence>
-    );
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      >
+        <EmployeeList title="Active Employees" employees={overview.active_employees} colorClass="bg-green-50 text-green-900" />
+        <EmployeeList title="On Paid Leave" employees={overview.on_paid_leave} colorClass="bg-blue-50 text-blue-900" />
+        <EmployeeList title="On Sick Leave" employees={overview.on_sick_leave} colorClass="bg-yellow-50 text-yellow-900" />
+        <EmployeeList title="On Unpaid Leave" employees={overview.on_unpaid_leave} colorClass="bg-orange-50 text-orange-900" />
+        <EmployeeList title="Inactive Employees" employees={overview.inactive_employees} colorClass="bg-red-50 text-red-900" />
+      </motion.div>
+    </AnimatePresence>
+  );
 };
 
 const EmployeeListAndForm = () => {
@@ -873,10 +984,10 @@ const EmployeeListAndForm = () => {
         api.get("/users/?skip=0&limit=20"),
         api.get("/employees?skip=0&limit=20")
       ]);
-      
+
       const users = usersRes.data || [];
       const employees = employeesRes.data || [];
-      
+
       // Create a map of employees by user_id for quick lookup
       const employeeMap = new Map();
       employees.forEach(emp => {
@@ -884,21 +995,21 @@ const EmployeeListAndForm = () => {
           employeeMap.set(emp.user_id, emp);
         }
       });
-      
+
       // Get set of user IDs that have employee records
       const employeeUserIds = new Set(employees.map(emp => emp.user_id).filter(Boolean));
-      
+
       // Filter users: Only include users who have employee records OR are admins
       // Exclude guest users (users without employee records and not admins)
       const filteredUsers = users.filter(user => {
         const userRole = user.role?.name?.toLowerCase() || '';
         const hasEmployeeRecord = employeeUserIds.has(user.id);
         const isAdmin = userRole === 'admin';
-        
+
         // Include if: has employee record OR is admin
         return hasEmployeeRecord || isAdmin;
       });
-      
+
       // Combine users with their employee data
       const combinedUsers = filteredUsers.map(user => ({
         id: user.id,
@@ -908,13 +1019,14 @@ const EmployeeListAndForm = () => {
         phone: user.phone,
         is_active: user.is_active,
         // Add employee-specific data if available
+        employee_id: employeeMap.get(user.id)?.id || null,
         salary: employeeMap.get(user.id)?.salary || null,
         join_date: employeeMap.get(user.id)?.join_date || null,
         image_url: employeeMap.get(user.id)?.image_url || null,
         has_employee_record: employeeMap.has(user.id),
         trend: Array.from({ length: 30 }, () => Math.floor(Math.random() * 10000))
       }));
-      
+
       setEmployees(combinedUsers);
       setHasMore(combinedUsers.length >= 20);
       setPage(1);
@@ -993,12 +1105,12 @@ const EmployeeListAndForm = () => {
         await api.post("/employees", data);
       }
       fetchEmployees();
-            resetForm();
-      alert("Employee saved successfully!");
+      resetForm();
+      toast.success("Employee saved successfully!");
     } catch (err) {
       const errorMessage = err.response?.data?.detail || "An error occurred while saving the employee.";
       console.error("Error saving employee:", err.response || err);
-      alert(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
@@ -1009,7 +1121,7 @@ const EmployeeListAndForm = () => {
   };
 
   const handleEdit = (emp) => {
-    setEditId(emp.id);
+    setEditId(emp.employee_id);
     setForm({
       name: emp.name,
       role: emp.role,
@@ -1037,12 +1149,12 @@ const EmployeeListAndForm = () => {
     try {
       const data = new FormData();
       data.append("is_active", String(!emp.is_active)); // Convert to string for FormData
-      await api.put(`/employees/${emp.id}`, data);
+      await api.put(`/employees/${emp.employee_id}`, data);
       fetchEmployees();
-          } catch (err) {
+    } catch (err) {
       const errorMessage = err.response?.data?.detail || "An error occurred while updating employee status.";
       console.error("Error updating employee:", err.response || err);
-      alert(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
@@ -1087,6 +1199,7 @@ const EmployeeListAndForm = () => {
 
   return (
     <div className="space-y-6">
+      <Toaster position="top-right" />
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         {kpiData.map((kpi, idx) => (
           <div key={idx} className="relative bg-white p-5 rounded-xl shadow cursor-pointer hover:shadow-xl transition" onMouseEnter={() => setHoveredKPI(idx)} onMouseLeave={() => setHoveredKPI(null)}>
@@ -1135,11 +1248,11 @@ const EmployeeListAndForm = () => {
               <>
                 <label className="text-sm text-gray-600 mb-1">Status</label>
                 <div className="flex items-center gap-2">
-                  <input 
-                    type="checkbox" 
-                    name="is_active" 
-                    checked={form.is_active !== undefined ? form.is_active : true} 
-                    onChange={(e) => setForm({...form, is_active: e.target.checked})}
+                  <input
+                    type="checkbox"
+                    name="is_active"
+                    checked={form.is_active !== undefined ? form.is_active : true}
+                    onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
                     className="w-5 h-5"
                   />
                   <span className="text-sm">{form.is_active ? 'Active' : 'Inactive'}</span>
@@ -1181,10 +1294,10 @@ const EmployeeListAndForm = () => {
                 <td className="p-1 sm:p-2 border text-center text-xs sm:text-sm">{emp.id}</td>
                 <td className="p-1 sm:p-2 border">
                   {emp.image_url ? (
-                    <img 
-                      src={`${mediaBaseUrl}/${emp.image_url.startsWith('/') ? emp.image_url.substring(1) : emp.image_url}`} 
-                      alt="Profile" 
-                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover" 
+                    <img
+                      src={`${mediaBaseUrl}/${emp.image_url.startsWith('/') ? emp.image_url.substring(1) : emp.image_url}`}
+                      alt="Profile"
+                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
                     />
                   ) : (
                     <span className="text-gray-400 text-xs sm:text-sm">No image</span>
@@ -1214,24 +1327,19 @@ const EmployeeListAndForm = () => {
                   <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
                     {emp.has_employee_record ? (
                       <>
-                        <button 
-                          className="bg-blue-500 text-white px-1 sm:px-2 py-1 text-xs sm:text-sm rounded" 
+                        <button
+                          className="bg-blue-500 text-white px-1 sm:px-2 py-1 text-xs sm:text-sm rounded"
                           onClick={() => handleEdit(emp)}
                         >
                           Edit
                         </button>
-                        <button 
+                        <button
                           className={`px-1 sm:px-2 py-1 text-xs sm:text-sm rounded ${emp.is_active ? 'bg-yellow-500' : 'bg-green-500'} text-white`}
                           onClick={() => handleToggleActive(emp)}
                         >
                           {emp.is_active ? 'Deactivate' : 'Activate'}
                         </button>
-                        <button 
-                          className="bg-red-500 text-white px-1 sm:px-2 py-1 text-xs sm:text-sm rounded" 
-                          onClick={() => handleDelete(emp.id)}
-                        >
-                          Delete
-                        </button>
+
                       </>
                     ) : (
                       <span className="text-gray-500 text-xs sm:text-sm">Admin User</span>
@@ -1266,52 +1374,96 @@ const EmployeeListAndForm = () => {
 };
 
 const EmployeeManagement = () => {
-    const [activeTab, setActiveTab] = useState('attendance');
+  /* 
+    Calculate permissions once on render.
+    Admin gets access to everything.
+    Others check their permission list.
+  */
+  const currentUser = useMemo(() => getCurrentUser(), []);
 
-    const renderContent = () => {
-        switch (activeTab) {
-            case 'manage-employees': return <EmployeeListAndForm />;
-            case 'report': return <UserHistory />;
-            case 'leave': return <LeaveManagement />;
-            case 'attendance': return <AttendanceTracking />;
-            case 'monthly-report': return <MonthlyReport />;
-            case 'status-overview': return <StatusOverview />;
-            default: return null;
-        }
+  const hasPermission = (permission) => {
+    if (!currentUser) return false;
+    if (currentUser.role?.toLowerCase() === 'admin') return true;
+    return currentUser.permissions && currentUser.permissions.includes(permission);
+  };
+
+  const [activeTab, setActiveTab] = useState('attendance');
+
+  // Redirect if user doesn't have access to current tab
+  useEffect(() => {
+    if (!currentUser) return; // Wait for user to be loaded
+
+    const tabPermissions = {
+      'manage-employees': '/employee-management/manage',
+      'report': '/employee-management/report',
+      'leave': '/employee-management/leave',
+      'attendance': '/employee-management/attendance',
+      'monthly-report': '/employee-management/monthly-report',
+      'status-overview': '/employee-management/status-overview'
     };
 
-    const TabButton = ({ id, label, icon }) => (
-        <button
-            onClick={() => setActiveTab(id)}
-            className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all ${activeTab === id ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-200'}`}
-        >
-            {icon}
-            {label}
-        </button>
-    );
+    const currentPermission = tabPermissions[activeTab];
+    if (currentPermission && !hasPermission(currentPermission)) {
+      // Find first allowed tab
+      const firstAllowed = Object.keys(tabPermissions).find(key =>
+        hasPermission(tabPermissions[key])
+      );
+      if (firstAllowed) {
+        setActiveTab(firstAllowed);
+      }
+    }
+  }, [currentUser, activeTab]);
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'manage-employees': return <EmployeeListAndForm />;
+      case 'report': return <UserHistory />;
+      case 'leave': return <LeaveManagement />;
+      case 'attendance': return <AttendanceTracking />;
+      case 'monthly-report': return <MonthlyReport />;
+      case 'status-overview': return <StatusOverview />;
+      default: return null;
+    }
+  };
+
+
+
+  const TabButton = ({ id, label, icon, requiredPermission }) => {
+    if (!hasPermission(requiredPermission)) return null;
 
     return (
-        <DashboardLayout>
-            <div className="p-4 md:p-6 space-y-6 bg-gray-50 min-h-screen">
-                <h1 className="text-3xl font-bold text-gray-800">Employee Management</h1>
-
-                <div className="bg-white p-4 rounded-xl shadow-md">
-                    <div className="flex flex-wrap gap-2 border-b mb-4 pb-2">
-                        <TabButton id="manage-employees" label="Manage Employees" icon={<Users size={16} />} />
-                        <TabButton id="report" label="Activity Report" icon={<Briefcase size={16} />} />
-                        <TabButton id="leave" label="Leave Requests" icon={<UserCheck size={16} />} />
-                        <TabButton id="attendance" label="Attendance & Hours" icon={<Clock size={16} />} />
-                        <TabButton id="monthly-report" label="Monthly Report" icon={<Calendar size={16} />} />
-                        <TabButton id="status-overview" label="Status Overview" icon={<Briefcase size={16} />} />
-                    </div>
-
-                    <div className="p-4">
-                        {renderContent()}
-                    </div>
-                </div>
-            </div>
-        </DashboardLayout>
+      <button
+        onClick={() => setActiveTab(id)}
+        className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all ${activeTab === id ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-200'}`}
+      >
+        {icon}
+        {label}
+      </button>
     );
+  };
+
+  return (
+    <DashboardLayout>
+      <div className="p-4 md:p-6 space-y-6 bg-gray-50 min-h-screen">
+        <h1 className="text-3xl font-bold text-gray-800">Employee Management</h1>
+
+        <div className="bg-white p-4 rounded-xl shadow-md">
+          <div className="flex flex-wrap gap-2 border-b mb-4 pb-2">
+            <TabButton id="manage-employees" label="Manage Employees" icon={<Users size={16} />} requiredPermission="/employee-management/manage" />
+            <TabButton id="report" label="Activity Report" icon={<Briefcase size={16} />} requiredPermission="/employee-management/report" />
+            <TabButton id="leave" label="Leave Requests" icon={<UserCheck size={16} />} requiredPermission="/employee-management/leave" />
+            <TabButton id="attendance" label="Attendance & Hours" icon={<Clock size={16} />} requiredPermission="/employee-management/attendance" />
+            <TabButton id="monthly-report" label="Monthly Report" icon={<Calendar size={16} />} requiredPermission="/employee-management/monthly-report" />
+            <TabButton id="status-overview" label="Status Overview" icon={<Briefcase size={16} />} requiredPermission="/employee-management/status-overview" />
+          </div>
+
+          <div className="p-4">
+            {renderContent()}
+          </div>
+        </div>
+      </div>
+    </DashboardLayout>
+  );
 };
 
 export default EmployeeManagement;

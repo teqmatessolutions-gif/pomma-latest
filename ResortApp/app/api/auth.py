@@ -56,7 +56,9 @@ def login(request: LoginRequest, db: Session = Depends(auth.get_db)):
         token_data = {
             "user_id": user.id,
             "role": user.role.name,
-            "permissions": permissions
+            "permissions": permissions,
+            "name": user.name,
+            "email": user.email
         }
         access_token = auth.create_access_token(
             data=token_data,

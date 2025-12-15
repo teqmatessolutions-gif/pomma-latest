@@ -1,0 +1,13 @@
+Checkout ID: 23
+  Booking ID: None
+  Package Booking ID: 16
+  Room Number: 101
+  Food Total: 450.0
+  Service Total: 5500.0
+  Created At: 2025-12-14 20:44:29.528585+05:30
+
+--- Linked Food Orders ---
+Found 0 orders linked to PackageBooking 16
+Room 101 ID: 1
+Found 0 ORPHANED food orders for Room 1
+Found 0 ORPHANED services for Room 1
