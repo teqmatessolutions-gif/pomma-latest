@@ -3,12 +3,12 @@ export const isLocalhost = () => {
     return process.env.NODE_ENV !== "production";
   }
   const hostname = window.location.hostname;
-  return hostname === "localhost" || 
-         hostname === "127.0.0.1" || 
-         hostname === "" ||
-         hostname.startsWith("192.168.") ||
-         hostname.startsWith("10.") ||
-         hostname === "::1";
+  return hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "" ||
+    hostname.startsWith("192.168.") ||
+    hostname.startsWith("10.") ||
+    hostname === "::1";
 };
 
 export const isPommaDeployment = () => {
@@ -28,17 +28,17 @@ export const getMediaBaseUrl = () => {
   if (process.env.REACT_APP_MEDIA_BASE_URL) {
     return process.env.REACT_APP_MEDIA_BASE_URL;
   }
-  
+
   // For Pomma deployment in production
   if (typeof window !== "undefined" && isPommaDeployment()) {
-    return `${window.location.origin}/pomma`;
+    return `${window.location.origin}`;
   }
-  
+
   // Default for development
   if (isLocalhost()) {
     return "http://localhost:8010";
   }
-  
+
   // Default for production
   return "https://www.teqmates.com";
 };
@@ -48,18 +48,18 @@ export const getApiBaseUrl = () => {
   if (process.env.REACT_APP_API_BASE_URL) {
     return process.env.REACT_APP_API_BASE_URL;
   }
-  
+
   // For localhost development
   if (isLocalhost()) {
     return "http://localhost:8010/api";
   }
-  
+
   // For assets served under /pommaadmin or /pommaholidays in production,
   // build absolute API path off the current origin.
   if (typeof window !== "undefined" && isPommaDeployment()) {
     return `${window.location.origin}/pommaapi/api`;
   }
-  
+
   // Sensible defaults for production
   return "https://www.teqmates.com/pommaapi/api";
 };
