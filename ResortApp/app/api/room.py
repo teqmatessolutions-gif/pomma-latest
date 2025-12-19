@@ -20,7 +20,7 @@ def get_db():
     finally:
         db.close()
 
-UPLOAD_DIR = os.path.join("static", "rooms")
+UPLOAD_DIR = os.path.join("uploads", "rooms")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
@@ -68,7 +68,7 @@ def create_room_test(
             status=status,
             adults=adults,
             children=children,
-            image_url=f"/static/rooms/{filename}" if filename else None,
+            image_url=f"uploads/rooms/{filename}" if filename else None,
             air_conditioning=air_conditioning,
             wifi=wifi,
             bathroom=bathroom,
@@ -387,7 +387,7 @@ def update_room(
         image_path = os.path.join(UPLOAD_DIR, filename)
         with open(image_path, "wb") as buffer:
             shutil.copyfileobj(image.file, buffer)
-        db_room.image_url = f"/static/rooms/{filename}"
+        db_room.image_url = f"uploads/rooms/{filename}"
 
     db.commit()
     db.refresh(db_room)
