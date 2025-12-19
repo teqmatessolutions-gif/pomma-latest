@@ -334,7 +334,7 @@ export default function DashboardLayout({ children }) {
           <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: 'var(--accent-bg)' }}>
             {/* Left side: App Logo */}
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--accent-bg)' }}>
+              <div className="p-3 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--text-primary)' }}>
                 <img src={pommaLogo} className="h-12 w-auto object-contain" alt="Pomma Holidays Logo" />
               </div>
             </div>
