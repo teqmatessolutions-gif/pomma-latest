@@ -54,7 +54,7 @@ fi
 
 echo ">>> Building User Frontend..."
 cd $TARGET_DIR/userend/userend
-npm install
+npm install --legacy-peer-deps
 npm run build
 # Move to web root
 mkdir -p /var/www/pomma
@@ -62,7 +62,7 @@ cp -r build/* /var/www/pomma/
 
 echo ">>> Building Dashboard..."
 cd $TARGET_DIR/dasboard
-npm install
+npm install --legacy-peer-deps
 npm run build
 # Move to web root
 mkdir -p /var/www/pommaadmin
