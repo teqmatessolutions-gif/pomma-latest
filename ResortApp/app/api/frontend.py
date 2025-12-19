@@ -17,7 +17,7 @@ router = APIRouter()
 # frontend.py is at: ResortApp/app/api/frontend.py
 # So we need to go up 3 levels: app/api -> app -> ResortApp
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-UPLOAD_DIR = os.path.join(BASE_DIR, "static", "uploads")
+UPLOAD_DIR = os.path.join(BASE_DIR, "uploads", "cms")
 # Ensure directory exists with proper permissions
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 print(f"Upload directory set to: {UPLOAD_DIR}")  # Debug log
@@ -79,8 +79,8 @@ async def create_header_banner(
         else:
             image_url = normalized_path.lstrip('/')
         
-        if not image_url.startswith('static/'):
-            image_url = f"static/uploads/{unique_filename}"
+        if not image_url.startswith('uploads/'):
+            image_url = f"uploads/cms/{unique_filename}"
         
         image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
         
@@ -146,8 +146,8 @@ async def update_header_banner(
             else:
                 image_url = normalized_path.lstrip('/')
             
-            if not image_url.startswith('static/'):
-                image_url = f"static/uploads/{unique_filename}"
+            if not image_url.startswith('uploads/'):
+                image_url = f"uploads/cms/{unique_filename}"
             
             image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
 
@@ -245,8 +245,8 @@ async def create_gallery(
         else:
             image_url = normalized_path.lstrip('/')
         
-        if not image_url.startswith('static/'):
-            image_url = f"static/uploads/{unique_filename}"
+        if not image_url.startswith('uploads/'):
+            image_url = f"uploads/cms/{unique_filename}"
         
         image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
         
@@ -301,8 +301,8 @@ async def update_gallery(
             else:
                 image_url = normalized_path.lstrip('/')
             
-            if not image_url.startswith('static/'):
-                image_url = f"static/uploads/{unique_filename}"
+            if not image_url.startswith('uploads/'):
+                image_url = f"uploads/cms/{unique_filename}"
             
             image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
 
@@ -462,8 +462,8 @@ async def create_signature_experience(
         else:
             image_url = normalized_path.lstrip('/')
         
-        if not image_url.startswith('static/'):
-            image_url = f"static/uploads/{unique_filename}"
+        if not image_url.startswith('uploads/'):
+            image_url = f"uploads/cms/{unique_filename}"
         
         image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
         
@@ -525,8 +525,8 @@ async def update_signature_experience(
             else:
                 image_url = normalized_path.lstrip('/')
             
-            if not image_url.startswith('static/'):
-                image_url = f"static/uploads/{unique_filename}"
+            if not image_url.startswith('uploads/'):
+                image_url = f"uploads/cms/{unique_filename}"
             
             image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
             update_data["image_url"] = image_url
@@ -603,8 +603,8 @@ async def create_plan_wedding(
         else:
             image_url = normalized_path.lstrip('/')
         
-        if not image_url.startswith('static/'):
-            image_url = f"static/uploads/{unique_filename}"
+        if not image_url.startswith('uploads/'):
+            image_url = f"uploads/cms/{unique_filename}"
         
         image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
         
@@ -666,8 +666,8 @@ async def update_plan_wedding(
             else:
                 image_url = normalized_path.lstrip('/')
             
-            if not image_url.startswith('static/'):
-                image_url = f"static/uploads/{unique_filename}"
+            if not image_url.startswith('uploads/'):
+                image_url = f"uploads/cms/{unique_filename}"
             
             image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
             update_data["image_url"] = image_url
@@ -774,8 +774,8 @@ async def create_nearby_attraction(
         else:
             image_url = normalized_path.lstrip('/')
         
-        if not image_url.startswith('static/'):
-            image_url = f"static/uploads/{unique_filename}"
+        if not image_url.startswith('uploads/'):
+            image_url = f"uploads/cms/{unique_filename}"
         
         image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
         
@@ -842,8 +842,8 @@ async def update_nearby_attraction(
             else:
                 image_url = normalized_path.lstrip('/')
             
-            if not image_url.startswith('static/'):
-                image_url = f"static/uploads/{unique_filename}"
+            if not image_url.startswith('uploads/'):
+                image_url = f"uploads/cms/{unique_filename}"
             
             image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
             update_data["image_url"] = image_url
@@ -929,8 +929,8 @@ async def create_nearby_attraction_banner(
         else:
             image_url = normalized_path.lstrip('/')
 
-        if not image_url.startswith('static/'):
-            image_url = f"static/uploads/{unique_filename}"
+        if not image_url.startswith('uploads/'):
+            image_url = f"uploads/cms/{unique_filename}"
 
         image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
 
@@ -993,8 +993,8 @@ async def update_nearby_attraction_banner(
             else:
                 image_url = normalized_path.lstrip('/')
 
-            if not image_url.startswith('static/'):
-                image_url = f"static/uploads/{unique_filename}"
+            if not image_url.startswith('uploads/'):
+                image_url = f"uploads/cms/{unique_filename}"
 
             image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
             update_data["image_url"] = image_url
