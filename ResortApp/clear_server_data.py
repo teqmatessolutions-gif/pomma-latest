@@ -48,7 +48,7 @@ def clear_data():
                     print(f"Error clearing {table}: {e}")
 
         # Group 2: Master Data (Requested by User)
-        master_tables = ["food_items", "rooms"]
+        master_tables = ["food_items", "food_categories", "services", "rooms"]
         for table in master_tables:
             try:
                 print(f"Clearing {table}...")
