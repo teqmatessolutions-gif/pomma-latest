@@ -2409,117 +2409,61 @@ export default function App() {
                                                     <div className="absolute inset-0 bg-transparent group-hover:bg-[#0f5132]/10 transition-all duration-500" />
                                                 </div>
 
-                                                {/* Content */}
-                                                <div className="p-4 space-y-4">
-                                                    <h3 className={`text-2xl font-bold ${theme.textCardPrimary || theme.textPrimary} group-hover:${theme.textCardAccent || theme.textAccent} transition-colors`}>
-                                                        {room.type}
-                                                    </h3>
-                                                    <div className={`flex items-center gap-2 text-sm ${theme.textCardSecondary || theme.textSecondary}`}>
-                                                        <BedDouble className={`w-5 h-5 ${theme.textCardAccent || theme.textAccent}`} />
-                                                        <span>Room #{room.number}</span>
+                                                {/* Content - Flex Column for Alignment */}
+                                                <div className="p-5 flex flex-col flex-grow bg-white relative z-10 transition-colors duration-300">
+                                                    <div className="flex-grow space-y-3">
+                                                        <h3 className={`text-2xl font-bold ${theme.textCardPrimary || theme.textPrimary} group-hover:${theme.textCardAccent || theme.textAccent} transition-colors line-clamp-1`}>
+                                                            {room.type}
+                                                        </h3>
+                                                        <div className={`flex items-center gap-2 text-sm ${theme.textCardSecondary || theme.textSecondary}`}>
+                                                            <BedDouble className={`w-5 h-5 ${theme.textCardAccent || theme.textAccent}`} />
+                                                            <span>Room #{room.number}</span>
+                                                        </div>
+
+                                                        {/* Features Pills */}
+                                                        {(room.air_conditioning || room.wifi || room.bathroom || room.living_area || room.terrace || room.parking || room.kitchen || room.family_room || room.bbq || room.garden || room.dining || room.breakfast) && (
+                                                            <div className="flex flex-wrap items-center gap-2 text-xs mt-2">
+                                                                {room.air_conditioning && <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded-md border border-blue-100">AC</span>}
+                                                                {room.wifi && <span className="px-2 py-1 bg-green-50 text-green-700 rounded-md border border-green-100">WiFi</span>}
+                                                                {room.bathroom && <span className="px-2 py-1 bg-purple-50 text-purple-700 rounded-md border border-purple-100">Bathtub</span>}
+                                                                {room.living_area && <span className="px-2 py-1 bg-orange-50 text-orange-700 rounded-md border border-orange-100">Living</span>}
+                                                                {room.terrace && <span className="px-2 py-1 bg-yellow-50 text-yellow-700 rounded-md border border-yellow-100">Terrace</span>}
+                                                                {room.parking && <span className="px-2 py-1 bg-indigo-50 text-indigo-700 rounded-md border border-indigo-100">Parking</span>}
+                                                                {room.kitchen && <span className="px-2 py-1 bg-pink-50 text-pink-700 rounded-md border border-pink-100">Kitchen</span>}
+                                                                {room.family_room && <span className="px-2 py-1 bg-teal-50 text-teal-700 rounded-md border border-teal-100">Family</span>}
+                                                                {room.bbq && <span className="px-2 py-1 bg-red-50 text-red-700 rounded-md border border-red-100">BBQ</span>}
+                                                                {room.garden && <span className="px-2 py-1 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-100">Garden</span>}
+                                                                {room.dining && <span className="px-2 py-1 bg-amber-50 text-amber-700 rounded-md border border-amber-100">Dining</span>}
+                                                                {room.breakfast && <span className="px-2 py-1 bg-cyan-50 text-cyan-700 rounded-md border border-cyan-100">B'fast</span>}
+                                                            </div>
+                                                        )}
                                                     </div>
 
-                                                    {/* Features */}
-                                                    {(room.air_conditioning || room.wifi || room.bathroom || room.living_area || room.terrace || room.parking || room.kitchen || room.family_room || room.bbq || room.garden || room.dining || room.breakfast) && (
-                                                        <div className="flex flex-wrap items-center gap-2 text-sm mt-2">
-                                                            {room.air_conditioning && (
-                                                                <span className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
-                                                                    <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                                                                    AC
-                                                                </span>
-                                                            )}
-                                                            {room.wifi && (
-                                                                <span className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
-                                                                    <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                                                                    WiFi
-                                                                </span>
-                                                            )}
-                                                            {room.bathroom && (
-                                                                <span className="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs">
-                                                                    <span className="w-2 h-2 rounded-full bg-purple-500"></span>
-                                                                    Bathroom
-                                                                </span>
-                                                            )}
-                                                            {room.living_area && (
-                                                                <span className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs">
-                                                                    <span className="w-2 h-2 rounded-full bg-orange-500"></span>
-                                                                    Living
-                                                                </span>
-                                                            )}
-                                                            {room.terrace && (
-                                                                <span className="flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs">
-                                                                    <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
-                                                                    Terrace
-                                                                </span>
-                                                            )}
-                                                            {room.parking && (
-                                                                <span className="flex items-center gap-1 px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs">
-                                                                    <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
-                                                                    Parking
-                                                                </span>
-                                                            )}
-                                                            {room.kitchen && (
-                                                                <span className="flex items-center gap-1 px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-xs">
-                                                                    <span className="w-2 h-2 rounded-full bg-pink-500"></span>
-                                                                    Kitchen
-                                                                </span>
-                                                            )}
-                                                            {room.family_room && (
-                                                                <span className="flex items-center gap-1 px-2 py-1 bg-teal-100 text-teal-700 rounded-full text-xs">
-                                                                    <span className="w-2 h-2 rounded-full bg-teal-500"></span>
-                                                                    Family
-                                                                </span>
-                                                            )}
-                                                            {room.bbq && (
-                                                                <span className="flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs">
-                                                                    <span className="w-2 h-2 rounded-full bg-red-500"></span>
-                                                                    BBQ
-                                                                </span>
-                                                            )}
-                                                            {room.garden && (
-                                                                <span className="flex items-center gap-1 px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs">
-                                                                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                                                    Garden
-                                                                </span>
-                                                            )}
-                                                            {room.dining && (
-                                                                <span className="flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-xs">
-                                                                    <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                                                                    Dining
-                                                                </span>
-                                                            )}
-                                                            {room.breakfast && (
-                                                                <span className="flex items-center gap-1 px-2 py-1 bg-cyan-100 text-cyan-700 rounded-full text-xs">
-                                                                    <span className="w-2 h-2 rounded-full bg-cyan-500"></span>
-                                                                    Breakfast
-                                                                </span>
-                                                            )}
+                                                    {/* Price & CTA - Pushed to Bottom */}
+                                                    <div className="mt-auto pt-4 border-t border-gray-100">
+                                                        <div className="flex items-baseline justify-between mb-4">
+                                                            <div>
+                                                                <p className={`text-xs ${theme.textCardSecondary || theme.textSecondary}`}>Starting from</p>
+                                                                <p className={`text-3xl font-extrabold ${theme.textCardAccent || theme.textAccent} leading-none`}>
+                                                                    {formatCurrency(room.price)}
+                                                                    <span className={`text-xs ${theme.textCardSecondary || theme.textSecondary} font-normal ml-1`}>/night</span>
+                                                                </p>
+                                                            </div>
                                                         </div>
-                                                    )}
 
-                                                    {/* Price */}
-                                                    <div className={`flex items-baseline justify-between pt-2 border-t ${theme.cardBorder || theme.border}`}>
-                                                        <div>
-                                                            <p className={`text-sm ${theme.textCardSecondary || theme.textSecondary}`}>Starting from</p>
-                                                            <p className={`text-3xl font-extrabold ${theme.textCardAccent || theme.textAccent}`}>
-                                                                {formatCurrency(room.price)}
-                                                                <span className={`text-sm ${theme.textCardSecondary || theme.textSecondary} font-normal`}>/night</span>
-                                                            </p>
-                                                        </div>
+                                                        {/* CTA Button */}
+                                                        <button
+                                                            onClick={() => handleOpenRoomBookingForm(room.id)}
+                                                            disabled={bookingData.check_in && bookingData.check_out && !roomAvailability[room.id]}
+                                                            className={`w-full py-3.5 font-bold rounded-xl shadow-md transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 ${bookingData.check_in && bookingData.check_out && !roomAvailability[room.id]
+                                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                                : 'bg-[#0f5132] text-white hover:bg-[#153a2c] hover:shadow-lg'
+                                                                }`}
+                                                        >
+                                                            {bookingData.check_in && bookingData.check_out && !roomAvailability[room.id] ? 'Not Available' : 'Book Now'}
+                                                            <ChevronRight className="w-4 h-4" />
+                                                        </button>
                                                     </div>
-
-                                                    {/* CTA Button */}
-                                                    <button
-                                                        onClick={() => handleOpenRoomBookingForm(room.id)}
-                                                        disabled={bookingData.check_in && bookingData.check_out && !roomAvailability[room.id]}
-                                                        className={`w-full mt-4 px-6 py-3 font-bold rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2 ${bookingData.check_in && bookingData.check_out && !roomAvailability[room.id]
-                                                            ? 'bg-gray-400 text-gray-700 cursor-not-allowed opacity-50'
-                                                            : 'bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white hover:from-[#136640] hover:to-[#218051] hover:shadow-[0_18px_35px_rgba(12,61,38,0.35)]'
-                                                            }`}
-                                                    >
-                                                        {bookingData.check_in && bookingData.check_out && !roomAvailability[room.id] ? 'Not Available' : 'Book Now'}
-                                                        <ChevronRight className="w-5 h-5" />
-                                                    </button>
                                                 </div>
                                             </div>
                                         ))}
