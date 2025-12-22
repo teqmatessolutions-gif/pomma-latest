@@ -9,14 +9,15 @@ from app.schemas.packages import PackageBookingCreate
 
 # ------------------- Packages -------------------
 
-def create_package(db: Session, title: str, description: str, price: float, image_urls: List[str], booking_type: str = "room_type", room_types: str = None):
+def create_package(db: Session, title: str, description: str, price: float, image_urls: List[str], booking_type: str = "room_type", room_types: str = None, status: str = "Available"):
     try:
         pkg = Package(
             title=title, 
             description=description, 
             price=price,
             booking_type=booking_type,
-            room_types=room_types
+            room_types=room_types,
+            status=status
         )
         db.add(pkg)
         db.commit()

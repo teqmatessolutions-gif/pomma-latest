@@ -718,6 +718,31 @@ export default function App() {
     const [services, setServices] = useState([]);
     const [foodItems, setFoodItems] = useState([]);
     const [foodCategories, setFoodCategories] = useState([]);
+
+    // Auto-scroll logic for Services section
+    const servicesScrollRef = useRef(null);
+    const [isServicesHovered, setIsServicesHovered] = useState(false);
+
+    useEffect(() => {
+        const scrollContainer = servicesScrollRef.current;
+        if (!scrollContainer || services.length === 0) return;
+
+        let animationFrameId;
+        const scroll = () => {
+            if (!isServicesHovered) {
+                // If scrolled halfway (end of first set), reset to 0
+                // Use >= (scrollWidth / 2) - tolerance to be safe
+                if (scrollContainer.scrollLeft >= (scrollContainer.scrollWidth / 2) - 5) {
+                    scrollContainer.scrollLeft = 0;
+                } else {
+                    scrollContainer.scrollLeft += 0.5; // Smoother, slower speed
+                }
+            }
+            animationFrameId = requestAnimationFrame(scroll);
+        };
+        animationFrameId = requestAnimationFrame(scroll);
+        return () => cancelAnimationFrame(animationFrameId);
+    }, [isServicesHovered, services]);
     const logoCandidates = useMemo(() => {
         const unique = new Set();
         const candidates = [];
@@ -1132,7 +1157,7 @@ export default function App() {
 
     // Handlers for opening booking modals
     const handleOpenRoomBookingForm = (roomId) => {
-        setBookingData(prev => ({ ...prev, room_ids: prev.room_ids.includes(roomId) ? prev.room_ids : [...prev.room_ids, roomId] }));
+        setBookingData(prev => ({ ...prev, room_ids: [roomId] }));
         setIsRoomBookingFormOpen(true);
         setBookingMessage({ type: null, text: "" });
     };
@@ -2140,6 +2165,7 @@ export default function App() {
                                         const featuredPkg = packages[0];
                                         const imgIndex = packageImageIndex[featuredPkg.id] || 0;
                                         const currentImage = featuredPkg.images && featuredPkg.images[imgIndex];
+                                        const isComingSoon = featuredPkg.status === 'Coming Soon';
                                         return (
                                             <div
                                                 key={featuredPkg.id}
@@ -2156,6 +2182,10 @@ export default function App() {
                                                             loading="lazy"
                                                             onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                                         />
+                                                        {/* Status Badge (Top Right) */}
+                                                        <div className={`absolute top-4 right-4 text-white font-extrabold text-lg px-4 py-2 rounded-xl shadow-lg border border-white/20 backdrop-blur-sm z-20 uppercase tracking-wider ${isComingSoon ? 'bg-amber-500' : 'bg-[#0f5132]/90'}`}>
+                                                            {isComingSoon ? 'Coming Soon' : (featuredPkg.status || 'Available')}
+                                                        </div>
                                                         {/* Price badge - large card */}
                                                         <div className="absolute bottom-4 left-4 bg-[#0f5132]/90 text-white font-extrabold text-2xl md:text-3xl px-4 py-2 rounded-xl shadow-lg border border-white/20 backdrop-blur-sm">
                                                             {formatCurrency(featuredPkg.price || 0)}
@@ -2202,11 +2232,12 @@ export default function App() {
 
                                                         <div className="flex items-center justify-between flex-wrap gap-4">
                                                             <button
-                                                                onClick={() => handleOpenPackageBookingForm(featuredPkg.id)}
-                                                                className="px-8 py-3 bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white font-semibold rounded-full shadow-lg hover:from-[#136640] hover:to-[#218051] transition-all duration-300 transform hover:scale-105 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#c99c4e]/70"
+                                                                onClick={() => !isComingSoon && handleOpenPackageBookingForm(featuredPkg.id)}
+                                                                disabled={isComingSoon}
+                                                                className={`px-8 py-3 ${isComingSoon ? 'bg-amber-500 cursor-not-allowed' : 'bg-gradient-to-r from-[#0f5132] to-[#1a7042] hover:from-[#136640] hover:to-[#218051] transform hover:scale-105 shadow-lg'} text-white font-semibold rounded-full transition-all duration-300 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#c99c4e]/70`}
                                                             >
-                                                                Book Now
-                                                                <ChevronRight className="w-5 h-5" />
+                                                                {isComingSoon ? 'Coming Soon' : 'Book Now'}
+                                                                {!isComingSoon && <ChevronRight className="w-5 h-5" />}
                                                             </button>
                                                         </div>
                                                     </div>
@@ -2221,11 +2252,12 @@ export default function App() {
                                             {packages.slice(1).map((pkg) => {
                                                 const imgIndex = packageImageIndex[pkg.id] || 0;
                                                 const currentImage = pkg.images && pkg.images[imgIndex];
+                                                const isComingSoon = pkg.status === 'Coming Soon';
                                                 return (
                                                     <div
                                                         key={pkg.id}
-                                                        onClick={() => handleOpenPackageBookingForm(pkg.id)}
-                                                        className={`group relative ${theme.bgCard} rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 border ${theme.border} cursor-pointer reveal`}
+                                                        onClick={() => !isComingSoon && handleOpenPackageBookingForm(pkg.id)}
+                                                        className={`group relative ${theme.bgCard} rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 border ${theme.border} ${isComingSoon ? 'cursor-not-allowed opacity-90' : 'cursor-pointer'} reveal`}
                                                         style={{ transitionDelay: `${(imgIndex % 5) * 70}ms` }}
                                                     >
                                                         {/* Image Container */}
@@ -2241,14 +2273,10 @@ export default function App() {
                                                             <div className="absolute bottom-3 left-3 bg-[#0f5132]/90 text-white font-extrabold text-lg px-3 py-1 rounded-lg shadow-md border border-white/20 backdrop-blur-sm">
                                                                 {formatCurrency(pkg.price || 0)}
                                                             </div>
-                                                            {/* Quick Book button overlay */}
-                                                            <button
-                                                                type="button"
-                                                                onClick={(e) => { e.stopPropagation(); handleOpenPackageBookingForm(pkg.id); }}
-                                                                className="absolute top-3 right-3 bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md hover:from-[#136640] hover:to-[#218051]"
-                                                            >
-                                                                Book Now
-                                                            </button>
+                                                            {/* Status Badge (Top Right) */}
+                                                            <div className={`absolute top-3 right-3 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wider ${isComingSoon ? 'bg-amber-500' : 'bg-gradient-to-r from-[#0f5132] to-[#1a7042]'}`}>
+                                                                {isComingSoon ? 'Coming Soon' : (pkg.status || 'Available')}
+                                                            </div>
                                                             {/* Image Slider Dots */}
                                                             {pkg.images && pkg.images.length > 1 && (
                                                                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/60 backdrop-blur-sm px-3 py-2 rounded-full z-10">
@@ -2288,13 +2316,14 @@ export default function App() {
                                                             <div className="mt-4 flex items-center justify-between">
                                                                 <button
                                                                     type="button"
+                                                                    disabled={isComingSoon}
                                                                     onClick={(e) => { e.stopPropagation(); handleOpenPackageBookingForm(pkg.id); }}
-                                                                    className="px-5 py-2 rounded-full bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white font-semibold shadow-md hover:from-[#136640] hover:to-[#218051] transition-all duration-300"
+                                                                    className={`px-5 py-2 rounded-full ${isComingSoon ? 'bg-amber-500 text-white cursor-not-allowed' : 'bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white hover:from-[#136640] hover:to-[#218051] shadow-md'} font-semibold transition-all duration-300`}
                                                                 >
-                                                                    Book Now
+                                                                    {isComingSoon ? 'Coming Soon' : 'Book Now'}
                                                                 </button>
                                                                 <span className={`text-sm ${theme.textSecondary}`}>
-                                                                    Tap card to book
+                                                                    {isComingSoon ? 'Not available yet' : 'Tap card to book'}
                                                                 </span>
                                                             </div>
                                                         </div>
@@ -2381,27 +2410,32 @@ export default function App() {
                                                     />
                                                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
-                                                    {/* Luxury Badge */}
-                                                    <div className="absolute top-4 left-4">
-                                                        <span className="px-4 py-2 bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white text-xs font-semibold uppercase tracking-[0.3em] rounded-full shadow-lg">
-                                                            Premium Villa
-                                                        </span>
-                                                    </div>
+
 
                                                     {/* Availability Badge - Only show when dates are selected */}
-                                                    {bookingData.check_in && bookingData.check_out && (
-                                                        <div className="absolute top-4 right-4">
-                                                            {roomAvailability[room.id] ? (
-                                                                <span className="px-4 py-2 rounded-full text-xs font-bold shadow-lg bg-green-500 text-white">
-                                                                    Available
+                                                    {/* Availability Badge */}
+                                                    <div className="absolute top-4 right-4">
+                                                        {(() => {
+                                                            let displayStatus = room.status || 'Available';
+                                                            let bgClass = 'bg-green-500';
+
+                                                            if (bookingData.check_in && bookingData.check_out && !roomAvailability[room.id]) {
+                                                                if (displayStatus !== 'Maintenance' && displayStatus !== 'Coming Soon') {
+                                                                    displayStatus = 'Booked';
+                                                                }
+                                                            }
+
+                                                            if (displayStatus === 'Maintenance') bgClass = 'bg-red-600';
+                                                            else if (displayStatus === 'Coming Soon') bgClass = 'bg-yellow-500';
+                                                            else if (['Booked', 'Occupied', 'Checked-in'].includes(displayStatus)) bgClass = 'bg-red-500';
+
+                                                            return (
+                                                                <span className={`px-4 py-2 rounded-full text-xs font-bold shadow-lg text-white ${bgClass}`}>
+                                                                    {displayStatus}
                                                                 </span>
-                                                            ) : (
-                                                                <span className="px-4 py-2 rounded-full text-xs font-bold shadow-lg bg-red-500 text-white">
-                                                                    Booked
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    )}
+                                                            );
+                                                        })()}
+                                                    </div>
 
                                                     {/* Hover Effect Overlay */}
                                                     <div className="absolute inset-0 bg-transparent group-hover:bg-[#0f5132]/10 transition-all duration-500" />
@@ -2452,13 +2486,14 @@ export default function App() {
                                                         {/* CTA Button */}
                                                         <button
                                                             onClick={() => handleOpenRoomBookingForm(room.id)}
-                                                            disabled={bookingData.check_in && bookingData.check_out && !roomAvailability[room.id]}
-                                                            className={`w-full py-3.5 font-bold rounded-full shadow-md transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 ${bookingData.check_in && bookingData.check_out && !roomAvailability[room.id]
-                                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                                : 'bg-[#0f5132] text-white hover:bg-[#153a2c] hover:shadow-lg'
+                                                            disabled={(bookingData.check_in && bookingData.check_out && !roomAvailability[room.id]) || room.status === 'Maintenance' || room.status === 'Coming Soon'}
+                                                            className={`w-full py-3.5 font-bold rounded-full shadow-md transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 ${room.status === 'Maintenance' ? 'bg-red-600 text-white cursor-not-allowed' :
+                                                                    room.status === 'Coming Soon' ? 'bg-amber-500 text-white cursor-not-allowed' :
+                                                                        (bookingData.check_in && bookingData.check_out && !roomAvailability[room.id]) ? 'bg-red-500 text-white cursor-not-allowed' :
+                                                                            'bg-[#0f5132] text-white hover:bg-[#153a2c] hover:shadow-lg'
                                                                 }`}
                                                         >
-                                                            {bookingData.check_in && bookingData.check_out && !roomAvailability[room.id] ? 'Not Available' : 'Book Now'}
+                                                            {room.status === 'Maintenance' ? 'Maintenance' : room.status === 'Coming Soon' ? 'Coming Soon' : (bookingData.check_in && bookingData.check_out && !roomAvailability[room.id] ? 'Not Available' : 'Book Now')}
                                                             <ChevronRight className="w-4 h-4" />
                                                         </button>
                                                     </div>
@@ -2639,10 +2674,10 @@ export default function App() {
                                             </div>
 
                                             {/* Main Title */}
-                                            <h2 className="text-3xl md:text-5xl lg:text-7xl font-extrabold mb-6 animate-[fadeInUp_1.2s_ease-out] drop-shadow-2xl leading-tight">
+                                            <h2 className="text-3xl md:text-5xl lg:text-7xl font-extrabold mb-6 animate-[fadeInUp_1.2s_ease-out] drop-shadow-2xl leading-tight text-white">
                                                 {wedding.title.split(' ').slice(0, 3).join(' ')}<br />
                                                 <span className="bg-gradient-to-r from-white via-[#f5e6c9] to-white bg-clip-text text-transparent">
-                                                    {wedding.title.split(' ').slice(3).join(' ') || 'WEDDING DESTINATION'}
+                                                    {wedding.title.split(' ').slice(3).join(' ')}
                                                 </span>
                                             </h2>
 
@@ -2691,45 +2726,53 @@ export default function App() {
                             </div>
 
                             {services.length > 0 ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                                    {services.slice(0, 3).map((service) => (
-                                        <div
-                                            key={service.id}
-                                            className="relative group overflow-hidden rounded-[26px] bg-white shadow-[0_18px_35px_rgba(12,61,38,0.18)] transition-transform duration-500 hover:-translate-y-3"
-                                        >
-                                            <div className="relative h-64 overflow-hidden">
-                                                {service.images && service.images.length > 0 ? (
-                                                    <img
-                                                        src={getImageUrl(service.images[0].image_url)}
-                                                        alt={service.name}
-                                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                                        onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#0f5132]/15 via-[#1a7042]/15 to-[#c99c4e]/20">
-                                                        <ConciergeBell className="w-12 h-12 text-[#0f5132]" />
+                                <div className="w-full relative">
+                                    <div
+                                        ref={servicesScrollRef}
+                                        onMouseEnter={() => setIsServicesHovered(true)}
+                                        onMouseLeave={() => setIsServicesHovered(false)}
+                                        className="flex gap-8 py-4 overflow-x-auto pb-6 custom-scrollbar"
+                                        style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(216, 201, 172, 0.6) transparent' }}
+                                    >
+                                        {[...services, ...services].map((service, index) => (
+                                            <div
+                                                key={`${service.id}-${index}`}
+                                                className="relative flex-shrink-0 w-[400px] group overflow-hidden rounded-[26px] bg-white shadow-[0_18px_35px_rgba(12,61,38,0.18)] transition-transform duration-500 hover:-translate-y-3"
+                                            >
+                                                <div className="relative h-64 overflow-hidden">
+                                                    {service.images && service.images.length > 0 ? (
+                                                        <img
+                                                            src={getImageUrl(service.images[0].image_url)}
+                                                            alt={service.name}
+                                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                                            onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#0f5132]/15 via-[#1a7042]/15 to-[#c99c4e]/20">
+                                                            <ConciergeBell className="w-12 h-12 text-[#0f5132]" />
+                                                        </div>
+                                                    )}
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
+                                                    <div className="absolute bottom-4 left-0 right-0 px-6 text-white">
+                                                        <h3 className="text-3xl md:text-4xl font-extrabold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]" style={{ textShadow: '0 0 20px rgba(255,255,255,0.3), 0 2px 8px rgba(0,0,0,0.9), 0 4px 12px rgba(0,0,0,0.7)' }}>{service.name}</h3>
                                                     </div>
-                                                )}
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
-                                                <div className="absolute bottom-4 left-0 right-0 px-6 text-white">
-                                                    <h3 className="text-3xl md:text-4xl font-extrabold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]" style={{ textShadow: '0 0 20px rgba(255,255,255,0.3), 0 2px 8px rgba(0,0,0,0.9), 0 4px 12px rgba(0,0,0,0.7)' }}>{service.name}</h3>
+                                                </div>
+                                                <div className="p-6 space-y-4">
+                                                    <p className="text-sm text-[#4f6f62] leading-relaxed line-clamp-3">
+                                                        {service.description}
+                                                    </p>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleOpenServiceBookingForm(service.id)}
+                                                        className="inline-flex items-center gap-2 text-sm font-semibold text-[#0f5132] hover:text-[#1a7042] transition-colors"
+                                                    >
+                                                        Explore Service
+                                                        <ChevronRight className="w-4 h-4" />
+                                                    </button>
                                                 </div>
                                             </div>
-                                            <div className="p-6 space-y-4">
-                                                <p className="text-sm text-[#4f6f62] leading-relaxed">
-                                                    {service.description}
-                                                </p>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleOpenServiceBookingForm(service.id)}
-                                                    className="inline-flex items-center gap-2 text-sm font-semibold text-[#0f5132] hover:text-[#1a7042] transition-colors"
-                                                >
-                                                    Explore Service
-                                                    <ChevronRight className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
                             ) : (
                                 <p className={`text-center py-12 ${theme.textSecondary}`}>No services available at the moment.</p>
@@ -2915,10 +2958,10 @@ export default function App() {
                                         <div className="inline-flex items-center gap-2 px-6 py-2 bg-white/15 backdrop-blur-sm rounded-full border border-white/30 uppercase tracking-[0.35em] text-xs font-semibold">
                                             ✦ Nearby Attractions ✦
                                         </div>
-                                        <h2 className="text-3xl md:text-5xl font-extrabold leading-tight drop-shadow-xl">
+                                        <h2 className="text-3xl md:text-5xl font-extrabold leading-tight drop-shadow-xl text-white">
                                             {activeNearbyAttractionBanners[currentAttractionBannerIndex]?.title || 'Explore the Destination'}
                                         </h2>
-                                        <p className="text-base md:text-xl text-white/85 leading-relaxed drop-shadow-lg">
+                                        <p className="text-base md:text-xl text-white leading-relaxed drop-shadow-lg">
                                             {activeNearbyAttractionBanners[currentAttractionBannerIndex]?.subtitle || 'Discover the most captivating sights surrounding our resort.'}
                                         </p>
                                         {/* Map button displayed in main Nearby Attractions section */}
@@ -2949,11 +2992,9 @@ export default function App() {
                         <section className={`bg-gradient-to-b ${theme.bgCard} ${theme.bgSecondary} py-20 transition-colors duration-500`}>
                             <div className="w-full mx-auto px-2 sm:px-4 md:px-6">
                                 <div className="text-center mb-16">
-                                    <span className="inline-block px-6 py-2 bg-[#0f5132]/10 text-[#0f5132] text-sm font-semibold tracking-[0.35em] uppercase rounded-full border border-[#d8c9ac] mb-4">
-                                        ✦ Explore ✦
-                                    </span>
+
                                     <h2 className={`inline-block px-8 py-3 bg-[#0f5132]/10 border border-[#d8c9ac] rounded-full text-4xl md:text-5xl font-extrabold text-[#0f5132] mb-4 shadow-sm backdrop-blur-sm`}>
-                                        NEARBY ATTRACTIONS
+                                        ✦ NEARBY ATTRACTIONS ✦
                                     </h2>
                                 </div>
 
@@ -3034,48 +3075,7 @@ export default function App() {
                     <ChevronUp className="w-6 h-6" />
                 </button>
 
-                <button onClick={toggleChat} className={`fixed bottom-8 left-8 p-4 rounded-full ${theme.buttonBg} ${theme.buttonText} shadow-lg transition-all duration-300 z-50 ${theme.buttonHover}`} aria-label="Open Chat">
-                    <MessageSquare className="w-6 h-6" />
-                </button>
 
-                {/* AI Concierge Chat Modal */}
-                {isChatOpen && (
-                    <div className="fixed inset-0 z-[100] bg-neutral-950/80 backdrop-blur-sm flex items-end justify-center">
-                        <div className={`w-full max-w-lg h-3/4 md:h-4/5 ${theme.chatBg} rounded-t-3xl shadow-2xl flex flex-col`}>
-                            <div className={`${theme.chatHeaderBg} p-4 rounded-t-3xl flex items-center justify-between border-b ${theme.chatInputBorder}`}>
-                                <h3 className="text-lg font-bold flex items-center"><MessageSquare className={`w-5 h-5 mr-2 ${theme.textAccent}`} /> AI Concierge</h3>
-                                <button onClick={toggleChat} className={`p-1 rounded-full ${theme.textSecondary} hover:${theme.textPrimary} transition-colors`}><X className="w-6 h-6" /></button>
-                            </div>
-                            <div ref={chatMessagesRef} className="flex-1 p-4 overflow-y-auto space-y-4">
-                                {chatHistory.map((msg, index) => (
-                                    <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                        <div className={`p-3 rounded-xl max-w-xs md:max-w-md shadow-lg ${msg.role === 'user' ? `${theme.chatUserBg} ${theme.chatUserText} rounded-br-none` : `${theme.chatModelBg} ${theme.chatModelText} rounded-bl-none`}`}>
-                                            <p className="text-sm break-words">{msg.parts[0].text}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                                {isChatLoading && (
-                                    <div className="flex justify-start">
-                                        <div className={`p-3 rounded-xl ${theme.chatModelBg} shadow-lg`}>
-                                            <div className="flex items-center space-x-2 animate-bounce-dot">
-                                                <div className={`w-2 h-2 ${theme.chatLoaderBg} rounded-full`} style={{ animationDelay: '0s' }}></div>
-                                                <div className={`w-2 h-2 ${theme.chatLoaderBg} rounded-full`} style={{ animationDelay: '0.2s' }}></div>
-                                                <div className={`w-2 h-2 ${theme.chatLoaderBg} rounded-full`} style={{ animationDelay: '0.4s' }}></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                            <form onSubmit={handleSendMessage} className={`p-4 border-t ${theme.chatInputBorder} ${theme.chatHeaderBg} flex items-center`}>
-                                <input type="text" value={userMessage} onChange={(e) => setUserMessage(e.target.value)} placeholder="Ask me anything..."
-                                    className={`flex-1 p-3 rounded-full ${theme.chatInputBg} ${theme.textPrimary} ${theme.chatInputPlaceholder} focus:outline-none focus:ring-2 focus:ring-amber-500`} />
-                                <button type="submit" className={`ml-2 p-3 rounded-full ${theme.buttonBg} ${theme.buttonText} ${theme.buttonHover} transition-colors disabled:opacity-50`} disabled={!userMessage.trim() || isChatLoading}>
-                                    <Send className="w-5 h-5" />
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                )}
 
                 {/* General Booking Modal - Date Selection First */}
                 {isGeneralBookingOpen && (
@@ -3154,25 +3154,27 @@ export default function App() {
                                             Resort Amenities
                                         </h4>
                                         {services && services.length > 0 ? (
-                                            <div className="max-h-48 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                {services.map((service) => (
-                                                    <div
-                                                        key={service.id}
-                                                        className="flex items-start space-x-3 rounded-2xl bg-white/80 border border-[#d8c9ac] px-4 py-3 shadow-sm"
-                                                    >
-                                                        <div className="flex-shrink-0 mt-1 text-[#0f5132]">
-                                                            <ConciergeBell className="w-5 h-5" />
+                                            <div className="w-full overflow-hidden relative">
+                                                <div className="animate-marquee gap-3 py-1">
+                                                    {[...services, ...services].map((service, index) => (
+                                                        <div
+                                                            key={`${service.id}-${index}`}
+                                                            className="flex-shrink-0 w-64 flex items-start space-x-3 rounded-2xl bg-white/80 border border-[#d8c9ac] px-4 py-3 shadow-sm"
+                                                        >
+                                                            <div className="flex-shrink-0 mt-1 text-[#0f5132]">
+                                                                <ConciergeBell className="w-5 h-5" />
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-semibold text-[#0f5132]">{service.name}</p>
+                                                                {service.description && (
+                                                                    <p className="text-xs text-[#4f6f62] mt-1 line-clamp-2">
+                                                                        {service.description}
+                                                                    </p>
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                        <div>
-                                                            <p className="text-sm font-semibold text-[#0f5132]">{service.name}</p>
-                                                            {service.description && (
-                                                                <p className="text-xs text-[#4f6f62] mt-1 line-clamp-2">
-                                                                    {service.description}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                                    ))}
+                                                </div>
                                             </div>
                                         ) : (
                                             <p className="text-center text-sm text-[#4f6f62] bg-white/70 rounded-2xl px-4 py-6 border border-dashed border-[#d8c9ac]">
@@ -3189,7 +3191,7 @@ export default function App() {
                 {/* Room Booking Modal */}
                 {isRoomBookingFormOpen && (
                     <div className="fixed inset-0 z-[100] bg-neutral-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-                        <div className={`w-full max-w-lg ${theme.bgCard} rounded-3xl shadow-2xl flex flex-col max-h-[90vh] my-8`}>
+                        <div className={`w-full max-w-4xl ${theme.bgCard} rounded-3xl shadow-2xl flex flex-col max-h-[90vh] my-8`}>
                             <div className={`p-6 flex items-center justify-between border-b ${theme.border}`}>
                                 <h3 className="text-lg font-bold flex items-center"><BedDouble className={`w-5 h-5 mr-2 ${theme.textAccent}`} /> Book a Room</h3>
                                 <button onClick={() => setIsRoomBookingFormOpen(false)} className={`p-1 rounded-full ${theme.textSecondary} hover:${theme.textPrimary} transition-colors`}><X className="w-6 h-6" /></button>
@@ -3246,60 +3248,91 @@ export default function App() {
                                     ) : (
                                         <>
                                             <p className={`text-xs ${theme.textSecondary} mb-2`}>Showing rooms available from {bookingData.check_in} to {bookingData.check_out}</p>
-                                            <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-48 overflow-y-auto p-3 rounded-xl ${theme.bgSecondary}`}>
+                                            <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 p-3 rounded-xl ${theme.bgSecondary}`}>
                                                 {rooms.length > 0 ? (
-                                                    rooms.map(room => (
-                                                        <div key={room.id} className={`flex flex-col h-full bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-neutral-100 group`}>
-                                                            <div className="relative h-48 overflow-hidden">
-                                                                <img
-                                                                    src={getImageUrl(room.image_url)}
-                                                                    alt={room.type}
-                                                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                                                    onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
-                                                                />
-                                                                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-[#0f5132] shadow-sm">
-                                                                    Room #{room.number}
-                                                                </div>
-                                                            </div>
+                                                    rooms.map(room => {
+                                                        const isSelected = bookingData.room_ids?.includes(room.id);
+                                                        const isUnavailable = room.status === 'Maintenance' || room.status === 'Coming Soon';
+                                                        return (
+                                                            <div
+                                                                key={room.id}
+                                                                onClick={() => {
+                                                                    if (isUnavailable) return;
+                                                                    setBookingData(prev => {
+                                                                        const currentIds = prev.room_ids || [];
+                                                                        const newIds = currentIds.includes(room.id)
+                                                                            ? currentIds.filter(id => id !== room.id)
+                                                                            : [...currentIds, room.id];
+                                                                        return { ...prev, room_ids: newIds };
+                                                                    });
+                                                                }}
+                                                                className={`group flex flex-col h-full rounded-2xl shadow-sm transition-all duration-300 overflow-hidden relative ${isUnavailable ? 'opacity-70 cursor-not-allowed bg-gray-50' : 'cursor-pointer bg-white'} ${isSelected ? 'ring-2 ring-[#0f5132] ring-offset-2 shadow-xl' : (isUnavailable ? 'border border-gray-100' : 'border border-neutral-100 hover:shadow-xl')}`}
+                                                            >
+                                                                {/* Image Section */}
+                                                                <div className="relative h-44 overflow-hidden">
+                                                                    <img
+                                                                        src={getImageUrl(room.image_url)}
+                                                                        alt={room.type}
+                                                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                                                        onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
+                                                                    />
+                                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-90" />
 
-                                                            <div className="p-5 flex flex-col flex-grow">
-                                                                <div className="flex justify-between items-start mb-2">
-                                                                    <h3 className="text-xl font-bold text-[#153a2c]">{room.type}</h3>
-                                                                </div>
-
-                                                                <div className="flex flex-wrap gap-2 mb-4">
-                                                                    {/* Amenities badges would go here */}
-                                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#f0fdf4] text-[#166534]">
-                                                                        {room.adults} Adults
-                                                                    </span>
-                                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#f0fdf4] text-[#166534]">
-                                                                        {room.children} Children
-                                                                    </span>
-                                                                </div>
-
-                                                                <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
-                                                                    <div>
-                                                                        <p className="text-xs text-gray-500">Starting from</p>
-                                                                        <p className="text-lg font-bold text-[#c99c4e]">
-                                                                            {formatCurrency(room.price)}
-                                                                            <span className="text-xs text-gray-400 font-normal">/night</span>
-                                                                        </p>
+                                                                    <div className="absolute bottom-3 left-3 text-white">
+                                                                        <h3 className="font-bold text-lg leading-tight drop-shadow-sm">{room.type}</h3>
                                                                     </div>
 
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            setIsGeneralBookingOpen(false);
-                                                                            setBookingData(prev => ({ ...prev, room_ids: [room.id] }));
-                                                                            setIsRoomBookingFormOpen(true);
-                                                                        }}
-                                                                        className="px-4 py-2 bg-[#0f5132] text-white text-sm font-semibold rounded-lg shadow-md hover:bg-[#136640] transition-colors flex items-center gap-1"
-                                                                    >
-                                                                        Book Now <ChevronRight className="w-3 h-3" />
-                                                                    </button>
+                                                                    <div className="absolute top-3 right-3 px-2 py-1 bg-white/90 backdrop-blur-md rounded-lg text-[10px] font-bold text-gray-800 shadow-sm uppercase tracking-wider border border-white/40">
+                                                                        Room #{room.number}
+                                                                    </div>
+                                                                    {isSelected && (
+                                                                        <div className="absolute inset-0 bg-[#0f5132]/20 backdrop-blur-[1px] flex items-center justify-center animate-in fade-in duration-200">
+                                                                            <div className="bg-white/90 text-[#0f5132] px-4 py-2 rounded-full font-bold shadow-lg flex items-center gap-2">
+                                                                                <span>✓ Selected</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                {/* Details Section */}
+                                                                <div className="p-5 flex flex-col flex-grow bg-white">
+                                                                    <div className="flex items-center gap-2 mb-4">
+                                                                        <div className="px-2.5 py-1 bg-gray-50 rounded-md border border-gray-100 text-[11px] font-semibold text-gray-600 flex items-center">
+                                                                            {room.adults} Adults
+                                                                        </div>
+                                                                        {room.children > 0 && (
+                                                                            <div className="px-2.5 py-1 bg-gray-50 rounded-md border border-gray-100 text-[11px] font-semibold text-gray-600 flex items-center">
+                                                                                {room.children} Kids
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+
+                                                                    <div className="mt-auto pt-3 border-t border-dashed border-gray-100 flex flex-col gap-3">
+                                                                        <div className="flex flex-col">
+                                                                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Start from</span>
+                                                                            <div className="flex items-baseline gap-1 text-[#0f5132]">
+                                                                                <span className="text-xl font-extrabold leading-none">{formatCurrency(room.price)}</span>
+                                                                                <span className="text-[10px] font-medium text-gray-400">/night</span>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <button
+                                                                            type="button"
+                                                                            disabled={isUnavailable}
+                                                                            className={`w-full py-3 text-xs font-bold uppercase tracking-wider rounded-xl shadow-lg transition-all transform flex items-center justify-center gap-1 ${isUnavailable
+                                                                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+                                                                                : (isSelected
+                                                                                    ? 'bg-neutral-800 text-white hover:bg-neutral-700'
+                                                                                    : 'bg-[#0f5132] text-white hover:bg-[#153a2c] hover:shadow-xl active:scale-[0.98]')
+                                                                                }`}
+                                                                        >
+                                                                            {isUnavailable ? room.status : (isSelected ? '✓ Selected' : 'Select Room')}
+                                                                        </button>
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                    ))
+                                                        );
+                                                    })
                                                 ) : (
                                                     <div className="col-span-full text-center py-8 text-gray-500">
                                                         <BedDouble className="w-12 h-12 text-gray-400 mx-auto mb-3" />
@@ -3563,14 +3596,16 @@ export default function App() {
                                         {packages.map((pkg) => {
                                             const imgIndex = packageImageIndex[pkg.id] || 0;
                                             const currentImage = pkg.images && pkg.images[imgIndex];
+                                            const isComingSoon = pkg.status === 'Coming Soon';
                                             return (
                                                 <div
                                                     key={pkg.id}
                                                     onClick={() => {
+                                                        if (isComingSoon) return;
                                                         handleOpenPackageBookingForm(pkg.id);
                                                         setIsPackageSelectionOpen(false);
                                                     }}
-                                                    className={`${theme.bgCard} rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 border ${theme.border} cursor-pointer transform hover:-translate-y-1`}
+                                                    className={`${theme.bgCard} rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 border ${theme.border} ${isComingSoon ? 'cursor-not-allowed grayscale-[0.3]' : 'cursor-pointer transform hover:-translate-y-1'}`}
                                                 >
                                                     {/* Image Container */}
                                                     <div className="relative h-48 overflow-hidden">
@@ -3580,6 +3615,14 @@ export default function App() {
                                                             className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
                                                             onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                                         />
+
+                                                        {/* Status Badge */}
+                                                        {isComingSoon && (
+                                                            <div className="absolute top-3 right-3 px-3 py-1 bg-amber-500 text-white text-xs font-bold rounded-full shadow-lg z-20 uppercase tracking-wider backdrop-blur-sm border border-white/20">
+                                                                Coming Soon
+                                                            </div>
+                                                        )}
+
                                                         {/* Image Slider Dots */}
                                                         {pkg.images && pkg.images.length > 1 && (
                                                             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/60 backdrop-blur-sm px-3 py-2 rounded-full z-10">
@@ -3611,9 +3654,11 @@ export default function App() {
                                                                 {formatCurrency(pkg.price || 0)}
                                                             </span>
                                                             <button
-                                                                className={`px-6 py-2 text-sm font-bold ${theme.buttonBg} ${theme.buttonText} rounded-full shadow-lg ${theme.buttonHover} transition-all duration-300 transform hover:scale-105`}
+                                                                type="button"
+                                                                disabled={isComingSoon}
+                                                                className={`px-6 py-2 text-sm font-bold ${isComingSoon ? 'bg-gray-400 text-white cursor-not-allowed' : `${theme.buttonBg} ${theme.buttonText} shadow-lg ${theme.buttonHover} hover:scale-105`} rounded-full transition-all duration-300 transform`}
                                                             >
-                                                                Select
+                                                                {isComingSoon ? 'Coming Soon' : 'Select'}
                                                             </button>
                                                         </div>
                                                     </div>
@@ -3720,14 +3765,17 @@ export default function App() {
                     </div>
                 )}
 
-                <footer className="bg-[#0f5132] text-white py-8 px-4 md:px-12 mt-12">
-                    <div className="container mx-auto flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+                <footer className="bg-[#0f5132] text-white py-8 px-6 w-full mt-12">
+                    <div className="w-full flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
                         {resortInfo && (
                             <>
                                 <div className="text-center md:text-left">
                                     <h3 className="text-xl font-bold tracking-tight text-white">{resortInfo.name}</h3>
                                     <p className="text-sm text-white/80 mt-1">{resortInfo.address}</p>
+                                    {resortInfo.gst_no && <p className="text-sm text-white/80 mt-1">GST No: {resortInfo.gst_no}</p>}
+                                    {resortInfo.contact_no && <p className="text-sm text-white/80 mt-1">Contact No: {resortInfo.contact_no}</p>}
                                     <p className="text-xs text-white/70 mt-2">&copy; 2025 Pomma Holidays. All Rights Reserved.</p>
+
                                 </div>
                                 <div className="flex space-x-4 text-white/80">
                                     <a href={formatUrl(resortInfo.facebook)} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors"><Facebook /></a>

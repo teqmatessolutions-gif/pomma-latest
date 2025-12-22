@@ -46,6 +46,12 @@ def migrate_database():
             print("✓ Added 'room_types' column to packages table")
         except Exception as e:
             print(f"⚠️  room_types column: {e}")
+
+        try:
+            db.execute(text("ALTER TABLE packages ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'Available'"))
+            print("✓ Added 'status' column to packages table")
+        except Exception as e:
+            print(f"⚠️  packages.status column: {e}")
         
         db.commit()
         print()
@@ -75,6 +81,12 @@ def migrate_database():
                 print(f"✓ Added '{column_name}' column to rooms table")
             except Exception as e:
                 print(f"⚠️  {column_name} column: {e}")
+
+        try:
+            db.execute(text("ALTER TABLE rooms ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'Available'"))
+            print("✓ Added 'status' column to rooms table")
+        except Exception as e:
+            print(f"⚠️  rooms.status column: {e}")
         
         db.commit()
         print()

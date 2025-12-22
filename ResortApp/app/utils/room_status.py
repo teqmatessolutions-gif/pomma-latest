@@ -70,8 +70,14 @@ def update_room_statuses(db: Session):
                             Booking.check_out <= today
                         ).first()
                         
-                        # No active booking, make available
-                        new_status = "Available"
+                        # No active booking. Only revert to Available if currently in a booking state.
+                        # Preserve manual statuses like 'Maintenance', 'Coming Soon', etc.
+                        booking_states = {'Booked', 'Occupied', 'Checked-in', 'booked', 'occupied', 'checked-in'}
+                        
+                        if room.status in booking_states or room.status is None:
+                            new_status = "Available"
+                        else:
+                            new_status = room.status
                     
                     # Only update if status changed to reduce unnecessary commits
                     if room.status != new_status:

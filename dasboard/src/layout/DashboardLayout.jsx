@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, Fragment } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, Fragment } from "react";
 import { Link, useLocation, Navigate } from "react-router-dom";
 import { AnimatePresence, motion, m } from "framer-motion";
 import {
@@ -34,7 +34,7 @@ const themes = {
     '--bg-secondary': '#ffffff',
     '--text-primary': '#1a4d3a', // Deep forest green text
     '--text-secondary': '#5a7c6a', // Muted green-gray
-    '--accent-bg': '#c8e6d5', // Light sage green accent (slightly more vibrant)
+    '--accent-bg': '#a5d6a7', // Darker sage green accent for better visibility
     '--accent-text': '#2d6a4f', // Medium green for active items
     '--bubble-color': 'rgba(76, 175, 80, 0.3)', // Soft green bubbles
     '--primary-button': '#22c55e', // Green for primary actions
@@ -156,7 +156,7 @@ export default function DashboardLayout({ children }) {
 
   // State and ref for managing scroll position
   const navRef = useRef(null);
-  const [scrollTop, setScrollTop] = useState(0);
+
 
   // Load theme from localStorage on initial render
   useEffect(() => {
@@ -172,11 +172,20 @@ export default function DashboardLayout({ children }) {
   }, []);
 
   // Restore scroll position when the route changes
-  useEffect(() => {
+  useLayoutEffect(() => {
+    // Restore on mount
+    const savedScroll = parseInt(sessionStorage.getItem('sidebar-scroll') || '0', 10);
     if (navRef.current) {
-      navRef.current.scrollTop = scrollTop;
+      navRef.current.scrollTop = savedScroll;
     }
-  }, [location.pathname, scrollTop]);
+
+    // Save on unmount/update
+    return () => {
+      if (navRef.current) {
+        sessionStorage.setItem('sidebar-scroll', navRef.current.scrollTop);
+      }
+    };
+  }, [location.pathname]);
 
   // Effect to create and manage the animated bubble background
   useEffect(() => {
@@ -392,11 +401,6 @@ export default function DashboardLayout({ children }) {
           <nav
             ref={navRef}
             className="flex-1 p-4 space-y-2 z-30 overflow-y-auto"
-            onScroll={() => {
-              if (navRef.current) {
-                setScrollTop(navRef.current.scrollTop);
-              }
-            }}
           >
             {menuItems.map((item, idx) => {
               // Improved active state detection - check exact match or if path starts with the route

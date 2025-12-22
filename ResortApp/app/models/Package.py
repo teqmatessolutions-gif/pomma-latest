@@ -11,6 +11,7 @@ class Package(Base):
     price = Column(Float, nullable=False)
     booking_type = Column(String, default="room_type")  # "whole_property" or "room_type"
     room_types = Column(String, nullable=True)  # Comma-separated list of room types (e.g., "Cottage,Non AC Double Room")
+    status = Column(String, default="Available")  # "Available" or "Coming Soon"
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships

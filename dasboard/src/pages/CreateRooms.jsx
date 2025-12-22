@@ -116,9 +116,9 @@ const BookingModal = ({ onClose, roomNumber, bookings, filter, setFilter, checki
                     <td className="border border-gray-300 px-2 sm:px-4 py-2 text-xs sm:text-sm hidden md:table-cell">{booking.adults}A, {booking.children}C</td>
                     <td className="border border-gray-300 px-2 sm:px-4 py-2 text-xs sm:text-sm">
                       <span className={`px-2 py-1 rounded-full text-xs font-semibold ${booking.status === 'booked' ? 'bg-blue-100 text-blue-800' :
-                          booking.status === 'checked-in' ? 'bg-green-100 text-green-800' :
-                            booking.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                              'bg-gray-100 text-gray-800'
+                        booking.status === 'checked-in' ? 'bg-green-100 text-green-800' :
+                          booking.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                            'bg-gray-100 text-gray-800'
                         }`}>
                         {booking.status || 'Pending'}
                       </span>
@@ -546,6 +546,7 @@ const Rooms = () => {
             >
               <option>Available</option>
               <option>Maintenance</option>
+              <option>Coming Soon</option>
             </select>
           </div>
           <div>
@@ -755,6 +756,7 @@ const Rooms = () => {
               <option value="Available">Available</option>
               <option value="Booked">Booked</option>
               <option value="Maintenance">Maintenance</option>
+              <option value="Coming Soon">Coming Soon</option>
             </select>
           </div>
         </div>
@@ -821,6 +823,7 @@ const Rooms = () => {
                     >
                       <option value="Available">Set Available</option>
                       <option value="Maintenance">Set Maintenance</option>
+                      <option value="Coming Soon">Set Coming Soon</option>
                     </select>
                   )}
                 </div>

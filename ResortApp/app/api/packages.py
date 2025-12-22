@@ -31,6 +31,7 @@ async def create_package_api(
     price: float = Form(...),
     booking_type: str = Form("room_type"),  # "whole_property" or "room_type"
     room_types: str = Form(None),  # Comma-separated list of room types
+    status: str = Form("Available"), 
     images: List[UploadFile] = File([]),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -80,7 +81,7 @@ async def create_package_api(
             raise HTTPException(status_code=500, detail=f"Failed to upload images: {str(img_error)}")
 
         try:
-            return crud_package.create_package(db, title, description, price, image_urls, booking_type, room_types)
+            return crud_package.create_package(db, title, description, price, image_urls, booking_type, room_types, status)
         except Exception as db_error:
             import traceback
             error_detail = f"Failed to create package in database: {str(db_error)}\n{traceback.format_exc()}"
@@ -117,6 +118,7 @@ async def update_package_api(
     price: float = Form(...),
     booking_type: str = Form("room_type"),  # "whole_property" or "room_type"
     room_types: str = Form(None),  # Comma-separated list of room types
+    status: str = Form("Available"),
     images: List[UploadFile] = File([]),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -144,6 +146,7 @@ async def update_package_api(
     package.price = price
     package.booking_type = booking_type
     package.room_types = room_types
+    package.status = status
     
     # Add new images if provided
     if images:

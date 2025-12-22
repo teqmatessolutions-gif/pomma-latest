@@ -9,7 +9,8 @@
 input[type="date"] {
   cursor: pointer;
   position: relative;
-  padding-right: 2.5rem; /* Make room for calendar icon */
+  padding-right: 2.5rem;
+  /* Make room for calendar icon */
 }
 
 /* Style the calendar icon to be more prominent and clickable */
@@ -40,7 +41,8 @@ input[type="date"]:hover {
 }
 
 input[type="date"]:focus {
-  cursor: text; /* Allow text cursor when focused for editing */
+  cursor: text;
+  /* Allow text cursor when focused for editing */
 }
 
 /* When focused via click, show pointer to indicate calendar can open */
@@ -56,4 +58,44 @@ input[type="date"]:focus:hover {
 .focus\:ring-amber-500:focus-visible {
   --tw-ring-opacity: 1;
   --tw-ring-color: #0f5132;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 20s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(15, 81, 50, 0.05);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(216, 201, 172, 0.6);
+  border-radius: 10px;
+  transition: background 0.3s;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #0f5132;
 }
