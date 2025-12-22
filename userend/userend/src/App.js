@@ -3010,7 +3010,7 @@ export default function App() {
                                     <span className="inline-block px-6 py-2 bg-[#0f5132]/10 text-[#0f5132] text-sm font-semibold tracking-[0.35em] uppercase rounded-full border border-[#d8c9ac] mb-4">
                                         ✦ Explore ✦
                                     </span>
-                                    <h2 className={`text-4xl md:text-5xl font-extrabold ${theme.textPrimary} mb-4`}>
+                                    <h2 className={`inline-block px-8 py-3 bg-[#0f5132]/10 border border-[#d8c9ac] rounded-full text-4xl md:text-5xl font-extrabold text-[#0f5132] mb-4 shadow-sm backdrop-blur-sm`}>
                                         NEARBY ATTRACTIONS
                                     </h2>
                                 </div>
