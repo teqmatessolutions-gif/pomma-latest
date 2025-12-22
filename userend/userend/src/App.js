@@ -3307,20 +3307,54 @@ export default function App() {
                                             <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-48 overflow-y-auto p-3 rounded-xl ${theme.bgSecondary}`}>
                                                 {rooms.length > 0 ? (
                                                     rooms.map(room => (
-                                                        <div key={room.id} onClick={() => handleRoomSelection(room.id)}
-                                                            className={`rounded-lg border-2 cursor-pointer transition-all duration-200 overflow-hidden ${bookingData.room_ids.includes(room.id) ? `${theme.buttonBg} ${theme.buttonText} border-transparent` : `${theme.bgCard} ${theme.textPrimary} ${theme.border} hover:border-[#c99c4e]`}`}
-                                                        >
-                                                            <img
-                                                                src={getImageUrl(room.image_url)}
-                                                                alt={room.type}
-                                                                className="w-full h-20 object-cover"
-                                                                onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
-                                                            />
-                                                            <div className="p-2 text-center">
-                                                                <p className="font-semibold text-xs">Room {room.number}</p>
-                                                                <p className="text-xs opacity-80">{room.type}</p>
-                                                                <p className="text-xs opacity-60 mt-1">Max: {room.adults}A, {room.children}C</p>
-                                                                <p className="text-xs font-bold mt-1">{formatCurrency(room.price)}</p>
+                                                        <div key={room.id} className={`flex flex-col h-full bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-neutral-100 group`}>
+                                                            <div className="relative h-48 overflow-hidden">
+                                                                <img
+                                                                    src={getImageUrl(room.image_url)}
+                                                                    alt={room.type}
+                                                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                                    onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
+                                                                />
+                                                                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-[#0f5132] shadow-sm">
+                                                                    Room #{room.number}
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="p-5 flex flex-col flex-grow">
+                                                                <div className="flex justify-between items-start mb-2">
+                                                                    <h3 className="text-xl font-bold text-[#153a2c]">{room.type}</h3>
+                                                                </div>
+
+                                                                <div className="flex flex-wrap gap-2 mb-4">
+                                                                    {/* Amenities badges would go here */}
+                                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#f0fdf4] text-[#166534]">
+                                                                        {room.adults} Adults
+                                                                    </span>
+                                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#f0fdf4] text-[#166534]">
+                                                                        {room.children} Children
+                                                                    </span>
+                                                                </div>
+
+                                                                <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
+                                                                    <div>
+                                                                        <p className="text-xs text-gray-500">Starting from</p>
+                                                                        <p className="text-lg font-bold text-[#c99c4e]">
+                                                                            {formatCurrency(room.price)}
+                                                                            <span className="text-xs text-gray-400 font-normal">/night</span>
+                                                                        </p>
+                                                                    </div>
+
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setIsGeneralBookingOpen(false);
+                                                                            setBookingData(prev => ({ ...prev, room_ids: [room.id] }));
+                                                                            setIsRoomBookingFormOpen(true);
+                                                                        }}
+                                                                        className="px-4 py-2 bg-[#0f5132] text-white text-sm font-semibold rounded-lg shadow-md hover:bg-[#136640] transition-colors flex items-center gap-1"
+                                                                    >
+                                                                        Book Now <ChevronRight className="w-3 h-3" />
+                                                                    </button>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     ))
