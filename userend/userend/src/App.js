@@ -2066,14 +2066,12 @@ export default function App() {
                                         {bannerData.map((banner, index) => (
                                             <div key={banner.id} className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-1000 ease-in-out ${index === currentBannerIndex ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
                                                 <div className="mb-4 inline-block px-6 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/30 animate-[fadeInUp_1s_ease-out]">
-                                                    <span className="text-[#0f5132] text-sm font-semibold tracking-[0.35em] uppercase">
+                                                    <span className="text-[#f5e6c9] text-sm font-semibold tracking-[0.35em] uppercase text-shadow-sm">
                                                         ✦ Nature Meets Luxury ✦
                                                     </span>
                                                 </div>
                                                 <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-tight drop-shadow-2xl text-white mb-6 animate-[fadeInUp_1.2s_ease-out]">
-                                                    <span className="bg-gradient-to-r from-white via-[#f5e6c9] to-white bg-clip-text text-transparent inline-block animate-[gentle-glow_3s_ease-in-out_infinite]">
-                                                        {banner.title}
-                                                    </span>
+                                                    {banner.title}
                                                 </h1>
                                                 <p className="mt-4 text-xl md:text-2xl text-[#f5ece0] max-w-4xl mx-auto leading-relaxed drop-shadow-lg px-4 animate-[fadeInUp_1.4s_ease-out]">
                                                     {banner.subtitle}
