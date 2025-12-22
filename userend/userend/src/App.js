@@ -2010,7 +2010,7 @@ export default function App() {
                     </div>
                 )}
 
-                <header className={`fixed left-0 right-0 z-50 bg-gradient-to-r from-[#0f5132]/90 to-[#1a7042]/90 backdrop-blur-md shadow-lg h-20 ${bannerMessage.text ? 'top-16' : 'top-0'} transition-all duration-300`} style={{ boxShadow: '0 4px 6px -1px rgba(15, 81, 50, 0.3), 0 2px 4px -1px rgba(26, 112, 66, 0.2)' }}>
+                <header className={`fixed left-0 right-0 z-50 bg-gradient-to-r from-[#0f5132]/70 to-[#1a7042]/70 backdrop-blur-md shadow-lg h-20 ${bannerMessage.text ? 'top-16' : 'top-0'} transition-all duration-300`} style={{ boxShadow: '0 4px 6px -1px rgba(15, 81, 50, 0.2), 0 2px 4px -1px rgba(26, 112, 66, 0.1)' }}>
                     <div className="container mx-auto px-4 sm:px-6 md:px-12 h-full flex items-center justify-between text-white">
                         <div className="flex items-center space-x-3 text-white h-full">
                             <img
