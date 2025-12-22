@@ -2371,7 +2371,7 @@ export default function App() {
                                         {rooms.map((room, index) => (
                                             <div
                                                 key={room.id}
-                                                className={`group relative ${theme.bgCard} rounded-2xl overflow-hidden luxury-shadow transition-all duration-300 transition-all duration-500 transform hover:-translate-y-2 border ${theme.cardBorder || theme.border}`}
+                                                className={`group relative ${theme.bgCard} rounded-2xl overflow-hidden luxury-shadow transition-all duration-300 transition-all duration-500 transform hover:-translate-y-2 border ${theme.cardBorder || theme.border} h-full flex flex-col`}
                                             >
                                                 {/* Image Container with Overlay */}
                                                 <div className="relative h-48 overflow-hidden">
@@ -2455,7 +2455,7 @@ export default function App() {
                                                         <button
                                                             onClick={() => handleOpenRoomBookingForm(room.id)}
                                                             disabled={bookingData.check_in && bookingData.check_out && !roomAvailability[room.id]}
-                                                            className={`w-full py-3.5 font-bold rounded-xl shadow-md transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 ${bookingData.check_in && bookingData.check_out && !roomAvailability[room.id]
+                                                            className={`w-full py-3.5 font-bold rounded-full shadow-md transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 ${bookingData.check_in && bookingData.check_out && !roomAvailability[room.id]
                                                                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                                                 : 'bg-[#0f5132] text-white hover:bg-[#153a2c] hover:shadow-lg'
                                                                 }`}
