@@ -2071,7 +2071,9 @@ export default function App() {
                                                     </span>
                                                 </div>
                                                 <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-tight drop-shadow-2xl text-white mb-6 animate-[fadeInUp_1.2s_ease-out]">
-                                                    {banner.title}
+                                                    <span className="inline-block px-6 py-2 bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 shadow-lg">
+                                                        {banner.title}
+                                                    </span>
                                                 </h1>
                                                 <p className="mt-4 text-xl md:text-2xl text-[#f5ece0] max-w-4xl mx-auto leading-relaxed drop-shadow-lg px-4 animate-[fadeInUp_1.4s_ease-out]">
                                                     {banner.subtitle}
