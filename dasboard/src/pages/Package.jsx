@@ -437,16 +437,29 @@ const Packages = () => {
     }
   };
 
-  const handleDeletePackage = async id => {
-    if (window.confirm("Are you sure you want to delete this package?")) {
+  const handleToggleStatus = async (pkg) => {
+    const newStatus = pkg.status === 'Disabled' ? 'Available' : 'Disabled';
+    const action = newStatus === 'Disabled' ? 'disable' : 'enable';
+    if (window.confirm(`Are you sure you want to ${action} this package?`)) {
       try {
-        await api.delete(`/packages/${id}`);
-        toast.success("Package deleted successfully!");
+        const data = new FormData();
+        data.append("title", pkg.title);
+        data.append("description", pkg.description);
+        data.append("price", pkg.price);
+        data.append("booking_type", pkg.booking_type || "room_type");
+        data.append("status", newStatus);
+
+        if (pkg.booking_type === "room_type" && pkg.room_types) {
+          data.append("room_types", pkg.room_types);
+        }
+
+        await api.put(`/packages/${pkg.id}`, data, { headers: { "Content-Type": "multipart/form-data" } });
+        toast.success(`Package ${action}d successfully!`);
         fetchData();
       } catch (err) {
         console.error(err);
         const errorMsg = err.response?.data?.detail;
-        const message = typeof errorMsg === 'string' ? errorMsg : 'Failed to delete package';
+        const message = typeof errorMsg === 'string' ? errorMsg : `Failed to ${action} package`;
         toast.error(message);
       }
     }
@@ -732,7 +745,9 @@ const Packages = () => {
                       <span className="text-xs font-semibold text-gray-500">Status:</span>
                       <span className={`text-xs font-bold px-2 py-1 rounded ${pkg.status === 'Coming Soon'
                         ? 'bg-yellow-100 text-yellow-700'
-                        : 'bg-green-100 text-green-700'
+                        : pkg.status === 'Disabled'
+                          ? 'bg-red-100 text-red-700'
+                          : 'bg-green-100 text-green-700'
                         }`}>
                         {pkg.status || "Available"}
                       </span>
@@ -758,7 +773,13 @@ const Packages = () => {
                     <p className="text-green-600 font-bold text-2xl">₹{pkg.price.toLocaleString()}</p>
                     <div className="flex gap-2">
                       <button onClick={() => handleEditPackage(pkg)} className="text-blue-500 hover:text-blue-700 font-semibold transition-colors duration-300 flex items-center gap-2"><i className="fas fa-edit"></i> Edit</button>
-                      <button onClick={() => handleDeletePackage(pkg.id)} className="text-red-500 hover:text-red-700 font-semibold transition-colors duration-300 flex items-center gap-2"><i className="fas fa-trash-alt"></i> Delete</button>
+                      <button
+                        onClick={() => handleToggleStatus(pkg)}
+                        className={`${pkg.status === 'Disabled' ? 'text-green-500 hover:text-green-700' : 'text-red-500 hover:text-red-700'} font-semibold transition-colors duration-300 flex items-center gap-2`}
+                      >
+                        <i className={`fas ${pkg.status === 'Disabled' ? 'fa-check-circle' : 'fa-ban'}`}></i>
+                        {pkg.status === 'Disabled' ? 'Enable' : 'Disable'}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -791,6 +812,7 @@ const Packages = () => {
                 >
                   <option value="Available">Available</option>
                   <option value="Coming Soon">Coming Soon</option>
+                  <option value="Disabled">Disabled</option>
                 </select>
               </div>
 
@@ -914,6 +936,7 @@ const Packages = () => {
                 >
                   <option value="Available">Available</option>
                   <option value="Coming Soon">Coming Soon</option>
+                  <option value="Disabled">Disabled</option>
                 </select>
               </div>
 
@@ -1021,7 +1044,7 @@ const Packages = () => {
           <form onSubmit={handleBookingSubmit} className="space-y-6">
             <select name="package_id" value={bookingForm.package_id} onChange={handleBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required>
               <option value="">Select Package</option>
-              {packages.filter(p => p.status !== 'Coming Soon').map(p => (<option key={p.id} value={p.id}>{p.title} - ₹{p.price}</option>))}
+              {packages.filter(p => p.status !== 'Coming Soon' && p.status !== 'Disabled').map(p => (<option key={p.id} value={p.id}>{p.title} - ₹{p.price}</option>))}
             </select>
             <input name="guest_name" placeholder="Guest Name" value={bookingForm.guest_name} onChange={handleBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
             <input type="email" name="guest_email" placeholder="Guest Email" value={bookingForm.guest_email} onChange={handleBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" />

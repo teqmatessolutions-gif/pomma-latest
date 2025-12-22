@@ -420,16 +420,11 @@ const Rooms = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleDelete = async (roomId) => {
-    if (window.confirm("Are you sure you want to delete this room? This action cannot be undone.")) {
-      try {
-        await API.delete(`/rooms/test/${roomId}`);
-        showBannerMessage("success", "Room deleted successfully!");
-        fetchRooms();
-      } catch (error) {
-        console.error("Error deleting room:", error);
-        showBannerMessage("error", "Error deleting room");
-      }
+  const handleToggleDisable = (room) => {
+    const newStatus = room.status === 'Disabled' ? 'Available' : 'Disabled';
+    const action = newStatus === 'Disabled' ? 'disable' : 'enable';
+    if (window.confirm(`Are you sure you want to ${action} this room?`)) {
+      handleStatusChange(room.id, newStatus);
     }
   };
 
@@ -547,6 +542,7 @@ const Rooms = () => {
               <option>Available</option>
               <option>Maintenance</option>
               <option>Coming Soon</option>
+              <option>Disabled</option>
             </select>
           </div>
           <div>
@@ -757,6 +753,7 @@ const Rooms = () => {
               <option value="Booked">Booked</option>
               <option value="Maintenance">Maintenance</option>
               <option value="Coming Soon">Coming Soon</option>
+              <option value="Disabled">Disabled</option>
             </select>
           </div>
         </div>
@@ -770,7 +767,10 @@ const Rooms = () => {
                   className="h-48 w-full object-cover cursor-pointer"
                   onClick={() => setSelectedImage(room.image_url)}
                 />
-                <span className={`absolute top-2 right-2 px-3 py-1 text-xs font-semibold text-white rounded-full ${room.status === 'Available' ? 'bg-green-500' : ['Booked', 'Occupied', 'Checked-in'].includes(room.status) ? 'bg-red-500' : 'bg-yellow-500'
+                <span className={`absolute top-2 right-2 px-3 py-1 text-xs font-semibold text-white rounded-full ${room.status === 'Available' ? 'bg-green-500' :
+                    room.status === 'Disabled' ? 'bg-red-600' :
+                      ['Booked', 'Occupied', 'Checked-in'].includes(room.status) ? 'bg-red-500' :
+                        'bg-yellow-500'
                   }`}>{room.status}</span>
               </div>
               <div className="p-5 flex flex-col flex-grow">
@@ -812,7 +812,12 @@ const Rooms = () => {
                 <div className="mt-auto pt-4 border-t border-gray-200 flex flex-col gap-2">
                   <div className="flex justify-between gap-2">
                     <button onClick={() => handleEdit(room)} className="w-1/2 bg-green-100 text-green-700 text-sm font-semibold py-2 rounded-lg hover:bg-green-200 transition">Edit</button>
-                    <button onClick={() => handleDelete(room.id)} className="w-1/2 bg-red-100 text-red-700 text-sm font-semibold py-2 rounded-lg hover:bg-red-200 transition">Delete</button>
+                    <button
+                      onClick={() => handleToggleDisable(room)}
+                      className={`w-1/2 ${room.status === 'Disabled' ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-700 hover:bg-red-200'} text-sm font-semibold py-2 rounded-lg transition`}
+                    >
+                      {room.status === 'Disabled' ? 'Enable' : 'Disable'}
+                    </button>
                   </div>
                   <button onClick={() => fetchBookings(room.number)} className="w-full bg-blue-100 text-blue-700 text-sm font-semibold py-2 rounded-lg hover:bg-blue-200 transition">View Bookings</button>
                   {room.status !== "Booked" && (
@@ -824,6 +829,7 @@ const Rooms = () => {
                       <option value="Available">Set Available</option>
                       <option value="Maintenance">Set Maintenance</option>
                       <option value="Coming Soon">Set Coming Soon</option>
+                      <option value="Disabled">Set Disabled</option>
                     </select>
                   )}
                 </div>

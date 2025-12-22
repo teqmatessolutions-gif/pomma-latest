@@ -34,7 +34,7 @@ API.interceptors.response.use(
         isTimeout: true,
       });
     }
-    
+
     // Handle network errors
     if (!error.response) {
       console.error("Network error:", error.message);
@@ -44,7 +44,7 @@ API.interceptors.response.use(
         isNetworkError: true,
       });
     }
-    
+
     // Handle 503 (Service Unavailable) - database connection issues
     if (error.response?.status === 503) {
       console.error("Service unavailable:", error.response?.data);
@@ -54,7 +54,18 @@ API.interceptors.response.use(
         isServiceUnavailable: true,
       });
     }
-    
+
+    // Handle 401 (Unauthorized) - token expired or invalid
+    if (error.response?.status === 401) {
+      console.warn("Session expired or unauthorized. Redirecting to login...");
+      localStorage.removeItem("token");
+      // Only redirect if not already on the login page to avoid loops
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
+      return Promise.reject(error);
+    }
+
     // For other errors, return as-is
     return Promise.reject(error);
   }

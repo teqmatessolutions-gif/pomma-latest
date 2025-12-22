@@ -2158,13 +2158,14 @@ export default function App() {
                             </div>
 
                             {/* Packages - Mountain Shadows Style */}
-                            {packages.length > 0 ? (
+                            {packages.filter(p => p.status !== 'Disabled').length > 0 ? (
                                 <div className="space-y-12">
                                     {/* Featured Large Package */}
-                                    {packages[0] && (() => {
-                                        const featuredPkg = packages[0];
+                                    {packages.filter(p => p.status !== 'Disabled')[0] && (() => {
+                                        const featuredPkg = packages.filter(p => p.status !== 'Disabled')[0];
                                         const imgIndex = packageImageIndex[featuredPkg.id] || 0;
                                         const currentImage = featuredPkg.images && featuredPkg.images[imgIndex];
+                                        const isUnavailable = featuredPkg.status === 'Coming Soon' || featuredPkg.status === 'Disabled';
                                         const isComingSoon = featuredPkg.status === 'Coming Soon';
                                         return (
                                             <div
@@ -2183,8 +2184,8 @@ export default function App() {
                                                             onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                                         />
                                                         {/* Status Badge (Top Right) */}
-                                                        <div className={`absolute top-4 right-4 text-white font-extrabold text-lg px-4 py-2 rounded-xl shadow-lg border border-white/20 backdrop-blur-sm z-20 uppercase tracking-wider ${isComingSoon ? 'bg-amber-500' : 'bg-[#0f5132]/90'}`}>
-                                                            {isComingSoon ? 'Coming Soon' : (featuredPkg.status || 'Available')}
+                                                        <div className={`absolute top-4 right-4 text-white font-extrabold text-lg px-4 py-2 rounded-xl shadow-lg border border-white/20 backdrop-blur-sm z-20 uppercase tracking-wider ${isUnavailable ? (isComingSoon ? 'bg-amber-500' : 'bg-red-500') : 'bg-[#0f5132]/90'}`}>
+                                                            {featuredPkg.status || 'Available'}
                                                         </div>
                                                         {/* Price badge - large card */}
                                                         <div className="absolute bottom-4 left-4 bg-[#0f5132]/90 text-white font-extrabold text-2xl md:text-3xl px-4 py-2 rounded-xl shadow-lg border border-white/20 backdrop-blur-sm">
@@ -2232,12 +2233,12 @@ export default function App() {
 
                                                         <div className="flex items-center justify-between flex-wrap gap-4">
                                                             <button
-                                                                onClick={() => !isComingSoon && handleOpenPackageBookingForm(featuredPkg.id)}
-                                                                disabled={isComingSoon}
-                                                                className={`px-8 py-3 ${isComingSoon ? 'bg-amber-500 cursor-not-allowed' : 'bg-gradient-to-r from-[#0f5132] to-[#1a7042] hover:from-[#136640] hover:to-[#218051] transform hover:scale-105 shadow-lg'} text-white font-semibold rounded-full transition-all duration-300 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#c99c4e]/70`}
+                                                                onClick={() => !isUnavailable && handleOpenPackageBookingForm(featuredPkg.id)}
+                                                                disabled={isUnavailable}
+                                                                className={`px-8 py-3 ${isUnavailable ? (isComingSoon ? 'bg-amber-500 cursor-not-allowed' : 'bg-red-500 cursor-not-allowed') : 'bg-gradient-to-r from-[#0f5132] to-[#1a7042] hover:from-[#136640] hover:to-[#218051] transform hover:scale-105 shadow-lg'} text-white font-semibold rounded-full transition-all duration-300 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#c99c4e]/70`}
                                                             >
-                                                                {isComingSoon ? 'Coming Soon' : 'Book Now'}
-                                                                {!isComingSoon && <ChevronRight className="w-5 h-5" />}
+                                                                {isUnavailable ? (featuredPkg.status || 'Unavailable') : 'Book Now'}
+                                                                {!isUnavailable && <ChevronRight className="w-5 h-5" />}
                                                             </button>
                                                         </div>
                                                     </div>
@@ -2247,11 +2248,12 @@ export default function App() {
                                     })()}
 
                                     {/* Smaller Packages Grid - Only show if more than 1 package */}
-                                    {packages.length > 1 && (
+                                    {packages.filter(p => p.status !== 'Disabled').length > 1 && (
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                            {packages.slice(1).map((pkg) => {
+                                            {packages.filter(p => p.status !== 'Disabled').slice(1).map((pkg) => {
                                                 const imgIndex = packageImageIndex[pkg.id] || 0;
                                                 const currentImage = pkg.images && pkg.images[imgIndex];
+                                                const isUnavailable = pkg.status === 'Coming Soon' || pkg.status === 'Disabled';
                                                 const isComingSoon = pkg.status === 'Coming Soon';
                                                 return (
                                                     <div
@@ -2274,8 +2276,8 @@ export default function App() {
                                                                 {formatCurrency(pkg.price || 0)}
                                                             </div>
                                                             {/* Status Badge (Top Right) */}
-                                                            <div className={`absolute top-3 right-3 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wider ${isComingSoon ? 'bg-amber-500' : 'bg-gradient-to-r from-[#0f5132] to-[#1a7042]'}`}>
-                                                                {isComingSoon ? 'Coming Soon' : (pkg.status || 'Available')}
+                                                            <div className={`absolute top-3 right-3 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wider ${isUnavailable ? (isComingSoon ? 'bg-amber-500' : 'bg-red-500') : 'bg-gradient-to-r from-[#0f5132] to-[#1a7042]'}`}>
+                                                                {pkg.status || 'Available'}
                                                             </div>
                                                             {/* Image Slider Dots */}
                                                             {pkg.images && pkg.images.length > 1 && (
@@ -2316,14 +2318,14 @@ export default function App() {
                                                             <div className="mt-4 flex items-center justify-between">
                                                                 <button
                                                                     type="button"
-                                                                    disabled={isComingSoon}
+                                                                    disabled={isUnavailable}
                                                                     onClick={(e) => { e.stopPropagation(); handleOpenPackageBookingForm(pkg.id); }}
-                                                                    className={`px-5 py-2 rounded-full ${isComingSoon ? 'bg-amber-500 text-white cursor-not-allowed' : 'bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white hover:from-[#136640] hover:to-[#218051] shadow-md'} font-semibold transition-all duration-300`}
+                                                                    className={`px-5 py-2 rounded-full ${isUnavailable ? (isComingSoon ? 'bg-amber-500 text-white cursor-not-allowed' : 'bg-red-500 text-white cursor-not-allowed') : 'bg-gradient-to-r from-[#0f5132] to-[#1a7042] text-white hover:from-[#136640] hover:to-[#218051] shadow-md'} font-semibold transition-all duration-300`}
                                                                 >
-                                                                    {isComingSoon ? 'Coming Soon' : 'Book Now'}
+                                                                    {isUnavailable ? (pkg.status || 'Unavailable') : 'Book Now'}
                                                                 </button>
                                                                 <span className={`text-sm ${theme.textSecondary}`}>
-                                                                    {isComingSoon ? 'Not available yet' : 'Tap card to book'}
+                                                                    {isUnavailable ? 'Not available' : 'Tap card to book'}
                                                                 </span>
                                                             </div>
                                                         </div>
@@ -2387,15 +2389,15 @@ export default function App() {
                             )}
 
                             {/* Villa Grid - Always show ALL rooms */}
-                            {rooms.length > 0 ? (
+                            {rooms.filter(r => r.status !== 'Disabled').length > 0 ? (
                                 <>
                                     <div className="mb-4 text-center">
                                         <p className={`text-sm ${theme.textSecondary}`}>
-                                            Showing all <span className="font-semibold ${theme.textPrimary}">{rooms.length}</span> rooms
+                                            Showing all <span className="font-semibold ${theme.textPrimary}">{rooms.filter(r => r.status !== 'Disabled').length}</span> rooms
                                         </p>
                                     </div>
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                                        {rooms.map((room, index) => (
+                                        {rooms.filter(r => r.status !== 'Disabled').map((room, index) => (
                                             <div
                                                 key={room.id}
                                                 className={`group relative ${theme.bgCard} rounded-2xl overflow-hidden luxury-shadow transition-all duration-300 transition-all duration-500 transform hover:-translate-y-2 border ${theme.cardBorder || theme.border} h-full flex flex-col`}
@@ -2426,6 +2428,7 @@ export default function App() {
                                                             }
 
                                                             if (displayStatus === 'Maintenance') bgClass = 'bg-red-600';
+                                                            else if (displayStatus === 'Disabled') bgClass = 'bg-red-600';
                                                             else if (displayStatus === 'Coming Soon') bgClass = 'bg-yellow-500';
                                                             else if (['Booked', 'Occupied', 'Checked-in'].includes(displayStatus)) bgClass = 'bg-red-500';
 
@@ -2486,14 +2489,15 @@ export default function App() {
                                                         {/* CTA Button */}
                                                         <button
                                                             onClick={() => handleOpenRoomBookingForm(room.id)}
-                                                            disabled={(bookingData.check_in && bookingData.check_out && !roomAvailability[room.id]) || room.status === 'Maintenance' || room.status === 'Coming Soon'}
+                                                            disabled={(bookingData.check_in && bookingData.check_out && !roomAvailability[room.id]) || room.status === 'Maintenance' || room.status === 'Coming Soon' || room.status === 'Disabled'}
                                                             className={`w-full py-3.5 font-bold rounded-full shadow-md transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 ${room.status === 'Maintenance' ? 'bg-red-600 text-white cursor-not-allowed' :
-                                                                    room.status === 'Coming Soon' ? 'bg-amber-500 text-white cursor-not-allowed' :
+                                                                room.status === 'Coming Soon' ? 'bg-amber-500 text-white cursor-not-allowed' :
+                                                                    room.status === 'Disabled' ? 'bg-red-600 text-white cursor-not-allowed' :
                                                                         (bookingData.check_in && bookingData.check_out && !roomAvailability[room.id]) ? 'bg-red-500 text-white cursor-not-allowed' :
                                                                             'bg-[#0f5132] text-white hover:bg-[#153a2c] hover:shadow-lg'
                                                                 }`}
                                                         >
-                                                            {room.status === 'Maintenance' ? 'Maintenance' : room.status === 'Coming Soon' ? 'Coming Soon' : (bookingData.check_in && bookingData.check_out && !roomAvailability[room.id] ? 'Not Available' : 'Book Now')}
+                                                            {room.status === 'Maintenance' ? 'Maintenance' : room.status === 'Coming Soon' ? 'Coming Soon' : room.status === 'Disabled' ? 'Unavailable' : (bookingData.check_in && bookingData.check_out && !roomAvailability[room.id] ? 'Not Available' : 'Book Now')}
                                                             <ChevronRight className="w-4 h-4" />
                                                         </button>
                                                     </div>
