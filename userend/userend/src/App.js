@@ -3301,11 +3301,11 @@ export default function App() {
                                                                 {/* Details Section */}
                                                                 <div className="p-5 flex flex-col flex-grow bg-white">
                                                                     <div className="flex items-center gap-2 mb-4">
-                                                                        <div className="px-2.5 py-1 bg-gray-50 rounded-md border border-gray-100 text-[11px] font-semibold text-gray-600 flex items-center">
+                                                                        <div className="px-2.5 py-1 bg-gray-200 rounded-md border border-gray-300 text-[11px] font-semibold text-gray-900 flex items-center">
                                                                             {room.adults} Adults
                                                                         </div>
                                                                         {room.children > 0 && (
-                                                                            <div className="px-2.5 py-1 bg-gray-50 rounded-md border border-gray-100 text-[11px] font-semibold text-gray-600 flex items-center">
+                                                                            <div className="px-2.5 py-1 bg-gray-200 rounded-md border border-gray-300 text-[11px] font-semibold text-gray-900 flex items-center">
                                                                                 {room.children} Kids
                                                                             </div>
                                                                         )}
@@ -3313,10 +3313,10 @@ export default function App() {
 
                                                                     <div className="mt-auto pt-3 border-t border-dashed border-gray-100 flex flex-col gap-3">
                                                                         <div className="flex flex-col">
-                                                                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Start from</span>
+                                                                            <span className="text-[10px] text-gray-800 font-bold uppercase tracking-wider">Start from</span>
                                                                             <div className="flex items-baseline gap-1 text-[#0f5132]">
                                                                                 <span className="text-xl font-extrabold leading-none">{formatCurrency(room.price)}</span>
-                                                                                <span className="text-[10px] font-medium text-gray-400">/night</span>
+                                                                                <span className="text-[10px] font-medium text-gray-800">/night</span>
                                                                             </div>
                                                                         </div>
 

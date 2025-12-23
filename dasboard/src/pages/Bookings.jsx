@@ -480,7 +480,7 @@ const Bookings = () => {
         API.get("/rooms", authHeader()),
         API.get("/bookings?skip=0&limit=20&order_by=id&order=desc", authHeader()), // Order by latest first
         API.get("/packages/bookingsall?skip=0&limit=500", authHeader()), // Reduced from 10000 to 500 for performance
-        API.get("/packages", authHeader()),
+        API.get("/packages?limit=100", authHeader()),
       ]);
 
       const allRooms = roomsRes.data;
@@ -600,6 +600,9 @@ const Bookings = () => {
   useEffect(() => {
     if (formData.checkIn && formData.checkOut && allRooms.length > 0) {
       const availableRooms = allRooms.filter(room => {
+        // First check strict status availability
+        if (['Disabled', 'Coming Soon', 'Maintenance'].includes(room.status)) return false;
+
         // Check if room has any conflicting bookings
         // Only consider bookings with status "booked" or "checked-in" as conflicts
         const hasConflict = bookings.some(booking => {
@@ -639,6 +642,9 @@ const Bookings = () => {
       const selectedPackage = packages.find(p => p.id === parseInt(packageBookingForm.package_id));
 
       let availableRooms = allRooms.filter(room => {
+        // First check strict status availability
+        if (['Disabled', 'Coming Soon', 'Maintenance'].includes(room.status)) return false;
+
         // Check if room has any conflicting bookings
         // Only consider bookings with status "booked" or "checked-in" as conflicts
         const hasConflict = bookings.some(booking => {
@@ -1831,7 +1837,10 @@ const Bookings = () => {
               <div className="space-y-4 flex-grow">
                 <select name="package_id" value={packageBookingForm.package_id} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required>
                   <option value="">Select Package</option>
-                  {packages.map(p => {
+                  {packages.filter(p => {
+                    const status = (p.status || '').toLowerCase();
+                    return status !== 'disabled' && status !== 'coming soon' && status !== 'comming soon';
+                  }).map(p => {
                     const bookingTypeLabel = p.booking_type === 'whole_property' ? ' (Whole Property)' : p.booking_type === 'room_type' ? ' (Selected Rooms)' : '';
                     return <option key={p.id} value={p.id}>{p.title}{bookingTypeLabel} - {formatCurrency(p.price)}</option>;
                   })}
