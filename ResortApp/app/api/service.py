@@ -4,6 +4,8 @@ from typing import List
 import os
 import shutil
 import uuid
+from PIL import Image
+import io
 from app.schemas import service as service_schema
 from app.models.user import User
 from app.curd import service as service_crud
@@ -31,6 +33,18 @@ async def create_service(
         file_path = os.path.join(UPLOAD_DIR, filename)
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(img.file, buffer)
+        
+        # Generate and Save Thumbnail
+        try:
+            thumb_filename = f"{os.path.splitext(filename)[0]}_thumb.jpg"
+            thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+            with Image.open(file_path) as img_pil:
+                img_pil.thumbnail((200, 200), Image.Resampling.LANCZOS)
+                if img_pil.mode in ("RGBA", "P"):
+                    img_pil = img_pil.convert("RGB")
+                img_pil.save(thumb_path, "JPEG", quality=60, optimize=True)
+        except Exception as thumb_error:
+            print(f"Warning: Failed to generate thumbnail for {filename}: {thumb_error}")
         # Store with leading slash for proper URL construction
         normalized_path = file_path.replace('\\', '/')
         image_urls.append(f"/{normalized_path}")

@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 import os
 import shutil
 import uuid
+from PIL import Image
+import io
 
 import app.schemas.frontend as schemas
 import app.models.frontend as models
@@ -69,6 +71,18 @@ async def create_header_banner(
         # Verify file was saved
         if not os.path.exists(file_path):
             raise HTTPException(status_code=500, detail="File was not saved successfully")
+
+        # Generate and Save Thumbnail
+        try:
+            thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
+            thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+            with Image.open(file_path) as img:
+                img.thumbnail((200, 200), Image.Resampling.LANCZOS)
+                if img.mode in ("RGBA", "P"):
+                    img = img.convert("RGB")
+                img.save(thumb_path, "JPEG", quality=60, optimize=True)
+        except Exception as thumb_error:
+            print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
 
         # Create URL path (relative to static mount)
         # static/uploads/banner_xxx.jpg -> /static/uploads/banner_xxx.jpg
@@ -238,6 +252,18 @@ async def create_gallery(
         if not os.path.exists(file_path):
             raise HTTPException(status_code=500, detail="File was not saved successfully")
 
+        # Generate and Save Thumbnail
+        try:
+            thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
+            thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+            with Image.open(file_path) as img:
+                img.thumbnail((200, 200), Image.Resampling.LANCZOS)
+                if img.mode in ("RGBA", "P"):
+                    img = img.convert("RGB")
+                img.save(thumb_path, "JPEG", quality=60, optimize=True)
+        except Exception as thumb_error:
+            print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
+
         # Create URL path (relative to static mount)
         normalized_path = file_path.replace('\\', '/')
         if normalized_path.startswith(BASE_DIR.replace('\\', '/')):
@@ -292,6 +318,19 @@ async def update_gallery(
                 shutil.copyfileobj(image.file, buffer)
             
             if not os.path.exists(file_path):
+                raise HTTPException(status_code=500, detail="File was not saved successfully")
+
+            # Generate and Save Thumbnail
+            try:
+                thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
+                thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                with Image.open(file_path) as img:
+                    img.thumbnail((200, 200), Image.Resampling.LANCZOS)
+                    if img.mode in ("RGBA", "P"):
+                        img = img.convert("RGB")
+                    img.save(thumb_path, "JPEG", quality=60, optimize=True)
+            except Exception as thumb_error:
+                print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
                 raise HTTPException(status_code=500, detail="File was not saved successfully")
 
             # Create URL path (relative to static mount)

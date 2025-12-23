@@ -43,6 +43,32 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.on_event("startup")
+async def startup_event():
+    from app.utils.thumbnail_generator import generate_thumbnails_for_dirs
+    import os
+    
+    # Define directories to scan
+    # Note: These paths are relative to the working directory (ResortApp/)
+    dirs_to_scan = [
+        "static/rooms",
+        "uploads/rooms",
+        "uploads/packages",
+        "uploads/cms",
+        "uploads/services",
+        "uploads/food_items",
+        "static/food_categories"
+    ]
+    
+    # Run in threadpool to avoid blocking startup excessively (though usually fast)
+    # But for simplicity in startup, synchronous call is okay if not huge.
+    # Or use fastapi background tasks? No, startup waits.
+    # It is safer to run it.
+    try:
+        generate_thumbnails_for_dirs(dirs_to_scan)
+    except Exception as e:
+        print(f"Startup thumbnail generation failed: {e}")
+
 # Static file dirs
 UPLOAD_DIR = "uploads/expenses"
 os.makedirs("static/rooms", exist_ok=True)

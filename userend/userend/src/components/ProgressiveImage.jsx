@@ -73,6 +73,7 @@ const ProgressiveImage = ({ src, alt, className = "", placeholderSrc = null, sty
                 src={thumbUrl}
                 alt={alt}
                 className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out ${isLoaded ? 'opacity-0' : 'opacity-100'}`}
+                onError={(e) => { e.target.style.opacity = 0; }}
             />
 
             {/* Full Image (Fade In) */}

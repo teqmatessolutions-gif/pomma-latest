@@ -1042,6 +1042,8 @@ export default function App() {
         return Array.from(new Set(['All', ...fromCategories, ...fromItems]));
     }, [foodCategories, foodItemsByCategory]);
     const [selectedFoodCategory, setSelectedFoodCategory] = useState('All');
+    const [isPackageDetailsOpen, setIsPackageDetailsOpen] = useState(false);
+    const [selectedPackageDetails, setSelectedPackageDetails] = useState(null);
     useEffect(() => {
         if (!categoryNames.length) {
             if (selectedFoodCategory !== 'All') setSelectedFoodCategory('All');
@@ -1325,6 +1327,11 @@ export default function App() {
     const handleOpenFoodOrderForm = () => {
         setIsFoodOrderFormOpen(true);
         setBookingMessage({ type: null, text: "" });
+    };
+
+    const handleOpenPackageDetails = (pkg) => {
+        setSelectedPackageDetails(pkg);
+        setIsPackageDetailsOpen(true);
     };
 
     // Handlers for form changes
@@ -1815,7 +1822,7 @@ export default function App() {
 
         // Email validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (packageBookingData.guest_email && !emailRegex.test(packageBookingData.guest_email)) {
+        if (!emailRegex.test(packageBookingData.guest_email)) {
             showBannerMessage("error", "Please enter a valid email address.");
             return;
         }
@@ -1881,9 +1888,9 @@ export default function App() {
                 return;
             }
 
-            // Email and mobile are optional in the schema, but we'll recommend at least one
-            if (!packageBookingData.guest_email && !packageBookingData.guest_mobile) {
-                showBannerMessage("error", "Please provide at least an email address or mobile number.");
+            // Email and mobile are mandatory
+            if (!packageBookingData.guest_email || !packageBookingData.guest_mobile) {
+                showBannerMessage("error", "Please provide both email address and mobile number.");
                 setIsBookingLoading(false);
                 return;
             }
@@ -2340,7 +2347,8 @@ export default function App() {
                                         return (
                                             <div
                                                 key={featuredPkg.id}
-                                                className={`${theme.bgCard} rounded-3xl overflow-hidden shadow-2xl border ${theme.border} transition-all duration-500 hover:shadow-3xl reveal`}
+                                                onClick={() => !isUnavailable && handleOpenPackageDetails(featuredPkg)}
+                                                className={`${theme.bgCard} rounded-3xl overflow-hidden shadow-2xl border ${theme.border} transition-all duration-500 hover:shadow-3xl reveal cursor-pointer`}
                                                 style={{ transitionDelay: '80ms' }}
                                             >
                                                 <div className="flex flex-col md:flex-row items-stretch">
@@ -2428,7 +2436,7 @@ export default function App() {
                                                 return (
                                                     <div
                                                         key={pkg.id}
-                                                        onClick={() => !isComingSoon && handleOpenPackageBookingForm(pkg.id)}
+                                                        onClick={() => !isComingSoon && handleOpenPackageDetails(pkg)}
                                                         className={`group relative ${theme.bgCard} rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 border ${theme.border} ${isComingSoon ? 'cursor-not-allowed opacity-90' : 'cursor-pointer'} reveal`}
                                                         style={{ transitionDelay: `${(imgIndex % 5) * 70}ms` }}
                                                     >
@@ -3265,25 +3273,31 @@ export default function App() {
                                     <div className="space-y-2 w-1/2">
                                         <label className={`block text-sm font-medium ${theme.textSecondary}`}>Check-in Date</label>
                                         <input
-                                            type="date"
+                                            type={bookingData.check_in ? "date" : "text"}
+                                            placeholder="mm/dd/yyyy"
+                                            onFocus={(e) => (e.target.type = "date")}
+                                            onBlur={(e) => !e.target.value && (e.target.type = "text")}
                                             name="check_in"
                                             value={bookingData.check_in}
                                             onChange={handleRoomBookingChange}
                                             min={new Date().toISOString().split('T')[0]}
                                             required
-                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-[#0f5132] transition-colors`}
+                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-[#0f5132] transition-colors placeholder-gray-500`}
                                         />
                                     </div>
                                     <div className="space-y-2 w-1/2">
                                         <label className={`block text-sm font-medium ${theme.textSecondary}`}>Check-out Date</label>
                                         <input
-                                            type="date"
+                                            type={bookingData.check_out ? "date" : "text"}
+                                            placeholder="mm/dd/yyyy"
+                                            onFocus={(e) => (e.target.type = "date")}
+                                            onBlur={(e) => !e.target.value && (e.target.type = "text")}
                                             name="check_out"
                                             value={bookingData.check_out}
                                             onChange={handleRoomBookingChange}
                                             min={bookingData.check_in || new Date().toISOString().split('T')[0]}
                                             required
-                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-[#0f5132] transition-colors`}
+                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-[#0f5132] transition-colors placeholder-gray-500`}
                                         />
                                     </div>
                                 </div>
@@ -3788,11 +3802,48 @@ export default function App() {
                                 </div>
                                 <div className="space-y-2">
                                     <label className={`block text-sm font-medium ${theme.textSecondary}`}>Email Address</label>
-                                    <input type="email" name="guest_email" value={packageBookingData.guest_email || ''} onChange={handlePackageBookingChange} placeholder="user@example.com (optional)" className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors`} />
+                                    <input
+                                        type="email"
+                                        name="guest_email"
+                                        value={packageBookingData.guest_email || ''}
+                                        onChange={handlePackageBookingChange}
+                                        placeholder="user@example.com"
+                                        required
+                                        className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${packageEmailError ? 'border-red-500' : theme.border} focus:outline-none focus:ring-2 ${packageEmailError ? 'focus:ring-red-500' : 'focus:ring-amber-500'} transition-colors`}
+                                    />
+                                    {packageEmailError && <p className="text-xs text-red-500 mt-1">{packageEmailError}</p>}
                                 </div>
                                 <div className="space-y-2">
                                     <label className={`block text-sm font-medium ${theme.textSecondary}`}>Phone Number</label>
-                                    <input type="tel" name="guest_mobile" value={packageBookingData.guest_mobile} onChange={handlePackageBookingChange} placeholder="Enter your mobile number" required className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors`} />
+                                    <div className="flex space-x-2">
+                                        <div className="w-28 text-slate-900">
+                                            <Select
+                                                options={countryCodes}
+                                                value={packageCountryCode}
+                                                onChange={handlePackageCountryChange}
+                                                formatOptionLabel={(e, { context }) => (context === "value" ? e.value : e.label)}
+                                                className="text-sm"
+                                                styles={{
+                                                    control: (base) => ({
+                                                        ...base,
+                                                        minHeight: "42px",
+                                                        border: "none",
+                                                        borderRadius: "0.75rem",
+                                                        backgroundColor: theme.bgSecondary === "bg-white" ? "#f3f4f6" : "#fef3c7",
+                                                    }),
+                                                }}
+                                            />
+                                        </div>
+                                        <input
+                                            type="tel"
+                                            value={packageMobileNumber}
+                                            onChange={handlePackageMobileChange}
+                                            placeholder="Enter Phone Number"
+                                            required
+                                            className={`flex-1 p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${packagePhoneError ? "border-red-500" : theme.border} focus:outline-none focus:ring-2 ${packagePhoneError ? "focus:ring-red-500" : "focus:ring-amber-500"} transition-colors`}
+                                        />
+                                    </div>
+                                    {packagePhoneError && <p className="text-xs text-red-500 mt-1">{packagePhoneError}</p>}
                                 </div>
                                 <div className="flex space-x-4">
                                     <div className="space-y-2 w-1/2">
@@ -3908,6 +3959,85 @@ export default function App() {
                                         <p className={`${theme.textSecondary}`}>No packages available at the moment.</p>
                                     </div>
                                 )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Package Details Overlay */}
+                {isPackageDetailsOpen && selectedPackageDetails && (
+                    <div className="fixed inset-0 z-[100] bg-neutral-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+                        <div className={`w-full max-w-2xl ${theme.bgCard} rounded-3xl shadow-2xl flex flex-col max-h-[90vh] my-8 overflow-hidden`}>
+                            {/* Header Image */}
+                            <div className="relative h-64 md:h-80">
+                                <img
+                                    src={selectedPackageDetails.images && selectedPackageDetails.images.length > 0 ? getImageUrl(selectedPackageDetails.images[0].image_url) : ITEM_PLACEHOLDER}
+                                    alt={selectedPackageDetails.title}
+                                    className="w-full h-full object-cover"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                                <button
+                                    onClick={() => setIsPackageDetailsOpen(false)}
+                                    className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors backdrop-blur-sm"
+                                >
+                                    <X className="w-6 h-6" />
+                                </button>
+                                <div className="absolute bottom-6 left-6 right-6">
+                                    <h3 className="text-3xl md:text-4xl font-extrabold text-white mb-2 shadow-sm">{selectedPackageDetails.title}</h3>
+                                    <div className="flex flex-wrap gap-2">
+                                        {selectedPackageDetails.duration && (
+                                            <span className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-lg text-white text-sm font-semibold border border-white/30">
+                                                {selectedPackageDetails.duration}
+                                            </span>
+                                        )}
+                                        <span className={`px-3 py-1 rounded-lg text-white text-sm font-semibold border border-white/30 uppercase tracking-wide ${selectedPackageDetails.status === 'Coming Soon' ? 'bg-amber-500/80' : 'bg-[#0f5132]/80'}`}>
+                                            {selectedPackageDetails.status || 'Available'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Content */}
+                            <div className="p-6 md:p-8 overflow-y-auto">
+                                <div className="flex items-baseline mb-6">
+                                    <span className={`text-4xl font-extrabold ${theme.textAccent}`}>
+                                        {formatCurrency(selectedPackageDetails.price || 0)}
+                                    </span>
+                                    <span className={`ml-2 ${theme.textSecondary}`}>/ package</span>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div>
+                                        <h4 className={`text-lg font-bold ${theme.textPrimary} mb-2`}>Description</h4>
+                                        <p className={`${theme.textSecondary} leading-relaxed whitespace-pre-line`}>
+                                            {selectedPackageDetails.description}
+                                        </p>
+                                    </div>
+
+                                    {/* Additional details like room types could go here if available */}
+                                </div>
+
+                                <div className="mt-8 pt-6 border-t border-gray-100 flex gap-4">
+                                    <button
+                                        onClick={() => {
+                                            setIsPackageDetailsOpen(false);
+                                            handleOpenPackageBookingForm(selectedPackageDetails.id);
+                                        }}
+                                        disabled={selectedPackageDetails.status === 'Coming Soon' || selectedPackageDetails.status === 'Disabled'}
+                                        className={`flex-1 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 ${selectedPackageDetails.status === 'Coming Soon' || selectedPackageDetails.status === 'Disabled'
+                                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                            : `${theme.buttonBg} ${theme.buttonText} ${theme.buttonHover}`
+                                            }`}
+                                    >
+                                        {selectedPackageDetails.status === 'Coming Soon' ? 'Coming Soon' : 'Book Now'}
+                                    </button>
+                                    <button
+                                        onClick={() => setIsPackageDetailsOpen(false)}
+                                        className={`px-6 py-4 rounded-xl font-bold border-2 ${theme.border} hover:bg-gray-50 transition-colors ${theme.textPrimary}`}
+                                    >
+                                        Close
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

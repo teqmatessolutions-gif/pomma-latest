@@ -41,6 +41,11 @@ def generate_thumbnails(directories):
 if __name__ == "__main__":
     dirs = [
         os.path.join("static", "rooms"),
-        os.path.join("uploads", "rooms")
+        os.path.join("uploads", "rooms"),
+        os.path.join("uploads", "packages"),
+        os.path.join("uploads", "cms"),
+        os.path.join("uploads", "services"),
+        os.path.join("uploads", "food_items"),
+        os.path.join("static", "food_categories")
     ]
     generate_thumbnails(dirs)

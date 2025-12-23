@@ -13,6 +13,8 @@ from fastapi.responses import FileResponse
 from app.curd import packages as crud_package
 import shutil
 import uuid
+from PIL import Image
+import io
 
 router = APIRouter(prefix="/packages", tags=["Packages"])
 
@@ -72,6 +74,21 @@ async def create_package_api(
                 # Store with leading slash for proper URL construction
                 normalized_path = file_path.replace('\\', '/')
                 image_urls.append(f"/{normalized_path}")
+
+                # Generate and Save Thumbnail
+                try:
+                    thumb_filename = f"{os.path.splitext(filename)[0]}_thumb.jpg"
+                    thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                    
+                    # Use bytes for PIL to avoid seek/read issues with async UploadFile
+                    with Image.open(io.BytesIO(contents)) as img_pil:
+                        img_pil.thumbnail((200, 200), Image.Resampling.LANCZOS)
+                        if img_pil.mode in ("RGBA", "P"):
+                            img_pil = img_pil.convert("RGB")
+                        img_pil.save(thumb_path, "JPEG", quality=60, optimize=True)
+                except Exception as thumb_error:
+                    print(f"Warning: Failed to generate thumbnail for {filename}: {thumb_error}")
+
         except Exception as img_error:
             import traceback
             error_detail = f"Failed to save package images: {str(img_error)}\n{traceback.format_exc()}"
@@ -160,6 +177,26 @@ async def update_package_api(
             # Store with leading slash for proper URL construction
             normalized_path = file_path.replace('\\', '/')
             image_urls.append(f"/{normalized_path}")
+
+            # Generate and Save Thumbnail
+            try:
+                thumb_filename = f"{os.path.splitext(filename)[0]}_thumb.jpg"
+                thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                
+                # Re-read file or use the buffer? The loop uses copyfileobj which consumes the file.
+                # We need to seek the file back or read distinct content.
+                img.file.seek(0) 
+                # (Note: update_package_api is async def but img.file is typically sync SpooledTemporaryFile)
+                # Let's read it into memory for PIL
+                file_content = img.file.read()
+                
+                with Image.open(io.BytesIO(file_content)) as img_pil:
+                   img_pil.thumbnail((200, 200), Image.Resampling.LANCZOS)
+                   if img_pil.mode in ("RGBA", "P"):
+                       img_pil = img_pil.convert("RGB")
+                   img_pil.save(thumb_path, "JPEG", quality=60, optimize=True)
+            except Exception as thumb_error:
+                print(f"Warning: Failed to generate thumbnail for {filename}: {thumb_error}")
         
         # Add new images to existing ones
         for url in image_urls:
