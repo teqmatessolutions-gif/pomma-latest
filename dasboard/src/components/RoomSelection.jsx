@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import API from '../services/api';
 import { formatCurrency } from '../utils/currency';
+import ProgressiveImage from './ProgressiveImage';
 
 const RoomSelection = React.memo(({ rooms, selectedRoomNumbers, onRoomToggle }) => {
     // Helper to construct image URL safely
@@ -38,11 +39,10 @@ const RoomSelection = React.memo(({ rooms, selectedRoomNumbers, onRoomToggle }) 
                         >
                             {/* Room Image - Reduced Height */}
                             <div className="relative h-32 w-full overflow-hidden">
-                                <img
+                                <ProgressiveImage
                                     src={imageUrl}
                                     alt={`Room ${room.number}`}
                                     className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                                    onError={(e) => e.target.src = "https://placehold.co/600x400?text=Room+Image"}
                                 />
                                 {/* Room Number Badge */}
                                 <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm text-gray-800">

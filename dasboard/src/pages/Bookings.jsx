@@ -7,6 +7,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import CountUp from "react-countup";
 import { Pie } from "react-chartjs-2";
 import { useInfiniteScroll } from "./useInfiniteScroll";
+import Select from "react-select";
+import { countryCodes } from "../utils/countryCodes";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import BannerMessage from "../components/BannerMessage";
 
@@ -398,7 +400,7 @@ const Bookings = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     guestName: "",
-    guestMobile: "",
+    guestMobile: "+91",
     guestEmail: "",
     roomTypes: [],
     roomNumbers: [],
@@ -407,6 +409,8 @@ const Bookings = () => {
     adults: 1,
     children: 0,
   });
+  const [emailError, setEmailError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
   const today = new Date().toISOString().split("T")[0];
 
   const [packages, setPackages] = useState([]);
@@ -414,16 +418,43 @@ const Bookings = () => {
     package_id: "",
     guest_name: "",
     guest_email: "",
-    guest_mobile: "",
+    guest_mobile: "+91",
     check_in: "",
     check_out: "",
     adults: 2,
     children: 0,
     room_ids: []
   });
+  const [packageEmailError, setPackageEmailError] = useState("");
+  const [packagePhoneError, setPackagePhoneError] = useState("");
   const [rooms, setRooms] = useState([]);
   const [packageRooms, setPackageRooms] = useState([]); // Separate state for package booking rooms
   const [allRooms, setAllRooms] = useState([]);
+
+  // Computed state for Whole Property blocking
+  const isWholePropertyBlocked = useMemo(() => {
+    if (!packageBookingForm.package_id) return false;
+    // Only block if dates are selected
+    if (!packageBookingForm.check_in || !packageBookingForm.check_out) return false;
+
+    const pkg = packages.find(p => p.id === parseInt(packageBookingForm.package_id));
+    if (!pkg) return false;
+
+    const hasRoomTypes = pkg.room_types && pkg.room_types.trim().length > 0;
+    const isWholeProperty = pkg.booking_type === 'whole_property' ||
+      pkg.booking_type === 'whole property' ||
+      (!pkg.booking_type && !hasRoomTypes);
+
+    if (!isWholeProperty) return false;
+
+    // Count active rooms (total inventory excluding disabled/maintenance)
+    // Note: 'Maintenance' vs 'maintenance' - check backend or use case-insensitive
+    const activeRoomCount = allRooms.filter(r => !['disabled', 'maintenance', 'coming soon'].includes((r.status || '').toLowerCase())).length;
+
+    // packageRooms is already filtered by availability (dates & conflicts) in the useEffect
+    // So if packageRooms.length < activeRoomCount, it means some rooms are occupied
+    return packageRooms.length < activeRoomCount;
+  }, [packageBookingForm.package_id, packageBookingForm.check_in, packageBookingForm.check_out, packages, allRooms, packageRooms]);
   const [bookings, setBookings] = useState([]);
   const [statusFilter, setStatusFilter] = useState("All");
   const [roomNumberFilter, setRoomNumberFilter] = useState("All");
@@ -432,6 +463,62 @@ const Bookings = () => {
   const [feedback, setFeedback] = useState({ message: "", type: "" });
   const [bannerMessage, setBannerMessage] = useState({ type: null, text: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Phone Validation State
+  const [roomCountryCode, setRoomCountryCode] = useState(countryCodes.find(c => c.value === "+91"));
+  const [roomMobileNumber, setRoomMobileNumber] = useState("");
+  const [packageCountryCode, setPackageCountryCode] = useState(countryCodes.find(c => c.value === "+91"));
+  const [packageMobileNumber, setPackageMobileNumber] = useState("");
+
+  const handleRoomMobileChange = (e) => {
+    const val = e.target.value.replace(/\D/g, '');
+    setRoomMobileNumber(val);
+    const full = (roomCountryCode?.value || "") + val;
+    setFormData(prev => ({ ...prev, guestMobile: full }));
+
+    if (roomCountryCode?.value === "+91") {
+      setPhoneError(!/^\+91\d{10}$/.test(full) ? "Please enter a valid Indian number (+91XXXXXXXXXX)." : "");
+    } else {
+      setPhoneError("");
+    }
+  };
+
+  const handleRoomCountryChange = (opt) => {
+    setRoomCountryCode(opt);
+    const full = (opt?.value || "") + roomMobileNumber;
+    setFormData(prev => ({ ...prev, guestMobile: full }));
+
+    if (opt?.value === "+91") {
+      setPhoneError(!/^\+91\d{10}$/.test(full) ? "Please enter a valid Indian number (+91XXXXXXXXXX)." : "");
+    } else {
+      setPhoneError("");
+    }
+  };
+
+  const handlePackageMobileChange = (e) => {
+    const val = e.target.value.replace(/\D/g, '');
+    setPackageMobileNumber(val);
+    const full = (packageCountryCode?.value || "") + val;
+    setPackageBookingForm(prev => ({ ...prev, guest_mobile: full }));
+
+    if (packageCountryCode?.value === "+91") {
+      setPackagePhoneError(!/^\+91\d{10}$/.test(full) ? "Please enter a valid Indian number (+91XXXXXXXXXX)." : "");
+    } else {
+      setPackagePhoneError("");
+    }
+  };
+
+  const handlePackageCountryChange = (opt) => {
+    setPackageCountryCode(opt);
+    const full = (opt?.value || "") + packageMobileNumber;
+    setPackageBookingForm(prev => ({ ...prev, guest_mobile: full }));
+
+    if (opt?.value === "+91") {
+      setPackagePhoneError(!/^\+91\d{10}$/.test(full) ? "Please enter a valid Indian number (+91XXXXXXXXXX)." : "");
+    } else {
+      setPackagePhoneError("");
+    }
+  };
 
   // Function to show banner message
   const showBannerMessage = (type, text) => {
@@ -822,6 +909,15 @@ const Bookings = () => {
 
   const handlePackageBookingChange = e => {
     const { name, value } = e.target;
+
+    if (name === 'guest_email') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      setPackageEmailError(value && !emailRegex.test(value) ? "Please enter a valid email address." : "");
+    }
+    if (name === 'guest_mobile') {
+      setPackagePhoneError(value && !/^\+91\d{10}$/.test(value) ? "Please enter a valid Indian number (+91XXXXXXXXXX)." : "");
+    }
+
     setPackageBookingForm(prev => {
       const updated = { ...prev, [name]: value };
 
@@ -854,6 +950,21 @@ const Bookings = () => {
 
   const handlePackageBookingSubmit = async e => {
     e.preventDefault();
+
+    // Validation
+    // Validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (packageBookingForm.guest_email && !emailRegex.test(packageBookingForm.guest_email)) {
+      showBannerMessage("error", "Please enter a valid email address.");
+      return;
+    }
+    // Validation: Check code logic
+    if (packageBookingForm.guest_mobile && packageBookingForm.guest_mobile.startsWith("+91")) {
+      if (!/^\+91\d{10}$/.test(packageBookingForm.guest_mobile)) {
+        showBannerMessage("error", "Please enter a valid Indian phone number (+91XXXXXXXXXX).");
+        return;
+      }
+    }
 
     // Prevent multiple submissions
     if (isSubmitting) {
@@ -953,7 +1064,9 @@ const Bookings = () => {
       };
       const response = await API.post("/packages/book", bookingData, authHeader());
       showBannerMessage("success", "Package booked successfully!");
-      setPackageBookingForm({ package_id: "", guest_name: "", guest_email: "", guest_mobile: "", check_in: "", check_out: "", adults: 2, children: 0, room_ids: [] });
+      setPackageBookingForm({ package_id: "", guest_name: "", guest_email: "", guest_mobile: "+91", check_in: "", check_out: "", adults: 2, children: 0, room_ids: [] });
+      setPackageCountryCode(countryCodes.find(c => c.value === "+91"));
+      setPackageMobileNumber("");
 
       // Add the new package booking to the state - use response data as-is from backend
       const newPackageBooking = {
@@ -1219,6 +1332,15 @@ const Bookings = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === 'guestEmail') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      setEmailError(value && !emailRegex.test(value) ? "Please enter a valid email address." : "");
+    }
+    if (name === 'guestMobile') {
+      setPhoneError(value && !/^\+91\d{10}$/.test(value) ? "Please enter a valid Indian number (+91XXXXXXXXXX)." : "");
+    }
+
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -1229,6 +1351,21 @@ const Bookings = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validation
+    // Validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (formData.guestEmail && !emailRegex.test(formData.guestEmail)) {
+      showBannerMessage("error", "Please enter a valid email address.");
+      return;
+    }
+    // Validation: Check code logic
+    if (formData.guestMobile && formData.guestMobile.startsWith("+91")) {
+      if (!/^\+91\d{10}$/.test(formData.guestMobile)) {
+        showBannerMessage("error", "Please enter a valid Indian phone number (+91XXXXXXXXXX).");
+        return;
+      }
+    }
 
     // Prevent multiple submissions
     if (isSubmitting) {
@@ -1305,7 +1442,7 @@ const Bookings = () => {
       showBannerMessage("success", "Bookings created successfully!");
       setFormData({
         guestName: "",
-        guestMobile: "",
+        guestMobile: "+91",
         guestEmail: "",
         roomTypes: [],
         roomNumbers: [],
@@ -1314,6 +1451,8 @@ const Bookings = () => {
         adults: 1,
         children: 0,
       });
+      setRoomCountryCode(countryCodes.find(c => c.value === "+91"));
+      setRoomMobileNumber("");
       // Add the new booking to the state - use response data as-is from backend
       const newBooking = {
         ...response.data,
@@ -1667,21 +1806,38 @@ const Bookings = () => {
                 </div>
                 <div className="flex flex-col">
                   <label className="text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
-                  <input
-                    type="text" name="guestMobile" value={formData.guestMobile}
-                    onChange={handleChange} placeholder="e.g., +1234567890"
-                    className="w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500"
-                    required
-                  />
+                  <div className="flex">
+                    <div className="w-40 mr-2">
+                      <Select
+                        options={countryCodes}
+                        value={roomCountryCode}
+                        onChange={handleRoomCountryChange}
+                        className="text-sm"
+                        styles={{
+                          control: (base) => ({ ...base, minHeight: '42px', borderRadius: '0.5rem', borderColor: '#d1d5db' })
+                        }}
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      value={roomMobileNumber}
+                      onChange={handleRoomMobileChange}
+                      placeholder="Enter Mobile Number"
+                      className={`flex-1 border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500 ${phoneError ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : ''}`}
+                      required
+                    />
+                  </div>
+                  {phoneError && <p className="text-xs text-red-500 mt-1">{phoneError}</p>}
                 </div>
                 <div className="flex flex-col md:col-span-2">
                   <label className="text-sm font-medium text-gray-700 mb-1">Email</label>
                   <input
                     type="email" name="guestEmail" value={formData.guestEmail}
                     onChange={handleChange} placeholder="email@example.com"
-                    className="w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500"
+                    className={`w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500 ${emailError ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : ''}`}
                     required
                   />
+                  {emailError && <p className="text-xs text-red-500 mt-1">{emailError}</p>}
                 </div>
 
                 <div className="flex flex-col">
@@ -1806,8 +1962,33 @@ const Bookings = () => {
                   })}
                 </select>
                 <input name="guest_name" placeholder="Guest Name" value={packageBookingForm.guest_name} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
-                <input type="email" name="guest_email" placeholder="Guest Email" value={packageBookingForm.guest_email} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" />
-                <input name="guest_mobile" placeholder="Guest Mobile" value={packageBookingForm.guest_mobile} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
+                <div>
+                  <input type="email" name="guest_email" placeholder="Guest Email" value={packageBookingForm.guest_email} onChange={handlePackageBookingChange} className={`w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all ${packageEmailError ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : ''}`} />
+                  {packageEmailError && <p className="text-xs text-red-500 mt-1">{packageEmailError}</p>}
+                </div>
+                <div>
+                  <div className="flex">
+                    <div className="w-40 mr-2">
+                      <Select
+                        options={countryCodes}
+                        value={packageCountryCode}
+                        onChange={handlePackageCountryChange}
+                        className="text-sm"
+                        styles={{
+                          control: (base) => ({ ...base, minHeight: '42px', borderRadius: '0.5rem', borderColor: '#d1d5db' })
+                        }}
+                      />
+                    </div>
+                    <input
+                      value={packageMobileNumber}
+                      onChange={handlePackageMobileChange}
+                      placeholder="Guest Mobile"
+                      className={`flex-1 p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-indigo-200 transition-all ${packagePhoneError ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : ''}`}
+                      required
+                    />
+                  </div>
+                  {packagePhoneError && <p className="text-xs text-red-500 mt-1">{packagePhoneError}</p>}
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <input type="date" name="check_in" value={packageBookingForm.check_in} min={today} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
                   <input type="date" name="check_out" value={packageBookingForm.check_out} min={packageBookingForm.check_in || today} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
@@ -1834,6 +2015,16 @@ const Bookings = () => {
 
                   // Hide room selection completely for whole_property
                   if (isWholeProperty) {
+                    if (isWholePropertyBlocked) {
+                      return (
+                        <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4">
+                          <p className="text-sm font-semibold text-red-800">Property Unavailable</p>
+                          <p className="text-xs text-red-600 mt-1">
+                            The whole property cannot be booked because some rooms are already occupied or unavailable for the selected dates.
+                          </p>
+                        </div>
+                      );
+                    }
                     return (
                       <div className="bg-indigo-50 border-2 border-indigo-300 rounded-lg p-4">
                         <p className="text-sm font-semibold text-indigo-800">Whole Property Package</p>
@@ -1934,8 +2125,8 @@ const Bookings = () => {
               </div>
               <button
                 type="submit"
-                className="mt-auto w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-lg shadow-md transition-transform transform hover:-translate-y-1 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                disabled={isSubmitting || isLoading}
+                className={`mt-auto w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-lg shadow-md transition-transform transform hover:-translate-y-1 disabled:bg-gray-400 disabled:cursor-not-allowed ${isWholePropertyBlocked ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={isSubmitting || isLoading || isWholePropertyBlocked}
               >
                 {isSubmitting ? "Booking..." : "Book Package ✅"}
               </button>

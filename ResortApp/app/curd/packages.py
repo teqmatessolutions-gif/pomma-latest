@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import func
 from fastapi import HTTPException
 from typing import List
 
@@ -209,11 +210,13 @@ def book_package(db: Session, booking: PackageBookingCreate):
     
     if is_whole_property:
         # For whole property packages, we MUST check availability for ALL rooms.
-        # Ignore whatever room_ids were sent (or not sent) by the frontend.
-        all_rooms = db.query(Room).all()
+        # Filter out rooms that are under maintenance or coming soon
+        all_rooms = db.query(Room).filter(
+            func.lower(Room.status).notin_(['maintenance', 'coming soon', 'comming soon', 'disabled'])
+        ).all()
         target_room_ids = [room.id for room in all_rooms]
         if not target_room_ids:
-             raise HTTPException(status_code=400, detail="No rooms found in the system to book.")
+             raise HTTPException(status_code=400, detail="No available rooms found (all rooms might be under maintenance).")
     else:
         # For regular packages, use the user-selected rooms
         target_room_ids = booking.room_ids
@@ -252,7 +255,7 @@ def book_package(db: Session, booking: PackageBookingCreate):
             .join(PackageBooking)
             .filter(
                 PackageBookingRoom.room_id == room_id,
-                PackageBooking.status.in_(["booked", "checked-in", "checked_in"]),  # Only check for active bookings
+                func.lower(PackageBooking.status).in_(["booked", "checked-in", "checked_in", "confirmed"]),  # Only check for active bookings
                 PackageBooking.check_in < booking.check_out,
                 PackageBooking.check_out > booking.check_in
             )
@@ -266,7 +269,7 @@ def book_package(db: Session, booking: PackageBookingCreate):
             .join(Booking)
             .filter(
                 BookingRoom.room_id == room_id,
-                Booking.status.in_(["booked", "checked-in", "checked_in"]),  # Only check for active bookings
+                func.lower(Booking.status).in_(["booked", "checked-in", "checked_in", "confirmed"]),  # Only check for active bookings
                 Booking.check_in < booking.check_out,
                 Booking.check_out > booking.check_in
             )

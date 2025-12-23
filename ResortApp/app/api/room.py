@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from PIL import Image
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.database import SessionLocal
@@ -52,11 +53,25 @@ def create_room_test(
         filename = None
         if image and image.filename:
             try:
+                # 1. Save Original Image
                 ext = image.filename.split('.')[-1]
                 filename = f"room_{uuid4().hex}.{ext}"
                 image_path = os.path.join(UPLOAD_DIR, filename)
+                
+                image.file.seek(0)
                 with open(image_path, "wb") as buffer:
                     shutil.copyfileobj(image.file, buffer)
+
+                # 2. Generate and Save Thumbnail
+                thumb_filename = f"{os.path.splitext(filename)[0]}_thumb.jpg"
+                thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                
+                image.file.seek(0)
+                with Image.open(image.file) as img:
+                    img.thumbnail((200, 200), Image.Resampling.LANCZOS)
+                    if img.mode in ("RGBA", "P"):
+                        img = img.convert("RGB")
+                    img.save(thumb_path, "JPEG", quality=60, optimize=True)
             except Exception as e:
                 print(f"Error saving image: {e}")
                 raise HTTPException(status_code=500, detail=f"Error saving image: {str(e)}")
@@ -174,11 +189,25 @@ def create_room(
         filename = None
         if image and image.filename:
             try:
+                # 1. Save Original Image
                 ext = image.filename.split('.')[-1]
                 filename = f"room_{uuid4().hex}.{ext}"
                 image_path = os.path.join(UPLOAD_DIR, filename)
+                
+                image.file.seek(0)
                 with open(image_path, "wb") as buffer:
                     shutil.copyfileobj(image.file, buffer)
+
+                # 2. Generate and Save Thumbnail
+                thumb_filename = f"{os.path.splitext(filename)[0]}_thumb.jpg"
+                thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                
+                image.file.seek(0)
+                with Image.open(image.file) as img:
+                    img.thumbnail((200, 200), Image.Resampling.LANCZOS)
+                    if img.mode in ("RGBA", "P"):
+                        img = img.convert("RGB")
+                    img.save(thumb_path, "JPEG", quality=60, optimize=True)
             except Exception as e:
                 print(f"Error saving image: {e}")
                 raise HTTPException(status_code=500, detail=f"Error saving image: {str(e)}")
@@ -190,7 +219,7 @@ def create_room(
             status=status,
             adults=adults,
             children=children,
-            image_url=f"/static/rooms/{filename}" if filename else None,
+            image_url=f"uploads/rooms/{filename}" if filename else None,
             air_conditioning=air_conditioning,
             wifi=wifi,
             bathroom=bathroom,
@@ -376,18 +405,46 @@ def update_room(
 
     # Handle new image upload if provided
     if image:
-        # Remove old image if exists
+        # Remove old image/thumb if exists
         if db_room.image_url:
             old_path = db_room.image_url.lstrip("/")
             if os.path.exists(old_path):
-                os.remove(old_path)
+                try:
+                    os.remove(old_path)
+                except: pass
+                # Try remove thumb too
+                base, _ = os.path.splitext(old_path)
+                old_thumb = f"{base}_thumb.jpg"
+                if os.path.exists(old_thumb):
+                    try:
+                        os.remove(old_thumb)
+                    except: pass
 
-        ext = image.filename.split(".")[-1]
-        filename = f"room_{uuid4().hex}.{ext}"
-        image_path = os.path.join(UPLOAD_DIR, filename)
-        with open(image_path, "wb") as buffer:
-            shutil.copyfileobj(image.file, buffer)
-        db_room.image_url = f"uploads/rooms/{filename}"
+        try:
+             # 1. Save Original Image
+            ext = image.filename.split('.')[-1]
+            filename = f"room_{uuid4().hex}.{ext}"
+            image_path = os.path.join(UPLOAD_DIR, filename)
+            
+            image.file.seek(0)
+            with open(image_path, "wb") as buffer:
+                shutil.copyfileobj(image.file, buffer)
+
+            # 2. Generate and Save Thumbnail
+            thumb_filename = f"{os.path.splitext(filename)[0]}_thumb.jpg"
+            thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+            
+            image.file.seek(0)
+            with Image.open(image.file) as img:
+                img.thumbnail((200, 200), Image.Resampling.LANCZOS)
+                if img.mode in ("RGBA", "P"):
+                    img = img.convert("RGB")
+                img.save(thumb_path, "JPEG", quality=60, optimize=True)
+
+            db_room.image_url = f"uploads/rooms/{filename}"
+        except Exception as e:
+             print(f"Error saving image: {e}")
+             raise HTTPException(status_code=500, detail=f"Error saving image: {str(e)}")
 
     db.commit()
     db.refresh(db_room)
