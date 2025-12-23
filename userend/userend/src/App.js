@@ -730,9 +730,9 @@ export default function App() {
         let animationFrameId;
         const scroll = () => {
             if (!isServicesHovered) {
-                // If scrolled halfway (end of first set), reset to 0
-                // Use >= (scrollWidth / 2) - tolerance to be safe
-                if (scrollContainer.scrollLeft >= (scrollContainer.scrollWidth / 2) - 5) {
+                // If scrolled 1/4 (end of first set), reset to 0
+                // Use >= (scrollWidth / 4) - tolerance to be safe
+                if (scrollContainer.scrollLeft >= (scrollContainer.scrollWidth / 4) - 5) {
                     scrollContainer.scrollLeft = 0;
                 } else {
                     scrollContainer.scrollLeft += 0.5; // Smoother, slower speed
@@ -2738,7 +2738,7 @@ export default function App() {
                                         className="flex gap-8 py-4 overflow-x-auto pb-6 custom-scrollbar"
                                         style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(216, 201, 172, 0.6) transparent' }}
                                     >
-                                        {[...services, ...services].map((service, index) => (
+                                        {[...services, ...services, ...services, ...services].map((service, index) => (
                                             <div
                                                 key={`${service.id}-${index}`}
                                                 className="relative flex-shrink-0 w-[400px] group overflow-hidden rounded-[26px] bg-white shadow-[0_18px_35px_rgba(12,61,38,0.18)] transition-transform duration-500 hover:-translate-y-3"
@@ -3273,7 +3273,7 @@ export default function App() {
                                                                 className={`group flex flex-col h-full rounded-2xl shadow-sm transition-all duration-300 overflow-hidden relative ${isUnavailable ? 'opacity-70 cursor-not-allowed bg-gray-50' : 'cursor-pointer bg-white'} ${isSelected ? 'ring-2 ring-[#0f5132] ring-offset-2 shadow-xl' : (isUnavailable ? 'border border-gray-100' : 'border border-neutral-100 hover:shadow-xl')}`}
                                                             >
                                                                 {/* Image Section */}
-                                                                <div className="relative h-44 overflow-hidden">
+                                                                <div className="relative h-32 sm:h-44 overflow-hidden">
                                                                     <img
                                                                         src={getImageUrl(room.image_url)}
                                                                         alt={room.type}
@@ -3283,7 +3283,7 @@ export default function App() {
                                                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-90" />
 
                                                                     <div className="absolute bottom-3 left-3 text-white">
-                                                                        <h3 className="font-bold text-lg leading-tight drop-shadow-sm">{room.type}</h3>
+                                                                        <h3 className="font-bold text-sm sm:text-lg leading-tight drop-shadow-sm">{room.type}</h3>
                                                                     </div>
 
                                                                     <div className="absolute top-3 right-3 px-2 py-1 bg-white/90 backdrop-blur-md rounded-lg text-[10px] font-bold text-gray-800 shadow-sm uppercase tracking-wider border border-white/40">
@@ -3299,8 +3299,8 @@ export default function App() {
                                                                 </div>
 
                                                                 {/* Details Section */}
-                                                                <div className="p-5 flex flex-col flex-grow bg-white">
-                                                                    <div className="flex items-center gap-2 mb-4">
+                                                                <div className="p-3 sm:p-5 flex flex-col flex-grow bg-white">
+                                                                    <div className="flex items-center gap-2 mb-2 sm:mb-4">
                                                                         <div className="px-2.5 py-1 bg-gray-200 rounded-md border border-gray-300 text-[11px] font-semibold text-gray-900 flex items-center">
                                                                             {room.adults} Adults
                                                                         </div>
@@ -3311,11 +3311,11 @@ export default function App() {
                                                                         )}
                                                                     </div>
 
-                                                                    <div className="mt-auto pt-3 border-t border-dashed border-gray-100 flex flex-col gap-3">
+                                                                    <div className="mt-auto pt-2 sm:pt-3 border-t border-dashed border-gray-100 flex flex-col gap-2 sm:gap-3">
                                                                         <div className="flex flex-col">
                                                                             <span className="text-[10px] text-gray-800 font-bold uppercase tracking-wider">Start from</span>
                                                                             <div className="flex items-baseline gap-1 text-[#0f5132]">
-                                                                                <span className="text-xl font-extrabold leading-none">{formatCurrency(room.price)}</span>
+                                                                                <span className="text-lg sm:text-xl font-extrabold leading-none">{formatCurrency(room.price)}</span>
                                                                                 <span className="text-[10px] font-medium text-gray-800">/night</span>
                                                                             </div>
                                                                         </div>
@@ -3323,7 +3323,7 @@ export default function App() {
                                                                         <button
                                                                             type="button"
                                                                             disabled={isUnavailable}
-                                                                            className={`w-full py-3 text-xs font-bold uppercase tracking-wider rounded-xl shadow-lg transition-all transform flex items-center justify-center gap-1 ${isUnavailable
+                                                                            className={`w-full py-2 sm:py-3 text-xs font-bold uppercase tracking-wider rounded-xl shadow-lg transition-all transform flex items-center justify-center gap-1 ${isUnavailable
                                                                                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
                                                                                 : (isSelected
                                                                                     ? 'bg-neutral-800 text-white hover:bg-neutral-700'
