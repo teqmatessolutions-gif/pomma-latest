@@ -3270,10 +3270,10 @@ export default function App() {
                                                                         return { ...prev, room_ids: newIds };
                                                                     });
                                                                 }}
-                                                                className={`group flex flex-col h-full rounded-2xl shadow-sm transition-all duration-300 overflow-hidden relative ${isUnavailable ? 'opacity-70 cursor-not-allowed bg-gray-50' : 'cursor-pointer bg-white'} ${isSelected ? 'ring-2 ring-[#0f5132] ring-offset-2 shadow-xl' : (isUnavailable ? 'border border-gray-100' : 'border border-neutral-100 hover:shadow-xl')}`}
+                                                                className={`group flex flex-col h-full rounded-xl sm:rounded-2xl shadow-sm transition-all duration-300 overflow-hidden relative ${isUnavailable ? 'opacity-70 cursor-not-allowed bg-gray-50' : 'cursor-pointer bg-white'} ${isSelected ? 'ring-2 ring-[#0f5132] ring-offset-2 shadow-xl' : (isUnavailable ? 'border border-gray-100' : 'border border-neutral-100 hover:shadow-xl')}`}
                                                             >
                                                                 {/* Image Section */}
-                                                                <div className="relative h-32 sm:h-44 overflow-hidden">
+                                                                <div className="relative h-24 sm:h-40 overflow-hidden">
                                                                     <img
                                                                         src={getImageUrl(room.image_url)}
                                                                         alt={room.type}
@@ -3282,16 +3282,16 @@ export default function App() {
                                                                     />
                                                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-90" />
 
-                                                                    <div className="absolute bottom-3 left-3 text-white">
-                                                                        <h3 className="font-bold text-sm sm:text-lg leading-tight drop-shadow-sm">{room.type}</h3>
+                                                                    <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 text-white w-full pr-4">
+                                                                        <h3 className="font-bold text-xs sm:text-lg leading-tight drop-shadow-sm truncate">{room.type}</h3>
                                                                     </div>
 
-                                                                    <div className="absolute top-3 right-3 px-2 py-1 bg-white/90 backdrop-blur-md rounded-lg text-[10px] font-bold text-gray-800 shadow-sm uppercase tracking-wider border border-white/40">
-                                                                        Room #{room.number}
+                                                                    <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-white/90 backdrop-blur-md rounded text-[9px] sm:text-[10px] font-bold text-gray-800 shadow-sm uppercase tracking-wider border border-white/40">
+                                                                        #{room.number}
                                                                     </div>
                                                                     {isSelected && (
                                                                         <div className="absolute inset-0 bg-[#0f5132]/20 backdrop-blur-[1px] flex items-center justify-center animate-in fade-in duration-200">
-                                                                            <div className="bg-white/90 text-[#0f5132] px-4 py-2 rounded-full font-bold shadow-lg flex items-center gap-2">
+                                                                            <div className="bg-white/90 text-[#0f5132] px-3 py-1 sm:px-4 sm:py-2 rounded-full font-bold shadow-lg flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
                                                                                 <span>✓ Selected</span>
                                                                             </div>
                                                                         </div>
@@ -3299,38 +3299,38 @@ export default function App() {
                                                                 </div>
 
                                                                 {/* Details Section */}
-                                                                <div className="p-3 sm:p-5 flex flex-col flex-grow bg-white">
-                                                                    <div className="flex items-center gap-2 mb-2 sm:mb-4">
-                                                                        <div className="px-2.5 py-1 bg-gray-200 rounded-md border border-gray-300 text-[11px] font-semibold text-gray-900 flex items-center">
+                                                                <div className="p-2 sm:p-4 flex flex-col flex-grow bg-white gap-1 sm:gap-2">
+                                                                    <div className="flex items-center gap-1 sm:gap-2 mb-0.5 sm:mb-2 flex-wrap">
+                                                                        <div className="px-1.5 py-0.5 bg-gray-200 rounded border border-gray-300 text-[9px] sm:text-[11px] font-semibold text-gray-900 flex items-center">
                                                                             {room.adults} Adults
                                                                         </div>
                                                                         {room.children > 0 && (
-                                                                            <div className="px-2.5 py-1 bg-gray-200 rounded-md border border-gray-300 text-[11px] font-semibold text-gray-900 flex items-center">
+                                                                            <div className="px-1.5 py-0.5 bg-gray-200 rounded border border-gray-300 text-[9px] sm:text-[11px] font-semibold text-gray-900 flex items-center">
                                                                                 {room.children} Kids
                                                                             </div>
                                                                         )}
                                                                     </div>
 
-                                                                    <div className="mt-auto pt-2 sm:pt-3 border-t border-dashed border-gray-100 flex flex-col gap-2 sm:gap-3">
+                                                                    <div className="mt-auto pt-1 sm:pt-2 border-t border-dashed border-gray-100 flex flex-col gap-1.5 sm:gap-3">
                                                                         <div className="flex flex-col">
-                                                                            <span className="text-[10px] text-gray-800 font-bold uppercase tracking-wider">Start from</span>
+                                                                            <span className="text-[9px] sm:text-[10px] text-gray-500 font-bold uppercase tracking-wider">Start from</span>
                                                                             <div className="flex items-baseline gap-1 text-[#0f5132]">
-                                                                                <span className="text-lg sm:text-xl font-extrabold leading-none">{formatCurrency(room.price)}</span>
-                                                                                <span className="text-[10px] font-medium text-gray-800">/night</span>
+                                                                                <span className="text-sm sm:text-xl font-extrabold leading-none">{formatCurrency(room.price)}</span>
+                                                                                <span className="text-[9px] sm:text-[10px] font-medium text-gray-600">/night</span>
                                                                             </div>
                                                                         </div>
 
                                                                         <button
                                                                             type="button"
                                                                             disabled={isUnavailable}
-                                                                            className={`w-full py-2 sm:py-3 text-xs font-bold uppercase tracking-wider rounded-xl shadow-lg transition-all transform flex items-center justify-center gap-1 ${isUnavailable
+                                                                            className={`w-full py-1.5 sm:py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-lg sm:rounded-xl shadow-sm sm:shadow-lg transition-all transform flex items-center justify-center gap-1 ${isUnavailable
                                                                                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
                                                                                 : (isSelected
                                                                                     ? 'bg-neutral-800 text-white hover:bg-neutral-700'
                                                                                     : 'bg-[#0f5132] text-white hover:bg-[#153a2c] hover:shadow-xl active:scale-[0.98]')
                                                                                 }`}
                                                                         >
-                                                                            {isUnavailable ? room.status : (isSelected ? '✓ Selected' : 'Select Room')}
+                                                                            {isUnavailable ? room.status : (isSelected ? '✓ Selected' : 'Book')}
                                                                         </button>
                                                                     </div>
                                                                 </div>

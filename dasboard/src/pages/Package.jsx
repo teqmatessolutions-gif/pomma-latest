@@ -6,6 +6,8 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearSca
 import { Pie, Bar, Line } from 'react-chartjs-2';
 import { motion } from "framer-motion";
 import { getMediaBaseUrl } from "../utils/env";
+import RoomSelection from "../components/RoomSelection";
+import { formatCurrency } from "../utils/currency";
 
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement);
@@ -1091,31 +1093,14 @@ const Packages = () => {
                       <p className="text-xs mt-1">Available rooms will be shown here</p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-48 overflow-y-auto p-2 bg-gray-50 rounded-lg border">
-                      {availableRooms.length > 0 ? (
-                        availableRooms.map(room => (
-                          <div
-                            key={room.id}
-                            onClick={() => handleRoomSelect(room.id)}
-                            className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200
-                              ${bookingForm.room_ids.includes(room.id)
-                                ? 'bg-indigo-500 text-white border-indigo-600'
-                                : 'bg-white border-gray-300 hover:border-indigo-500'
-                              }
-                            `}
-                          >
-                            <p className="font-semibold">Room {room.number}</p>
-                            <p className={`text-sm ${bookingForm.room_ids.includes(room.id) ? 'text-indigo-200' : 'text-gray-600'}`}>{room.type}</p>
-                            <p className={`text-xs ${bookingForm.room_ids.includes(room.id) ? 'text-indigo-200' : 'text-gray-500'}`}>₹{room.price}/night</p>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="col-span-full text-center py-4 text-gray-500">
-                          <p className="font-medium">No rooms available for the selected dates</p>
-                          <p className="text-sm mt-1">Please try different dates</p>
-                        </div>
-                      )}
-                    </div>
+                    <RoomSelection
+                      rooms={availableRooms}
+                      selectedRoomNumbers={availableRooms.filter(r => bookingForm.room_ids.includes(r.id)).map(r => r.number)}
+                      onRoomToggle={(roomNumber) => {
+                        const room = availableRooms.find(r => r.number === roomNumber);
+                        if (room) handleRoomSelect(room.id);
+                      }}
+                    />
                   )}
                 </div>
               );

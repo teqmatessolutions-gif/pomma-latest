@@ -12,6 +12,8 @@ import BannerMessage from "../components/BannerMessage";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
+import RoomSelection from "../components/RoomSelection";
+
 // Reusable components (for better structure)
 const KPI_Card = React.memo(({ title, value, unit = "", duration = 1.5 }) => (
   <motion.div
@@ -1595,50 +1597,6 @@ const Bookings = () => {
     }
   };
 
-  const RoomSelection = React.memo(({ rooms, selectedRoomNumbers, onRoomToggle }) => {
-    return (
-      <div className="flex flex-wrap gap-4 p-4 border border-gray-300 rounded-lg bg-gray-50 max-h-64 overflow-y-auto">
-        {rooms.length > 0 ? (
-          rooms.map((room) => (
-            <motion.div
-              key={room.id}
-              whileHover={{ scale: 1.05 }}
-              className={`
-                p-4 rounded-xl shadow-md cursor-pointer transition-all duration-200
-                ${selectedRoomNumbers.includes(room.number)
-                  ? 'bg-indigo-600 text-white transform scale-105 ring-2 ring-indigo-500'
-                  : 'bg-white text-gray-800 hover:bg-gray-100'
-                }
-              `}
-              onClick={() => onRoomToggle(room.number)}
-            >
-              <div className="w-full h-24 mb-2 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">
-                {/* Placeholder for Room Image */}
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 8v-10a1 1 0 011-1h2a1 1 0 011 1v10m-6 0h6" />
-                </svg>
-              </div>
-              <div className={`font-semibold text-lg ${selectedRoomNumbers.includes(room.number) ? 'text-white' : 'text-indigo-700'}`}>
-                Room {room.number}
-              </div>
-              <div className={`text-sm ${selectedRoomNumbers.includes(room.number) ? 'text-indigo-200' : 'text-gray-500'}`}>
-                <p>Capacity: {room.adults} Adults, {room.children} Children</p>
-                <p className="font-medium">{formatCurrency(room.price)}/night</p>
-              </div>
-            </motion.div>
-          ))
-        ) : (
-          <div className="w-full text-center py-8 text-gray-500">
-            <div className="text-lg mb-2">🚫</div>
-            <p className="font-medium">No rooms available for the selected dates</p>
-            <p className="text-sm mt-1">Please try different dates or room type</p>
-          </div>
-        )}
-      </div>
-    );
-  });
-  RoomSelection.displayName = 'RoomSelection';
-
 
   return (
     <DashboardLayout>
@@ -1759,7 +1717,30 @@ const Bookings = () => {
                     ))}
                   </select>
                 </div>
+
                 <div className="flex flex-col">
+                  <label className="text-sm font-medium text-gray-700 mb-1">Number of Adults</label>
+                  <input
+                    type="number" name="adults" value={formData.adults}
+                    onChange={handleChange}
+                    className="w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500"
+                    min="1"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-sm font-medium text-gray-700 mb-1">Number of Children</label>
+                  <input
+                    type="number" name="children" value={formData.children}
+                    onChange={handleChange}
+                    className="w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500"
+                    min="0"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col md:col-span-2">
                   <label className="text-sm font-medium text-gray-700 mb-1">
                     Available Rooms for Selected Dates
                     {formData.checkIn && formData.checkOut && (
@@ -1786,32 +1767,11 @@ const Bookings = () => {
                     )}
                   </AnimatePresence>
                   {!formData.checkIn || !formData.checkOut ? (
-                    <div className="text-center py-8 text-gray-500 text-sm">
+                    <div className="text-center py-8 text-gray-500 text-sm border-2 border-dashed border-gray-200 rounded-xl h-32 flex flex-col items-center justify-center">
                       <p>Please select check-in and check-out dates first</p>
                       <p className="text-xs mt-1">Available rooms will be shown here</p>
                     </div>
                   ) : null}
-                </div>
-
-                <div className="flex flex-col">
-                  <label className="text-sm font-medium text-gray-700 mb-1">Number of Adults</label>
-                  <input
-                    type="number" name="adults" value={formData.adults}
-                    onChange={handleChange}
-                    className="w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500"
-                    min="1"
-                    required
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <label className="text-sm font-medium text-gray-700 mb-1">Number of Children</label>
-                  <input
-                    type="number" name="children" value={formData.children}
-                    onChange={handleChange}
-                    className="w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500"
-                    min="0"
-                    required
-                  />
                 </div>
               </div>
 
@@ -1910,24 +1870,14 @@ const Bookings = () => {
                             <p className="text-xs mt-1">Available rooms will be shown here</p>
                           </div>
                         ) : (
-                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-48 overflow-y-auto p-2 bg-gray-50 rounded-lg border">
-                            {packageRooms.length > 0 ? (
-                              packageRooms.map(room => (
-                                <div key={room.id} onClick={() => handlePackageRoomSelect(room.id)} className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200
-                                                     ${packageBookingForm.room_ids.includes(room.id) ? 'bg-indigo-500 text-white border-indigo-600' : 'bg-white border-gray-300 hover:border-indigo-500'}
-                                `}>
-                                  <p className="font-semibold">Room {room.number}</p>
-                                  <p className={`text-sm ${packageBookingForm.room_ids.includes(room.id) ? 'text-indigo-200' : 'text-gray-600'}`}>{room.type}</p>
-                                  <p className={`text-xs ${packageBookingForm.room_ids.includes(room.id) ? 'text-indigo-200' : 'text-gray-500'}`}>{formatCurrency(room.price)}/night</p>
-                                </div>
-                              ))
-                            ) : (
-                              <div className="col-span-full text-center py-4 text-gray-500">
-                                <p className="font-medium">No rooms available for the selected dates</p>
-                                <p className="text-sm mt-1">Please try different dates</p>
-                              </div>
-                            )}
-                          </div>
+                          <RoomSelection
+                            rooms={packageRooms}
+                            selectedRoomNumbers={packageRooms.filter(r => packageBookingForm.room_ids.includes(r.id)).map(r => r.number)}
+                            onRoomToggle={(roomNumber) => {
+                              const room = packageRooms.find(r => r.number === roomNumber);
+                              if (room) handlePackageRoomSelect(room.id);
+                            }}
+                          />
                         )}
                       </div>
                     );
@@ -1959,10 +1909,8 @@ const Bookings = () => {
                           <p className="text-xs mt-1">Available rooms will be shown here</p>
                         </div>
                       ) : (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-48 overflow-y-auto p-2 bg-gray-50 rounded-lg border">
-                          {(() => {
-                            // Filter rooms by package's room_types (only for room_type packages with room_types set)
-                            // Use case-insensitive comparison to handle "Cottage" vs "cottage"
+                        <RoomSelection
+                          rooms={(() => {
                             let roomsToShow = packageRooms;
                             if (selectedPackage.booking_type === 'room_type' && selectedPackage.room_types) {
                               const allowedRoomTypes = selectedPackage.room_types.split(',').map(t => t.trim().toLowerCase());
@@ -1971,31 +1919,14 @@ const Bookings = () => {
                                 return allowedRoomTypes.includes(roomType);
                               });
                             }
-                            // If booking_type is 'room_type' but no room_types specified, show all available rooms
-
-                            return roomsToShow.length > 0 ? (
-                              roomsToShow.map(room => (
-                                <div key={room.id} onClick={() => handlePackageRoomSelect(room.id)} className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200
-                                                     ${packageBookingForm.room_ids.includes(room.id) ? 'bg-indigo-500 text-white border-indigo-600' : 'bg-white border-gray-300 hover:border-indigo-500'}
-                                `}>
-                                  <p className="font-semibold">Room {room.number}</p>
-                                  <p className={`text-sm ${packageBookingForm.room_ids.includes(room.id) ? 'text-indigo-200' : 'text-gray-600'}`}>{room.type}</p>
-                                  <p className={`text-xs ${packageBookingForm.room_ids.includes(room.id) ? 'text-indigo-200' : 'text-gray-500'}`}>{formatCurrency(room.price)}/night</p>
-                                </div>
-                              ))
-                            ) : (
-                              <div className="col-span-full text-center py-4 text-gray-500">
-                                <p className="font-medium">No rooms available for the selected dates</p>
-                                {selectedPackage.room_types && (
-                                  <p className="text-sm mt-1">No rooms match the selected room types: {selectedPackage.room_types}</p>
-                                )}
-                                {!selectedPackage.room_types && (
-                                  <p className="text-sm mt-1">Please try different dates</p>
-                                )}
-                              </div>
-                            );
+                            return roomsToShow;
                           })()}
-                        </div>
+                          selectedRoomNumbers={packageRooms.filter(r => packageBookingForm.room_ids.includes(r.id)).map(r => r.number)}
+                          onRoomToggle={(roomNumber) => {
+                            const room = packageRooms.find(r => r.number === roomNumber);
+                            if (room) handlePackageRoomSelect(room.id);
+                          }}
+                        />
                       )}
                     </div>
                   );
@@ -2323,7 +2254,7 @@ const Bookings = () => {
           />
         )}
       </AnimatePresence>
-    </DashboardLayout>
+    </DashboardLayout >
   );
 };
 
