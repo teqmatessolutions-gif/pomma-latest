@@ -59,6 +59,10 @@ async def startup_event():
         "uploads/food_items",
         "static/food_categories"
     ]
+
+    # Ensure all directories exist to prevent upload errors
+    for directory in dirs_to_scan:
+        os.makedirs(directory, exist_ok=True)
     
     # Run in threadpool to avoid blocking startup excessively (though usually fast)
     # But for simplicity in startup, synchronous call is okay if not huge.
