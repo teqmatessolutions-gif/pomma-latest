@@ -98,8 +98,13 @@ async def check_system_lock(request: Request, call_next):
          return await call_next(request)
 
     import os
-    # Check for lock file in the visible /opt/pomma/ directory
-    if os.path.exists("/opt/pomma/lock.dat"):
+    # CROSS-PLATFORM LOCK PATH (Works locally and on server)
+    # Looks for 'lock.dat' in the same directory as main.py
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    lock_path = os.path.join(current_dir, "lock.dat")
+    
+    # Check if file exists - simplistic and robust
+    if os.path.exists(lock_path):
         return JSONResponse(
             status_code=403,
             content={
