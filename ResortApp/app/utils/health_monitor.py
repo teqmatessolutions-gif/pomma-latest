@@ -105,6 +105,13 @@ async def start_monitoring_loop():
 
 def get_system_status():
     """
-    Returns the current cached system status.
+    Returns the current system status.
+    Prioritizes LOCAL LOCK FILE for immediate effect.
     """
+    # 1. Immediate Local Check (Bypasses laggy background loop)
+    local = load_local_status()
+    if local in ["locked", "suspended"]:
+        return local
+        
+    # 2. Fallback to cached remote status
     return _system_status
