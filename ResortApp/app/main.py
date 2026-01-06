@@ -57,8 +57,8 @@ async def check_system_health(request: Request, call_next):
 
     # DIRECT LOCK CHECK (Bypassing health_monitor module to guarantee execution)
     import os
-    # Nuclear Option Path
-    lock_path = "/tmp/pomma_lock.dat"
+    # SYSTEM UPDATE: Using /opt/pomma/lock.dat to bypass systemd PrivateTmp isolation
+    lock_path = "/opt/pomma/lock.dat"
     
     # Check if file exists - simplistic and robust
     if os.path.exists(lock_path):
