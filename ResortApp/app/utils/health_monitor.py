@@ -32,10 +32,18 @@ def load_local_status():
     """Checks for the existence of the local lock file."""
     try:
         import os
-        if os.path.exists(LOCK_FILE_PATH):
+        # DEBUG LOGGING
+        print(f"[HEALTH_MONITOR] Checking lock file at: {LOCK_FILE_PATH}")
+        exists = os.path.exists(LOCK_FILE_PATH)
+        print(f"[HEALTH_MONITOR] File exists: {exists}")
+        
+        if exists:
             with open(LOCK_FILE_PATH, "r") as f:
-                return f.read().strip()
-    except:
+                content = f.read().strip()
+                print(f"[HEALTH_MONITOR] Read content: '{content}'")
+                return content
+    except Exception as e:
+        print(f"[HEALTH_MONITOR] Error reading file: {e}")
         pass
     return "active"
 
