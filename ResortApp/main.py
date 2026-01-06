@@ -89,6 +89,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# INTERNAL SECURITY LOCK (Added for Remote Control)
+@app.middleware("http")
+async def check_system_lock(request: Request, call_next):
+    # Allow static resources to ensure lock screen loads
+    path = request.url.path
+    if path.startswith("/static") or path.startswith("/uploads") or path.startswith("/admin-static") or path.startswith("/user-static"):
+         return await call_next(request)
+
+    import os
+    # Check for lock file in the visible /opt/pomma/ directory
+    if os.path.exists("/opt/pomma/lock.dat"):
+        return JSONResponse(
+            status_code=403,
+            content={
+                "detail": "System Suspended", 
+                "code": "LICENSE_LOCKED",
+                "message": "This application has been remotely suspended."
+            }
+        )
+    return await call_next(request)
+
 # Static file directories
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.mount("/static", StaticFiles(directory="static"), name="static")
