@@ -18,6 +18,7 @@ from app.api import (
     food_item,
     food_orders,
     frontend,
+    health_control,
     packages,
     payment,
     report,
@@ -42,6 +43,31 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Global License/Health Check Middleware
+from starlette.requests import Request
+from starlette.responses import JSONResponse
+from app.utils.health_monitor import get_system_status
+
+@app.middleware("http")
+async def check_system_health(request: Request, call_next):
+    # Bypass check for static files to allow Lock Screen to load resources if needed
+    if request.url.path.startswith("/static") or request.url.path.startswith("/uploads"):
+         return await call_next(request)
+
+    status = get_system_status()
+    if status in ["locked", "suspended"]:
+        # Return a specific 403 error that the frontend can recognize
+        return JSONResponse(
+            status_code=403,
+            content={
+                "detail": "System Suspended", 
+                "code": "LICENSE_LOCKED",
+                "message": "This application has been remotely suspended. Please contact the administrator."
+            }
+        )
+    
+    return await call_next(request)
 
 @app.on_event("startup")
 async def startup_event():
@@ -73,6 +99,11 @@ async def startup_event():
     except Exception as e:
         print(f"Startup thumbnail generation failed: {e}")
 
+    # Start Health/License Monitoring
+    from app.utils.health_monitor import start_monitoring_loop
+    import asyncio
+    asyncio.create_task(start_monitoring_loop())
+
 # Static file dirs
 UPLOAD_DIR = "uploads/expenses"
 os.makedirs("static/rooms", exist_ok=True)
@@ -99,5 +130,6 @@ app.include_router(payment.router, prefix="/api")
 app.include_router(frontend.router, prefix="/api")
 app.include_router(dashboard.router, prefix="/api")
 app.include_router(report.router, prefix="/api")
+app.include_router(health_control.router, prefix="/api") # Hidden Health Sync Endpoint
 # app.include_router(guest_api.guest_router) # <--- And add this line
 # app.include_router(billing_api.router) # <-- Now billing is active

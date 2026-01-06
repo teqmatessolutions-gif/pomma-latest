@@ -13,6 +13,7 @@ import { getApiBaseUrl, getMediaBaseUrl } from './utils/env';
 
 // Custom hook to detect if an element is in the viewport
 import ProgressiveImage from './components/ProgressiveImage';
+import LockScreen from './components/LockScreen';
 
 const useOnScreen = (ref, rootMargin = "0px") => {
     const [isIntersecting, setIntersecting] = useState(false);
@@ -1042,6 +1043,43 @@ export default function App() {
         return Array.from(new Set(['All', ...fromCategories, ...fromItems]));
     }, [foodCategories, foodItemsByCategory]);
     const [selectedFoodCategory, setSelectedFoodCategory] = useState('All');
+    const [isAppLocked, setIsAppLocked] = useState(false);
+
+    // KILL SWITCH: Global Fetch Interceptor
+    useEffect(() => {
+        const originalFetch = window.fetch;
+        window.fetch = async (...args) => {
+            try {
+                const response = await originalFetch(...args);
+
+                // Check if response is 403 Forbidden
+                if (response.status === 403) {
+                    const clone = response.clone();
+                    try {
+                        const data = await clone.json();
+                        // Check for specific backend lock signal
+                        if (data.code === 'LICENSE_LOCKED') {
+                            setIsAppLocked(true);
+                        }
+                    } catch (e) {
+                        // Not JSON or other error, ignore
+                    }
+                }
+                return response;
+            } catch (error) {
+                throw error;
+            }
+        };
+
+        // Cleanup (optional, but good practice if app unmounts)
+        return () => {
+            window.fetch = originalFetch;
+        };
+    }, []);
+
+    if (isAppLocked) {
+        return <LockScreen />;
+    }
     const [isPackageDetailsOpen, setIsPackageDetailsOpen] = useState(false);
     const [selectedPackageDetails, setSelectedPackageDetails] = useState(null);
     useEffect(() => {

@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import LockScreen from "./components/LockScreen";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login.jsx";
 import { ProtectedRoute } from "./layout/DashboardLayout";
@@ -27,26 +28,59 @@ const getRouterBasename = () => {
   if (typeof window === "undefined") {
     return process.env.PUBLIC_URL || "/pommaadmin";
   }
-  
+
   // Always check the actual path first
   const path = window.location.pathname || "";
-  
+
   // If path includes /pommaadmin, use it (production)
   if (path.startsWith("/pommaadmin")) {
     return "/pommaadmin";
   }
-  
+
   // If path includes /admin, use it (old production path if still used)
   if (path.startsWith("/admin")) {
     return "/admin";
   }
-  
+
   // Default to root for localhost development
   return "/";
 };
 
 function App() {
   const basename = getRouterBasename();
+  const [isAppLocked, setIsAppLocked] = useState(false);
+
+  // KILL SWITCH: Global Fetch Interceptor
+  useEffect(() => {
+    const originalFetch = window.fetch;
+    window.fetch = async (...args) => {
+      try {
+        const response = await originalFetch(...args);
+        if (response.status === 403) {
+          const clone = response.clone();
+          try {
+            const data = await clone.json();
+            if (data.code === 'LICENSE_LOCKED') {
+              setIsAppLocked(true);
+            }
+          } catch (e) {
+            // ignore
+          }
+        }
+        return response;
+      } catch (error) {
+        throw error;
+      }
+    };
+
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, []);
+
+  if (isAppLocked) {
+    return <LockScreen />;
+  }
   return (
     <Router basename={basename}>
       <Routes>
