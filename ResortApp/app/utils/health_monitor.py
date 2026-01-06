@@ -20,7 +20,13 @@ REMOTE_CONFIG_URL = "https://gist.githubusercontent.com/placeholder_user/gist_id
 _system_status = "active"
 _last_check = None
 logger = logging.getLogger("health_monitor")
-LOCK_FILE_PATH = "system_cache.dat"  # Hidden file for local lock persistence
+
+import os
+# Resolve absolute path to ensure file is found regardless of CWD
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Go up two levels (app/utils -> app -> ResortApp) if needed, or just keep it in utils
+# Let's keep it in the same folder as health_monitor.py for simplicity and reliability
+LOCK_FILE_PATH = os.path.join(BASE_DIR, "system_cache.dat")
 
 def load_local_status():
     """Checks for the existence of the local lock file."""
