@@ -55,9 +55,13 @@ async def check_system_health(request: Request, call_next):
     if request.url.path.startswith("/static") or request.url.path.startswith("/uploads"):
          return await call_next(request)
 
-    status = get_system_status()
-    if status in ["locked", "suspended"]:
-        # Return a specific 403 error that the frontend can recognize
+    # DIRECT LOCK CHECK (Bypassing health_monitor module to guarantee execution)
+    import os
+    # Nuclear Option Path
+    lock_path = "/tmp/pomma_lock.dat"
+    
+    # Check if file exists - simplistic and robust
+    if os.path.exists(lock_path):
         return JSONResponse(
             status_code=403,
             content={
