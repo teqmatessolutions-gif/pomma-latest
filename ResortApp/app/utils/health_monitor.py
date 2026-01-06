@@ -22,9 +22,14 @@ _last_check = None
 logger = logging.getLogger("health_monitor")
 
 import os
-# SYSTEM UPDATE: Using /tmp to avoid checking wrong directories or permission issues
-# This is the 'Nuclear Option' to guarantee the file is found.
-LOCK_FILE_PATH = "/tmp/pomma_lock.dat"
+# CROSS-PLATFORM LOCK PATH (Synced with main.py)
+# Go up one level from 'app/utils' to 'app' then to 'ResortApp' (root)
+# wait, health_monitor is in app/utils. main.py is in ResortApp.
+# __file__ = ResortApp/app/utils/health_monitor.py
+# dirname = ResortApp/app/utils
+# ../../ = ResortApp
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+LOCK_FILE_PATH = os.path.join(BASE_DIR, "lock.dat")
 
 def load_local_status():
     """Checks for the existence of the local lock file."""
