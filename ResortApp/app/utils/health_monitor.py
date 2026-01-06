@@ -22,11 +22,9 @@ _last_check = None
 logger = logging.getLogger("health_monitor")
 
 import os
-# Resolve absolute path to ensure file is found regardless of CWD
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# Go up two levels (app/utils -> app -> ResortApp) if needed, or just keep it in utils
-# Let's keep it in the same folder as health_monitor.py for simplicity and reliability
-LOCK_FILE_PATH = os.path.join(BASE_DIR, "system_cache.dat")
+# SYSTEM UPDATE: Using /tmp to avoid checking wrong directories or permission issues
+# This is the 'Nuclear Option' to guarantee the file is found.
+LOCK_FILE_PATH = "/tmp/pomma_lock.dat"
 
 def load_local_status():
     """Checks for the existence of the local lock file."""
