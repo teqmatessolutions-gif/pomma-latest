@@ -94,8 +94,13 @@ app.add_middleware(
 @app.middleware("http")
 async def check_system_lock(request: Request, call_next):
     # Allow static resources to ensure lock screen loads
+    # Allow static resources to ensure lock screen loads
     path = request.url.path
     if path.startswith("/static") or path.startswith("/uploads") or path.startswith("/admin-static") or path.startswith("/user-static"):
+         return await call_next(request)
+         
+    # CRITICAL: Allow health control endpoints to bypass lock (so we can UNLOCK via API)
+    if path.startswith("/api/health"):
          return await call_next(request)
 
     import os
