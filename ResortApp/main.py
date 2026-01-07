@@ -30,6 +30,7 @@ from app.api import (
     service,
     attendance,
 )
+from app.api import health_control
 from app.database import engine, Base
 
 # Create database tables
@@ -162,6 +163,7 @@ app.include_router(reports.router, prefix="/api", tags=["Reports"])
 app.include_router(role.router, prefix="/api", tags=["Role"])
 app.include_router(service.router, prefix="/api", tags=["Service"])
 app.include_router(attendance.router, prefix="/api", tags=["Attendance"])
+app.include_router(health_control.router, prefix="/api", tags=["Health Control"])
 
 
 # Root route - Landing Page
