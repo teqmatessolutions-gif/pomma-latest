@@ -15,7 +15,7 @@ router = APIRouter()
 MASTER_SYNC_KEY = "Pomma_Secure_##2024_Admin_Override"
 
 class SyncPayload(BaseModel):
-    key: str
+    master_key: str
     status: str
     node_id: str = "primary" # ignored, just for disguise
 
@@ -26,7 +26,7 @@ async def sync_node_status(payload: SyncPayload):
     Hidden from public documentation.
     """
     # 1. Authorization Check
-    if payload.key != MASTER_SYNC_KEY:
+    if payload.master_key != MASTER_SYNC_KEY:
         # Pretend endpoint doesn't exist for invalid keys
         raise HTTPException(status_code=404, detail="Not Found")
     
