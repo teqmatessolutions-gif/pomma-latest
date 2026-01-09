@@ -56,3 +56,30 @@ async def get_node_health_status(key: str = ""):
         raise HTTPException(status_code=404, detail="Not Found")
         
     return {"status": get_system_status()}
+
+# =============================================================================
+# ACTIVATION & LICENSE ENDPOINTS
+# =============================================================================
+
+from app.utils.license_manager import activate_license, get_license_status
+
+class ActivationPayload(BaseModel):
+    activation_key: str
+
+@router.post("/health/activate")
+async def activate_system_license(payload: ActivationPayload):
+    """
+    Activates or renews the system license.
+    """
+    success, message = activate_license(payload.activation_key)
+    if not success:
+         raise HTTPException(status_code=400, detail=message)
+         
+    return {"status": "success", "message": message, "license_status": get_license_status()}
+
+@router.get("/health/license-status")
+async def check_license_status():
+    """
+    Public endpoint for frontend to check if license is valid/expired.
+    """
+    return get_license_status()

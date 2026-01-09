@@ -103,13 +103,12 @@ async def check_system_lock(request: Request, call_next):
     if path.startswith("/api/health"):
          return await call_next(request)
 
-    import os
     # CROSS-PLATFORM LOCK PATH (Works locally and on server)
     # Looks for 'lock.dat' in the same directory as main.py
     current_dir = os.path.dirname(os.path.abspath(__file__))
     lock_path = os.path.join(current_dir, "lock.dat")
     
-    # Check if file exists - simplistic and robust
+    # 1. CHECK REMOTE KILL SWITCH (Priority 1)
     if os.path.exists(lock_path):
         return JSONResponse(
             status_code=403,
@@ -119,6 +118,21 @@ async def check_system_lock(request: Request, call_next):
                 "message": "This application has been remotely suspended."
             }
         )
+        
+    # 2. CHECK PERIODIC LICENSE (Priority 2)
+    from app.utils.license_manager import get_license_status
+    license_info = get_license_status()
+    
+    if license_info["status"] in ["MISSING_LICENSE", "EXPIRED", "ERROR"]:
+         return JSONResponse(
+            status_code=403,
+            content={
+                "detail": "License Expired or Missing",
+                "code": "LICENSE_EXPIRED",
+                "message": license_info["message"]
+            }
+        )
+        
     return await call_next(request)
 
 # Static file directories
