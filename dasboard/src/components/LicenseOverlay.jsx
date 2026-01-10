@@ -6,25 +6,19 @@ const LicenseOverlay = () => {
     const [loading, setLoading] = useState(true);
     const [closed, setClosed] = useState(false);
 
+    // Activation Form State
+    const [activationKey, setActivationKey] = useState('');
+    const [activationLoading, setActivationLoading] = useState(false);
+    const [activationMsg, setActivationMsg] = useState('');
+
     useEffect(() => {
         const checkLicense = async () => {
             try {
                 // Use fetch to bypass potential axios interceptors that might redirect
-                const baseUrl = getApiBaseUrl().replace('/api', ''); // main.py mounts at root, but router is /api
-                // Wait, getApiBaseUrl usually returns e.g. http://localhost:8000/api
-                // My endpoint is /api/health/license-status
-
                 const response = await fetch(`${getApiBaseUrl()}/health/license-status`);
-                if (response.ok) {
+                if (response.ok || response.status === 403) {
                     const data = await response.json();
                     setStatus(data);
-                } else if (response.status === 403) {
-                    // If 403, it might be the LICENSE_EXPIRED middleware response itself!
-                    // But wait, I whitelisted /api/health... so it should return 200 with status="EXPIRED"
-                    // unless I messed up the whitelist.
-                    // Let's assume the endpoint works.
-                    const data = await response.json();
-                    setStatus(data); // Might contain the "License Expired" message from middleware if whitelisting failed
                 }
             } catch (error) {
                 console.error("License check failed:", error);
@@ -36,10 +30,41 @@ const LicenseOverlay = () => {
         checkLicense();
     }, []);
 
+    const handleActivate = async (e) => {
+        e.preventDefault();
+        setActivationLoading(true);
+        setActivationMsg('');
+
+        try {
+            const response = await fetch(`${getApiBaseUrl()}/health/activate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ activation_key: activationKey })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                setActivationMsg("Activation Successful! Reloading...");
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                setActivationMsg(data.detail || "Activation Failed");
+            }
+        } catch (err) {
+            setActivationMsg("Connection Error");
+        } finally {
+            setActivationLoading(false);
+        }
+    };
+
     if (loading || !status) return null;
 
     // 1. BLOCKING LOCK (Expired or Missing)
-    if (status.status === 'EXPIRED' || status.status === 'MISSING_LICENSE') {
+    if (status.status === 'EXPIRED' || status.status === 'MISSING_LICENSE' || status.status === 'ERROR') {
         return (
             <div style={{
                 position: 'fixed',
@@ -58,17 +83,63 @@ const LicenseOverlay = () => {
             }}>
                 <h1 style={{ color: '#ff4444', fontSize: '3rem', marginBottom: '20px' }}>SYSTEM SUSPENDED</h1>
                 <h2 style={{ marginBottom: '20px' }}>{status.message || "License Activation Required"}</h2>
-                <p style={{ fontSize: '1.2rem', maxWidth: '600px' }}>
+                <p style={{ fontSize: '1.2rem', maxWidth: '600px', marginBottom: '40px' }}>
                     Please contact Teqmates to renew your subscription.
                 </p>
-                {status.status === 'MISSING_LICENSE' && (
-                    <div style={{ marginTop: '40px', padding: '20px', backgroundColor: '#333', borderRadius: '8px' }}>
-                        <p style={{ marginBottom: '10px' }}><strong>Immediate Activation Required</strong></p>
-                        <code style={{ display: 'block', padding: '10px', background: '#000', color: '#0f0' }}>
-                            POST /api/health/activate
-                        </code>
-                    </div>
-                )}
+
+                {/* Activation Form */}
+                <div style={{
+                    padding: '30px',
+                    backgroundColor: '#222',
+                    borderRadius: '12px',
+                    border: '1px solid #444',
+                    width: '100%',
+                    maxWidth: '400px'
+                }}>
+                    <h3 style={{ marginBottom: '15px' }}>Enter Activation Code</h3>
+                    <form onSubmit={handleActivate} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <input
+                            type="text"
+                            placeholder="TEQMATES-XXXX-XXXX"
+                            value={activationKey}
+                            onChange={(e) => setActivationKey(e.target.value)}
+                            style={{
+                                padding: '12px',
+                                borderRadius: '6px',
+                                border: '1px solid #555',
+                                backgroundColor: '#333',
+                                color: 'white',
+                                fontSize: '1rem'
+                            }}
+                        />
+                        <button
+                            type="submit"
+                            disabled={activationLoading || !activationKey}
+                            style={{
+                                padding: '12px',
+                                borderRadius: '6px',
+                                border: 'none',
+                                backgroundColor: activationLoading ? '#555' : '#22c55e',
+                                color: 'white',
+                                fontWeight: 'bold',
+                                cursor: activationLoading ? 'not-allowed' : 'pointer',
+                                fontSize: '1rem',
+                                transition: '0.2s'
+                            }}
+                        >
+                            {activationLoading ? 'Verifying...' : 'Activate System'}
+                        </button>
+                    </form>
+                    {activationMsg && (
+                        <p style={{
+                            marginTop: '15px',
+                            color: activationMsg.includes('Success') ? '#4ade80' : '#ef4444',
+                            fontWeight: 'bold'
+                        }}>
+                            {activationMsg}
+                        </p>
+                    )}
+                </div>
             </div>
         );
     }
