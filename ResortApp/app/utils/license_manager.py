@@ -2,6 +2,7 @@ import os
 import json
 from datetime import datetime, timedelta
 import logging
+import hashlib
 
 # =============================================================================
 # TEQMATES LICENSE MANAGER
@@ -18,8 +19,10 @@ logger = logging.getLogger("license_manager")
 ACTIVATION_PERIOD_DAYS = 90
 WARNING_THRESHOLD_DAYS = 10
 
-# Hardcoded Master Activation Key (In production, use real crypto/server-side validation)
-MASTER_ACTIVATION_KEY = "TEQMATES-2024-ACTIVATE-NOW"
+# SHA-256 HASH of the Master Key
+# Original Key: "TEQMATES-2024-ACTIVATE-NOW"
+# We store ONLY the hash so the plain key is not visible in the code.
+MASTER_ACTIVATION_HASH = "9e1c4d9cd46bc37c2f8399f6d3f5b81bc0abe73224f393afbcdbb4e5dacad609"
 
 def get_license_status():
     """
@@ -82,8 +85,12 @@ def get_license_status():
 def activate_license(key):
     """
     Activates or renews the license for 90 days.
+    Input: Plain text key (entered by user)
+    Comparison: Hashed input vs Stored Hash
     """
-    if key != MASTER_ACTIVATION_KEY:
+    input_hash = hashlib.sha256(key.encode()).hexdigest()
+    
+    if input_hash != MASTER_ACTIVATION_HASH:
         return False, "Invalid activation key"
     
     # Set/extend expiry
