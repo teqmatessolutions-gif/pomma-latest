@@ -27,60 +27,20 @@ MASTER_ACTIVATION_HASH = "9e1c4d9cd46bc37c2f8399f6d3f5b81bc0abe73224f393afbcdbb4
 def get_license_status():
     """
     Checks the license state.
-    Returns dict: {
-        "status": "MISSING" | "ACTIVE" | "WARNING" | "EXPIRED",
-        "days_remaining": int (or None),
-        "expiry_date": str (or None),
-        "message": str
-    }
+    DISABLED FOR DEMO: Always returns ACTIVE.
     """
-    if not os.path.exists(LICENSE_FILE_PATH):
-        return {
-            "status": "MISSING_LICENSE",
-            "days_remaining": 0,
-            "expiry_date": None,
-            "message": "Application requires activation."
-        }
-    
-    try:
-        with open(LICENSE_FILE_PATH, 'r') as f:
-            data = json.load(f)
-            
-        expiry_str = data.get("expiry_date")
-        if not expiry_str:
-            return _invalid_license("Corrupted license file")
+    return {
+        "status": "ACTIVE",
+        "days_remaining": 365,
+        "expiry_date": "2025-12-31",
+        "message": "Demo Mode: License Active"
+    }
 
-        expiry_date = datetime.strptime(expiry_str, "%Y-%m-%d").date()
-        today = datetime.now().date()
-        
-        days_remaining = (expiry_date - today).days
-        
-        if days_remaining < 0:
-            return {
-                "status": "EXPIRED",
-                "days_remaining": days_remaining,
-                "expiry_date": expiry_str,
-                "message": "License expired. Contact Teqmates for assistance."
-            }
-        
-        if days_remaining <= WARNING_THRESHOLD_DAYS:
-            return {
-                "status": "WARNING",
-                "days_remaining": days_remaining,
-                "expiry_date": expiry_str,
-                "message": f"License expires in {days_remaining} days. Contact Teqmates."
-            }
-            
-        return {
-            "status": "ACTIVE",
-            "days_remaining": days_remaining,
-            "expiry_date": expiry_str,
-            "message": "License active."
-        }
-        
-    except Exception as e:
-        logger.error(f"License check error: {e}")
-        return _invalid_license("License check failed")
+    # ORIGINAL LOGIC DISABLED
+    # if not os.path.exists(LICENSE_FILE_PATH):
+    #     return {
+    #         "status": "MISSING_LICENSE",
+    # ...
 
 def activate_license(key):
     """
