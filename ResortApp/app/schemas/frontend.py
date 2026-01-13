@@ -13,7 +13,7 @@ class BaseSchema(BaseModel):
 class HeaderBannerBase(BaseSchema):
     title: str
     subtitle: str
-    image_url: str
+    image_url: str | None = None
 
 class HeaderBannerCreate(HeaderBannerBase):
     pass
