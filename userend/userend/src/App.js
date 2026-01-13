@@ -964,6 +964,11 @@ export default function App() {
     const [isFoodOrderFormOpen, setIsFoodOrderFormOpen] = useState(false);
     const [isGeneralBookingOpen, setIsGeneralBookingOpen] = useState(false);
     const [showAmenities, setShowAmenities] = useState(false);
+    const [isServiceDetailsOpen, setIsServiceDetailsOpen] = useState(false);
+    const [selectedServiceForDetails, setSelectedServiceForDetails] = useState(null);
+    const [serviceDetailsImageIndex, setServiceDetailsImageIndex] = useState(0);
+    const [isRoomDetailsOpen, setIsRoomDetailsOpen] = useState(false);
+    const [selectedRoomForDetails, setSelectedRoomForDetails] = useState(null);
 
 
 
@@ -1525,17 +1530,11 @@ export default function App() {
         return () => clearTimeout(timer);
     }, [roomAvailabilityMemo]);
 
-    // Filter rooms to show only available ones when dates are selected
+    // Show all rooms (not just available ones) - occupied rooms will show "Booked" badge
     useEffect(() => {
-        if (bookingData.check_in && bookingData.check_out && Object.keys(roomAvailability).length > 0) {
-            // Only show available rooms when dates are selected
-            const availableRooms = allRooms.filter(room => roomAvailability[room.id] === true);
-            setRooms(availableRooms);
-        } else {
-            // Show all rooms when no dates are selected
-            setRooms(allRooms);
-        }
-    }, [allRooms, bookingData.check_in, bookingData.check_out, roomAvailability]);
+        // Always show all rooms - the badge will indicate if they're booked or not
+        setRooms(allRooms);
+    }, [allRooms]);
 
 
 
@@ -1797,8 +1796,15 @@ export default function App() {
 
         if (isWholeProperty) {
             // For whole_property, get ALL available rooms from the system
-            // Check availability for all rooms based on selected dates
-            const availableRoomIds = allRooms
+            // First, filter out rooms that are permanently unavailable (disabled, maintenance, coming soon)
+            const bookableRooms = allRooms.filter(room => {
+                const status = room.status ? room.status.toLowerCase() : '';
+                const isUnavailableStatus = ['maintenance', 'coming soon', 'comming soon', 'disabled'].includes(status);
+                return !isUnavailableStatus;
+            });
+
+            // Check availability for bookable rooms based on selected dates
+            const availableRoomIds = bookableRooms
                 .filter(room => {
                     // Check if room has any conflicting bookings
                     const hasConflict = bookings.some(booking => {
@@ -1825,6 +1831,14 @@ export default function App() {
                     return !hasConflict; // Room is available if no conflicts
                 })
                 .map(room => room.id);
+
+            // CRITICAL: For whole property packages, ALL bookable rooms must be available
+            const totalBookableRooms = bookableRooms.length;
+            if (availableRoomIds.length < totalBookableRooms) {
+                showBannerMessage("error", `The whole property cannot be booked because some rooms are already occupied or unavailable for the selected dates. Only ${availableRoomIds.length} out of ${totalBookableRooms} rooms are available.`);
+                setIsBookingLoading(false);
+                return;
+            }
 
             if (availableRoomIds.length === 0) {
                 showBannerMessage("error", "No rooms are available for the selected dates.");
@@ -2616,7 +2630,11 @@ export default function App() {
                                         {rooms.filter(r => r.status !== 'Disabled').map((room, index) => (
                                             <div
                                                 key={room.id}
-                                                className={`group relative ${theme.bgCard} rounded-2xl overflow-hidden luxury-shadow transition-all duration-300 transition-all duration-500 transform hover:-translate-y-2 border ${theme.cardBorder || theme.border} h-full flex flex-col`}
+                                                onClick={() => {
+                                                    setSelectedRoomForDetails(room);
+                                                    setIsRoomDetailsOpen(true);
+                                                }}
+                                                className={`group relative ${theme.bgCard} rounded-2xl overflow-hidden luxury-shadow transition-all duration-300 transition-all duration-500 transform hover:-translate-y-2 border ${theme.cardBorder || theme.border} h-full flex flex-col cursor-pointer`}
                                             >
                                                 {/* Image Container with Overlay */}
                                                 <div className="relative h-48 overflow-hidden">
@@ -2639,7 +2657,7 @@ export default function App() {
 
                                                             if (bookingData.check_in && bookingData.check_out && !roomAvailability[room.id]) {
                                                                 if (displayStatus !== 'Maintenance' && displayStatus !== 'Coming Soon') {
-                                                                    displayStatus = 'Booked';
+                                                                    displayStatus = 'Occupied';
                                                                 }
                                                             }
 
@@ -2704,7 +2722,10 @@ export default function App() {
 
                                                         {/* CTA Button */}
                                                         <button
-                                                            onClick={() => handleOpenRoomBookingForm(room.id)}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleOpenRoomBookingForm(room.id);
+                                                            }}
                                                             disabled={(bookingData.check_in && bookingData.check_out && !roomAvailability[room.id]) || room.status === 'Maintenance' || room.status === 'Coming Soon' || room.status === 'Disabled'}
                                                             className={`w-full py-3.5 font-bold rounded-full shadow-md transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 ${room.status === 'Maintenance' ? 'bg-red-600 text-white cursor-not-allowed' :
                                                                 room.status === 'Coming Soon' ? 'bg-amber-500 text-white cursor-not-allowed' :
@@ -2983,7 +3004,11 @@ export default function App() {
                                                     </p>
                                                     <button
                                                         type="button"
-                                                        onClick={() => handleOpenServiceBookingForm(service.id)}
+                                                        onClick={() => {
+                                                            setSelectedServiceForDetails(service);
+                                                            setServiceDetailsImageIndex(0);
+                                                            setIsServiceDetailsOpen(true);
+                                                        }}
                                                         className="inline-flex items-center gap-2 text-sm font-semibold text-[#0f5132] hover:text-[#1a7042] transition-colors"
                                                     >
                                                         Explore Service
@@ -3995,6 +4020,222 @@ export default function App() {
                                         <p className={`${theme.textSecondary}`}>No packages available at the moment.</p>
                                     </div>
                                 )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Room Details Modal */}
+                {isRoomDetailsOpen && selectedRoomForDetails && (
+                    <div className="fixed inset-0 z-[100] bg-neutral-950/90 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+                        <div className={`w-full max-w-4xl ${theme.bgCard} rounded-3xl shadow-2xl flex flex-col max-h-[90vh] my-8`}>
+                            <div className={`p-6 flex items-center justify-between border-b ${theme.border}`}>
+                                <h3 className="text-2xl font-bold flex items-center"><BedDouble className={`w-6 h-6 mr-3 ${theme.textAccent}`} /> {selectedRoomForDetails.type}</h3>
+                                <button
+                                    onClick={() => {
+                                        setIsRoomDetailsOpen(false);
+                                        setSelectedRoomForDetails(null);
+                                    }}
+                                    className={`p-2 rounded-full ${theme.textSecondary} hover:${theme.textPrimary} transition-colors`}
+                                >
+                                    <X className="w-6 h-6" />
+                                </button>
+                            </div>
+
+                            <div className="p-6 overflow-y-auto">
+                                {/* Image Section */}
+                                <div className="relative mb-6">
+                                    <div className="relative h-96 rounded-2xl overflow-hidden">
+                                        <img
+                                            src={getImageUrl(selectedRoomForDetails.image_url)}
+                                            alt={selectedRoomForDetails.type}
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
+                                        />
+
+                                        {/* Room Number Badge */}
+                                        <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full">
+                                            <span className="text-white font-semibold">Room #{selectedRoomForDetails.number}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Amenities Section */}
+                                <div className="space-y-4 mb-6">
+                                    <h4 className={`text-xl font-bold ${theme.textPrimary}`}>Amenities</h4>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                        {selectedRoomForDetails.air_conditioning && (
+                                            <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg border border-blue-100">
+                                                <span className="text-sm font-medium">Air Conditioning</span>
+                                            </div>
+                                        )}
+                                        {selectedRoomForDetails.wifi && (
+                                            <div className="flex items-center gap-2 px-3 py-2 bg-green-50 text-green-700 rounded-lg border border-green-100">
+                                                <span className="text-sm font-medium">WiFi</span>
+                                            </div>
+                                        )}
+                                        {selectedRoomForDetails.bathroom && (
+                                            <div className="flex items-center gap-2 px-3 py-2 bg-purple-50 text-purple-700 rounded-lg border border-purple-100">
+                                                <span className="text-sm font-medium">Private Bathroom</span>
+                                            </div>
+                                        )}
+                                        {selectedRoomForDetails.living_area && (
+                                            <div className="flex items-center gap-2 px-3 py-2 bg-orange-50 text-orange-700 rounded-lg border border-orange-100">
+                                                <span className="text-sm font-medium">Living Area</span>
+                                            </div>
+                                        )}
+                                        {selectedRoomForDetails.terrace && (
+                                            <div className="flex items-center gap-2 px-3 py-2 bg-yellow-50 text-yellow-700 rounded-lg border border-yellow-100">
+                                                <span className="text-sm font-medium">Terrace</span>
+                                            </div>
+                                        )}
+                                        {selectedRoomForDetails.parking && (
+                                            <div className="flex items-center gap-2 px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg border border-indigo-100">
+                                                <span className="text-sm font-medium">Parking</span>
+                                            </div>
+                                        )}
+                                        {selectedRoomForDetails.kitchen && (
+                                            <div className="flex items-center gap-2 px-3 py-2 bg-pink-50 text-pink-700 rounded-lg border border-pink-100">
+                                                <span className="text-sm font-medium">Kitchen</span>
+                                            </div>
+                                        )}
+                                        {selectedRoomForDetails.family_room && (
+                                            <div className="flex items-center gap-2 px-3 py-2 bg-teal-50 text-teal-700 rounded-lg border border-teal-100">
+                                                <span className="text-sm font-medium">Family Room</span>
+                                            </div>
+                                        )}
+                                        {selectedRoomForDetails.bbq && (
+                                            <div className="flex items-center gap-2 px-3 py-2 bg-red-50 text-red-700 rounded-lg border border-red-100">
+                                                <span className="text-sm font-medium">BBQ</span>
+                                            </div>
+                                        )}
+                                        {selectedRoomForDetails.garden && (
+                                            <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-100">
+                                                <span className="text-sm font-medium">Garden</span>
+                                            </div>
+                                        )}
+                                        {selectedRoomForDetails.dining && (
+                                            <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 text-amber-700 rounded-lg border border-amber-100">
+                                                <span className="text-sm font-medium">Dining</span>
+                                            </div>
+                                        )}
+                                        {selectedRoomForDetails.breakfast && (
+                                            <div className="flex items-center gap-2 px-3 py-2 bg-cyan-50 text-cyan-700 rounded-lg border border-cyan-100">
+                                                <span className="text-sm font-medium">Breakfast</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Pricing and Book Now */}
+                                <div className={`flex items-center justify-between p-6 rounded-xl ${theme.bgSecondary} border ${theme.border}`}>
+                                    <div>
+                                        <p className={`text-sm ${theme.textSecondary} mb-1`}>Starting from</p>
+                                        <p className={`text-4xl font-extrabold ${theme.textAccent}`}>
+                                            {formatCurrency(selectedRoomForDetails.price)}
+                                            <span className={`text-sm ${theme.textSecondary} font-normal ml-2`}>/night</span>
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            setIsRoomDetailsOpen(false);
+                                            handleOpenRoomBookingForm(selectedRoomForDetails.id);
+                                        }}
+                                        disabled={selectedRoomForDetails.status === 'Maintenance' || selectedRoomForDetails.status === 'Coming Soon' || selectedRoomForDetails.status === 'Disabled' || (bookingData.check_in && bookingData.check_out && !roomAvailability[selectedRoomForDetails.id])}
+                                        className={`px-8 py-4 font-bold rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center gap-2 ${selectedRoomForDetails.status === 'Maintenance' || selectedRoomForDetails.status === 'Coming Soon' || selectedRoomForDetails.status === 'Disabled' || (bookingData.check_in && bookingData.check_out && !roomAvailability[selectedRoomForDetails.id])
+                                            ? 'bg-gray-400 text-white cursor-not-allowed'
+                                            : 'bg-[#0f5132] text-white hover:bg-[#153a2c] hover:shadow-xl'
+                                            }`}
+                                    >
+                                        {selectedRoomForDetails.status === 'Maintenance' ? 'Under Maintenance' :
+                                            selectedRoomForDetails.status === 'Coming Soon' ? 'Coming Soon' :
+                                                selectedRoomForDetails.status === 'Disabled' ? 'Unavailable' :
+                                                    (bookingData.check_in && bookingData.check_out && !roomAvailability[selectedRoomForDetails.id]) ? 'Not Available' :
+                                                        'Book Now'}
+                                        <ChevronRight className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Service Details Modal */}
+                {isServiceDetailsOpen && selectedServiceForDetails && (
+                    <div className="fixed inset-0 z-[100] bg-neutral-950/90 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+                        <div className={`w-full max-w-4xl ${theme.bgCard} rounded-3xl shadow-2xl flex flex-col max-h-[90vh] my-8`}>
+                            <div className={`p-6 flex items-center justify-between border-b ${theme.border}`}>
+                                <h3 className="text-2xl font-bold flex items-center"><ConciergeBell className={`w-6 h-6 mr-3 ${theme.textAccent}`} /> {selectedServiceForDetails.name}</h3>
+                                <button
+                                    onClick={() => {
+                                        setIsServiceDetailsOpen(false);
+                                        setSelectedServiceForDetails(null);
+                                        setServiceDetailsImageIndex(0);
+                                    }}
+                                    className={`p-2 rounded-full ${theme.textSecondary} hover:${theme.textPrimary} transition-colors`}
+                                >
+                                    <X className="w-6 h-6" />
+                                </button>
+                            </div>
+
+                            <div className="p-6 overflow-y-auto">
+                                {/* Image Section */}
+                                {selectedServiceForDetails.images && selectedServiceForDetails.images.length > 0 && (
+                                    <div className="relative mb-6">
+                                        <div className="relative h-96 rounded-2xl overflow-hidden">
+                                            <img
+                                                src={getImageUrl(selectedServiceForDetails.images[serviceDetailsImageIndex].image_url)}
+                                                alt={selectedServiceForDetails.name}
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
+                                            />
+
+                                            {/* Image Navigation Arrows */}
+                                            {selectedServiceForDetails.images.length > 1 && (
+                                                <>
+                                                    <button
+                                                        onClick={() => setServiceDetailsImageIndex((prev) =>
+                                                            prev === 0 ? selectedServiceForDetails.images.length - 1 : prev - 1
+                                                        )}
+                                                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all"
+                                                    >
+                                                        <ChevronLeft className="w-6 h-6" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setServiceDetailsImageIndex((prev) =>
+                                                            prev === selectedServiceForDetails.images.length - 1 ? 0 : prev + 1
+                                                        )}
+                                                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all"
+                                                    >
+                                                        <ChevronRight className="w-6 h-6" />
+                                                    </button>
+                                                </>
+                                            )}
+
+                                            {/* Image Dots Indicator */}
+                                            {selectedServiceForDetails.images.length > 1 && (
+                                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full">
+                                                    {selectedServiceForDetails.images.map((_, idx) => (
+                                                        <button
+                                                            key={idx}
+                                                            onClick={() => setServiceDetailsImageIndex(idx)}
+                                                            className={`w-2 h-2 rounded-full transition-all ${idx === serviceDetailsImageIndex ? 'bg-white w-8' : 'bg-white/40'
+                                                                }`}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Description Section */}
+                                <div className="space-y-4">
+                                    <h4 className={`text-xl font-bold ${theme.textPrimary}`}>About This Service</h4>
+                                    <p className={`text-base ${theme.textSecondary} leading-relaxed whitespace-pre-line`}>
+                                        {selectedServiceForDetails.description}
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
