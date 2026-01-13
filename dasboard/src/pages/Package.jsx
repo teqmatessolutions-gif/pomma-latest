@@ -128,7 +128,6 @@ const commonChartOptions = {
 
 const Packages = () => {
   const [packages, setPackages] = useState([]);
-  const [filteredPackages, setFilteredPackages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [bannerMessage, setBannerMessage] = useState({ type: null, text: "" });
 
