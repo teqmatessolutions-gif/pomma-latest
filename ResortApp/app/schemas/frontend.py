@@ -18,6 +18,11 @@ class HeaderBannerBase(BaseSchema):
 class HeaderBannerCreate(HeaderBannerBase):
     pass
 
+class HeaderBannerUpdate(BaseSchema):
+    title: str | None = None
+    subtitle: str | None = None
+    image_url: str | None = None
+
 class HeaderBanner(HeaderBannerBase):
     id: int
 
