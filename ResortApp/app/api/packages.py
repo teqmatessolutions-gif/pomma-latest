@@ -481,9 +481,8 @@ def get_bookings(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
 def _list_packages_impl(db: Session, skip: int = 0, limit: int = 20):
     """Helper function for list_packages"""
     try:
-        # Query directly in the endpoint to apply pagination
-        result = db.query(Package).offset(skip).limit(limit).all()
-        return result if result is not None else []
+        # Use CRUD function which has the correct sorting logic (priority based)
+        return crud_package.get_packages(db, skip=skip, limit=limit)
     except Exception as e:
         import traceback
         error_detail = f"Failed to fetch packages: {str(e)}\n{traceback.format_exc()}"
