@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from PIL import Image
 from sqlalchemy.orm import Session
-from sqlalchemy import text
+from sqlalchemy import text, func
 from app.database import SessionLocal
 from app.schemas.room import RoomCreate, RoomOut
 from app.curd import room as crud_room
@@ -170,6 +170,7 @@ def create_room(
     status: str = Form("Available"),
     adults: int = Form(2),
     children: int = Form(0),
+    priority: int = Form(None),
     image: UploadFile = File(None),
     air_conditioning: bool = Form(False),
     wifi: bool = Form(False),
@@ -231,7 +232,10 @@ def create_room(
             bbq=bbq,
             garden=garden,
             dining=dining,
-            breakfast=breakfast
+            garden=garden,
+            dining=dining,
+            breakfast=breakfast,
+            priority=priority
         )
         db.add(db_room)
         db.commit()
@@ -283,7 +287,7 @@ def _get_rooms_impl(db: Session, skip: int = 0, limit: int = 20):
         
         # Query rooms with proper error handling
         try:
-            rooms = db.query(Room).offset(skip).limit(limit).all()
+            rooms = db.query(Room).order_by(func.coalesce(Room.priority, 999999).asc()).offset(skip).limit(limit).all()
         except Exception as query_error:
             print(f"Room query failed: {query_error}")
             db.rollback()
@@ -344,6 +348,7 @@ def update_room(
     status: str = Form(None),
     adults: int = Form(None),
     children: int = Form(None),
+    priority: int = Form(None),
     image: UploadFile = File(None),
     air_conditioning: bool = Form(None),
     wifi: bool = Form(None),
@@ -376,6 +381,8 @@ def update_room(
         db_room.adults = adults
     if children is not None:
         db_room.children = children
+    if priority is not None:
+        db_room.priority = priority
     
     # Update feature fields if provided
     if air_conditioning is not None:

@@ -170,6 +170,7 @@ const Rooms = () => {
   const [form, setForm] = useState({
     number: "",
     type: "",
+    priority: "",
     price: "",
     status: "Available",
     adults: 2,
@@ -327,6 +328,7 @@ const Rooms = () => {
     const formData = new FormData();
     formData.append("number", form.number);
     formData.append("type", form.type);
+    if (form.priority) formData.append("priority", form.priority);
     formData.append("price", form.price);
     formData.append("status", form.status);
     formData.append("adults", form.adults);
@@ -365,6 +367,7 @@ const Rooms = () => {
       setForm({
         number: "",
         type: "",
+        priority: "",
         price: "",
         status: "Available",
         adults: 2,
@@ -397,6 +400,7 @@ const Rooms = () => {
     setForm({
       number: room.number,
       type: room.type,
+      priority: room.priority || "",
       price: room.price,
       status: room.status,
       adults: room.adults,
@@ -708,6 +712,7 @@ const Rooms = () => {
                   setForm({
                     number: "",
                     type: "",
+                    priority: "",
                     price: "",
                     status: "Available",
                     adults: 2,
@@ -768,16 +773,16 @@ const Rooms = () => {
                   onClick={() => setSelectedImage(room.image_url)}
                 />
                 <span className={`absolute top-2 right-2 px-3 py-1 text-xs font-semibold text-white rounded-full ${room.status === 'Available' ? 'bg-green-500' :
-                    room.status === 'Disabled' ? 'bg-red-600' :
-                      ['Booked', 'Occupied', 'Checked-in'].includes(room.status) ? 'bg-red-500' :
-                        'bg-yellow-500'
+                  room.status === 'Disabled' ? 'bg-red-600' :
+                    ['Booked', 'Occupied', 'Checked-in'].includes(room.status) ? 'bg-red-500' :
+                      'bg-yellow-500'
                   }`}>{room.status}</span>
               </div>
               <div className="p-5 flex flex-col flex-grow">
                 <div className="flex justify-between items-start">
                   <div>
                     <h4 className="font-bold text-lg text-gray-800">Room {room.number}</h4>
-                    <p className="text-sm text-gray-500">{room.type}</p>
+                    <p className="text-sm text-gray-500">{room.type} {room.priority ? `(Priority: ${room.priority})` : ''}</p>
                   </div>
                   <p className="text-indigo-600 font-bold text-xl">{formatCurrency(room.price)}</p>
                 </div>

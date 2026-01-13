@@ -26,6 +26,7 @@ class RoomCreate(RoomBase):
 class RoomOut(RoomBase):
     id: int
     status: str
+    priority: int | None = None
     image_url: str | None = None
 
     model_config = {

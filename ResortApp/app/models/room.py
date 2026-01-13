@@ -13,6 +13,7 @@ class Room(Base):
     image_url = Column(String, nullable=True)
     adults = Column(Integer, default=2)      # max adults allowed
     children = Column(Integer, default=0)    # max children allowed
+    priority = Column(Integer, nullable=True) # Priority for display order
     
     # Room features/amenities
     air_conditioning = Column(Boolean, default=False)
