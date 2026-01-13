@@ -512,6 +512,17 @@ const Rooms = () => {
             />
           </div>
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+            <input
+              type="number"
+              name="priority"
+              placeholder="e.g., 1 (shows first)"
+              value={form.priority}
+              onChange={handleChange}
+              className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all"
+            />
+          </div>
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Adults Capacity</label>
             <input
               type="number"
