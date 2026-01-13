@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -9,8 +9,8 @@ class FoodItem(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     description = Column(String)
-    price = Column(Integer)
-    available = Column(String)
+    price = Column(Float)
+    available = Column(Boolean, default=True)
     category_id = Column(Integer, ForeignKey("food_categories.id"))
 
     images = relationship("FoodItemImage", back_populates="food_item", cascade="all, delete-orphan")

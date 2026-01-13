@@ -57,11 +57,11 @@ def _list_items_impl(db: Session, skip: int = 0, limit: int = 20):
         return []
 
 @router.get("")
-def list_items(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+def list_items(db: Session = Depends(get_db), skip: int = 0, limit: int = 1000):
     return _list_items_impl(db, skip, limit)
 
 @router.get("/")  # Handle trailing slash
-def list_items_slash(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+def list_items_slash(db: Session = Depends(get_db), skip: int = 0, limit: int = 1000):
     return _list_items_impl(db, skip, limit)
 
 @router.delete("/{item_id}")

@@ -17,7 +17,7 @@ def create_food_item(db: Session, item: FoodItemCreate, image_paths: list[str]):
     db.refresh(db_item)
     return db_item
 
-def get_all_food_items(db: Session, skip: int = 0, limit: int = 100):
+def get_all_food_items(db: Session, skip: int = 0, limit: int = 1000):
     items = (
         db.query(FoodItem)
         .options(
