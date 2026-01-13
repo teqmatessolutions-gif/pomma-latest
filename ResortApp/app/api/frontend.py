@@ -167,7 +167,7 @@ async def update_header_banner(
 
         # If no new image provided, keep existing image_url
         if image_url is None:
-            existing = crud.get_by_id(db, models.HeaderBanner, item_id)
+            existing = crud.get_one(db, models.HeaderBanner, item_id)
             if existing:
                 image_url = existing.image_url
                 print(f"DEBUG: Keeping existing image_url: {image_url}")
