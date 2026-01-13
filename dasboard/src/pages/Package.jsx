@@ -155,7 +155,8 @@ const Packages = () => {
     status: "Available",
     images: []
   });
-  const [editImagePreviews, setEditImagePreviews] = useState([]);
+  const [editExistingImages, setEditExistingImages] = useState([]); // Track existing images from DB
+  const [editNewImagePreviews, setEditNewImagePreviews] = useState([]); // Track previews for NEWLY added files
   const [editSelectedFiles, setEditSelectedFiles] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]); // Store the actual File objects
@@ -360,7 +361,8 @@ const Packages = () => {
       status: pkg.status || "Available",
       images: []
     });
-    setEditImagePreviews(pkg.images ? pkg.images.map(img => getImageUrl(img.image_url)) : []);
+    setEditExistingImages(pkg.images || []);
+    setEditNewImagePreviews([]);
     setEditSelectedFiles([]);
   };
 
@@ -388,12 +390,16 @@ const Packages = () => {
   const handleEditImageChange = e => {
     const files = Array.from(e.target.files);
     setEditSelectedFiles(prev => [...prev, ...files]);
-    setEditImagePreviews(prev => [...prev, ...files.map(f => URL.createObjectURL(f))]);
+    setEditNewImagePreviews(prev => [...prev, ...files.map(f => URL.createObjectURL(f))]);
   };
 
-  const handleRemoveEditImage = (index) => {
+  const handleRemoveExistingImage = (id) => {
+    setEditExistingImages(prev => prev.filter(img => img.id !== id));
+  };
+
+  const handleRemoveNewImage = (index) => {
     setEditSelectedFiles(prev => prev.filter((_, i) => i !== index));
-    setEditImagePreviews(prev => prev.filter((_, i) => i !== index));
+    setEditNewImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleEditSubmit = async e => {
@@ -416,6 +422,16 @@ const Packages = () => {
 
       editSelectedFiles.forEach(img => data.append("images", img));
 
+      // Send list of IDs to keep
+      if (editExistingImages.length > 0) {
+        const keepIds = editExistingImages.map(img => img.id).join(",");
+        data.append("keep_image_ids", keepIds);
+      } else {
+        // If empty, send empty string to imply delete all existing (except new ones being added)
+        // Check if user removed all existing images
+        data.append("keep_image_ids", "");
+      }
+
       await api.put(`/packages/${editingPackage.id}`, data, { headers: { "Content-Type": "multipart/form-data" } });
       toast.success("Package updated successfully!");
       setEditingPackage(null);
@@ -428,7 +444,8 @@ const Packages = () => {
         status: "Available",
         images: []
       });
-      setEditImagePreviews([]);
+      setEditExistingImages([]);
+      setEditNewImagePreviews([]);
       setEditSelectedFiles([]);
       fetchData();
     } catch (err) {
@@ -889,24 +906,45 @@ const Packages = () => {
                   </p>
                 )}
               </label>
-              {editImagePreviews.length > 0 && (
+
+              {/* Existing Images Display */}
+              {editExistingImages.length > 0 && (
                 <div className="mt-4">
-                  <p className="text-sm text-gray-600 font-medium mb-2">Image Previews (Existing + New):</p>
+                  <p className="text-sm text-gray-600 font-medium mb-2">Existing Images:</p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {editImagePreviews.map((src, index) => (
-                      <div key={index} className="relative group">
-                        <img src={src} alt={`Preview ${index + 1}`} className="w-full h-32 object-cover rounded-lg shadow-md" />
+                    {editExistingImages.map((img, index) => (
+                      <div key={img.id} className="relative group">
+                        <img src={getImageUrl(img.image_url)} alt={`Existing ${index + 1}`} className="w-full h-32 object-cover rounded-lg shadow-md" />
                         <button
                           type="button"
-                          onClick={() => handleRemoveEditImage(index)}
+                          onClick={() => handleRemoveExistingImage(img.id)}
                           className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
                           title="Remove image"
                         >
                           ×
                         </button>
-                        <div className="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
-                          {index + 1}
-                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* New Images Preview */}
+              {editNewImagePreviews.length > 0 && (
+                <div className="mt-4">
+                  <p className="text-sm text-gray-600 font-medium mb-2">New Images To Upload:</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {editNewImagePreviews.map((src, index) => (
+                      <div key={index} className="relative group">
+                        <img src={src} alt={`New Preview ${index + 1}`} className="w-full h-32 object-cover rounded-lg shadow-md border-2 border-green-400" />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveNewImage(index)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                          title="Remove image"
+                        >
+                          ×
+                        </button>
                       </div>
                     ))}
                   </div>

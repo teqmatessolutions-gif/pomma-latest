@@ -136,6 +136,7 @@ async def update_package_api(
     booking_type: str = Form("room_type"),  # "whole_property" or "room_type"
     room_types: str = Form(None),  # Comma-separated list of room types
     status: str = Form("Available"),
+    keep_image_ids: str = Form(""), # Comma-separated list of IDs to keep
     images: List[UploadFile] = File([]),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -186,8 +187,6 @@ async def update_package_api(
                 # Re-read file or use the buffer? The loop uses copyfileobj which consumes the file.
                 # We need to seek the file back or read distinct content.
                 img.file.seek(0) 
-                # (Note: update_package_api is async def but img.file is typically sync SpooledTemporaryFile)
-                # Let's read it into memory for PIL
                 file_content = img.file.read()
                 
                 with Image.open(io.BytesIO(file_content)) as img_pil:
@@ -203,6 +202,45 @@ async def update_package_api(
             from app.models.Package import PackageImage
             img = PackageImage(package_id=package.id, image_url=url)
             db.add(img)
+
+    # Handle deletion of removed images
+    if keep_image_ids is not None:
+        # Parse kept IDs
+        keep_ids = []
+        if keep_image_ids.strip():
+            keep_ids = [int(id_str) for id_str in keep_image_ids.split(",") if id_str.strip().isdigit()]
+            
+        # Fetch current images
+        from app.models.Package import PackageImage
+        current_existing_images = db.query(PackageImage).filter(PackageImage.package_id == package.id).all()
+        
+        for img_obj in current_existing_images:
+            if img_obj.id not in keep_ids:
+                # This image was removed in UI, delete it
+                try:
+                    # Remove file from disk
+                    if img_obj.image_url:
+                        file_path = img_obj.image_url.lstrip('/')
+                        if os.path.exists(file_path):
+                            os.remove(file_path)
+                        
+                        # Try to remove thumbnail too
+                        # Thumbnail path logic: uploads/packages/filename_thumb.jpg
+                        # Original path: /uploads/packages/filename.jpg
+                        dir_name = os.path.dirname(file_path)
+                        base_name = os.path.basename(file_path)
+                        name_part, ext_part = os.path.splitext(base_name)
+                        thumb_name = f"{name_part}_thumb.jpg" # Usually we enforce jpg for thumbs
+                        thumb_path = os.path.join(dir_name, thumb_name)
+                        if os.path.exists(thumb_path):
+                            os.remove(thumb_path)
+
+                except Exception as e:
+                    print(f"Warning: Failed to delete image file {img_obj.image_url}: {e}")
+                
+                # Remove from DB
+                db.delete(img_obj)
+
     
     db.commit()
     db.refresh(package)
