@@ -170,6 +170,11 @@ async def update_header_banner(
             existing = crud.get_by_id(db, models.HeaderBanner, item_id)
             if existing:
                 image_url = existing.image_url
+                print(f"DEBUG: Keeping existing image_url: {image_url}")
+            else:
+                 print(f"DEBUG: Item {item_id} not found")
+
+        print(f"DEBUG: Updating HeaderBanner {item_id} with title='{title}', subtitle='{subtitle}', image_url='{image_url}'")
 
         obj = schemas.HeaderBannerUpdate(
             title=title,
@@ -177,8 +182,11 @@ async def update_header_banner(
             is_active=is_active_bool,
             image_url=image_url
         )
+        print(f"DEBUG: Update Object Dict: {obj.dict(exclude_unset=True)}")
         return crud.update(db, models.HeaderBanner, item_id, obj)
     except Exception as e:
+        import traceback
+        print(f"ERROR Failed to update header banner: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Failed to update header banner: {str(e)}")
 
 
