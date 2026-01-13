@@ -2676,7 +2676,7 @@ export default function App() {
                                                             <div className="flex flex-wrap items-center gap-2 text-xs mt-2">
                                                                 {room.air_conditioning && <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded-md border border-blue-100">AC</span>}
                                                                 {room.wifi && <span className="px-2 py-1 bg-green-50 text-green-700 rounded-md border border-green-100">WiFi</span>}
-                                                                {room.bathroom && <span className="px-2 py-1 bg-purple-50 text-purple-700 rounded-md border border-purple-100">Bathtub</span>}
+                                                                {room.bathroom && <span className="px-2 py-1 bg-purple-50 text-purple-700 rounded-md border border-purple-100">Private Bathroom</span>}
                                                                 {room.living_area && <span className="px-2 py-1 bg-orange-50 text-orange-700 rounded-md border border-orange-100">Living</span>}
                                                                 {room.terrace && <span className="px-2 py-1 bg-yellow-50 text-yellow-700 rounded-md border border-yellow-100">Terrace</span>}
                                                                 {room.parking && <span className="px-2 py-1 bg-indigo-50 text-indigo-700 rounded-md border border-indigo-100">Parking</span>}
