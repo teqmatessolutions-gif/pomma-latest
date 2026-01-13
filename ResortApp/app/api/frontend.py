@@ -361,7 +361,7 @@ async def update_gallery(
 
         # If no new image provided, keep existing image_url
         if image_url is None:
-            existing = crud.get_by_id(db, models.Gallery, item_id)
+            existing = crud.get_one(db, models.Gallery, item_id)
             if existing:
                 image_url = existing.image_url
 
@@ -585,7 +585,7 @@ async def update_signature_experience(
             update_data["image_url"] = image_url
         else:
             # If no new image provided, keep existing image_url
-            existing = crud.get_by_id(db, models.SignatureExperience, item_id)
+            existing = crud.get_one(db, models.SignatureExperience, item_id)
             if existing:
                 update_data["image_url"] = existing.image_url
 
@@ -726,7 +726,7 @@ async def update_plan_wedding(
             update_data["image_url"] = image_url
         else:
             # If no new image provided, keep existing image_url
-            existing = crud.get_by_id(db, models.PlanWedding, item_id)
+            existing = crud.get_one(db, models.PlanWedding, item_id)
             if existing:
                 update_data["image_url"] = existing.image_url
 
@@ -902,7 +902,7 @@ async def update_nearby_attraction(
             update_data["image_url"] = image_url
         else:
             # If no new image provided, keep existing image_url
-            existing = crud.get_by_id(db, models.NearbyAttraction, item_id)
+            existing = crud.get_one(db, models.NearbyAttraction, item_id)
             if existing:
                 update_data["image_url"] = existing.image_url
 
@@ -1052,7 +1052,7 @@ async def update_nearby_attraction_banner(
             image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
             update_data["image_url"] = image_url
         else:
-            existing = crud.get_by_id(db, models.NearbyAttractionBanner, item_id)
+            existing = crud.get_one(db, models.NearbyAttractionBanner, item_id)
             if existing:
                 update_data["image_url"] = existing.image_url
 
