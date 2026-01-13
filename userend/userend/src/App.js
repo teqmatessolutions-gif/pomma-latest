@@ -969,6 +969,12 @@ export default function App() {
     const [serviceDetailsImageIndex, setServiceDetailsImageIndex] = useState(0);
     const [isRoomDetailsOpen, setIsRoomDetailsOpen] = useState(false);
     const [selectedRoomForDetails, setSelectedRoomForDetails] = useState(null);
+    const [isExperienceDetailsOpen, setIsExperienceDetailsOpen] = useState(false);
+    const [selectedExperienceForDetails, setSelectedExperienceForDetails] = useState(null);
+    const [isFoodDetailsOpen, setIsFoodDetailsOpen] = useState(false);
+    const [selectedFoodForDetails, setSelectedFoodForDetails] = useState(null);
+    const [isGalleryLightboxOpen, setIsGalleryLightboxOpen] = useState(false);
+    const [selectedGalleryImageIndex, setSelectedGalleryImageIndex] = useState(0);
 
 
 
@@ -2583,7 +2589,7 @@ export default function App() {
                                     Sustainable Luxury Cottages with Unforgettable Views
                                 </h2>
                                 <p className={`text-lg ${theme.textSecondary} max-w-3xl mx-auto leading-relaxed`}>
-                                    Experience the perfect blend of luxury and sustainability in our eco-friendly cottages with panoramic lake and forest views
+                                    Experience the perfect blend of luxury and sustainability in our eco-friendly cottages with panoramic paddy field and forest views
                                 </p>
                             </div>
 
@@ -2798,7 +2804,13 @@ export default function App() {
                                                     }}
                                                 >
                                                     <div
-                                                        className={`relative group h-[400px] sm:h-[460px] lg:h-[520px] rounded-[32px] overflow-hidden bg-black shadow-[0_35px_80px_rgba(12,61,38,0.35)] transition-transform duration-700 ease-[cubic-bezier(.4,.0,.2,1)] will-change-transform ${offset === 0 ? '' : 'scale-[0.9] opacity-70 blur-[1.5px]'}`}
+                                                        onClick={() => {
+                                                            if (offset === 0) {
+                                                                setSelectedExperienceForDetails(experience);
+                                                                setIsExperienceDetailsOpen(true);
+                                                            }
+                                                        }}
+                                                        className={`relative group h-[400px] sm:h-[460px] lg:h-[520px] rounded-[32px] overflow-hidden bg-black shadow-[0_35px_80px_rgba(12,61,38,0.35)] transition-transform duration-700 ease-[cubic-bezier(.4,.0,.2,1)] will-change-transform ${offset === 0 ? 'cursor-pointer' : 'scale-[0.9] opacity-70 blur-[1.5px]'}`}
                                                     >
                                                         <img
                                                             src={getImageUrl(experience.image_url)}
@@ -3077,7 +3089,11 @@ export default function App() {
                                                 return (
                                                     <div
                                                         key={food.id}
-                                                        className={`group relative ${theme.bgCard} rounded-2xl overflow-hidden luxury-shadow transition-all duration-300 transform hover:-translate-y-2 border ${theme.cardBorder || theme.border}`}
+                                                        onClick={() => {
+                                                            setSelectedFoodForDetails(food);
+                                                            setIsFoodDetailsOpen(true);
+                                                        }}
+                                                        className={`group relative ${theme.bgCard} rounded-2xl overflow-hidden luxury-shadow transition-all duration-300 transform hover:-translate-y-2 border ${theme.cardBorder || theme.border} cursor-pointer`}
                                                     >
                                                         <div className="relative h-40 overflow-hidden">
                                                             <img
@@ -3103,11 +3119,6 @@ export default function App() {
                                                             <h4 className={`text-lg font-semibold ${theme.textCardPrimary || theme.textPrimary}`}>
                                                                 {food.name}
                                                             </h4>
-                                                            {food.price && (
-                                                                <p className="text-sm text-[#1a7042] font-semibold">
-                                                                    {formatCurrency(food.price)}
-                                                                </p>
-                                                            )}
                                                         </div>
                                                     </div>
                                                 );
@@ -3149,7 +3160,11 @@ export default function App() {
                                     {galleryImages.map((image, index) => (
                                         <div
                                             key={image.id}
-                                            className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 reveal"
+                                            onClick={() => {
+                                                setSelectedGalleryImageIndex(index);
+                                                setIsGalleryLightboxOpen(true);
+                                            }}
+                                            className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 reveal cursor-pointer"
                                             style={{ height: getGalleryCardHeight(index), transitionDelay: `${(index % 5) * 70}ms` }}
                                         >
                                             <img
@@ -4025,6 +4040,195 @@ export default function App() {
                     </div>
                 )}
 
+                {/* Gallery Lightbox Modal */}
+                {isGalleryLightboxOpen && galleryImages.length > 0 && (
+                    <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4">
+                        <div className="relative w-full h-full flex items-center justify-center">
+                            {/* Close Button */}
+                            <button
+                                onClick={() => setIsGalleryLightboxOpen(false)}
+                                className="absolute top-4 right-4 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors z-10"
+                            >
+                                <X className="w-8 h-8" />
+                            </button>
+
+                            {/* Image Container */}
+                            <div className="relative max-w-6xl max-h-[85vh] w-full">
+                                <img
+                                    src={getImageUrl(galleryImages[selectedGalleryImageIndex].image_url)}
+                                    alt={galleryImages[selectedGalleryImageIndex].caption || 'Gallery image'}
+                                    className="w-full h-full object-contain rounded-lg"
+                                    onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
+                                />
+
+                                {/* Caption */}
+                                {galleryImages[selectedGalleryImageIndex].caption && (
+                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 rounded-b-lg">
+                                        <p className="text-white text-xl font-semibold text-center">
+                                            {galleryImages[selectedGalleryImageIndex].caption}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Navigation Arrows */}
+                            {galleryImages.length > 1 && (
+                                <>
+                                    <button
+                                        onClick={() => setSelectedGalleryImageIndex((prev) =>
+                                            prev === 0 ? galleryImages.length - 1 : prev - 1
+                                        )}
+                                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-4 rounded-full transition-all"
+                                    >
+                                        <ChevronLeft className="w-8 h-8" />
+                                    </button>
+                                    <button
+                                        onClick={() => setSelectedGalleryImageIndex((prev) =>
+                                            prev === galleryImages.length - 1 ? 0 : prev + 1
+                                        )}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-4 rounded-full transition-all"
+                                    >
+                                        <ChevronRight className="w-8 h-8" />
+                                    </button>
+                                </>
+                            )}
+
+                            {/* Image Counter */}
+                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full">
+                                <span className="text-white font-semibold">
+                                    {selectedGalleryImageIndex + 1} / {galleryImages.length}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Food Item Details Modal */}
+                {isFoodDetailsOpen && selectedFoodForDetails && (
+                    <div className="fixed inset-0 z-[100] bg-neutral-950/90 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+                        <div className={`w-full max-w-4xl ${theme.bgCard} rounded-3xl shadow-2xl flex flex-col max-h-[90vh] my-8`}>
+                            <div className={`p-6 flex items-center justify-between border-b ${theme.border}`}>
+                                <h3 className="text-2xl font-bold flex items-center">
+                                    <span className="mr-3 text-2xl">🍽️</span> {selectedFoodForDetails.name}
+                                </h3>
+                                <button
+                                    onClick={() => {
+                                        setIsFoodDetailsOpen(false);
+                                        setSelectedFoodForDetails(null);
+                                    }}
+                                    className={`p-2 rounded-full ${theme.textSecondary} hover:${theme.textPrimary} transition-colors`}
+                                >
+                                    <X className="w-6 h-6" />
+                                </button>
+                            </div>
+
+                            <div className="p-6 overflow-y-auto">
+                                {/* Image Section */}
+                                {selectedFoodForDetails.images && selectedFoodForDetails.images.length > 0 && (
+                                    <div className="relative mb-6">
+                                        <div className="relative h-96 rounded-2xl overflow-hidden">
+                                            <img
+                                                src={getImageUrl(selectedFoodForDetails.images[0].image_url)}
+                                                alt={selectedFoodForDetails.name}
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
+                                            />
+
+                                            {/* Category Badge */}
+                                            <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full">
+                                                <span className="text-white font-semibold uppercase tracking-wider text-sm">
+                                                    {selectedFoodForDetails.category?.name || selectedFoodForDetails.category_name || 'Uncategorized'}
+                                                </span>
+                                            </div>
+
+                                            {/* Availability Badge */}
+                                            <div className="absolute top-4 right-4">
+                                                <span className={`px-4 py-2 rounded-full text-sm font-bold shadow-lg ${selectedFoodForDetails.available ? "bg-green-500 text-white" : "bg-red-500 text-white"}`}>
+                                                    {selectedFoodForDetails.available ? "Available" : "Unavailable"}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Description Section */}
+                                {selectedFoodForDetails.description && (
+                                    <div className="space-y-4">
+                                        <h4 className={`text-xl font-bold ${theme.textPrimary}`}>Description</h4>
+                                        <p className={`text-base ${theme.textSecondary} leading-relaxed`}>
+                                            {selectedFoodForDetails.description}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Signature Experience Details Modal */}
+                {isExperienceDetailsOpen && selectedExperienceForDetails && (
+                    <div className="fixed inset-0 z-[100] bg-neutral-950/90 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+                        <div className={`w-full max-w-4xl ${theme.bgCard} rounded-3xl shadow-2xl flex flex-col max-h-[90vh] my-8`}>
+                            <div className={`p-6 flex items-center justify-between border-b ${theme.border}`}>
+                                <h3 className="text-2xl font-bold flex items-center">
+                                    <span className="mr-3 text-2xl">✦</span> {selectedExperienceForDetails.title}
+                                </h3>
+                                <button
+                                    onClick={() => {
+                                        setIsExperienceDetailsOpen(false);
+                                        setSelectedExperienceForDetails(null);
+                                    }}
+                                    className={`p-2 rounded-full ${theme.textSecondary} hover:${theme.textPrimary} transition-colors`}
+                                >
+                                    <X className="w-6 h-6" />
+                                </button>
+                            </div>
+
+                            <div className="p-6 overflow-y-auto">
+                                {/* Image Section */}
+                                <div className="relative mb-6">
+                                    <div className="relative h-96 rounded-2xl overflow-hidden">
+                                        <img
+                                            src={getImageUrl(selectedExperienceForDetails.image_url)}
+                                            alt={selectedExperienceForDetails.title}
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
+                                        />
+
+                                        {/* Experience Badge */}
+                                        <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full">
+                                            <span className="text-white font-semibold uppercase tracking-wider text-sm">Signature Experience</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Description Section */}
+                                <div className="space-y-4">
+                                    <h4 className={`text-xl font-bold ${theme.textPrimary}`}>About This Experience</h4>
+                                    <div className={`text-base ${theme.textSecondary} leading-relaxed space-y-3`}>
+                                        {selectedExperienceForDetails.description?.split('\n').map((paragraph, idx) => {
+                                            const trimmed = paragraph.trim();
+                                            if (!trimmed) return null;
+
+                                            // Check if it's a bullet point
+                                            if (trimmed.startsWith('•') || trimmed.startsWith('-')) {
+                                                return (
+                                                    <div key={idx} className="flex items-start gap-3">
+                                                        <span className="mt-1.5 inline-flex w-2 h-2 rounded-full bg-[#c99c4e]" />
+                                                        <span>{trimmed.replace(/^[•-]\s*/, '')}</span>
+                                                    </div>
+                                                );
+                                            }
+
+                                            return <p key={idx}>{trimmed}</p>;
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Room Details Modal */}
                 {isRoomDetailsOpen && selectedRoomForDetails && (
                     <div className="fixed inset-0 z-[100] bg-neutral-950/90 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
@@ -4056,6 +4260,14 @@ export default function App() {
                                         {/* Room Number Badge */}
                                         <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full">
                                             <span className="text-white font-semibold">Room #{selectedRoomForDetails.number}</span>
+                                        </div>
+
+                                        {/* Capacity Badge */}
+                                        <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full">
+                                            <span className="text-white font-semibold">
+                                                👥 {selectedRoomForDetails.adults || 2} Adults
+                                                {selectedRoomForDetails.children > 0 && ` + ${selectedRoomForDetails.children} Children`}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
