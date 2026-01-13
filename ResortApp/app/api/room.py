@@ -146,7 +146,7 @@ def get_rooms_test(db: Session = Depends(get_db), skip: int = 0, limit: int = 10
             print(f"Room status update failed (continuing): {status_error}")
             # Continue fetching rooms even if status update fails
         
-        rooms = db.query(Room).offset(skip).limit(limit).all()
+        rooms = db.query(Room).order_by(func.coalesce(Room.priority, 999999).asc()).offset(skip).limit(limit).all()
         return rooms
         
     except Exception as e:
