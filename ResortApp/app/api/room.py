@@ -232,8 +232,6 @@ def create_room(
             bbq=bbq,
             garden=garden,
             dining=dining,
-            garden=garden,
-            dining=dining,
             breakfast=breakfast,
             priority=priority
         )
