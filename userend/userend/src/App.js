@@ -3311,31 +3311,25 @@ export default function App() {
                                     <div className="space-y-2 w-1/2">
                                         <label className={`block text-sm font-medium ${theme.textSecondary}`}>Check-in Date</label>
                                         <input
-                                            type={bookingData.check_in ? "date" : "text"}
-                                            placeholder="mm/dd/yyyy"
-                                            onFocus={(e) => (e.target.type = "date")}
-                                            onBlur={(e) => !e.target.value && (e.target.type = "text")}
+                                            type="date"
                                             name="check_in"
                                             value={bookingData.check_in}
                                             onChange={handleRoomBookingChange}
                                             min={new Date().toISOString().split('T')[0]}
                                             required
-                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-[#0f5132] transition-colors placeholder-gray-500`}
+                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-[#0f5132] transition-colors`}
                                         />
                                     </div>
                                     <div className="space-y-2 w-1/2">
                                         <label className={`block text-sm font-medium ${theme.textSecondary}`}>Check-out Date</label>
                                         <input
-                                            type={bookingData.check_out ? "date" : "text"}
-                                            placeholder="mm/dd/yyyy"
-                                            onFocus={(e) => (e.target.type = "date")}
-                                            onBlur={(e) => !e.target.value && (e.target.type = "text")}
+                                            type="date"
                                             name="check_out"
                                             value={bookingData.check_out}
                                             onChange={handleRoomBookingChange}
                                             min={bookingData.check_in || new Date().toISOString().split('T')[0]}
                                             required
-                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-[#0f5132] transition-colors placeholder-gray-500`}
+                                            className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-[#0f5132] transition-colors`}
                                         />
                                     </div>
                                 </div>
