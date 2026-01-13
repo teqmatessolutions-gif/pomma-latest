@@ -25,6 +25,25 @@ def create_service(db: Session, name: str, description: str, charges: float, ima
 def get_services(db: Session, skip: int = 0, limit: int = 100):
     return db.query(Service).options(joinedload(Service.images)).offset(skip).limit(limit).all()
 
+def update_service(db: Session, service_id: int, name: str = None, description: str = None, charges: float = None, image_urls: List[str] = None):
+    service = db.query(Service).filter(Service.id == service_id).first()
+    if not service:
+        return None
+    
+    if name is not None: service.name = name
+    if description is not None: service.description = description
+    if charges is not None: service.charges = charges
+    
+    if image_urls:
+         for url in image_urls:
+            img = ServiceImage(service_id=service.id, image_url=url)
+            db.add(img)
+
+    db.commit()
+    db.refresh(service)
+    # Load images relationship for the return value
+    return db.query(Service).options(joinedload(Service.images)).filter(Service.id == service.id).first()
+
 def delete_service(db: Session, service_id: int):
     service = db.query(Service).filter(Service.id == service_id).first()
     if service:

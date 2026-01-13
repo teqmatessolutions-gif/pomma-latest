@@ -22,6 +22,7 @@ const Services = () => {
   const [services, setServices] = useState([]);
   const [assignedServices, setAssignedServices] = useState([]);
   const [form, setForm] = useState({ name: "", description: "", charges: "" });
+  const [editingService, setEditingService] = useState(null); // New state for editing
   const [selectedImages, setSelectedImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [assignForm, setAssignForm] = useState({
@@ -222,8 +223,8 @@ const Services = () => {
     return `${baseUrl}${path}`;
   };
 
-  // Create service
-  const handleCreate = async () => {
+  // Create or Update service
+  const handleSubmit = async () => {
     if (!form.name || !form.description || !form.charges) {
       setCreateError("All fields are required");
       setTimeout(() => setCreateError(""), 3000);
@@ -240,22 +241,64 @@ const Services = () => {
         formData.append('images', image);
       });
 
-      await api.post("/services", formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      if (editingService) {
+        // Update existing service
+        await api.put(`/services/${editingService.id}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        setCreateSuccess("Service updated successfully! ✨");
+      } else {
+        // Create new service
+        await api.post("/services", formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        setCreateSuccess("Service created successfully! ✨");
+      }
+
       setForm({ name: "", description: "", charges: "" });
       setSelectedImages([]);
       setImagePreviews([]);
+      setEditingService(null); // Reset editing state
       fetchAll();
-      setCreateSuccess("Service created successfully! ✨");
       setTimeout(() => setCreateSuccess(""), 3000);
     } catch (err) {
-      console.error("Failed to creating service", err);
-      setCreateError("Failed to create service. Please try again.");
+      console.error("Failed to save service", err);
+      setCreateError("Failed to save service. Please try again.");
       setTimeout(() => setCreateError(""), 3000);
     }
+  };
+
+  // Handle Edit Click
+  const handleEdit = (service) => {
+    setEditingService(service);
+    setForm({
+      name: service.name,
+      description: service.description,
+      charges: service.charges
+    });
+    // Optionally populate image previews if needed, but for now we start fresh for uploads
+    // Or show existing images separately
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to form
+  };
+
+  // Handle Delete Click
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this service?")) {
+      try {
+        await api.delete(`/services/${id}`);
+        fetchAll();
+      } catch (err) {
+        console.error("Failed to delete service", err);
+        alert("Failed to delete service.");
+      }
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingService(null);
+    setForm({ name: "", description: "", charges: "" });
+    setSelectedImages([]);
+    setImagePreviews([]);
   };
 
   // Assign service
@@ -354,7 +397,8 @@ const Services = () => {
         {/* Create & Assign Forms */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Create Service */}
-          <Card title="Create New Service">
+          {/* Create/Edit Service */}
+          <Card title={editingService ? "Edit Service" : "Create New Service"}>
             {createSuccess && (
               <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4 text-center">
                 <span className="block sm:inline">{createSuccess}</span>
@@ -405,11 +449,19 @@ const Services = () => {
                 )}
               </div>
               <button
-                onClick={handleCreate}
-                className="w-full mt-3 bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-lg shadow-lg font-semibold"
+                onClick={handleSubmit}
+                className={`w-full mt-3 text-white p-3 rounded-lg shadow-lg font-semibold ${editingService ? "bg-yellow-600 hover:bg-yellow-700" : "bg-indigo-600 hover:bg-indigo-700"}`}
               >
-                Create Service
+                {editingService ? "Update Service" : "Create Service"}
               </button>
+              {editingService && (
+                <button
+                  onClick={handleCancelEdit}
+                  className="w-full mt-2 bg-gray-500 hover:bg-gray-600 text-white p-3 rounded-lg shadow-lg font-semibold"
+                >
+                  Cancel Edit
+                </button>
+              )}
             </div>
           </Card>
 
@@ -524,6 +576,7 @@ const Services = () => {
                     <th className="py-3 px-4 text-left">Service Name</th>
                     <th className="py-3 px-4 text-left">Description</th>
                     <th className="py-3 px-4 text-right">Charges ($)</th>
+                    <th className="py-3 px-4 text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -539,6 +592,22 @@ const Services = () => {
                       <td className="py-3 px-4">{s.name}</td>
                       <td className="py-3 px-4">{s.description}</td>
                       <td className="py-3 px-4 text-right">{s.charges}</td>
+                      <td className="py-3 px-4 text-center space-x-2">
+                        <button
+                          onClick={() => handleEdit(s)}
+                          className="text-blue-600 hover:text-blue-800"
+                          title="Edit"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          onClick={() => handleDelete(s.id)}
+                          className="text-red-600 hover:text-red-800"
+                          title="Delete"
+                        >
+                          🗑️
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

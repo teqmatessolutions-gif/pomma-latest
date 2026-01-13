@@ -63,6 +63,44 @@ def list_services(db: Session = Depends(get_db), skip: int = 0, limit: int = 20)
 def list_services_slash(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
     return _list_services_impl(db, skip, limit)
 
+@router.put("/{service_id}", response_model=service_schema.ServiceOut)
+async def update_service(
+    service_id: int,
+    name: str = Form(None),
+    description: str = Form(None),
+    charges: float = Form(None),
+    images: List[UploadFile] = File([]),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    image_urls = []
+    for img in images:
+        # Generate unique filename
+        filename = f"svc_{uuid.uuid4().hex}_{img.filename}"
+        file_path = os.path.join(UPLOAD_DIR, filename)
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(img.file, buffer)
+        
+        # Generate and Save Thumbnail
+        try:
+            thumb_filename = f"{os.path.splitext(filename)[0]}_thumb.jpg"
+            thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+            with Image.open(file_path) as img_pil:
+                img_pil.thumbnail((200, 200), Image.Resampling.LANCZOS)
+                if img_pil.mode in ("RGBA", "P"):
+                    img_pil = img_pil.convert("RGB")
+                img_pil.save(thumb_path, "JPEG", quality=60, optimize=True)
+        except Exception as thumb_error:
+            print(f"Warning: Failed to generate thumbnail for {filename}: {thumb_error}")
+        # Store with leading slash for proper URL construction
+        normalized_path = file_path.replace('\\', '/')
+        image_urls.append(f"/{normalized_path}")
+    
+    updated = service_crud.update_service(db, service_id, name, description, charges, image_urls)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Service not found")
+    return updated
+
 @router.delete("/{service_id}")
 def delete_service(service_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     success = service_crud.delete_service(db, service_id)
