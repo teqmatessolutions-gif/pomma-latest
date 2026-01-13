@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import api from "../services/api";
 import { toast } from "react-hot-toast";
 import DashboardLayout from "../layout/DashboardLayout";
+import BannerMessage from "../components/BannerMessage";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement } from 'chart.js';
 import { Pie, Bar, Line } from 'react-chartjs-2';
 import { motion } from "framer-motion";
@@ -127,10 +128,20 @@ const commonChartOptions = {
 
 const Packages = () => {
   const [packages, setPackages] = useState([]);
+  const [filteredPackages, setFilteredPackages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [bannerMessage, setBannerMessage] = useState({ type: null, text: "" });
+
+  const showBannerMessage = (type, text) => {
+    setBannerMessage({ type, text });
+  };
+
+  const closeBannerMessage = () => {
+    setBannerMessage({ type: null, text: "" });
+  };
   const [rooms, setRooms] = useState([]);
   const [allRooms, setAllRooms] = useState([]); // Store all rooms for filtering
   const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [editingBooking, setEditingBooking] = useState(null);
   const [editingPackage, setEditingPackage] = useState(null); // Package being edited
   const [packageFilter, setPackageFilter] = useState("");
@@ -335,7 +346,7 @@ const Packages = () => {
       // Don't set Content-Type manually - axios will set it automatically with the correct boundary
       // This ensures the Authorization header from the interceptor is preserved
       await api.post("/packages", data);
-      toast.success("Package created successfully!");
+      showBannerMessage("success", "Package created successfully!");
       setCreateForm({
         title: "",
         description: "",
@@ -353,7 +364,7 @@ const Packages = () => {
       console.error(err);
       const errorMsg = err.response?.data?.detail;
       const message = typeof errorMsg === 'string' ? errorMsg : 'Failed to create package';
-      toast.error(message);
+      showBannerMessage("error", message);
     }
   };
   const handleEditPackage = (pkg) => {
@@ -443,7 +454,7 @@ const Packages = () => {
       }
 
       await api.put(`/packages/${editingPackage.id}`, data, { headers: { "Content-Type": "multipart/form-data" } });
-      toast.success("Package updated successfully!");
+      showBannerMessage("success", "Package updated successfully!");
       setEditingPackage(null);
       setEditForm({
         title: "",
@@ -463,7 +474,7 @@ const Packages = () => {
       console.error(err);
       const errorMsg = err.response?.data?.detail;
       const message = typeof errorMsg === 'string' ? errorMsg : 'Failed to update package';
-      toast.error(message);
+      showBannerMessage("error", message);
     }
   };
 
@@ -674,6 +685,12 @@ const Packages = () => {
 
   return (
     <DashboardLayout>
+      <BannerMessage
+        message={bannerMessage}
+        onClose={closeBannerMessage}
+        autoDismiss={true}
+        duration={5000}
+      />
       {/* Image Gallery Modal */}
       {selectedPackageImages && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={() => setSelectedPackageImages(null)}>
