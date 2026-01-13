@@ -3920,78 +3920,80 @@ export default function App() {
                             <div className="p-6 overflow-y-auto">
                                 {packages.length > 0 ? (
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {packages.map((pkg) => {
-                                            const imgIndex = packageImageIndex[pkg.id] || 0;
-                                            const currentImage = pkg.images && pkg.images[imgIndex];
-                                            const isComingSoon = pkg.status === 'Coming Soon';
-                                            return (
-                                                <div
-                                                    key={pkg.id}
-                                                    onClick={() => {
-                                                        if (isComingSoon) return;
-                                                        handleOpenPackageBookingForm(pkg.id);
-                                                        setIsPackageSelectionOpen(false);
-                                                    }}
-                                                    className={`${theme.bgCard} rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 border ${theme.border} ${isComingSoon ? 'cursor-not-allowed grayscale-[0.3]' : 'cursor-pointer transform hover:-translate-y-1'}`}
-                                                >
-                                                    {/* Image Container */}
-                                                    <div className="relative h-48 overflow-hidden">
-                                                        <img
-                                                            src={currentImage ? getImageUrl(currentImage.image_url) : ITEM_PLACEHOLDER}
-                                                            alt={pkg.title}
-                                                            className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
-                                                            onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
-                                                        />
+                                        {packages
+                                            .filter(pkg => pkg.status !== 'Disabled' && pkg.status !== 'Coming Soon')
+                                            .map((pkg) => {
+                                                const imgIndex = packageImageIndex[pkg.id] || 0;
+                                                const currentImage = pkg.images && pkg.images[imgIndex];
+                                                const isComingSoon = pkg.status === 'Coming Soon';
+                                                return (
+                                                    <div
+                                                        key={pkg.id}
+                                                        onClick={() => {
+                                                            if (isComingSoon) return;
+                                                            handleOpenPackageBookingForm(pkg.id);
+                                                            setIsPackageSelectionOpen(false);
+                                                        }}
+                                                        className={`${theme.bgCard} rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 border ${theme.border} ${isComingSoon ? 'cursor-not-allowed grayscale-[0.3]' : 'cursor-pointer transform hover:-translate-y-1'}`}
+                                                    >
+                                                        {/* Image Container */}
+                                                        <div className="relative h-48 overflow-hidden">
+                                                            <img
+                                                                src={currentImage ? getImageUrl(currentImage.image_url) : ITEM_PLACEHOLDER}
+                                                                alt={pkg.title}
+                                                                className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
+                                                                onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
+                                                            />
 
-                                                        {/* Status Badge */}
-                                                        {isComingSoon && (
-                                                            <div className="absolute top-3 right-3 px-3 py-1 bg-amber-500 text-white text-xs font-bold rounded-full shadow-lg z-20 uppercase tracking-wider backdrop-blur-sm border border-white/20">
-                                                                Coming Soon
+                                                            {/* Status Badge */}
+                                                            {isComingSoon && (
+                                                                <div className="absolute top-3 right-3 px-3 py-1 bg-amber-500 text-white text-xs font-bold rounded-full shadow-lg z-20 uppercase tracking-wider backdrop-blur-sm border border-white/20">
+                                                                    Coming Soon
+                                                                </div>
+                                                            )}
+
+                                                            {/* Image Slider Dots */}
+                                                            {pkg.images && pkg.images.length > 1 && (
+                                                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/60 backdrop-blur-sm px-3 py-2 rounded-full z-10">
+                                                                    {pkg.images.map((_, imgIdx) => (
+                                                                        <button
+                                                                            key={imgIdx}
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                setPackageImageIndex(prev => ({ ...prev, [pkg.id]: imgIdx }));
+                                                                            }}
+                                                                            className={`w-2 h-2 rounded-full transition-all ${imgIdx === imgIndex ? 'bg-white' : 'bg-white/40'}`}
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                                                        </div>
+
+                                                        {/* Content */}
+                                                        <div className="p-5">
+                                                            <h3 className={`text-xl font-bold ${theme.textCardPrimary || theme.textPrimary} mb-2 line-clamp-2`}>
+                                                                {pkg.title}
+                                                            </h3>
+                                                            <p className={`text-sm ${theme.textCardSecondary || theme.textSecondary} mb-3 line-clamp-2`}>
+                                                                {pkg.description}
+                                                            </p>
+                                                            <div className={`flex items-center justify-between pt-3 border-t ${theme.cardBorder || theme.border}`}>
+                                                                <span className={`text-2xl font-extrabold ${theme.textCardAccent || theme.textAccent}`}>
+                                                                    {formatCurrency(pkg.price || 0)}
+                                                                </span>
+                                                                <button
+                                                                    type="button"
+                                                                    disabled={isComingSoon}
+                                                                    className={`px-6 py-2 text-sm font-bold ${isComingSoon ? 'bg-gray-400 text-white cursor-not-allowed' : `${theme.buttonBg} ${theme.buttonText} shadow-lg ${theme.buttonHover} hover:scale-105`} rounded-full transition-all duration-300 transform`}
+                                                                >
+                                                                    {isComingSoon ? 'Coming Soon' : 'Select'}
+                                                                </button>
                                                             </div>
-                                                        )}
-
-                                                        {/* Image Slider Dots */}
-                                                        {pkg.images && pkg.images.length > 1 && (
-                                                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/60 backdrop-blur-sm px-3 py-2 rounded-full z-10">
-                                                                {pkg.images.map((_, imgIdx) => (
-                                                                    <button
-                                                                        key={imgIdx}
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            setPackageImageIndex(prev => ({ ...prev, [pkg.id]: imgIdx }));
-                                                                        }}
-                                                                        className={`w-2 h-2 rounded-full transition-all ${imgIdx === imgIndex ? 'bg-white' : 'bg-white/40'}`}
-                                                                    />
-                                                                ))}
-                                                            </div>
-                                                        )}
-                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                                                    </div>
-
-                                                    {/* Content */}
-                                                    <div className="p-5">
-                                                        <h3 className={`text-xl font-bold ${theme.textCardPrimary || theme.textPrimary} mb-2 line-clamp-2`}>
-                                                            {pkg.title}
-                                                        </h3>
-                                                        <p className={`text-sm ${theme.textCardSecondary || theme.textSecondary} mb-3 line-clamp-2`}>
-                                                            {pkg.description}
-                                                        </p>
-                                                        <div className={`flex items-center justify-between pt-3 border-t ${theme.cardBorder || theme.border}`}>
-                                                            <span className={`text-2xl font-extrabold ${theme.textCardAccent || theme.textAccent}`}>
-                                                                {formatCurrency(pkg.price || 0)}
-                                                            </span>
-                                                            <button
-                                                                type="button"
-                                                                disabled={isComingSoon}
-                                                                className={`px-6 py-2 text-sm font-bold ${isComingSoon ? 'bg-gray-400 text-white cursor-not-allowed' : `${theme.buttonBg} ${theme.buttonText} shadow-lg ${theme.buttonHover} hover:scale-105`} rounded-full transition-all duration-300 transform`}
-                                                            >
-                                                                {isComingSoon ? 'Coming Soon' : 'Select'}
-                                                            </button>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            );
-                                        })}
+                                                );
+                                            })}
                                     </div>
                                 ) : (
                                     <div className="text-center py-12">
