@@ -341,7 +341,7 @@ def delete_package_booking(db: Session, booking_id: int):
     return True
 def get_packages(db: Session, skip: int = 0, limit: int = 100):
     # Sort by priority (ascending), with NULL values appearing last
-    return db.query(Package).order_by(Package.priority.asc().nullslast()).offset(skip).limit(limit).all()
+    return db.query(Package).order_by(func.coalesce(Package.priority, 999999).asc()).offset(skip).limit(limit).all()
 
 
 def get_package(db: Session, package_id: int):
