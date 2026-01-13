@@ -144,6 +144,7 @@ const Packages = () => {
     booking_type: "room_type",  // "whole_property" or "room_type"
     selected_room_types: [],  // Array of selected room types
     status: "Available",
+    priority: "",  // Display order priority
     images: []
   });
   const [editForm, setEditForm] = useState({
@@ -153,6 +154,7 @@ const Packages = () => {
     booking_type: "room_type",
     selected_room_types: [],
     status: "Available",
+    priority: "",  // Display order priority
     images: []
   });
   const [editExistingImages, setEditExistingImages] = useState([]); // Track existing images from DB
@@ -316,6 +318,9 @@ const Packages = () => {
       data.append("price", createForm.price);
       data.append("booking_type", createForm.booking_type || "room_type");
       data.append("status", createForm.status || "Available");
+      if (createForm.priority && createForm.priority !== "") {
+        data.append("priority", createForm.priority);
+      }
 
       // If booking_type is room_type, append selected room types as comma-separated string
       if (createForm.booking_type === "room_type") {
@@ -338,6 +343,7 @@ const Packages = () => {
         booking_type: "room_type",
         selected_room_types: [],
         status: "Available",
+        priority: "",
         images: []
       });
       setImagePreviews([]);
@@ -359,6 +365,7 @@ const Packages = () => {
       booking_type: pkg.booking_type || "room_type",
       selected_room_types: pkg.room_types ? pkg.room_types.split(',').map(t => t.trim()) : [],
       status: pkg.status || "Available",
+      priority: pkg.priority || "",
       images: []
     });
     setEditExistingImages(pkg.images || []);
@@ -411,6 +418,9 @@ const Packages = () => {
       data.append("price", editForm.price);
       data.append("booking_type", editForm.booking_type || "room_type");
       data.append("status", editForm.status || "Available");
+      if (editForm.priority && editForm.priority !== "") {
+        data.append("priority", editForm.priority);
+      }
 
       if (editForm.booking_type === "room_type") {
         if (!editForm.selected_room_types || editForm.selected_room_types.length === 0) {
@@ -442,6 +452,7 @@ const Packages = () => {
         booking_type: "room_type",
         selected_room_types: [],
         status: "Available",
+        priority: "",
         images: []
       });
       setEditExistingImages([]);
@@ -835,6 +846,20 @@ const Packages = () => {
                 </select>
               </div>
 
+              <div className="space-y-3">
+                <label className="block text-gray-700 font-medium">Priority (Optional)</label>
+                <input
+                  type="number"
+                  name="priority"
+                  placeholder="Display order (1 = first, 2 = second, etc.)"
+                  value={editForm.priority}
+                  onChange={handleEditChange}
+                  min="1"
+                  className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all"
+                />
+                <p className="text-xs text-gray-500">Lower numbers appear first. Leave empty for no priority.</p>
+              </div>
+
               {/* Booking Type Selection */}
               <div className="space-y-3">
                 <label className="block text-gray-700 font-medium">Booking Type</label>
@@ -978,6 +1003,20 @@ const Packages = () => {
                   <option value="Coming Soon">Coming Soon</option>
                   <option value="Disabled">Disabled</option>
                 </select>
+              </div>
+
+              <div className="space-y-3">
+                <label className="block text-gray-700 font-medium">Priority (Optional)</label>
+                <input
+                  type="number"
+                  name="priority"
+                  placeholder="Display order (1 = first, 2 = second, etc.)"
+                  value={createForm.priority}
+                  onChange={handleCreateChange}
+                  min="1"
+                  className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all"
+                />
+                <p className="text-xs text-gray-500">Lower numbers appear first. Leave empty for no priority.</p>
               </div>
 
               {/* Booking Type Selection */}

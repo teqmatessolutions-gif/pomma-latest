@@ -1640,26 +1640,39 @@ const Bookings = () => {
     const url = booking?.is_package ? `/packages/booking/${displayId}/check-in` : `/bookings/${displayId}/check-in`;
 
     try {
-      const response = await API.put(url, formData, {
+      await API.put(url, formData, {
         headers: {
           ...authHeader().headers,
           "Content-Type": "multipart/form-data",
         },
       });
 
-      // Directly update the booking in the state with the response data
-      setBookings(prevBookings =>
-        prevBookings.map(b =>
-          (b.id === bookingId && b.is_package === booking.is_package)
-            // Merge old booking data with new to preserve fields like `is_package`
-            ? { ...b, ...response.data }
-            : b
-        )
-      );
+      // Fetch full booking details to get complete room information
+      try {
+        const detailsResponse = await API.get(`/bookings/details/${displayId}?is_package=${booking.is_package}`, authHeader());
+
+        // Update the booking in the state with full details including rooms
+        setBookings(prevBookings =>
+          prevBookings.map(b =>
+            (b.id === bookingId && b.is_package === booking.is_package)
+              ? { ...b, ...detailsResponse.data }
+              : b
+          )
+        );
+      } catch (detailsErr) {
+        console.error("Failed to fetch booking details after check-in:", detailsErr);
+        // Fallback: just update status if details fetch fails
+        setBookings(prevBookings =>
+          prevBookings.map(b =>
+            (b.id === bookingId && b.is_package === booking.is_package)
+              ? { ...b, status: 'checked-in' }
+              : b
+          )
+        );
+      }
 
       showBannerMessage("success", "Guest checked in successfully!");
       setBookingToCheckIn(null);
-      // fetchData(); // No longer need to refetch everything
     } catch (err) {
       console.error("Check-in error:", err);
       const errorMessage = err.response?.data?.detail || "Failed to check in guest.";

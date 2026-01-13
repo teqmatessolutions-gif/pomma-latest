@@ -19,6 +19,7 @@ class PackageOut(BaseModel):
     booking_type: Optional[str] = "room_type"  # "whole_property" or "room_type"
     room_types: Optional[str] = None  # Comma-separated list of room types
     status: Optional[str] = "Available"
+    priority: Optional[int] = None  # Display order priority (1 = first, 2 = second, etc. NULL = last)
     images: List[PackageImageOut] = Field(default_factory=list)
     created_at: Optional[datetime] = None
 
