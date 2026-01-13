@@ -3488,13 +3488,15 @@ export default function App() {
                                             <p className={`text-xs ${theme.textSecondary} mb-2`}>Showing rooms available from {bookingData.check_in} to {bookingData.check_out}</p>
                                             <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 p-3 rounded-xl ${theme.bgSecondary}`}>
                                                 {rooms
+                                                    .filter(room => room.status !== 'Disabled')
                                                     .filter(room => selectedRoomType === 'All' || room.type === selectedRoomType)
                                                     .length > 0 ? (
                                                     rooms
+                                                        .filter(room => room.status !== 'Disabled')
                                                         .filter(room => selectedRoomType === 'All' || room.type === selectedRoomType)
                                                         .map(room => {
                                                             const isSelected = bookingData.room_ids?.includes(room.id);
-                                                            const isUnavailable = room.status === 'Maintenance' || room.status === 'Coming Soon';
+                                                            const isUnavailable = room.status === 'Maintenance' || room.status === 'Coming Soon' || room.status === 'Disabled';
                                                             return (
                                                                 <div
                                                                     key={room.id}
