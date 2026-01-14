@@ -739,17 +739,21 @@ def process_booking_checkout(room_number: str, request: CheckoutRequest, db: Ses
         if booking.status not in ['checked-in', 'checked_in', 'booked']:
             raise HTTPException(status_code=400, detail=f"Booking cannot be checked out. Current status: {booking.status}")
         
-        # Check if there's already a checkout for this specific room today (to prevent duplicates)
-        today = date.today()
-        existing_room_checkout = db.query(Checkout).filter(
-            Checkout.room_number == room_number,
-            func.date(Checkout.checkout_date) == today
-        ).first()
-        if existing_room_checkout:
-            raise HTTPException(
+        # Check if there's already a checkout for THIS booking (to prevent double billing the same guest)
+        # We NO LONGER block based on room_number + today, because a room can be checked out multiple times
+        # in one day (e.g. Guest A leaves at 10am, Guest B arrives at 2pm and leaves at 8pm).
+        
+        existing_booking_checkout = None
+        if not is_package:
+             existing_booking_checkout = db.query(Checkout).filter(Checkout.booking_id == booking.id).first()
+        else:
+             existing_booking_checkout = db.query(Checkout).filter(Checkout.package_booking_id == booking.id).first()
+             
+        if existing_booking_checkout:
+             raise HTTPException(
                 status_code=409,
-                detail=f"Room {room_number} was already checked out today (Checkout ID: {existing_room_checkout.id}). Please refresh the page to see updated room status."
-            )
+                detail=f"This booking has already been checked out (Checkout ID: {existing_booking_checkout.id}). Please refresh."
+             )
         
         # Check if booking is already checked out (more reliable than room status)
         if booking.status in ['checked_out', 'checked-out']:
