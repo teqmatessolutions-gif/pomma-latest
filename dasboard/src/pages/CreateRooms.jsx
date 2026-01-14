@@ -7,6 +7,7 @@ import { LineChart, Line, ResponsiveContainer, Tooltip as RechartsTooltip } from
 import { toast } from "react-hot-toast";
 import { motion } from "framer-motion";
 import { getMediaBaseUrl } from "../utils/env";
+import Modal from "../components/Modal";
 
 // Get the correct base URL based on environment
 const getImageUrl = (imageUrl) => {
@@ -204,6 +205,7 @@ const Rooms = () => {
   const [bookingFilter, setBookingFilter] = useState("booked"); // Filter for booking modal
   const [bookingCheckinFilter, setBookingCheckinFilter] = useState(""); // Check-in date filter
   const [bookingCheckoutFilter, setBookingCheckoutFilter] = useState(""); // Check-out date filter
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Function to show banner message
   const showBannerMessage = (type, text) => {
@@ -364,6 +366,7 @@ const Rooms = () => {
         showBannerMessage("success", "Room created successfully!");
       }
 
+      setIsModalOpen(false);
       setForm({
         number: "",
         type: "",
@@ -397,6 +400,7 @@ const Rooms = () => {
   const handleEdit = (room) => {
     setIsEditing(true);
     setEditRoomId(room.id);
+    setIsModalOpen(true);
     setForm({
       number: room.number,
       type: room.type,
@@ -465,294 +469,306 @@ const Rooms = () => {
         <KpiCard title="Occupancy Rate" value={`${occupancyRate}%`} color="bg-gradient-to-r from-purple-500 to-purple-700" icon={<i className="fas fa-chart-pie"></i>} />
       </div>
 
-      {/* Room Form */}
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl shadow-lg mb-6 sm:mb-8"
+      {/* Action Buttons */}
+      <div className="flex gap-4 mb-8">
+        <button
+          onClick={() => {
+            setIsEditing(false);
+            setEditRoomId(null);
+            setForm({
+              number: "",
+              type: "",
+              priority: "",
+              price: "",
+              status: "Available",
+              adults: 2,
+              children: 0,
+              image: null,
+              air_conditioning: false,
+              wifi: false,
+              bathroom: false,
+              living_area: false,
+              terrace: false,
+              parking: false,
+              kitchen: false,
+              family_room: false,
+              bbq: false,
+              garden: false,
+              dining: false,
+              breakfast: false,
+            });
+            setPreviewImage(null);
+            setIsModalOpen(true);
+          }}
+          className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex items-center justify-center gap-3"
+        >
+          <i className="fas fa-plus-circle text-2xl"></i>
+          <span className="text-xl">Add New Room</span>
+        </button>
+      </div>
+
+      {/* Room Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        title={isEditing ? "Edit Room" : "Add New Room"}
+        onClose={() => setIsModalOpen(false)}
       >
-        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-800">
-          {isEditing ? "Edit Room" : "Add New Room"}
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Room Number</label>
-            <input
-              type="text"
-              name="number"
-              placeholder="e.g., 101"
-              value={form.number}
-              onChange={handleChange}
-              className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all"
-              required
-              disabled={isEditing}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Room Type</label>
-            <input
-              type="text"
-              name="type"
-              placeholder="e.g., Deluxe"
-              value={form.type}
-              onChange={handleChange}
-              className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
-            <input
-              type="number"
-              name="price"
-              placeholder="e.g., 5000"
-              value={form.price}
-              onChange={handleChange}
-              className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-            <input
-              type="number"
-              name="priority"
-              placeholder="e.g., 1 (shows first)"
-              value={form.priority}
-              onChange={handleChange}
-              className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Adults Capacity</label>
-            <input
-              type="number"
-              name="adults"
-              placeholder="e.g., 2"
-              value={form.adults}
-              onChange={handleChange}
-              className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all"
-              min="1"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Children Capacity</label>
-            <input
-              type="number"
-              name="children"
-              placeholder="e.g., 1"
-              value={form.children}
-              onChange={handleChange}
-              className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all"
-              min="0"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select
-              name="status"
-              value={form.status}
-              onChange={handleChange}
-              className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all"
-            >
-              <option>Available</option>
-              <option>Maintenance</option>
-              <option>Coming Soon</option>
-              <option>Disabled</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Room Image</label>
-            <input
-              type="file"
-              name="image"
-              accept="image/jpeg,image/jpg,image/png,image/webp"
-              onChange={handleChange}
-              className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all"
-            />
-            <p className="text-xs text-gray-500 mt-1">Max file size: 50MB. Supported formats: JPEG, PNG, WebP</p>
-          </div>
-
-          {/* Show preview if image selected */}
-          {previewImage && (
-            <img
-              src={previewImage}
-              alt="Preview"
-              className="w-full h-32 object-cover rounded-lg border-2 border-gray-200"
-            />
-          )}
-
-          {/* Room Features Section */}
-          <div className="md:col-span-2 lg:col-span-3">
-            <label className="block text-sm font-medium text-gray-700 mb-3">Room Features & Amenities</label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="air_conditioning"
-                  checked={form.air_conditioning}
-                  onChange={handleChange}
-                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                />
-                <span className="text-sm text-gray-700">Air Conditioning</span>
-              </label>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="wifi"
-                  checked={form.wifi}
-                  onChange={handleChange}
-                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                />
-                <span className="text-sm text-gray-700">Free Wifi</span>
-              </label>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="bathroom"
-                  checked={form.bathroom}
-                  onChange={handleChange}
-                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                />
-                <span className="text-sm text-gray-700">Private Bathroom</span>
-              </label>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="living_area"
-                  checked={form.living_area}
-                  onChange={handleChange}
-                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                />
-                <span className="text-sm text-gray-700">Living Room</span>
-              </label>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="terrace"
-                  checked={form.terrace}
-                  onChange={handleChange}
-                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                />
-                <span className="text-sm text-gray-700">Terrace</span>
-              </label>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="parking"
-                  checked={form.parking}
-                  onChange={handleChange}
-                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                />
-                <span className="text-sm text-gray-700">Free Parking</span>
-              </label>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="kitchen"
-                  checked={form.kitchen}
-                  onChange={handleChange}
-                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                />
-                <span className="text-sm text-gray-700">Kitchen</span>
-              </label>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="family_room"
-                  checked={form.family_room}
-                  onChange={handleChange}
-                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                />
-                <span className="text-sm text-gray-700">Family Room</span>
-              </label>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="bbq"
-                  checked={form.bbq}
-                  onChange={handleChange}
-                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                />
-                <span className="text-sm text-gray-700">BBQ</span>
-              </label>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="garden"
-                  checked={form.garden}
-                  onChange={handleChange}
-                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                />
-                <span className="text-sm text-gray-700">Garden</span>
-              </label>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="dining"
-                  checked={form.dining}
-                  onChange={handleChange}
-                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                />
-                <span className="text-sm text-gray-700">Dining Area</span>
-              </label>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="breakfast"
-                  checked={form.breakfast}
-                  onChange={handleChange}
-                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                />
-                <span className="text-sm text-gray-700">Breakfast</span>
-              </label>
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-6"
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Room Number</label>
+              <input
+                type="text"
+                name="number"
+                placeholder="e.g., 101"
+                value={form.number}
+                onChange={handleChange}
+                className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all"
+                required
+                disabled={isEditing}
+              />
             </div>
-          </div>
-          <div className="md:col-span-2 lg:col-span-3 flex items-center gap-4">
-            <button
-              type="submit"
-              className="w-full bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-indigo-700 transition-transform transform hover:-translate-y-1"
-            >
-              {isEditing ? "Update Room" : "Add Room"}
-            </button>
-            {isEditing && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Room Type</label>
+              <input
+                type="text"
+                name="type"
+                placeholder="e.g., Deluxe"
+                value={form.type}
+                onChange={handleChange}
+                className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
+              <input
+                type="number"
+                name="price"
+                placeholder="e.g., 5000"
+                value={form.price}
+                onChange={handleChange}
+                className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+              <input
+                type="number"
+                name="priority"
+                placeholder="e.g., 1 (shows first)"
+                value={form.priority}
+                onChange={handleChange}
+                className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Adults Capacity</label>
+              <input
+                type="number"
+                name="adults"
+                placeholder="e.g., 2"
+                value={form.adults}
+                onChange={handleChange}
+                className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all"
+                min="1"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Children Capacity</label>
+              <input
+                type="number"
+                name="children"
+                placeholder="e.g., 1"
+                value={form.children}
+                onChange={handleChange}
+                className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all"
+                min="0"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <select
+                name="status"
+                value={form.status}
+                onChange={handleChange}
+                className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all"
+              >
+                <option>Available</option>
+                <option>Maintenance</option>
+                <option>Coming Soon</option>
+                <option>Disabled</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Room Image</label>
+              <input
+                type="file"
+                name="image"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                onChange={handleChange}
+                className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all"
+              />
+              <p className="text-xs text-gray-500 mt-1">Max file size: 50MB. Supported formats: JPEG, PNG, WebP</p>
+            </div>
+
+            {/* Show preview if image selected */}
+            {previewImage && (
+              <img
+                src={previewImage}
+                alt="Preview"
+                className="w-full h-32 object-cover rounded-lg border-2 border-gray-200"
+              />
+            )}
+
+            {/* Room Features Section */}
+            <div className="md:col-span-2 lg:col-span-3">
+              <label className="block text-sm font-medium text-gray-700 mb-3">Room Features & Amenities</label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="air_conditioning"
+                    checked={form.air_conditioning}
+                    onChange={handleChange}
+                    className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                  />
+                  <span className="text-sm text-gray-700">Air Conditioning</span>
+                </label>
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="wifi"
+                    checked={form.wifi}
+                    onChange={handleChange}
+                    className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                  />
+                  <span className="text-sm text-gray-700">Free Wifi</span>
+                </label>
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="bathroom"
+                    checked={form.bathroom}
+                    onChange={handleChange}
+                    className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                  />
+                  <span className="text-sm text-gray-700">Private Bathroom</span>
+                </label>
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="living_area"
+                    checked={form.living_area}
+                    onChange={handleChange}
+                    className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                  />
+                  <span className="text-sm text-gray-700">Living Room</span>
+                </label>
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="terrace"
+                    checked={form.terrace}
+                    onChange={handleChange}
+                    className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                  />
+                  <span className="text-sm text-gray-700">Terrace</span>
+                </label>
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="parking"
+                    checked={form.parking}
+                    onChange={handleChange}
+                    className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                  />
+                  <span className="text-sm text-gray-700">Free Parking</span>
+                </label>
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="kitchen"
+                    checked={form.kitchen}
+                    onChange={handleChange}
+                    className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                  />
+                  <span className="text-sm text-gray-700">Kitchen</span>
+                </label>
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="family_room"
+                    checked={form.family_room}
+                    onChange={handleChange}
+                    className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                  />
+                  <span className="text-sm text-gray-700">Family Room</span>
+                </label>
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="bbq"
+                    checked={form.bbq}
+                    onChange={handleChange}
+                    className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                  />
+                  <span className="text-sm text-gray-700">BBQ</span>
+                </label>
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="garden"
+                    checked={form.garden}
+                    onChange={handleChange}
+                    className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                  />
+                  <span className="text-sm text-gray-700">Garden</span>
+                </label>
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="dining"
+                    checked={form.dining}
+                    onChange={handleChange}
+                    className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                  />
+                  <span className="text-sm text-gray-700">Dining Area</span>
+                </label>
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="breakfast"
+                    checked={form.breakfast}
+                    onChange={handleChange}
+                    className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                  />
+                  <span className="text-sm text-gray-700">Complimentary Breakfast</span>
+                </label>
+              </div>
+            </div>
+            <div className="md:col-span-2 lg:col-span-3 flex items-center gap-4">
+              <button
+                type="submit"
+                className="w-full bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-indigo-700 transition-transform transform hover:-translate-y-1"
+              >
+                {isEditing ? "Update Room" : "Add Room"}
+              </button>
               <button
                 type="button"
-                onClick={() => {
-                  setIsEditing(false);
-                  setEditRoomId(null);
-                  setForm({
-                    number: "",
-                    type: "",
-                    priority: "",
-                    price: "",
-                    status: "Available",
-                    adults: 2,
-                    children: 0,
-                    image: null,
-                    air_conditioning: false,
-                    wifi: false,
-                    bathroom: false,
-                    living_area: false,
-                    terrace: false,
-                    parking: false,
-                    kitchen: false,
-                    family_room: false,
-                    bbq: false,
-                    garden: false,
-                    dining: false,
-                    breakfast: false,
-                  });
-                  setPreviewImage(null);
-                  setBannerMessage({ type: null, text: "" });
-                }}
+                onClick={() => setIsModalOpen(false)}
                 className="w-full bg-gray-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-gray-600 transition"
               >
-                Cancel Edit
+                Cancel
               </button>
-            )}
+            </div>
           </div>
-        </div>
-      </form>
+        </form>
+      </Modal>
 
       {/* Rooms Grid */}
       <div className="bg-white p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl shadow-lg">

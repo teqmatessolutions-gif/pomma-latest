@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, Form, Depends
+from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.curd import food_item
@@ -42,6 +42,39 @@ async def create_item(
         available=available, category_id=category_id
     )
     return food_item.create_food_item(db, item_data, image_paths)
+
+@router.put("/{item_id}")
+async def update_item(
+    item_id: int,
+    name: str = Form(...),
+    description: str = Form(...),
+    price: float = Form(...),
+    available: bool = Form(...),
+    category_id: int = Form(...),
+    images: list[UploadFile] = File(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    image_paths = []
+    if images and images[0].filename:
+        for image in images:
+            filename = f"food_{uuid.uuid4().hex}_{image.filename}"
+            path = os.path.join(UPLOAD_DIR, filename)
+            with open(path, "wb") as buffer:
+                shutil.copyfileobj(image.file, buffer)
+            web_path = f"/{UPLOAD_DIR}/{filename}".replace("\\", "/")
+            image_paths.append(web_path)
+
+    item_data = FoodItemCreate(
+        name=name, description=description, price=price,
+        available=available, category_id=category_id
+    )
+    
+    updated_item = food_item.update_food_item(db, item_id, item_data, image_paths)
+    if updated_item is None:
+        raise HTTPException(status_code=404, detail="Food item not found")
+    return updated_item
+
 
 def _list_items_impl(db: Session, skip: int = 0, limit: int = 20):
     """Helper function for list_items"""

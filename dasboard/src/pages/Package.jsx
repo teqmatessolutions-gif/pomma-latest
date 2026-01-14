@@ -3,6 +3,7 @@ import api from "../services/api";
 import { toast } from "react-hot-toast";
 import DashboardLayout from "../layout/DashboardLayout";
 import BannerMessage from "../components/BannerMessage";
+import Modal from "../components/Modal";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement } from 'chart.js';
 import { Pie, Bar, Line } from 'react-chartjs-2';
 import { motion } from "framer-motion";
@@ -129,7 +130,10 @@ const commonChartOptions = {
 const Packages = () => {
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [bannerMessage, setBannerMessage] = useState({ type: null, text: "" });
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isBookModalOpen, setIsBookModalOpen] = useState(false);
 
   const showBannerMessage = (type, text) => {
     setBannerMessage({ type, text });
@@ -145,7 +149,7 @@ const Packages = () => {
   const [editingPackage, setEditingPackage] = useState(null); // Package being edited
   const [packageFilter, setPackageFilter] = useState("");
   const [bookingToCheckIn, setBookingToCheckIn] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [bookingFilter, setBookingFilter] = useState({ guestName: "", status: "all", checkIn: "", checkOut: "" });
   const [createForm, setCreateForm] = useState({
     title: "",
@@ -322,6 +326,8 @@ const Packages = () => {
     }
 
     try {
+      if (isSubmitting) return;
+      setIsSubmitting(true);
       const data = new FormData();
       data.append("title", createForm.title);
       data.append("description", createForm.description);
@@ -358,12 +364,15 @@ const Packages = () => {
       });
       setImagePreviews([]);
       setSelectedFiles([]);
+      setIsCreateModalOpen(false);
       fetchData();
     } catch (err) {
       console.error(err);
       const errorMsg = err.response?.data?.detail;
       const message = typeof errorMsg === 'string' ? errorMsg : 'Failed to create package';
       showBannerMessage("error", message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
   const handleEditPackage = (pkg) => {
@@ -554,9 +563,10 @@ const Packages = () => {
         setEditingBooking(null);
       } else {
         await api.post("/packages/book", bookingData);
-        toast.success("Package booked successfully!");
+        showBannerMessage("success", "Package booked successfully!");
       }
       setBookingForm({ package_id: "", guest_name: "", guest_email: "", guest_mobile: "", check_in: "", check_out: "", adults: 2, children: 0, room_ids: [] });
+      setIsBookModalOpen(false);
       fetchData();
     } catch (err) {
       console.error(err);
@@ -567,6 +577,7 @@ const Packages = () => {
   };
   const handleEditBooking = booking => {
     setEditingBooking(booking);
+    setIsBookModalOpen(true);
     setBookingForm({
       package_id: booking.package?.id,
       guest_name: booking.guest_name,
@@ -578,7 +589,7 @@ const Packages = () => {
       children: booking.children,
       room_ids: booking.rooms.map(r => r.room.id)
     });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Scroll removed as it's a modal now
   };
   const handleCancelBooking = async bookingId => {
     if (window.confirm("Are you sure you want to cancel this booking?")) {
@@ -837,373 +848,282 @@ const Packages = () => {
         </div>
       </Card>
 
-      {/* Forms Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+      {/* Action Buttons */}
+      <div className="flex flex-col md:flex-row gap-4 mb-8">
+        <button
+          onClick={() => {
+            setCreateForm({
+              title: "",
+              description: "",
+              price: "",
+              booking_type: "room_type",
+              selected_room_types: [],
+              status: "Available",
+              priority: "",
+              images: []
+            });
+            setImagePreviews([]);
+            setSelectedFiles([]);
+            setIsCreateModalOpen(true);
+          }}
+          className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex items-center justify-center gap-3"
+        >
+          <i className="fas fa-plus-circle text-2xl"></i>
+          <span className="text-xl">Create New Package</span>
+        </button>
 
-        {/* Edit Package Form */}
+        <button
+          onClick={() => {
+            setEditingBooking(null);
+            setBookingForm({
+              package_id: "",
+              guest_name: "",
+              guest_email: "",
+              guest_mobile: "",
+              check_in: "",
+              check_out: "",
+              adults: 2,
+              children: 0,
+              room_ids: []
+            });
+            setIsBookModalOpen(true);
+          }}
+          className="flex-1 bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white font-bold py-4 px-6 rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex items-center justify-center gap-3"
+        >
+          <i className="fas fa-calendar-plus text-2xl"></i>
+          <span className="text-xl">Book a Package</span>
+        </button>
+      </div>
+
+      {/* Edit Package Modal */}
+      <Modal isOpen={!!editingPackage} title={editingPackage ? `Edit Package: ${editingPackage.title}` : "Edit Package"} onClose={() => setEditingPackage(null)}>
         {editingPackage && (
-          <Card title={`Edit Package: ${editingPackage.title}`}>
-            <form onSubmit={handleEditSubmit} className="space-y-6">
-              <input type="text" name="title" placeholder="Package Title" value={editForm.title} onChange={handleEditChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
-              <textarea name="description" placeholder="Package Description" value={editForm.description} onChange={handleEditChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" rows="4" required />
-              <input type="number" name="price" placeholder="Price (₹)" value={editForm.price} onChange={handleEditChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
+          <form onSubmit={handleEditSubmit} className="space-y-6">
+            <input type="text" name="title" placeholder="Package Title" value={editForm.title} onChange={handleEditChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
+            <textarea name="description" placeholder="Package Description" value={editForm.description} onChange={handleEditChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" rows="4" required />
+            <input type="number" name="price" placeholder="Price (₹)" value={editForm.price} onChange={handleEditChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
 
-              <div className="space-y-3">
-                <label className="block text-gray-700 font-medium">Status</label>
-                <select
-                  name="status"
-                  value={editForm.status}
-                  onChange={handleEditChange}
-                  className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all"
-                >
-                  <option value="Available">Available</option>
-                  <option value="Coming Soon">Coming Soon</option>
-                  <option value="Disabled">Disabled</option>
-                </select>
-              </div>
-
-              <div className="space-y-3">
-                <label className="block text-gray-700 font-medium">Priority (Optional)</label>
-                <input
-                  type="number"
-                  name="priority"
-                  placeholder="Display order (1 = first, 2 = second, etc.)"
-                  value={editForm.priority}
-                  onChange={handleEditChange}
-                  min="1"
-                  className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all"
-                />
-                <p className="text-xs text-gray-500">Lower numbers appear first. Leave empty for no priority.</p>
-              </div>
-
-              {/* Booking Type Selection */}
-              <div className="space-y-3">
-                <label className="block text-gray-700 font-medium">Booking Type</label>
-                <div className="flex flex-col space-y-2">
-                  <label className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                    <input
-                      type="radio"
-                      name="booking_type"
-                      value="whole_property"
-                      checked={editForm.booking_type === "whole_property"}
-                      onChange={handleEditChange}
-                      className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
-                    />
-                    <span className="text-gray-700">Whole Property (Book entire property)</span>
-                  </label>
-                  <label className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                    <input
-                      type="radio"
-                      name="booking_type"
-                      value="room_type"
-                      checked={editForm.booking_type === "room_type"}
-                      onChange={handleEditChange}
-                      className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
-                    />
-                    <span className="text-gray-700">Selected Room Type (Book specific room types)</span>
-                  </label>
-                </div>
-              </div>
-
-              {/* Room Type Selection (only show if booking_type is room_type) */}
-              {editForm.booking_type === "room_type" && (
-                <div className="space-y-3">
-                  <label className="block text-gray-700 font-medium">Select Room Types</label>
-                  <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-3 bg-gray-50 rounded-lg border border-gray-200">
-                    {uniqueRoomTypes.length > 0 ? (
-                      uniqueRoomTypes.map((roomType) => (
-                        <label key={roomType} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
-                          <input
-                            type="checkbox"
-                            name="room_type"
-                            value={roomType}
-                            checked={editForm.selected_room_types?.includes(roomType) || false}
-                            onChange={handleEditChange}
-                            className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 rounded"
-                          />
-                          <span className="text-sm text-gray-700">{roomType}</span>
-                        </label>
-                      ))
-                    ) : (
-                      <div className="col-span-2 text-sm text-gray-500 text-center py-2">
-                        No room types available
-                      </div>
-                    )}
-                  </div>
-                  {editForm.selected_room_types && editForm.selected_room_types.length > 0 && (
-                    <p className="text-xs text-gray-500">
-                      Selected: {editForm.selected_room_types.join(", ")}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              <label className="block">
-                <span className="text-gray-600 font-medium">Add New Images (Optional):</span>
-                <input type="file" multiple accept="image/*" onChange={handleEditImageChange} className="mt-2 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all" />
-                {editSelectedFiles.length > 0 && (
-                  <p className="mt-2 text-sm text-gray-500">
-                    {editSelectedFiles.length} new image{editSelectedFiles.length > 1 ? 's' : ''} selected
-                  </p>
-                )}
-              </label>
-
-              {/* Existing Images Display */}
-              {editExistingImages.length > 0 && (
-                <div className="mt-4">
-                  <p className="text-sm text-gray-600 font-medium mb-2">Existing Images:</p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {editExistingImages.map((img, index) => (
-                      <div key={img.id} className="relative group">
-                        <img src={getImageUrl(img.image_url)} alt={`Existing ${index + 1}`} className="w-full h-32 object-cover rounded-lg shadow-md" />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveExistingImage(img.id)}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                          title="Remove image"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* New Images Preview */}
-              {editNewImagePreviews.length > 0 && (
-                <div className="mt-4">
-                  <p className="text-sm text-gray-600 font-medium mb-2">New Images To Upload:</p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {editNewImagePreviews.map((src, index) => (
-                      <div key={index} className="relative group">
-                        <img src={src} alt={`New Preview ${index + 1}`} className="w-full h-32 object-cover rounded-lg shadow-md border-2 border-green-400" />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveNewImage(index)}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                          title="Remove image"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              <div className="flex gap-3">
-                <button type="button" onClick={() => { setEditingPackage(null); setEditForm({ title: "", description: "", price: "", booking_type: "room_type", selected_room_types: [], images: [] }); setEditImagePreviews([]); setEditSelectedFiles([]); }} className="w-1/2 bg-gray-200 text-gray-800 font-semibold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:-translate-y-1">Cancel</button>
-                <button type="submit" className="w-1/2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:-translate-y-1">Update Package ✏️</button>
-              </div>
-            </form>
-          </Card>
-        )}
-
-        {/* Create Package Form */}
-        {!editingPackage && (
-          <Card title="Create New Package">
-            <form onSubmit={handleCreateSubmit} className="space-y-6">
-              <input type="text" name="title" placeholder="Package Title" value={createForm.title} onChange={handleCreateChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
-              <textarea name="description" placeholder="Package Description" value={createForm.description} onChange={handleCreateChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" rows="4" required />
-              <input type="number" name="price" placeholder="Price (₹)" value={createForm.price} onChange={handleCreateChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
-
-              <div className="space-y-3">
-                <label className="block text-gray-700 font-medium">Status</label>
-                <select
-                  name="status"
-                  value={createForm.status}
-                  onChange={handleCreateChange}
-                  className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all"
-                >
-                  <option value="Available">Available</option>
-                  <option value="Coming Soon">Coming Soon</option>
-                  <option value="Disabled">Disabled</option>
-                </select>
-              </div>
-
-              <div className="space-y-3">
-                <label className="block text-gray-700 font-medium">Priority (Optional)</label>
-                <input
-                  type="number"
-                  name="priority"
-                  placeholder="Display order (1 = first, 2 = second, etc.)"
-                  value={createForm.priority}
-                  onChange={handleCreateChange}
-                  min="1"
-                  className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all"
-                />
-                <p className="text-xs text-gray-500">Lower numbers appear first. Leave empty for no priority.</p>
-              </div>
-
-              {/* Booking Type Selection */}
-              <div className="space-y-3">
-                <label className="block text-gray-700 font-medium">Booking Type</label>
-                <div className="flex flex-col space-y-2">
-                  <label className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                    <input
-                      type="radio"
-                      name="booking_type"
-                      value="whole_property"
-                      checked={createForm.booking_type === "whole_property"}
-                      onChange={handleCreateChange}
-                      className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
-                    />
-                    <span className="text-gray-700">Whole Property (Book entire property)</span>
-                  </label>
-                  <label className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                    <input
-                      type="radio"
-                      name="booking_type"
-                      value="room_type"
-                      checked={createForm.booking_type === "room_type"}
-                      onChange={handleCreateChange}
-                      className="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
-                    />
-                    <span className="text-gray-700">Selected Room Type (Book specific room types)</span>
-                  </label>
-                </div>
-              </div>
-
-              {/* Room Type Selection (only show if booking_type is room_type) */}
-              {createForm.booking_type === "room_type" && (
-                <div className="space-y-3">
-                  <label className="block text-gray-700 font-medium">Select Room Types</label>
-                  <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-3 bg-gray-50 rounded-lg border border-gray-200">
-                    {uniqueRoomTypes.length > 0 ? (
-                      uniqueRoomTypes.map((roomType) => (
-                        <label key={roomType} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
-                          <input
-                            type="checkbox"
-                            name="room_type"
-                            value={roomType}
-                            checked={createForm.selected_room_types?.includes(roomType) || false}
-                            onChange={handleCreateChange}
-                            className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 rounded"
-                          />
-                          <span className="text-sm text-gray-700">{roomType}</span>
-                        </label>
-                      ))
-                    ) : (
-                      <div className="col-span-2 text-sm text-gray-500 text-center py-2">
-                        No room types available
-                      </div>
-                    )}
-                  </div>
-                  {createForm.selected_room_types && createForm.selected_room_types.length > 0 && (
-                    <p className="text-xs text-gray-500">
-                      Selected: {createForm.selected_room_types.join(", ")}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              <label className="block">
-                <span className="text-gray-600 font-medium">Package Images (Select multiple):</span>
-                <input type="file" multiple accept="image/*" onChange={handleCreateImageChange} className="mt-2 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all" />
-                {selectedFiles.length > 0 && (
-                  <p className="mt-2 text-sm text-gray-500">
-                    {selectedFiles.length} image{selectedFiles.length > 1 ? 's' : ''} selected
-                  </p>
-                )}
-              </label>
-              {imagePreviews.length > 0 && (
-                <div className="mt-4">
-                  <p className="text-sm text-gray-600 font-medium mb-2">Image Previews:</p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {imagePreviews.map((src, index) => (
-                      <div key={index} className="relative group">
-                        <img src={src} alt={`Preview ${index + 1}`} className="w-full h-32 object-cover rounded-lg shadow-md" />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveImage(index)}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                          title="Remove image"
-                        >
-                          ×
-                        </button>
-                        <div className="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
-                          {index + 1}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:-translate-y-1">Create Package 🚀</button>
-            </form>
-          </Card>
-        )}
-
-        {/* Booking Form */}
-        <Card title={editingBooking ? "Edit Booking" : "Book a Package"}>
-          <form onSubmit={handleBookingSubmit} className="space-y-6">
-            <select name="package_id" value={bookingForm.package_id} onChange={handleBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required>
-              <option value="">Select Package</option>
-              {packages.filter(p => p.status !== 'Coming Soon' && p.status !== 'Disabled').map(p => (<option key={p.id} value={p.id}>{p.title} - ₹{p.price}</option>))}
-            </select>
-            <input name="guest_name" placeholder="Guest Name" value={bookingForm.guest_name} onChange={handleBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
-            <input type="email" name="guest_email" placeholder="Guest Email" value={bookingForm.guest_email} onChange={handleBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" />
-            <input name="guest_mobile" placeholder="Guest Mobile" value={bookingForm.guest_mobile} onChange={handleBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <input type="date" name="check_in" value={bookingForm.check_in} onChange={handleBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
-              <input type="date" name="check_out" value={bookingForm.check_out} onChange={handleBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
+            <div className="space-y-3">
+              <label className="block text-gray-700 font-medium">Status</label>
+              <select name="status" value={editForm.status} onChange={handleEditChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all">
+                <option value="Available">Available</option>
+                <option value="Coming Soon">Coming Soon</option>
+                <option value="Disabled">Disabled</option>
+              </select>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <input type="number" name="adults" min={1} placeholder="Adults" value={bookingForm.adults} onChange={handleBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
-              <input type="number" name="children" min={0} placeholder="Children" value={bookingForm.children} onChange={handleBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" />
+
+            <div className="space-y-3">
+              <label className="block text-gray-700 font-medium">Priority (Optional)</label>
+              <input type="number" name="priority" placeholder="Display order (1 = first, 2 = second, etc.)" value={editForm.priority} onChange={handleEditChange} min="1" className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" />
+              <p className="text-xs text-gray-500">Lower numbers appear first. Leave empty for no priority.</p>
             </div>
-            {/* Room Selection - Only show for room_type packages */}
-            {(() => {
-              const selectedPackage = packages.find(p => p.id === parseInt(bookingForm.package_id));
-              const isWholeProperty = selectedPackage && selectedPackage.booking_type === 'whole_property';
 
-              // Hide room selection completely for whole_property
-              if (isWholeProperty) {
-                return (
-                  <div className="bg-indigo-50 border-2 border-indigo-300 rounded-lg p-4">
-                    <p className="text-sm font-semibold text-indigo-800">Whole Property Package</p>
-                    <p className="text-xs text-indigo-600 mt-1">
-                      All available rooms ({availableRooms.length} room{availableRooms.length !== 1 ? 's' : ''}) will be booked automatically for the selected dates.
-                    </p>
-                  </div>
-                );
-              }
+            {/* Booking Type Selection */}
+            <div className="space-y-3">
+              <label className="block text-gray-700 font-medium">Booking Type</label>
+              <div className="flex flex-col space-y-2">
+                <label className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                  <input type="radio" name="booking_type" value="whole_property" checked={editForm.booking_type === "whole_property"} onChange={handleEditChange} className="w-4 h-4 text-indigo-600 focus:ring-indigo-500" />
+                  <span className="text-gray-700">Whole Property (Book entire property)</span>
+                </label>
+                <label className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                  <input type="radio" name="booking_type" value="room_type" checked={editForm.booking_type === "room_type"} onChange={handleEditChange} className="w-4 h-4 text-indigo-600 focus:ring-indigo-500" />
+                  <span className="text-gray-700">Selected Room Type (Book specific room types)</span>
+                </label>
+              </div>
+            </div>
 
-              // Show room selection for room_type packages
-              return (
-                <div>
-                  <label className="block text-gray-600 font-medium mb-2">
-                    Select Rooms for Package
-                    {bookingForm.check_in && bookingForm.check_out && (
-                      <span className="text-xs text-gray-500 ml-2">
-                        ({bookingForm.check_in} to {bookingForm.check_out})
-                      </span>
-                    )}
-                  </label>
-                  {!bookingForm.check_in || !bookingForm.check_out ? (
-                    <div className="text-center py-8 text-gray-500 text-sm bg-gray-50 rounded-lg border">
-                      <p>Please select check-in and check-out dates first</p>
-                      <p className="text-xs mt-1">Available rooms will be shown here</p>
-                    </div>
+            {/* Room Type Selection */}
+            {editForm.booking_type === "room_type" && (
+              <div className="space-y-3">
+                <label className="block text-gray-700 font-medium">Select Room Types</label>
+                <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  {uniqueRoomTypes.length > 0 ? (
+                    uniqueRoomTypes.map((roomType) => (
+                      <label key={roomType} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
+                        <input type="checkbox" name="room_type" value={roomType} checked={editForm.selected_room_types?.includes(roomType) || false} onChange={handleEditChange} className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 rounded" />
+                        <span className="text-sm text-gray-700">{roomType}</span>
+                      </label>
+                    ))
                   ) : (
-                    <RoomSelection
-                      rooms={availableRooms}
-                      selectedRoomNumbers={availableRooms.filter(r => bookingForm.room_ids.includes(r.id)).map(r => r.number)}
-                      onRoomToggle={(roomNumber) => {
-                        const room = availableRooms.find(r => r.number === roomNumber);
-                        if (room) handleRoomSelect(room.id);
-                      }}
-                    />
+                    <div className="col-span-2 text-sm text-gray-500 text-center py-2">No room types available</div>
                   )}
+                </div>
+                {editForm.selected_room_types && editForm.selected_room_types.length > 0 && (
+                  <p className="text-xs text-gray-500">Selected: {editForm.selected_room_types.join(", ")}</p>
+                )}
+              </div>
+            )}
+
+            <label className="block">
+              <span className="text-gray-600 font-medium">Add New Images (Optional):</span>
+              <input type="file" multiple accept="image/*" onChange={handleEditImageChange} className="mt-2 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all" />
+            </label>
+
+            {/* Existing Images */}
+            {editExistingImages.length > 0 && (
+              <div className="mt-4">
+                <p className="text-sm text-gray-600 font-medium mb-2">Existing Images:</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  {editExistingImages.map((img, index) => (
+                    <div key={img.id} className="relative group">
+                      <img src={getImageUrl(img.image_url)} alt={`Existing ${index + 1}`} className="w-full h-32 object-cover rounded-lg shadow-md" />
+                      <button type="button" onClick={() => handleRemoveExistingImage(img.id)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">×</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* New Images */}
+            {editNewImagePreviews.length > 0 && (
+              <div className="mt-4">
+                <p className="text-sm text-gray-600 font-medium mb-2">New Images To Upload:</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  {editNewImagePreviews.map((src, index) => (
+                    <div key={index} className="relative group">
+                      <img src={src} alt={`New Preview ${index + 1}`} className="w-full h-32 object-cover rounded-lg shadow-md border-2 border-green-400" />
+                      <button type="button" onClick={() => handleRemoveNewImage(index)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">×</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button type="button" onClick={() => setEditingPackage(null)} className="w-1/2 bg-gray-200 text-gray-800 font-semibold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:-translate-y-1">Cancel</button>
+              <button type="submit" className="w-1/2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:-translate-y-1">Update Package ✏️</button>
+            </div>
+          </form>
+        )}
+      </Modal>
+
+      {/* Create Package Modal */}
+      <Modal isOpen={isCreateModalOpen} title="Create New Package" onClose={() => setIsCreateModalOpen(false)}>
+        <form onSubmit={handleCreateSubmit} className="space-y-6">
+          <input type="text" name="title" placeholder="Package Title" value={createForm.title} onChange={handleCreateChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
+          <textarea name="description" placeholder="Package Description" value={createForm.description} onChange={handleCreateChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" rows="4" required />
+          <input type="number" name="price" placeholder="Price (₹)" value={createForm.price} onChange={handleCreateChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
+
+          <div className="space-y-3">
+            <label className="block text-gray-700 font-medium">Status</label>
+            <select name="status" value={createForm.status} onChange={handleCreateChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all">
+              <option value="Available">Available</option>
+              <option value="Coming Soon">Coming Soon</option>
+              <option value="Disabled">Disabled</option>
+            </select>
+          </div>
+
+          <div className="space-y-3">
+            <label className="block text-gray-700 font-medium">Priority (Optional)</label>
+            <input type="number" name="priority" placeholder="Display order (1 = first, 2 = second, etc.)" value={createForm.priority} onChange={handleCreateChange} min="1" className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" />
+            <p className="text-xs text-gray-500">Lower numbers appear first. Leave empty for no priority.</p>
+          </div>
+
+          <div className="space-y-3">
+            <label className="block text-gray-700 font-medium">Booking Type</label>
+            <div className="flex flex-col space-y-2">
+              <label className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                <input type="radio" name="booking_type" value="whole_property" checked={createForm.booking_type === "whole_property"} onChange={handleCreateChange} className="w-4 h-4 text-indigo-600 focus:ring-indigo-500" />
+                <span className="text-gray-700">Whole Property (Book entire property)</span>
+              </label>
+              <label className="flex items-center space-x-2 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                <input type="radio" name="booking_type" value="room_type" checked={createForm.booking_type === "room_type"} onChange={handleCreateChange} className="w-4 h-4 text-indigo-600 focus:ring-indigo-500" />
+                <span className="text-gray-700">Selected Room Type (Book specific room types)</span>
+              </label>
+            </div>
+          </div>
+
+          {createForm.booking_type === "room_type" && (
+            <div className="space-y-3">
+              <label className="block text-gray-700 font-medium">Select Room Types</label>
+              <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-3 bg-gray-50 rounded-lg border border-gray-200">
+                {uniqueRoomTypes.length > 0 ? (
+                  uniqueRoomTypes.map((roomType) => (
+                    <label key={roomType} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
+                      <input type="checkbox" name="room_type" value={roomType} checked={createForm.selected_room_types?.includes(roomType) || false} onChange={handleCreateChange} className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 rounded" />
+                      <span className="text-sm text-gray-700">{roomType}</span>
+                    </label>
+                  ))
+                ) : (
+                  <div className="col-span-2 text-sm text-gray-500 text-center py-2">No room types available</div>
+                )}
+              </div>
+              {createForm.selected_room_types && createForm.selected_room_types.length > 0 && (
+                <p className="text-xs text-gray-500">Selected: {createForm.selected_room_types.join(", ")}</p>
+              )}
+            </div>
+          )}
+
+          <label className="block">
+            <span className="text-gray-600 font-medium">Package Images (Select multiple):</span>
+            <input type="file" multiple accept="image/*" onChange={handleCreateImageChange} className="mt-2 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all" />
+          </label>
+
+          {imagePreviews.length > 0 && (
+            <div className="mt-4">
+              <p className="text-sm text-gray-600 font-medium mb-2">Image Previews:</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {imagePreviews.map((src, index) => (
+                  <div key={index} className="relative group">
+                    <img src={src} alt={`Preview ${index + 1}`} className="w-full h-32 object-cover rounded-lg shadow-md" />
+                    <button type="button" onClick={() => handleRemoveImage(index)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">×</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <button type="submit" disabled={isSubmitting} className={`w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:-translate-y-1 ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}>
+            {isSubmitting ? "Creating..." : "Create Package 🚀"}
+          </button>
+        </form>
+      </Modal>
+
+      {/* Book Package Modal */}
+      <Modal isOpen={isBookModalOpen} title={editingBooking ? "Edit Booking" : "Book a Package"} onClose={() => { setIsBookModalOpen(false); setEditingBooking(null); }}>
+        <form onSubmit={handleBookingSubmit} className="space-y-6">
+          <select name="package_id" value={bookingForm.package_id} onChange={handleBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required>
+            <option value="">Select Package</option>
+            {packages.filter(p => p.status !== 'Coming Soon' && p.status !== 'Disabled').map(p => (<option key={p.id} value={p.id}>{p.title} - ₹{p.price}</option>))}
+          </select>
+          <input name="guest_name" placeholder="Guest Name" value={bookingForm.guest_name} onChange={handleBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
+          <input type="email" name="guest_email" placeholder="Guest Email" value={bookingForm.guest_email} onChange={handleBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" />
+          <input name="guest_mobile" placeholder="Guest Mobile" value={bookingForm.guest_mobile} onChange={handleBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <input type="date" name="check_in" value={bookingForm.check_in} onChange={handleBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
+            <input type="date" name="check_out" value={bookingForm.check_out} onChange={handleBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <input type="number" name="adults" min={1} placeholder="Adults" value={bookingForm.adults} onChange={handleBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
+            <input type="number" name="children" min={0} placeholder="Children" value={bookingForm.children} onChange={handleBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" />
+          </div>
+          {/* Room Selection */}
+          {(() => {
+            const selectedPackage = packages.find(p => p.id === parseInt(bookingForm.package_id));
+            const isWholeProperty = selectedPackage && selectedPackage.booking_type === 'whole_property';
+            if (isWholeProperty) {
+              return (
+                <div className="bg-indigo-50 border-2 border-indigo-300 rounded-lg p-4">
+                  <p className="text-sm font-semibold text-indigo-800">Whole Property Package</p>
+                  <p className="text-xs text-indigo-600 mt-1">All available rooms ({availableRooms.length} rooms) will be booked.</p>
                 </div>
               );
-            })()}
-            <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:-translate-y-1">
-              {editingBooking ? "Update Booking ✏️" : "Book Package ✅"}
-            </button>
-          </form>
-        </Card>
-      </div>
+            }
+            return (
+              <div>
+                <label className="block text-gray-600 font-medium mb-2">Select Rooms {bookingForm.check_in && bookingForm.check_out && <span className="text-xs text-gray-500">({bookingForm.check_in} to {bookingForm.check_out})</span>}</label>
+                {!bookingForm.check_in || !bookingForm.check_out ? (
+                  <div className="text-center py-8 text-gray-500 text-sm bg-gray-50 rounded-lg border"><p>Please select check-in and check-out dates first</p></div>
+                ) : (
+                  <RoomSelection rooms={availableRooms} selectedRoomNumbers={availableRooms.filter(r => bookingForm.room_ids.includes(r.id)).map(r => r.number)} onRoomToggle={(roomNumber) => { const room = availableRooms.find(r => r.number === roomNumber); if (room) handleRoomSelect(room.id); }} />
+                )}
+              </div>
+            );
+          })()}
+          <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:-translate-y-1">{editingBooking ? "Update Booking ✏️" : "Book Package ✅"}</button>
+        </form>
+      </Modal>
 
       {/* Bookings Table */}
       <Card title="All Package Bookings" className="mt-8">

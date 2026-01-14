@@ -51,7 +51,7 @@ export const getApiBaseUrl = () => {
 
   // For localhost development
   if (isLocalhost()) {
-    return "http://localhost:8010/api";
+    return "http://localhost:8000/api";
   }
 
   // For assets served under /pommaadmin or /pommaholidays in production,

@@ -45,3 +45,20 @@ def update_food_item_availability(db: Session, item_id: int, available: bool):
         db.commit()
         return {"msg": "Availability updated"}
     return {"msg": "Item not found"}
+
+def update_food_item(db: Session, item_id: int, item: FoodItemCreate, image_paths: list[str] = None):
+    db_item = db.query(FoodItem).filter(FoodItem.id == item_id).first()
+    if not db_item:
+        return None
+    
+    for key, value in item.dict().items():
+        setattr(db_item, key, value)
+    
+    if image_paths:
+        for path in image_paths:
+            image = FoodItemImage(image_url=path, item_id=db_item.id)
+            db.add(image)
+            
+    db.commit()
+    db.refresh(db_item)
+    return db_item

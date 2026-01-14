@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import DashboardLayout from "../layout/DashboardLayout";
+import BannerMessage from "../components/BannerMessage";
 import API from "../services/api";
 import { getMediaBaseUrl } from "../utils/env";
+import Modal from "../components/Modal";
 
 // Helper function to construct image URLs
 const getImageUrl = (imagePath) => {
@@ -34,6 +36,7 @@ const FoodItems = () => {
   const [foodItems, setFoodItems] = useState([]);
   const [editingItemId, setEditingItemId] = useState(null);
   const [available, setAvailable] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const token = localStorage.getItem("token");
 
@@ -85,6 +88,7 @@ const FoodItems = () => {
     setAvailable(item.available);
     setImagePreviews(item.images?.map((img) => getImageUrl(img.image_url)) || []);
     setImages([]);
+    setIsModalOpen(true);
   };
 
   const resetForm = () => {
@@ -97,11 +101,12 @@ const FoodItems = () => {
     setEditingItemId(null);
     setAvailable(true);
     setMessage({ type: "", text: "" });
+    setIsModalOpen(false);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validation
     if (!name.trim()) {
       setMessage({ type: "error", text: "Please enter food item name" });
@@ -119,7 +124,7 @@ const FoodItems = () => {
       setMessage({ type: "error", text: "Please select a category" });
       return;
     }
-    
+
     const formData = new FormData();
     formData.append("name", name);
     formData.append("description", description);
@@ -142,14 +147,16 @@ const FoodItems = () => {
       }
       fetchFoodItems();
       resetForm();
-      // Clear message after 3 seconds
-      setTimeout(() => setMessage({ type: "", text: "" }), 3000);
+      fetchFoodItems();
+      resetForm();
+      setIsModalOpen(false);
+      // BannerMessage handles auto-dismiss
     } catch (err) {
       console.error("Failed to save food item", err);
       const errorMsg = err.response?.data?.detail || err.message || "Failed to save food item. Please try again.";
       setMessage({ type: "error", text: errorMsg });
-      // Clear error message after 5 seconds
-      setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+      setMessage({ type: "error", text: errorMsg });
+      // BannerMessage handles auto-dismiss
     }
   };
 
@@ -159,12 +166,14 @@ const FoodItems = () => {
       await API.delete(`/food-items/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       setMessage({ type: "success", text: "Food item deleted successfully!" });
       fetchFoodItems();
-      setTimeout(() => setMessage({ type: "", text: "" }), 3000);
+      fetchFoodItems();
+      // BannerMessage handles auto-dismiss
     } catch (err) {
       console.error("Delete failed", err);
       const errorMsg = err.response?.data?.detail || "Failed to delete food item";
       setMessage({ type: "error", text: errorMsg });
-      setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+      setMessage({ type: "error", text: errorMsg });
+      // BannerMessage handles auto-dismiss
     }
   };
 
@@ -176,13 +185,15 @@ const FoodItems = () => {
       );
       const newStatus = !item.available ? "Available" : "Not Available";
       setMessage({ type: "success", text: `Food item marked as ${newStatus}` });
+      setMessage({ type: "success", text: `Food item marked as ${newStatus}` });
       fetchFoodItems();
-      setTimeout(() => setMessage({ type: "", text: "" }), 3000);
+      // BannerMessage handles auto-dismiss
     } catch (err) {
       console.error("Failed to toggle availability", err);
       const errorMsg = err.response?.data?.detail || "Failed to update availability";
       setMessage({ type: "error", text: errorMsg });
-      setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+      setMessage({ type: "error", text: errorMsg });
+      // BannerMessage handles auto-dismiss
     }
   };
 
@@ -190,107 +201,29 @@ const FoodItems = () => {
     <DashboardLayout>
       <div className="p-6 flex flex-col items-center gap-8">
         {/* Success/Error Message */}
-        {message.text && (
-          <div className={`w-full max-w-4xl p-4 rounded-lg text-center font-semibold ${
-            message.type === "success" 
-              ? "bg-green-100 text-green-800 border border-green-300" 
-              : "bg-red-100 text-red-800 border border-red-300"
-          }`}>
-            {message.text}
-          </div>
-        )}
-        
-        {/* Food Item Form */}
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white shadow-xl rounded-3xl p-8 flex flex-col md:flex-row items-center gap-8 w-full max-w-4xl"
-        >
-          <div className="flex-1 w-full">
-            <h2 className="text-2xl font-bold mb-6 text-gray-700 text-center md:text-left">
-              {editingItemId ? "Edit Food Item" : "Add Food Item"}
-            </h2>
+        {/* Success/Error Message */}
+        <BannerMessage
+          message={message}
+          onClose={() => setMessage({ type: "", text: "" })}
+          autoDismiss={true}
+          duration={5000}
+        />
 
-            <input
-              type="text"
-              placeholder="Name"
-              className="w-full border rounded-xl px-4 py-3 mb-4 focus:ring-2 focus:ring-indigo-500 transition"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-            <textarea
-              placeholder="Description"
-              className="w-full border rounded-xl px-4 py-3 mb-4 focus:ring-2 focus:ring-indigo-500 transition"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
-            />
-            <input
-              type="number"
-              placeholder="Price"
-              className="w-full border rounded-xl px-4 py-3 mb-4 focus:ring-2 focus:ring-indigo-500 transition"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              required
-            />
-            <select
-              className="w-full border rounded-xl px-4 py-3 mb-4 focus:ring-2 focus:ring-indigo-500 transition"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              required
-            >
-              <option value="">Select Category</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-            <label className="flex items-center gap-2 mb-4">
-              <input
-                type="checkbox"
-                checked={available}
-                onChange={() => setAvailable(!available)}
-              />
-              Available
-            </label>
-
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleImageChange}
-              className="border rounded-xl px-4 py-2 mb-4"
-            />
-
-            <div className="flex gap-4 flex-wrap mb-4">
-              {imagePreviews.map((src, index) => (
-                <div key={index} className="relative group">
-                  <img
-                    src={src}
-                    alt={`Preview ${index}`}
-                    className="w-[100px] h-[100px] object-cover border rounded-xl shadow"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveImage(index)}
-                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full px-2 py-1 text-xs opacity-0 group-hover:opacity-100 transition"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            <button className="w-full bg-gradient-to-r from-green-500 to-green-700 text-white font-bold py-3 rounded-2xl shadow-lg hover:scale-105 transform transition">
-              {editingItemId ? "Update Item" : "Add Item"}
-            </button>
-          </div>
-        </form>
+        <div className="w-full max-w-6xl flex justify-between items-center mb-6">
+          <h3 className="text-2xl font-semibold text-gray-700">Food Items Management</h3>
+          <button
+            onClick={() => {
+              resetForm();
+              setIsModalOpen(true);
+            }}
+            className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:scale-105 transform transition flex items-center gap-2"
+          >
+            <span>➕</span> Add New Food Item
+          </button>
+        </div>
 
         {/* Food Items Grid */}
         <div className="w-full max-w-6xl">
-          <h3 className="text-2xl font-semibold mb-6 text-gray-700 text-center">All Food Items</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {foodItems.map((item, index) => (
               <div
@@ -344,7 +277,128 @@ const FoodItems = () => {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={resetForm}
+        title={editingItemId ? "Edit Food Item" : "Add New Food Item"}
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <input
+              type="text"
+              placeholder="Item Name"
+              className="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 transition"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea
+              placeholder="Item Description"
+              className="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 transition"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              required
+              rows={3}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
+              <input
+                type="number"
+                placeholder="0.00"
+                className="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 transition"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+              <select
+                className="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 transition"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                required
+              >
+                <option value="">Select Category</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <label className="flex items-center gap-2 cursor-pointer bg-gray-50 p-3 rounded-xl border">
+            <input
+              type="checkbox"
+              checked={available}
+              onChange={() => setAvailable(!available)}
+              className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
+            />
+            <span className="text-gray-700 font-medium">Available for Order</span>
+          </label>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Images</label>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleImageChange}
+              className="w-full border rounded-xl px-4 py-2 mb-4 bg-gray-50"
+            />
+
+            {imagePreviews.length > 0 && (
+              <div className="flex gap-2 flex-wrap mb-4">
+                {imagePreviews.map((src, index) => (
+                  <div key={index} className="relative group">
+                    <img
+                      src={src}
+                      alt={`Preview ${index}`}
+                      className="w-16 h-16 object-cover border rounded-lg shadow-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(index)}
+                      className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition shadow-md"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <button
+              type="button"
+              onClick={resetForm}
+              className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="flex-1 px-4 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transform transition"
+            >
+              {editingItemId ? "Update Item" : "Create Item"}
+            </button>
+          </div>
+        </form>
+      </Modal>
+    </DashboardLayout >
   );
 };
 

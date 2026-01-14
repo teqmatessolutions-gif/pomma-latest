@@ -4,6 +4,7 @@ import API from "../services/api";
 import { toast } from "react-hot-toast";
 import { motion } from "framer-motion";
 import { getMediaBaseUrl } from "../utils/env";
+import Modal from "../components/Modal";
 
 // Helper function to get correct image URL based on environment
 const getImageUrl = (imagePath) => {
@@ -38,6 +39,7 @@ const FoodManagement = () => {
   const [editingItemId, setEditingItemId] = useState(null);
   const [available, setAvailable] = useState(true);
   const [filters, setFilters] = useState({ search: "", category: "all", availability: "all" });
+  const [isFoodItemModalOpen, setIsFoodItemModalOpen] = useState(false);
 
   // === State for Food Categories ===
   const [categoryName, setCategoryName] = useState("");
@@ -114,6 +116,7 @@ const FoodManagement = () => {
     setAvailable(item.available);
     setImagePreviews(item.images?.map((img) => getImageUrl(img.image_url)) || []);
     setImages([]);
+    setIsFoodItemModalOpen(true);
   };
 
   const resetForm = () => {
@@ -125,6 +128,7 @@ const FoodManagement = () => {
     setImagePreviews([]);
     setEditingItemId(null);
     setAvailable(true);
+    setIsFoodItemModalOpen(false);
   };
 
   const handleSubmit = async (e) => {
@@ -152,6 +156,7 @@ const FoodManagement = () => {
       }
       fetchFoodItems();
       resetForm();
+      setIsFoodItemModalOpen(false);
     } catch (err) {
       console.error("Failed to save food item", err);
       toast.error("Failed to save food item.");
@@ -302,7 +307,7 @@ const FoodManagement = () => {
       <div className="p-6 space-y-12">
         <h1 className="text-3xl font-bold text-gray-800">Food & Beverage Management</h1>
         {error && <div className="p-4 mb-4 text-center text-red-700 bg-red-100 border border-red-200 rounded-lg">{error}</div>}
-        
+
         {/* KPI Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <KpiCard title="Total Food Items" value={totalItems} color="bg-gradient-to-r from-green-500 to-green-700" icon={<i className="fas fa-utensils"></i>} />
@@ -313,180 +318,86 @@ const FoodManagement = () => {
         {/* ====================================================== */}
         {/* Food Item Management Section */}
         {/* ====================================================== */}
-        <div className="bg-white p-8 rounded-2xl shadow-lg">
-          <h2 className="text-2xl font-bold mb-6 text-gray-800">🍽️ Food Item Management</h2>
-          <form
-            onSubmit={handleSubmit}
-            className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start"
+        {/* ====================================================== */}
+        {/* Food Item Management Section */}
+        {/* ====================================================== */}
+
+        {/* Header with Add Button */}
+        <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-lg mb-8">
+          <h2 className="text-2xl font-bold text-gray-800">🍽️ Food Item Management</h2>
+          <button
+            onClick={() => {
+              resetForm();
+              setIsFoodItemModalOpen(true);
+            }}
+            className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:scale-105 transform transition flex items-center gap-2"
           >
-            {/* Form Fields */}
-            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <h2 className="md:col-span-2 text-xl font-semibold text-gray-700">
-                {editingItemId ? "Edit Food Item" : "Add New Food Item"}
-              </h2>
-              <div className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Name"
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 transition duration-200"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-                <textarea
-                  placeholder="Description"
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 transition duration-200"
-                  rows="3"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  required
-                />
-                <input
-                  type="number"
-                  placeholder="Price (₹)"
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 transition duration-200"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  required
-                />
-                <select
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 transition duration-200"
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  required
-                >
-                  <option value="">Select Category</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    className="form-checkbox h-5 w-5 text-indigo-600 rounded"
-                    checked={available}
-                    onChange={() => setAvailable(!available)}
-                  />
-                  <span className="text-gray-700">Available for Order</span>
-                </label>
-              </div>
-            </div>
+            <i className="fas fa-plus"></i> Add New Food Item
+          </button>
+        </div>
 
-            {/* Image Upload and Preview */}
-            <div className="w-full">
-              <label className="block text-gray-700 font-medium mb-2">Upload Images</label>
+        <div className="mt-8">
+          <div className="flex flex-wrap gap-4 justify-between items-center mb-6">
+            <h3 className="text-2xl font-bold text-gray-700">All Food Items</h3>
+            <div className="flex flex-wrap gap-4">
               <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleImageChange}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                type="text"
+                placeholder="Search by name..."
+                value={filters.search}
+                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                className="p-2 border border-gray-300 rounded-lg"
               />
-              <div className="grid grid-cols-3 gap-4 mt-4">
-                {imagePreviews.map((src, index) => (
-                  <div key={index} className="relative group w-full aspect-square">
-                    <img
-                      src={src}
-                      alt={`Preview ${index}`}
-                      className="w-full h-full object-cover rounded-xl shadow border border-gray-200"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveImage(index)}
-                      className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 text-xs opacity-0 group-hover:opacity-100 transition duration-200"
-                    >
-                      <i className="fas fa-times"></i>
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="lg:col-span-3 flex flex-col md:flex-row gap-4">
-              <button
-                className="w-full bg-indigo-600 text-white font-bold py-3 mt-8 rounded-xl shadow-lg hover:bg-indigo-700 transform transition-all duration-300"
-                type="submit"
-                disabled={isLoading}
-              >
-                {editingItemId ? "Update Food Item" : "Add Food Item"}
-              </button>
-              {editingItemId && (
-                <button
-                  onClick={resetForm}
-                  className="w-full mt-3 py-3 rounded-xl border border-gray-300 text-gray-600 font-semibold hover:bg-gray-100 transition-all duration-300"
-                  type="button"
-                >
-                  Cancel Edit
-                </button>
-              )}
-            </div>
-          </form>
-
-          <div className="mt-12">
-            <div className="flex flex-wrap gap-4 justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-gray-700">All Food Items</h3>
-              <div className="flex flex-wrap gap-4">
-                <input
-                  type="text"
-                  placeholder="Search by name..."
-                  value={filters.search}
-                  onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                  className="p-2 border border-gray-300 rounded-lg"
-                />
-                <select value={filters.category} onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))} className="p-2 border border-gray-300 rounded-lg">
-                  <option value="all">All Categories</option>
-                  {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
-                </select>
-                <select value={filters.availability} onChange={(e) => setFilters(prev => ({ ...prev, availability: e.target.value }))} className="p-2 border border-gray-300 rounded-lg">
-                  <option value="all">All Statuses</option>
-                  <option value="available">Available</option>
-                  <option value="unavailable">Unavailable</option>
-                </select>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredFoodItems.map((item) => (
-                <motion.div
-                  key={item.id}
-                  className="bg-gray-50 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 flex flex-col"
-                  whileHover={{ y: -5 }}
-                >
-                  <div className="relative">
-                    <img
-                      src={item.images?.[0] ? getImageUrl(item.images[0].image_url) : 'https://placehold.co/400x300/e2e8f0/a0aec0?text=No+Image'}
-                      alt={item.name}
-                      className="h-48 w-full object-cover rounded-t-2xl"
-                    />
-                    <span className={`absolute top-2 right-2 px-3 py-1 text-xs font-semibold text-white rounded-full ${item.available ? "bg-green-500" : "bg-red-500"}`}>
-                      {item.available ? "Available" : "Unavailable"}
-                    </span>
-                  </div>
-                  <div className="p-5 flex flex-col flex-grow">
-                    <div className="flex justify-between items-start">
-                      <h4 className="font-bold text-lg text-gray-800">{item.name}</h4>
-                      <p className="text-indigo-600 font-bold text-xl">₹{item.price}</p>
-                    </div>
-                    <p className="text-sm text-gray-500 mb-2">{categories.find(c => c.id === item.category_id)?.name || 'Uncategorized'}</p>
-                    <p className="text-sm text-gray-600 flex-grow">{item.description}</p>
-                    <div className="mt-auto pt-4 border-t border-gray-200 flex flex-col gap-2">
-                      <div className="flex justify-between gap-2">
-                        <button onClick={() => handleEdit(item)} className="w-1/2 bg-blue-100 text-blue-700 text-sm font-semibold py-2 rounded-lg hover:bg-blue-200 transition">Edit</button>
-                        <button onClick={() => handleDelete(item.id)} className="w-1/2 bg-red-100 text-red-700 text-sm font-semibold py-2 rounded-lg hover:bg-red-200 transition">Delete</button>
-                      </div>
-                      <button onClick={() => toggleAvailability(item)} className="w-full bg-yellow-100 text-yellow-800 text-sm font-semibold py-2 rounded-lg hover:bg-yellow-200 transition">Toggle Status</button>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-              {filteredFoodItems.length === 0 && (
-                <p className="text-center text-gray-500 mt-4 col-span-full">No food items match the current filters.</p>
-              )}
+              <select value={filters.category} onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))} className="p-2 border border-gray-300 rounded-lg">
+                <option value="all">All Categories</option>
+                {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
+              </select>
+              <select value={filters.availability} onChange={(e) => setFilters(prev => ({ ...prev, availability: e.target.value }))} className="p-2 border border-gray-300 rounded-lg">
+                <option value="all">All Statuses</option>
+                <option value="available">Available</option>
+                <option value="unavailable">Unavailable</option>
+              </select>
             </div>
           </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredFoodItems.map((item) => (
+              <motion.div
+                key={item.id}
+                className="bg-gray-50 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 flex flex-col"
+                whileHover={{ y: -5 }}
+              >
+                <div className="relative">
+                  <img
+                    src={item.images?.[0] ? getImageUrl(item.images[0].image_url) : 'https://placehold.co/400x300/e2e8f0/a0aec0?text=No+Image'}
+                    alt={item.name}
+                    className="h-48 w-full object-cover rounded-t-2xl"
+                  />
+                  <span className={`absolute top-2 right-2 px-3 py-1 text-xs font-semibold text-white rounded-full ${item.available ? "bg-green-500" : "bg-red-500"}`}>
+                    {item.available ? "Available" : "Unavailable"}
+                  </span>
+                </div>
+                <div className="p-5 flex flex-col flex-grow">
+                  <div className="flex justify-between items-start">
+                    <h4 className="font-bold text-lg text-gray-800">{item.name}</h4>
+                    <p className="text-indigo-600 font-bold text-xl">₹{item.price}</p>
+                  </div>
+                  <p className="text-sm text-gray-500 mb-2">{categories.find(c => c.id === item.category_id)?.name || 'Uncategorized'}</p>
+                  <p className="text-sm text-gray-600 flex-grow">{item.description}</p>
+                  <div className="mt-auto pt-4 border-t border-gray-200 flex flex-col gap-2">
+                    <div className="flex justify-between gap-2">
+                      <button onClick={() => handleEdit(item)} className="w-1/2 bg-blue-100 text-blue-700 text-sm font-semibold py-2 rounded-lg hover:bg-blue-200 transition">Edit</button>
+                      <button onClick={() => handleDelete(item.id)} className="w-1/2 bg-red-100 text-red-700 text-sm font-semibold py-2 rounded-lg hover:bg-red-200 transition">Delete</button>
+                    </div>
+                    <button onClick={() => toggleAvailability(item)} className="w-full bg-yellow-100 text-yellow-800 text-sm font-semibold py-2 rounded-lg hover:bg-yellow-200 transition">Toggle Status</button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+            {filteredFoodItems.length === 0 && (
+              <p className="text-center text-gray-500 mt-4 col-span-full">No food items match the current filters.</p>
+            )}
+          </div>
         </div>
+
 
         {/* ====================================================== */}
         {/* Food Category Management Section */}
@@ -578,10 +489,136 @@ const FoodManagement = () => {
                 <p className="text-center text-gray-500 mt-4 col-span-full">No categories found.</p>
               )}
             </div>
+
+
           </div>
         </div>
       </div>
-    </DashboardLayout>
+      {/* Food Item Modal */}
+      < Modal
+        isOpen={isFoodItemModalOpen}
+        onClose={resetForm}
+        title={editingItemId ? "Edit Food Item" : "Add New Food Item"}
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+              <input
+                type="text"
+                placeholder="Food Item Name"
+                className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 transition duration-200"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <textarea
+                placeholder="Description"
+                className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 transition duration-200"
+                rows="3"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
+                <input
+                  type="number"
+                  placeholder="Price"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 transition duration-200"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <select
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 transition duration-200"
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  required
+                >
+                  <option value="">Select Category</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <label className="flex items-center gap-2 cursor-pointer bg-gray-50 p-3 rounded-xl border">
+              <input
+                type="checkbox"
+                className="form-checkbox h-5 w-5 text-indigo-600 rounded"
+                checked={available}
+                onChange={() => setAvailable(!available)}
+              />
+              <span className="text-gray-700 font-medium">Available for Order</span>
+            </label>
+          </div>
+
+          {/* Image Upload for Modal */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Upload Images</label>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleImageChange}
+              className="w-full border border-gray-300 rounded-xl px-4 py-2 bg-gray-50"
+            />
+            {imagePreviews.length > 0 && (
+              <div className="grid grid-cols-4 gap-2 mt-4">
+                {imagePreviews.map((src, index) => (
+                  <div key={index} className="relative group aspect-square">
+                    <img
+                      src={src}
+                      alt={`Preview ${index}`}
+                      className="w-full h-full object-cover rounded-lg border border-gray-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(index)}
+                      className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition duration-200 shadow-sm"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-3 pt-4 border-t mt-4">
+            <button
+              type="button"
+              onClick={resetForm}
+              className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="flex-1 px-4 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transform transition"
+            >
+              {editingItemId ? "Update Item" : "Create Item"}
+            </button>
+          </div>
+        </form>
+      </Modal >
+
+    </DashboardLayout >
   );
 };
 

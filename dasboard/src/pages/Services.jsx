@@ -16,6 +16,8 @@ const Card = ({ title, className = "", children }) => (
   </div>
 );
 
+import Modal from "../components/Modal";
+
 const COLORS = ["#4F46E5", "#6366F1", "#A78BFA", "#F472B6"];
 
 const Services = () => {
@@ -23,6 +25,8 @@ const Services = () => {
   const [assignedServices, setAssignedServices] = useState([]);
   const [form, setForm] = useState({ name: "", description: "", charges: "" });
   const [editingService, setEditingService] = useState(null); // New state for editing
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [selectedImages, setSelectedImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [assignForm, setAssignForm] = useState({
@@ -259,6 +263,7 @@ const Services = () => {
       setSelectedImages([]);
       setImagePreviews([]);
       setEditingService(null); // Reset editing state
+      setIsCreateModalOpen(false); // Close modal
       fetchAll();
       setTimeout(() => setCreateSuccess(""), 3000);
     } catch (err) {
@@ -278,7 +283,7 @@ const Services = () => {
     });
     // Optionally populate image previews if needed, but for now we start fresh for uploads
     // Or show existing images separately
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to form
+    setIsCreateModalOpen(true); // Open modal
   };
 
   // Handle Delete Click
@@ -299,6 +304,15 @@ const Services = () => {
     setForm({ name: "", description: "", charges: "" });
     setSelectedImages([]);
     setImagePreviews([]);
+    setIsCreateModalOpen(false);
+  };
+
+  const openCreateModal = () => {
+    setEditingService(null);
+    setForm({ name: "", description: "", charges: "" });
+    setSelectedImages([]);
+    setImagePreviews([]);
+    setIsCreateModalOpen(true);
   };
 
   // Assign service
@@ -318,6 +332,7 @@ const Services = () => {
       setAssignForm({ service_id: "", employee_id: "", room_id: "", status: "pending" });
       fetchAll();
       setAssignSuccess("Service assigned successfully! ✅");
+      setIsAssignModalOpen(false); // Close modal
       setTimeout(() => setAssignSuccess(""), 3000);
     } catch (err) {
       console.error("Failed to assign service", err);
@@ -395,140 +410,20 @@ const Services = () => {
         </div>
 
         {/* Create & Assign Forms */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Create Service */}
-          {/* Create/Edit Service */}
-          <Card title={editingService ? "Edit Service" : "Create New Service"}>
-            {createSuccess && (
-              <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4 text-center">
-                <span className="block sm:inline">{createSuccess}</span>
-              </div>
-            )}
-            {createError && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 text-center">
-                <span className="block sm:inline">{createError}</span>
-              </div>
-            )}
-            <div className="space-y-3">
-              <input
-                type="text"
-                placeholder="Service Name"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-indigo-400"
-              />
-              <input
-                type="text"
-                placeholder="Description"
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-indigo-400"
-              />
-              <input
-                type="number"
-                placeholder="Charges"
-                value={form.charges}
-                onChange={(e) => setForm({ ...form, charges: e.target.value })}
-                className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-indigo-400"
-              />
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Service Images</label>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-indigo-400"
-                />
-                {imagePreviews.length > 0 && (
-                  <div className="grid grid-cols-4 gap-2 mt-2">
-                    {imagePreviews.map((preview, idx) => (
-                      <img key={idx} src={preview} alt={`Preview ${idx + 1}`} className="w-full h-20 object-cover rounded border" />
-                    ))}
-                  </div>
-                )}
-              </div>
-              <button
-                onClick={handleSubmit}
-                className={`w-full mt-3 text-white p-3 rounded-lg shadow-lg font-semibold ${editingService ? "bg-yellow-600 hover:bg-yellow-700" : "bg-indigo-600 hover:bg-indigo-700"}`}
-              >
-                {editingService ? "Update Service" : "Create Service"}
-              </button>
-              {editingService && (
-                <button
-                  onClick={handleCancelEdit}
-                  className="w-full mt-2 bg-gray-500 hover:bg-gray-600 text-white p-3 rounded-lg shadow-lg font-semibold"
-                >
-                  Cancel Edit
-                </button>
-              )}
-            </div>
-          </Card>
-
-          {/* Assign Service */}
-          <Card title="Assign Service">
-            {assignSuccess && (
-              <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4 text-center">
-                <span className="block sm:inline">{assignSuccess}</span>
-              </div>
-            )}
-            {assignError && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 text-center">
-                <span className="block sm:inline">{assignError}</span>
-              </div>
-            )}
-            <div className="space-y-3">
-              <select
-                value={assignForm.service_id}
-                onChange={(e) => setAssignForm({ ...assignForm, service_id: e.target.value })}
-                className="w-full border p-3 rounded-lg"
-              >
-                <option value="">Select Service</option>
-                {services.map((s) => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
-              <select
-                value={assignForm.employee_id}
-                onChange={(e) => setAssignForm({ ...assignForm, employee_id: e.target.value })}
-                className="w-full border p-3 rounded-lg"
-              >
-                <option value="">Select Employee</option>
-                {employees.map((e) => (
-                  <option key={e.id} value={e.id}>{e.name}</option>
-                ))}
-              </select>
-              <select
-                value={assignForm.room_id}
-                onChange={(e) => setAssignForm({ ...assignForm, room_id: e.target.value })}
-                className="w-full border p-3 rounded-lg"
-              >
-                <option value="">Select Room</option>
-                {rooms.length === 0 ? (
-                  <option value="" disabled>No checked-in rooms available</option>
-                ) : (
-                  rooms.map((r) => (
-                    <option key={r.id} value={r.id}>Room {r.number}</option>
-                  ))
-                )}
-              </select>
-              <select
-                value={assignForm.status}
-                onChange={(e) => setAssignForm({ ...assignForm, status: e.target.value })}
-                className="w-full border p-3 rounded-lg"
-              >
-                <option value="pending">Pending</option>
-                <option value="in_progress">In Progress</option>
-                <option value="completed">Completed</option>
-              </select>
-              <button
-                onClick={handleAssign}
-                className="w-full mt-3 bg-green-600 hover:bg-green-700 text-white p-3 rounded-lg shadow-lg font-semibold"
-              >
-                Assign Service
-              </button>
-            </div>
-          </Card>
+        {/* Create & Assign Buttons */}
+        <div className="flex flex-col md:flex-row gap-4">
+          <button
+            onClick={openCreateModal}
+            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-xl shadow-lg font-bold text-lg transition-transform transform hover:-translate-y-1 flex items-center justify-center gap-2"
+          >
+            ➕ Create New Service
+          </button>
+          <button
+            onClick={() => setIsAssignModalOpen(true)}
+            className="flex-1 bg-green-600 hover:bg-green-700 text-white p-4 rounded-xl shadow-lg font-bold text-lg transition-transform transform hover:-translate-y-1 flex items-center justify-center gap-2"
+          >
+            📋 Assign Service
+          </button>
         </div>
 
         {/* Charts */}
@@ -695,6 +590,169 @@ const Services = () => {
           )}
         </Card>
       </div>
+
+      {/* Modal for Create/Edit Service */}
+      <Modal
+        isOpen={isCreateModalOpen}
+        title={editingService ? "Edit Service" : "Create New Service"}
+        onClose={handleCancelEdit}
+      >
+        {createSuccess && (
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4 text-center">
+            <span className="block sm:inline">{createSuccess}</span>
+          </div>
+        )}
+        {createError && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 text-center">
+            <span className="block sm:inline">{createError}</span>
+          </div>
+        )}
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Service Name</label>
+            <input
+              type="text"
+              placeholder="e.g. Spa Treatment"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-colors"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea
+              placeholder="Describe the service details..."
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-colors rows-3"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Charges ($)</label>
+            <input
+              type="number"
+              placeholder="0.00"
+              value={form.charges}
+              onChange={(e) => setForm({ ...form, charges: e.target.value })}
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-colors"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Service Images</label>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 transition-colors cursor-pointer relative">
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleImageChange}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+              <div className="text-gray-500">
+                <p className="text-sm font-medium">Click to upload or drag and drop</p>
+                <p className="text-xs mt-1">PNG, JPG, GIF max 5MB</p>
+              </div>
+            </div>
+            {imagePreviews.length > 0 && (
+              <div className="grid grid-cols-4 gap-2 mt-4">
+                {imagePreviews.map((preview, idx) => (
+                  <div key={idx} className="relative group">
+                    <img src={preview} alt={`Preview ${idx + 1}`} className="w-full h-20 object-cover rounded-lg border shadow-sm" />
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity rounded-lg" />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <button
+            onClick={handleSubmit}
+            className={`w-full mt-4 text-white p-3 rounded-lg shadow-md font-semibold transition-transform transform active:scale-95 ${editingService ? "bg-yellow-600 hover:bg-yellow-700" : "bg-indigo-600 hover:bg-indigo-700"}`}
+          >
+            {editingService ? "Update Service" : "Create Service"}
+          </button>
+        </div>
+      </Modal>
+
+      {/* Modal for Assign Service */}
+      <Modal
+        isOpen={isAssignModalOpen}
+        title="Assign Service"
+        onClose={() => setIsAssignModalOpen(false)}
+      >
+        {assignSuccess && (
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4 text-center">
+            <span className="block sm:inline">{assignSuccess}</span>
+          </div>
+        )}
+        {assignError && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 text-center">
+            <span className="block sm:inline">{assignError}</span>
+          </div>
+        )}
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Service</label>
+            <select
+              value={assignForm.service_id}
+              onChange={(e) => setAssignForm({ ...assignForm, service_id: e.target.value })}
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-green-400 transition-colors"
+            >
+              <option value="">Select Service</option>
+              {services.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Employee</label>
+            <select
+              value={assignForm.employee_id}
+              onChange={(e) => setAssignForm({ ...assignForm, employee_id: e.target.value })}
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-green-400 transition-colors"
+            >
+              <option value="">Select Employee</option>
+              {employees.map((e) => (
+                <option key={e.id} value={e.id}>{e.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Room</label>
+            <select
+              value={assignForm.room_id}
+              onChange={(e) => setAssignForm({ ...assignForm, room_id: e.target.value })}
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-green-400 transition-colors"
+            >
+              <option value="">Select Room</option>
+              {rooms.length === 0 ? (
+                <option value="" disabled>No checked-in rooms available</option>
+              ) : (
+                rooms.map((r) => (
+                  <option key={r.id} value={r.id}>Room {r.number}</option>
+                ))
+              )}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Initial Status</label>
+            <select
+              value={assignForm.status}
+              onChange={(e) => setAssignForm({ ...assignForm, status: e.target.value })}
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-green-400 transition-colors"
+            >
+              <option value="pending">Pending</option>
+              <option value="in_progress">In Progress</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+          <button
+            onClick={handleAssign}
+            className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white p-3 rounded-lg shadow-md font-semibold transition-transform transform active:scale-95"
+          >
+            Assign Service
+          </button>
+        </div>
+      </Modal>
+
     </DashboardLayout>
   );
 };

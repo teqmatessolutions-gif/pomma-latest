@@ -11,6 +11,7 @@ import Select from "react-select";
 import { countryCodes } from "../utils/countryCodes";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import BannerMessage from "../components/BannerMessage";
+import Modal from "../components/Modal";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -469,6 +470,8 @@ const Bookings = () => {
   const [roomMobileNumber, setRoomMobileNumber] = useState("");
   const [packageCountryCode, setPackageCountryCode] = useState(countryCodes.find(c => c.value === "+91"));
   const [packageMobileNumber, setPackageMobileNumber] = useState("");
+  const [isRoomBookingModalOpen, setIsRoomBookingModalOpen] = useState(false);
+  const [isPackageBookingModalOpen, setIsPackageBookingModalOpen] = useState(false);
 
   const handleRoomMobileChange = (e) => {
     const val = e.target.value.replace(/\D/g, '');
@@ -1067,6 +1070,7 @@ const Bookings = () => {
       setPackageBookingForm({ package_id: "", guest_name: "", guest_email: "", guest_mobile: "+91", check_in: "", check_out: "", adults: 2, children: 0, room_ids: [] });
       setPackageCountryCode(countryCodes.find(c => c.value === "+91"));
       setPackageMobileNumber("");
+      setIsPackageBookingModalOpen(false); // Close modal
 
       // Add the new package booking to the state - use response data as-is from backend
       const newPackageBooking = {
@@ -1453,6 +1457,7 @@ const Bookings = () => {
       });
       setRoomCountryCode(countryCodes.find(c => c.value === "+91"));
       setRoomMobileNumber("");
+      setIsRoomBookingModalOpen(false); // Close modal
       // Add the new booking to the state - use response data as-is from backend
       const newBooking = {
         ...response.data,
@@ -1785,366 +1790,37 @@ const Bookings = () => {
         </div>
 
         {/* Booking Form & Chart Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <motion.div
-            className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg flex flex-col"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+        {/* Action Buttons for Booking & Package */}
+        <div className="flex flex-col sm:flex-row gap-6 mb-8">
+          <button
+            onClick={() => setIsRoomBookingModalOpen(true)}
+            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-6 px-8 rounded-2xl shadow-xl transition-all transform hover:-translate-y-1 flex items-center justify-center gap-4 group"
           >
-            <h2 className="text-2xl font-bold mb-6 text-gray-700">Create Room Booking</h2>
+            <div className="bg-white/20 p-3 rounded-full group-hover:scale-110 transition-transform">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div className="text-left">
+              <span className="block text-2xl">Create Room Booking</span>
+              <span className="text-indigo-200 text-sm font-normal">Book rooms for guests</span>
+            </div>
+          </button>
 
-            {feedback.message && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`mb-4 p-4 rounded-lg text-sm font-semibold ${feedback.type === "success"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-red-100 text-red-800"
-                  }`}
-              >
-                {feedback.message}
-              </motion.div>
-            )}
-            <form onSubmit={handleSubmit} className="flex flex-col h-full">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 flex-grow">
-                <div className="flex flex-col">
-                  <label className="text-sm font-medium text-gray-700 mb-1">Guest Name</label>
-                  <input
-                    type="text" name="guestName" value={formData.guestName}
-                    onChange={handleChange} placeholder="Enter guest's full name"
-                    className="w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500"
-                    required
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <label className="text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
-                  <div className="flex">
-                    <div className="w-40 mr-2">
-                      <Select
-                        options={countryCodes}
-                        value={roomCountryCode}
-                        onChange={handleRoomCountryChange}
-                        className="text-sm"
-                        styles={{
-                          control: (base) => ({ ...base, minHeight: '42px', borderRadius: '0.5rem', borderColor: '#d1d5db' })
-                        }}
-                      />
-                    </div>
-                    <input
-                      type="text"
-                      value={roomMobileNumber}
-                      onChange={handleRoomMobileChange}
-                      placeholder="Enter Mobile Number"
-                      className={`flex-1 border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500 ${phoneError ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : ''}`}
-                      required
-                    />
-                  </div>
-                  {phoneError && <p className="text-xs text-red-500 mt-1">{phoneError}</p>}
-                </div>
-                <div className="flex flex-col md:col-span-2">
-                  <label className="text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <input
-                    type="email" name="guestEmail" value={formData.guestEmail}
-                    onChange={handleChange} placeholder="email@example.com"
-                    className={`w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500 ${emailError ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : ''}`}
-                    required
-                  />
-                  {emailError && <p className="text-xs text-red-500 mt-1">{emailError}</p>}
-                </div>
-
-                <div className="flex flex-col">
-                  <label className="text-sm font-medium text-gray-700 mb-1">Check-in Date</label>
-                  <input
-                    type="date" name="checkIn" value={formData.checkIn}
-                    onChange={handleChange} min={today}
-                    className="w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500"
-                    required
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <label className="text-sm font-medium text-gray-700 mb-1">Check-out Date</label>
-                  <input
-                    type="date" name="checkOut" value={formData.checkOut}
-                    onChange={handleChange} min={formData.checkIn || today}
-                    className="w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500"
-                    required
-                  />
-                </div>
-
-                <div className="flex flex-col">
-                  <label className="text-sm font-medium text-gray-700 mb-1">Room Type</label>
-                  <select
-                    name="roomTypes" value={formData.roomTypes[0] || ""}
-                    onChange={handleRoomTypeChange}
-                    className="w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500"
-                    required
-                  >
-                    <option value="">Select Room Type</option>
-                    {roomTypes.map((type, idx) => (
-                      <option key={idx} value={type}>{type}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex flex-col">
-                  <label className="text-sm font-medium text-gray-700 mb-1">Number of Adults</label>
-                  <input
-                    type="number" name="adults" value={formData.adults}
-                    onChange={handleChange}
-                    className="w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500"
-                    min="1"
-                    required
-                  />
-                </div>
-
-                <div className="flex flex-col">
-                  <label className="text-sm font-medium text-gray-700 mb-1">Number of Children</label>
-                  <input
-                    type="number" name="children" value={formData.children}
-                    onChange={handleChange}
-                    className="w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500"
-                    min="0"
-                    required
-                  />
-                </div>
-
-                <div className="flex flex-col md:col-span-2">
-                  <label className="text-sm font-medium text-gray-700 mb-1">
-                    Available Rooms for Selected Dates
-                    {formData.checkIn && formData.checkOut && (
-                      <span className="text-xs text-gray-500 ml-2">
-                        ({formData.checkIn} to {formData.checkOut})
-                      </span>
-                    )}
-                  </label>
-                  <AnimatePresence mode="wait">
-                    {formData.roomTypes.length > 0 && (
-                      <motion.div
-                        key={formData.roomTypes[0]}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <RoomSelection
-                          rooms={filteredRooms}
-                          selectedRoomNumbers={formData.roomNumbers}
-                          onRoomToggle={handleRoomNumberToggle}
-                        />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                  {!formData.checkIn || !formData.checkOut ? (
-                    <div className="text-center py-8 text-gray-500 text-sm border-2 border-dashed border-gray-200 rounded-xl h-32 flex flex-col items-center justify-center">
-                      <p>Please select check-in and check-out dates first</p>
-                      <p className="text-xs mt-1">Available rooms will be shown here</p>
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                className="mt-6 w-full bg-indigo-600 text-white font-semibold py-3 rounded-lg hover:bg-indigo-700 transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                disabled={isSubmitting || isLoading}
-              >
-                {isSubmitting ? "Creating..." : "Create Booking"}
-              </button>
-            </form>
-          </motion.div>
-
-          {/* Package Booking Form */}
-          <motion.div
-            className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg flex flex-col"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
+          <button
+            onClick={() => setIsPackageBookingModalOpen(true)}
+            className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-6 px-8 rounded-2xl shadow-xl transition-all transform hover:-translate-y-1 flex items-center justify-center gap-4 group"
           >
-            <h2 className="text-2xl font-bold mb-6 text-gray-700">Book a Package</h2>
-            <form onSubmit={handlePackageBookingSubmit} className="flex flex-col h-full">
-              <div className="space-y-4 flex-grow">
-                <select name="package_id" value={packageBookingForm.package_id} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required>
-                  <option value="">Select Package</option>
-                  {packages.filter(p => {
-                    const status = (p.status || '').toLowerCase();
-                    return status !== 'disabled' && status !== 'coming soon' && status !== 'comming soon';
-                  }).map(p => {
-                    const bookingTypeLabel = p.booking_type === 'whole_property' ? ' (Whole Property)' : p.booking_type === 'room_type' ? ' (Selected Rooms)' : '';
-                    return <option key={p.id} value={p.id}>{p.title}{bookingTypeLabel} - {formatCurrency(p.price)}</option>;
-                  })}
-                </select>
-                <input name="guest_name" placeholder="Guest Name" value={packageBookingForm.guest_name} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
-                <div>
-                  <input type="email" name="guest_email" placeholder="Guest Email" value={packageBookingForm.guest_email} onChange={handlePackageBookingChange} className={`w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all ${packageEmailError ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : ''}`} />
-                  {packageEmailError && <p className="text-xs text-red-500 mt-1">{packageEmailError}</p>}
-                </div>
-                <div>
-                  <div className="flex">
-                    <div className="w-40 mr-2">
-                      <Select
-                        options={countryCodes}
-                        value={packageCountryCode}
-                        onChange={handlePackageCountryChange}
-                        className="text-sm"
-                        styles={{
-                          control: (base) => ({ ...base, minHeight: '42px', borderRadius: '0.5rem', borderColor: '#d1d5db' })
-                        }}
-                      />
-                    </div>
-                    <input
-                      value={packageMobileNumber}
-                      onChange={handlePackageMobileChange}
-                      placeholder="Guest Mobile"
-                      className={`flex-1 p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-indigo-200 transition-all ${packagePhoneError ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : ''}`}
-                      required
-                    />
-                  </div>
-                  {packagePhoneError && <p className="text-xs text-red-500 mt-1">{packagePhoneError}</p>}
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <input type="date" name="check_in" value={packageBookingForm.check_in} min={today} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
-                  <input type="date" name="check_out" value={packageBookingForm.check_out} min={packageBookingForm.check_in || today} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <input type="number" name="adults" min={1} placeholder="Adults" value={packageBookingForm.adults} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
-                  <input type="number" name="children" min={0} placeholder="Children" value={packageBookingForm.children} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" />
-                </div>
-                {/* Room Selection - Only show for room_type packages */}
-                {(() => {
-                  const selectedPackage = packages.find(p => p.id === parseInt(packageBookingForm.package_id));
-
-                  if (!selectedPackage) {
-                    return null;
-                  }
-
-                  // Determine if it's whole_property:
-                  // 1. If booking_type is explicitly 'whole_property'
-                  // 2. If booking_type is not set AND room_types is not set (legacy packages without booking_type)
-                  const hasRoomTypes = selectedPackage.room_types && selectedPackage.room_types.trim().length > 0;
-                  const isWholeProperty = selectedPackage.booking_type === 'whole_property' ||
-                    selectedPackage.booking_type === 'whole property' ||
-                    (!selectedPackage.booking_type && !hasRoomTypes);
-
-                  // Hide room selection completely for whole_property
-                  if (isWholeProperty) {
-                    if (isWholePropertyBlocked) {
-                      return (
-                        <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4">
-                          <p className="text-sm font-semibold text-red-800">Property Unavailable</p>
-                          <p className="text-xs text-red-600 mt-1">
-                            The whole property cannot be booked because some rooms are already occupied or unavailable for the selected dates.
-                          </p>
-                        </div>
-                      );
-                    }
-                    return (
-                      <div className="bg-indigo-50 border-2 border-indigo-300 rounded-lg p-4">
-                        <p className="text-sm font-semibold text-indigo-800">Whole Property Package</p>
-                        <p className="text-xs text-indigo-600 mt-1">
-                          All available rooms ({packageRooms.length} room{packageRooms.length !== 1 ? 's' : ''}) will be booked automatically for the selected dates.
-                        </p>
-                      </div>
-                    );
-                  }
-
-                  // Show room selection for room_type packages
-                  // If booking_type is explicitly 'room_type', always show room selection
-                  // If booking_type is not set but has room_types, treat as room_type
-                  const isRoomType = selectedPackage.booking_type === 'room_type' ||
-                    (selectedPackage.booking_type !== 'whole_property' && hasRoomTypes);
-
-                  // If it's not whole_property and not clearly room_type, default to showing room selection
-                  // (for backward compatibility with packages that don't have booking_type set)
-                  if (!isWholeProperty && !isRoomType && !selectedPackage.booking_type) {
-                    // Legacy package without booking_type - show room selection by default
-                    return (
-                      <div>
-                        <label className="block text-gray-600 font-medium mb-2">
-                          Select Rooms for Package
-                          {packageBookingForm.check_in && packageBookingForm.check_out && (
-                            <span className="text-xs text-gray-500 ml-2">
-                              ({packageBookingForm.check_in} to {packageBookingForm.check_out})
-                            </span>
-                          )}
-                        </label>
-                        {!packageBookingForm.check_in || !packageBookingForm.check_out ? (
-                          <div className="text-center py-8 text-gray-500 text-sm bg-gray-50 rounded-lg border">
-                            <p>Please select check-in and check-out dates first</p>
-                            <p className="text-xs mt-1">Available rooms will be shown here</p>
-                          </div>
-                        ) : (
-                          <RoomSelection
-                            rooms={packageRooms}
-                            selectedRoomNumbers={packageRooms.filter(r => packageBookingForm.room_ids.includes(r.id)).map(r => r.number)}
-                            onRoomToggle={(roomNumber) => {
-                              const room = packageRooms.find(r => r.number === roomNumber);
-                              if (room) handlePackageRoomSelect(room.id);
-                            }}
-                          />
-                        )}
-                      </div>
-                    );
-                  }
-
-                  // Show room selection for room_type packages
-                  if (!isRoomType) {
-                    return null; // Don't show room selection if package type is unclear
-                  }
-
-                  return (
-                    <div>
-                      <label className="block text-gray-600 font-medium mb-2">
-                        Select Rooms for Package
-                        {selectedPackage.room_types && (
-                          <span className="text-xs text-indigo-600 ml-2">
-                            (Filtered by: {selectedPackage.room_types})
-                          </span>
-                        )}
-                        {packageBookingForm.check_in && packageBookingForm.check_out && (
-                          <span className="text-xs text-gray-500 ml-2">
-                            ({packageBookingForm.check_in} to {packageBookingForm.check_out})
-                          </span>
-                        )}
-                      </label>
-                      {!packageBookingForm.check_in || !packageBookingForm.check_out ? (
-                        <div className="text-center py-8 text-gray-500 text-sm bg-gray-50 rounded-lg border">
-                          <p>Please select check-in and check-out dates first</p>
-                          <p className="text-xs mt-1">Available rooms will be shown here</p>
-                        </div>
-                      ) : (
-                        <RoomSelection
-                          rooms={(() => {
-                            let roomsToShow = packageRooms;
-                            if (selectedPackage.booking_type === 'room_type' && selectedPackage.room_types) {
-                              const allowedRoomTypes = selectedPackage.room_types.split(',').map(t => t.trim().toLowerCase());
-                              roomsToShow = packageRooms.filter(room => {
-                                const roomType = room.type ? room.type.trim().toLowerCase() : '';
-                                return allowedRoomTypes.includes(roomType);
-                              });
-                            }
-                            return roomsToShow;
-                          })()}
-                          selectedRoomNumbers={packageRooms.filter(r => packageBookingForm.room_ids.includes(r.id)).map(r => r.number)}
-                          onRoomToggle={(roomNumber) => {
-                            const room = packageRooms.find(r => r.number === roomNumber);
-                            if (room) handlePackageRoomSelect(room.id);
-                          }}
-                        />
-                      )}
-                    </div>
-                  );
-                })()}
-              </div>
-              <button
-                type="submit"
-                className={`mt-auto w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-lg shadow-md transition-transform transform hover:-translate-y-1 disabled:bg-gray-400 disabled:cursor-not-allowed ${isWholePropertyBlocked ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={isSubmitting || isLoading || isWholePropertyBlocked}
-              >
-                {isSubmitting ? "Booking..." : "Book Package ✅"}
-              </button>
-            </form>
-          </motion.div>
+            <div className="bg-white/20 p-3 rounded-full group-hover:scale-110 transition-transform">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+            </div>
+            <div className="text-left">
+              <span className="block text-2xl">Book a Package</span>
+              <span className="text-indigo-200 text-sm font-normal">Special offers & events</span>
+            </div>
+          </button>
         </div>
 
         {/* Bookings Table */}
@@ -2458,6 +2134,364 @@ const Bookings = () => {
           />
         )}
       </AnimatePresence>
+
+      {/* Modal for Create Room Booking */}
+      <Modal
+        isOpen={isRoomBookingModalOpen}
+        title="Create New Room Booking"
+        onClose={() => setIsRoomBookingModalOpen(false)}
+      >
+        {feedback.message && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`mb-4 p-4 rounded-lg text-sm font-semibold ${feedback.type === "success"
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-800"
+              }`}
+          >
+            {feedback.message}
+          </motion.div>
+        )}
+        <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-gray-700 mb-1">Guest Name</label>
+              <input
+                type="text" name="guestName" value={formData.guestName}
+                onChange={handleChange} placeholder="Enter guest's full name"
+                className="w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500"
+                required
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+              <div className="flex">
+                <div className="w-40 mr-2">
+                  <Select
+                    options={countryCodes}
+                    value={roomCountryCode}
+                    onChange={handleRoomCountryChange}
+                    className="text-sm"
+                    styles={{
+                      control: (base) => ({ ...base, minHeight: '42px', borderRadius: '0.5rem', borderColor: '#d1d5db' })
+                    }}
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={roomMobileNumber}
+                  onChange={handleRoomMobileChange}
+                  placeholder="Enter Mobile Number"
+                  className={`flex-1 border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500 ${phoneError ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : ''}`}
+                  required
+                />
+              </div>
+              {phoneError && <p className="text-xs text-red-500 mt-1">{phoneError}</p>}
+            </div>
+            <div className="flex flex-col md:col-span-2">
+              <label className="text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input
+                type="email" name="guestEmail" value={formData.guestEmail}
+                onChange={handleChange} placeholder="email@example.com"
+                className={`w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500 ${emailError ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : ''}`}
+                required
+              />
+              {emailError && <p className="text-xs text-red-500 mt-1">{emailError}</p>}
+            </div>
+
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-gray-700 mb-1">Check-in Date</label>
+              <input
+                type="date" name="checkIn" value={formData.checkIn}
+                onChange={handleChange} min={today}
+                className="w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500"
+                required
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-gray-700 mb-1">Check-out Date</label>
+              <input
+                type="date" name="checkOut" value={formData.checkOut}
+                onChange={handleChange} min={formData.checkIn || today}
+                className="w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-gray-700 mb-1">Room type</label>
+              <select
+                name="roomTypes" value={formData.roomTypes[0] || ""}
+                onChange={handleRoomTypeChange}
+                className="w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500"
+                required
+              >
+                <option value="">Select Room Type</option>
+                {roomTypes.map((type, idx) => (
+                  <option key={idx} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-gray-700 mb-1">Number of Adults</label>
+              <input
+                type="number" name="adults" value={formData.adults}
+                onChange={handleChange}
+                className="w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500"
+                min="1"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-gray-700 mb-1">Number of Children</label>
+              <input
+                type="number" name="children" value={formData.children}
+                onChange={handleChange}
+                className="w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500"
+                min="0"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col md:col-span-2">
+              <label className="text-sm font-medium text-gray-700 mb-1">
+                Available Rooms for Selected Dates
+                {formData.checkIn && formData.checkOut && (
+                  <span className="text-xs text-gray-500 ml-2">
+                    ({formData.checkIn} to {formData.checkOut})
+                  </span>
+                )}
+              </label>
+              <AnimatePresence mode="wait">
+                {formData.roomTypes.length > 0 && (
+                  <motion.div
+                    key={formData.roomTypes[0]}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <RoomSelection
+                      rooms={filteredRooms}
+                      selectedRoomNumbers={formData.roomNumbers}
+                      onRoomToggle={handleRoomNumberToggle}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              {!formData.checkIn || !formData.checkOut ? (
+                <div className="text-center py-8 text-gray-500 text-sm border-2 border-dashed border-gray-200 rounded-xl h-32 flex flex-col items-center justify-center">
+                  <p>Please select check-in and check-out dates first</p>
+                  <p className="text-xs mt-1">Available rooms will be shown here</p>
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="mt-6 w-full bg-indigo-600 text-white font-semibold py-3 rounded-lg hover:bg-indigo-700 transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            disabled={isSubmitting || isLoading}
+          >
+            {isSubmitting ? "Creating..." : "Create Booking"}
+          </button>
+        </form>
+      </Modal>
+
+      {/* Modal for Book a Package */}
+      <Modal
+        isOpen={isPackageBookingModalOpen}
+        title="Book a Package"
+        onClose={() => setIsPackageBookingModalOpen(false)}
+      >
+        <form onSubmit={handlePackageBookingSubmit} className="flex flex-col space-y-4">
+          <div className="space-y-4 flex-grow">
+            <select name="package_id" value={packageBookingForm.package_id} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required>
+              <option value="">Select Package</option>
+              {packages.filter(p => {
+                const status = (p.status || '').toLowerCase();
+                return status !== 'disabled' && status !== 'coming soon' && status !== 'comming soon';
+              }).map(p => {
+                const bookingTypeLabel = p.booking_type === 'whole_property' ? ' (Whole Property)' : p.booking_type === 'room_type' ? ' (Selected Rooms)' : '';
+                return <option key={p.id} value={p.id}>{p.title}{bookingTypeLabel} - {formatCurrency(p.price)}</option>;
+              })}
+            </select>
+            <input name="guest_name" placeholder="Guest Name" value={packageBookingForm.guest_name} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
+            <div>
+              <input type="email" name="guest_email" placeholder="Guest Email" value={packageBookingForm.guest_email} onChange={handlePackageBookingChange} className={`w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all ${packageEmailError ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : ''}`} />
+              {packageEmailError && <p className="text-xs text-red-500 mt-1">{packageEmailError}</p>}
+            </div>
+            <div>
+              <div className="flex">
+                <div className="w-40 mr-2">
+                  <Select
+                    options={countryCodes}
+                    value={packageCountryCode}
+                    onChange={handlePackageCountryChange}
+                    className="text-sm"
+                    styles={{
+                      control: (base) => ({ ...base, minHeight: '42px', borderRadius: '0.5rem', borderColor: '#d1d5db' })
+                    }}
+                  />
+                </div>
+                <input
+                  value={packageMobileNumber}
+                  onChange={handlePackageMobileChange}
+                  placeholder="Guest Mobile"
+                  className={`flex-1 p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-indigo-200 transition-all ${packagePhoneError ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : ''}`}
+                  required
+                />
+              </div>
+              {packagePhoneError && <p className="text-xs text-red-500 mt-1">{packagePhoneError}</p>}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <input type="date" name="check_in" value={packageBookingForm.check_in} min={today} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
+              <input type="date" name="check_out" value={packageBookingForm.check_out} min={packageBookingForm.check_in || today} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <input type="number" name="adults" min={1} placeholder="Adults" value={packageBookingForm.adults} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
+              <input type="number" name="children" min={0} placeholder="Children" value={packageBookingForm.children} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" />
+            </div>
+            {/* Room Selection - Only show for room_type packages */}
+            {(() => {
+              const selectedPackage = packages.find(p => p.id === parseInt(packageBookingForm.package_id));
+
+              if (!selectedPackage) {
+                return null;
+              }
+
+              // Determine if it's whole_property:
+              // 1. If booking_type is explicitly 'whole_property'
+              // 2. If booking_type is not set AND room_types is not set (legacy packages without booking_type)
+              const hasRoomTypes = selectedPackage.room_types && selectedPackage.room_types.trim().length > 0;
+              const isWholeProperty = selectedPackage.booking_type === 'whole_property' ||
+                selectedPackage.booking_type === 'whole property' ||
+                (!selectedPackage.booking_type && !hasRoomTypes);
+
+              // Hide room selection completely for whole_property
+              if (isWholeProperty) {
+                if (isWholePropertyBlocked) {
+                  return (
+                    <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4">
+                      <p className="text-sm font-semibold text-red-800">Property Unavailable</p>
+                      <p className="text-xs text-red-600 mt-1">
+                        The whole property cannot be booked because some rooms are already occupied or unavailable for the selected dates.
+                      </p>
+                    </div>
+                  );
+                }
+                return (
+                  <div className="bg-indigo-50 border-2 border-indigo-300 rounded-lg p-4">
+                    <p className="text-sm font-semibold text-indigo-800">Whole Property Package</p>
+                    <p className="text-xs text-indigo-600 mt-1">
+                      All available rooms ({packageRooms.length} room{packageRooms.length !== 1 ? 's' : ''}) will be booked automatically for the selected dates.
+                    </p>
+                  </div>
+                );
+              }
+
+              // Show room selection for room_type packages
+              // If booking_type is explicitly 'room_type', always show room selection
+              // If booking_type is not set but has room_types, treat as room_type
+              const isRoomType = selectedPackage.booking_type === 'room_type' ||
+                (selectedPackage.booking_type !== 'whole_property' && hasRoomTypes);
+
+              // If it's not whole_property and not clearly room_type, default to showing room selection
+              // (for backward compatibility with packages that don't have booking_type set)
+              if (!isWholeProperty && !isRoomType && !selectedPackage.booking_type) {
+                // Legacy package without booking_type - show room selection by default
+                return (
+                  <div>
+                    <label className="block text-gray-600 font-medium mb-2">
+                      Select Rooms for Package
+                      {packageBookingForm.check_in && packageBookingForm.check_out && (
+                        <span className="text-xs text-gray-500 ml-2">
+                          ({packageBookingForm.check_in} to {packageBookingForm.check_out})
+                        </span>
+                      )}
+                    </label>
+                    {!packageBookingForm.check_in || !packageBookingForm.check_out ? (
+                      <div className="text-center py-8 text-gray-500 text-sm bg-gray-50 rounded-lg border">
+                        <p>Please select check-in and check-out dates first</p>
+                        <p className="text-xs mt-1">Available rooms will be shown here</p>
+                      </div>
+                    ) : (
+                      <RoomSelection
+                        rooms={packageRooms}
+                        selectedRoomNumbers={packageRooms.filter(r => packageBookingForm.room_ids.includes(r.id)).map(r => r.number)}
+                        onRoomToggle={(roomNumber) => {
+                          const room = packageRooms.find(r => r.number === roomNumber);
+                          if (room) handlePackageRoomSelect(room.id);
+                        }}
+                      />
+                    )}
+                  </div>
+                );
+              }
+
+              // Show room selection for room_type packages
+              if (!isRoomType) {
+                return null; // Don't show room selection if package type is unclear
+              }
+
+              return (
+                <div>
+                  <label className="block text-gray-600 font-medium mb-2">
+                    Select Rooms for Package
+                    {selectedPackage.room_types && (
+                      <span className="text-xs text-indigo-600 ml-2">
+                        (Filtered by: {selectedPackage.room_types})
+                      </span>
+                    )}
+                    {packageBookingForm.check_in && packageBookingForm.check_out && (
+                      <span className="text-xs text-gray-500 ml-2">
+                        ({packageBookingForm.check_in} to {packageBookingForm.check_out})
+                      </span>
+                    )}
+                  </label>
+                  {!packageBookingForm.check_in || !packageBookingForm.check_out ? (
+                    <div className="text-center py-8 text-gray-500 text-sm bg-gray-50 rounded-lg border">
+                      <p>Please select check-in and check-out dates first</p>
+                      <p className="text-xs mt-1">Available rooms will be shown here</p>
+                    </div>
+                  ) : (
+                    <RoomSelection
+                      rooms={(() => {
+                        let roomsToShow = packageRooms;
+                        if (selectedPackage.booking_type === 'room_type' && selectedPackage.room_types) {
+                          const allowedRoomTypes = selectedPackage.room_types.split(',').map(t => t.trim().toLowerCase());
+                          roomsToShow = packageRooms.filter(room => {
+                            const roomType = room.type ? room.type.trim().toLowerCase() : '';
+                            return allowedRoomTypes.includes(roomType);
+                          });
+                        }
+                        return roomsToShow;
+                      })()}
+                      selectedRoomNumbers={packageRooms.filter(r => packageBookingForm.room_ids.includes(r.id)).map(r => r.number)}
+                      onRoomToggle={(roomNumber) => {
+                        const room = packageRooms.find(r => r.number === roomNumber);
+                        if (room) handlePackageRoomSelect(room.id);
+                      }}
+                    />
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+          <button
+            type="submit"
+            className={`mt-auto w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-lg shadow-md transition-transform transform hover:-translate-y-1 disabled:bg-gray-400 disabled:cursor-not-allowed ${isWholePropertyBlocked ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={isSubmitting || isLoading || isWholePropertyBlocked}
+          >
+            {isSubmitting ? "Booking..." : "Book Package ✅"}
+          </button>
+        </form>
+      </Modal>
+
+
     </DashboardLayout >
   );
 };
