@@ -756,129 +756,138 @@ def check_in_booking(
 ):
     from datetime import date
     from app.models.booking import CheckInDocument
+    import traceback
 
-    # Ensure lists are initialized
-    if id_card_images is None:
-        id_card_images = []
-    if guest_photos is None:
-        guest_photos = []
+    try:
+        # Ensure lists are initialized
+        if id_card_images is None:
+            id_card_images = []
+        if guest_photos is None:
+            guest_photos = []
 
-    # print(f"DEBUG Check-in: ID Cards={len(id_card_images)}, Guest Photos={len(guest_photos)}, Legacy ID={bool(id_card_image)}, Legacy Photo={bool(guest_photo)}")
+        # print(f"DEBUG Check-in: ID Cards={len(id_card_images)}, Guest Photos={len(guest_photos)}, Legacy ID={bool(id_card_image)}, Legacy Photo={bool(guest_photo)}")
 
-    # Parse display ID (BK-000001) or accept numeric ID
-    numeric_id, booking_type = parse_display_id(str(booking_id))
-    if numeric_id is None:
-        raise HTTPException(status_code=400, detail=f"Invalid booking ID format: {booking_id}")
-    if booking_type and booking_type != "booking":
-        raise HTTPException(status_code=400, detail=f"Invalid booking type. Expected regular booking, got: {booking_id}")
-    booking_id = numeric_id
-    booking = db.query(Booking).filter(Booking.id == booking_id).first()
-    if not booking:
-        raise HTTPException(status_code=404, detail="Booking not found")
-    today = date.today()
-    if booking.check_in > today:
-        # early check-in: verify availability for the gap [today, booking.check_in)
-        gap_start = today
-        gap_end = booking.check_in
-        
-        # Check regular booking conflicts
-        # EXCLUDE the current booking from this check using Booking.id != booking.id
-        conflicting_regular = db.query(BookingRoom).join(Booking).filter(
-            BookingRoom.room_id.in_([br.room_id for br in booking.booking_rooms]),
-            Booking.status.in_(['booked', 'checked-in', 'checked_in']),
-            Booking.id != booking.id,  # Important: Don't conflict with self
-            Booking.check_in < gap_end,
-            Booking.check_out > gap_start
-        ).first()
-
-        # Check package booking conflicts
-        conflicting_package = db.query(PackageBookingRoom).join(PackageBooking).filter(
-            PackageBookingRoom.room_id.in_([br.room_id for br in booking.booking_rooms]),
-            PackageBooking.status.in_(['booked', 'checked-in', 'checked_in']),
-            PackageBooking.check_in < gap_end,
-            PackageBooking.check_out > gap_start
-        ).first()
-
-        if conflicting_regular or conflicting_package:
-             raise HTTPException(status_code=400, detail=f"Cannot check-in early. Rooms are overlapping with another booking between {gap_start} and {gap_end}.")
-        
-        # Update check-in date to today
-        booking.check_in = today
-
-    # Consolidate files
-    all_id_cards = []
-    if id_card_image:
-        all_id_cards.append(id_card_image)
-    if id_card_images:
-        all_id_cards.extend(id_card_images)
-
-    all_guest_photos = []
-    if guest_photo:
-        all_guest_photos.append(guest_photo)
-    if guest_photos:
-        all_guest_photos.extend(guest_photos)
-
-    # Require at least one of each if strictly enforcing check-in requirements
-    if not all_id_cards:
-        raise HTTPException(status_code=400, detail="At least one ID card image is required.")
-    if not all_guest_photos:
-        raise HTTPException(status_code=400, detail="At least one Guest photo is required.")
-
-    # Process ID Cards
-    first_id_filename = None
-    for file in all_id_cards:
-        filename = f"id_{booking_id}_{uuid.uuid4().hex}.jpg"
-        file_path = os.path.join(UPLOAD_DIR, filename)
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-        
-        # Create Document Record
-        db.add(CheckInDocument(
-            booking_id=booking.id,
-            type="id_card",
-            image_url=filename
-        ))
-        
-        if not first_id_filename:
-            first_id_filename = filename
-
-    # Process Guest Photos
-    first_photo_filename = None
-    for file in all_guest_photos:
-        filename = f"guest_{booking_id}_{uuid.uuid4().hex}.jpg"
-        file_path = os.path.join(UPLOAD_DIR, filename)
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        # Parse display ID (BK-000001) or accept numeric ID
+        numeric_id, booking_type = parse_display_id(str(booking_id))
+        if numeric_id is None:
+            raise HTTPException(status_code=400, detail=f"Invalid booking ID format: {booking_id}")
+        if booking_type and booking_type != "booking":
+            raise HTTPException(status_code=400, detail=f"Invalid booking type. Expected regular booking, got: {booking_id}")
+        booking_id = numeric_id
+        booking = db.query(Booking).filter(Booking.id == booking_id).first()
+        if not booking:
+            raise HTTPException(status_code=404, detail="Booking not found")
+        today = date.today()
+        if booking.check_in > today:
+            # early check-in: verify availability for the gap [today, booking.check_in)
+            gap_start = today
+            gap_end = booking.check_in
             
-        # Create Document Record
-        db.add(CheckInDocument(
-            booking_id=booking.id,
-            type="guest_photo",
-            image_url=filename
-        ))
+            # Check regular booking conflicts
+            # EXCLUDE the current booking from this check using Booking.id != booking.id
+            conflicting_regular = db.query(BookingRoom).join(Booking).filter(
+                BookingRoom.room_id.in_([br.room_id for br in booking.booking_rooms]),
+                Booking.status.in_(['booked', 'checked-in', 'checked_in']),
+                Booking.id != booking.id,  # Important: Don't conflict with self
+                Booking.check_in < gap_end,
+                Booking.check_out > gap_start
+            ).first()
 
-        if not first_photo_filename:
-            first_photo_filename = filename
+            # Check package booking conflicts
+            conflicting_package = db.query(PackageBookingRoom).join(PackageBooking).filter(
+                PackageBookingRoom.room_id.in_([br.room_id for br in booking.booking_rooms]),
+                PackageBooking.status.in_(['booked', 'checked-in', 'checked_in']),
+                PackageBooking.check_in < gap_end,
+                PackageBooking.check_out > gap_start
+            ).first()
 
-    # Update Legacy Columns (Backwards Compatibility)
-    # If legacy columns are already set, we might overwrite them or keep them. 
-    # Current logic: Overwrite with the first new upload.
-    booking.id_card_image_url = first_id_filename
-    booking.guest_photo_url = first_photo_filename
+            if conflicting_regular or conflicting_package:
+                 raise HTTPException(status_code=400, detail=f"Cannot check-in early. Rooms are overlapping with another booking between {gap_start} and {gap_end}.")
+            
+            # Update check-in date to today
+            booking.check_in = today
 
-    booking.status = "checked-in"
+        # Consolidate files
+        all_id_cards = []
+        if id_card_image:
+            all_id_cards.append(id_card_image)
+        if id_card_images:
+            all_id_cards.extend(id_card_images)
 
-    # Save the ID of the user who performed the check-in
-    booking.user_id = current_user.id
+        all_guest_photos = []
+        if guest_photo:
+            all_guest_photos.append(guest_photo)
+        if guest_photos:
+            all_guest_photos.extend(guest_photos)
 
-    # CRITICAL FIX: Update the status of the associated rooms to 'Checked-in'
-    if booking.booking_rooms:
-        room_ids = [br.room_id for br in booking.booking_rooms]
-        db.query(Room).filter(Room.id.in_(room_ids)).update({"status": "Checked-in"}, synchronize_session=False)
+        # Require at least one of each if strictly enforcing check-in requirements
+        if not all_id_cards:
+            raise HTTPException(status_code=400, detail="At least one ID card image is required.")
+        if not all_guest_photos:
+            raise HTTPException(status_code=400, detail="At least one Guest photo is required.")
 
-    db.commit()
-    db.refresh(booking)
-    return booking
+        # Process ID Cards
+        first_id_filename = None
+        for file in all_id_cards:
+            filename = f"id_{booking_id}_{uuid.uuid4().hex}.jpg"
+            file_path = os.path.join(UPLOAD_DIR, filename)
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+            
+            # Create Document Record
+            db.add(CheckInDocument(
+                booking_id=booking.id,
+                type="id_card",
+                image_url=filename
+            ))
+            
+            if not first_id_filename:
+                first_id_filename = filename
+
+        # Process Guest Photos
+        first_photo_filename = None
+        for file in all_guest_photos:
+            filename = f"guest_{booking_id}_{uuid.uuid4().hex}.jpg"
+            file_path = os.path.join(UPLOAD_DIR, filename)
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+                
+            # Create Document Record
+            db.add(CheckInDocument(
+                booking_id=booking.id,
+                type="guest_photo",
+                image_url=filename
+            ))
+
+            if not first_photo_filename:
+                first_photo_filename = filename
+
+        # Update Legacy Columns (Backwards Compatibility)
+        # If legacy columns are already set, we might overwrite them or keep them. 
+        # Current logic: Overwrite with the first new upload.
+        booking.id_card_image_url = first_id_filename
+        booking.guest_photo_url = first_photo_filename
+
+        booking.status = "checked-in"
+
+        # Save the ID of the user who performed the check-in
+        booking.user_id = current_user.id
+
+        # CRITICAL FIX: Update the status of the associated rooms to 'Checked-in'
+        if booking.booking_rooms:
+            room_ids = [br.room_id for br in booking.booking_rooms]
+            db.query(Room).filter(Room.id.in_(room_ids)).update({"status": "Checked-in"}, synchronize_session=False)
+
+        db.commit()
+        db.refresh(booking)
+        return booking
+
+    except HTTPException:
+        # Re-raise standard HTTP exceptions
+        raise
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Internal Error during check-in: {str(e)}")
 
 # -------------------------------
 # Cancel a booking
