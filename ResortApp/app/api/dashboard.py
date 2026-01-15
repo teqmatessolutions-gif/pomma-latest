@@ -62,14 +62,9 @@ def get_kpis(db: Session = Depends(get_db)):
             food_revenue_today = db.query(func.sum(FoodOrder.amount)).filter(
                 func.cast(FoodOrder.created_at, Date) == today
             ).scalar() or 0
-        except Exception:
-            # Fallback to total_amount if amount field doesn't exist
-            try:
-                food_revenue_today = db.query(func.sum(FoodOrder.total_amount)).filter(
-                    func.cast(FoodOrder.created_at, Date) == today
-                ).scalar() or 0
-            except Exception:
-                food_revenue_today = 0
+        except Exception as e:
+            print(f"Error calculating food revenue: {e}")
+            food_revenue_today = 0
 
         # 4. Package Booking KPI
         package_bookings_today = db.query(PackageBooking).filter(
@@ -144,7 +139,7 @@ def get_chart_data(db: Session = Depends(get_db)):
                 est_package += float(pkg.price)
 
         # Food revenue estimate: billed + unbilled last 30 days
-        est_food = db.query(func.coalesce(func.sum(FoodOrder.total_amount), 0)).scalar() or 0
+        est_food = db.query(func.coalesce(func.sum(FoodOrder.amount), 0)).scalar() or 0
 
         room_total, package_total, food_total = est_room, est_package, est_food
 
