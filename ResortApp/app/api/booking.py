@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, BackgroundTasks, Request
 from datetime import date
+import traceback
 from sqlalchemy.orm import Session, joinedload, load_only
 from sqlalchemy import or_, and_
 from typing import List, Union, Optional
