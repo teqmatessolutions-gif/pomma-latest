@@ -825,12 +825,27 @@ async def check_in_booking(
 
         # Process ID Cards
         first_id_filename = None
-        for file in all_id_cards:
-            filename = f"id_{booking_id}_{uuid.uuid4().hex}.jpg"
-            file_path = os.path.join(UPLOAD_DIR, filename)
-            # Use file.file which is the SpooledTemporaryFile
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
+        for i, file in enumerate(all_id_cards):
+            try:
+                filename = f"id_{booking_id}_{uuid.uuid4().hex}.jpg"
+                file_path = os.path.join(UPLOAD_DIR, filename)
+                
+                # Robust extraction of file content
+                if hasattr(file, "file"):
+                    content_stream = file.file
+                elif hasattr(file, "stream"):
+                    content_stream = file.stream
+                else:
+                    # Log object details for debugging
+                    raise ValueError(f"File object at index {i} (type: {type(file)}) has no 'file' or 'stream' attribute. Dir: {dir(file)}")
+
+                with open(file_path, "wb") as buffer:
+                    shutil.copyfileobj(content_stream, buffer)
+            except Exception as e:
+                # Catch specific file processing errors
+                print(f"ERROR saving ID card {i}: {str(e)}")
+                traceback.print_exc()
+                raise HTTPException(status_code=500, detail=f"Failed to save ID card file: {str(e)}")
             
             # Create Document Record
             db.add(CheckInDocument(
@@ -844,11 +859,24 @@ async def check_in_booking(
 
         # Process Guest Photos
         first_photo_filename = None
-        for file in all_guest_photos:
-            filename = f"guest_{booking_id}_{uuid.uuid4().hex}.jpg"
-            file_path = os.path.join(UPLOAD_DIR, filename)
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
+        for i, file in enumerate(all_guest_photos):
+            try:
+                filename = f"guest_{booking_id}_{uuid.uuid4().hex}.jpg"
+                file_path = os.path.join(UPLOAD_DIR, filename)
+
+                if hasattr(file, "file"):
+                    content_stream = file.file
+                elif hasattr(file, "stream"):
+                    content_stream = file.stream
+                else:
+                     raise ValueError(f"Guest photo object at index {i} (type: {type(file)}) has no 'file' or 'stream' attribute")
+
+                with open(file_path, "wb") as buffer:
+                    shutil.copyfileobj(content_stream, buffer)
+            except Exception as e:
+                print(f"ERROR saving guest photo {i}: {str(e)}")
+                traceback.print_exc()
+                raise HTTPException(status_code=500, detail=f"Failed to save guest photo file: {str(e)}")
             
             # Create Document Record
             db.add(CheckInDocument(
