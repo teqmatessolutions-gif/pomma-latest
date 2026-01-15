@@ -3720,6 +3720,14 @@ export default function App() {
                                                 {rooms
                                                     .filter(room => room.status !== 'Disabled')
                                                     .filter(room => selectedRoomType === 'All' || room.type === selectedRoomType)
+                                                    .filter(room => {
+                                                        const hasUnavailableStatus = ['Maintenance', 'Coming Soon', 'Disabled'].includes(room.status);
+                                                        if (hasUnavailableStatus) return false;
+                                                        if (bookingData.check_in && bookingData.check_out) {
+                                                            return checkRoomAvailability(room, bookingData.check_in, bookingData.check_out);
+                                                        }
+                                                        return true;
+                                                    })
                                                     .length > 0 ? (
                                                     rooms
                                                         .filter(room => room.status !== 'Disabled')
