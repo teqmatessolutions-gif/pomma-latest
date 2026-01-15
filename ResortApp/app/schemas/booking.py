@@ -1,6 +1,6 @@
 from pydantic import BaseModel, validator, field_validator, model_validator
 from typing import List, Optional
-from datetime import date
+from datetime import date, datetime
 from .user import UserOut
 
 # This schema is used for displaying Room details within a Booking
@@ -22,6 +22,16 @@ class BookingRoomOut(BaseModel):
     booking_id: int
     room_id: int
     room: RoomOut
+
+    class Config:
+        from_attributes = True
+
+class CheckInDocumentOut(BaseModel):
+    id: int
+    booking_id: int
+    type: str
+    image_url: str
+    created_at: datetime
 
     class Config:
         from_attributes = True
@@ -62,6 +72,7 @@ class BookingOut(BaseModel):
     # --- CRITICAL FIX: Add the missing image URL fields ---
     id_card_image_url: Optional[str] = None
     guest_photo_url: Optional[str] = None
+    checkin_documents: List[CheckInDocumentOut] = []
     user: Optional[UserOut] = None
     is_package: bool = False
     total_amount: Optional[float] = 0.0

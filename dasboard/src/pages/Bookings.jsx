@@ -131,29 +131,48 @@ const BookingDetailsModal = ({ booking, onClose, onImageClick, roomIdToRoom }) =
           {(booking.id_card_image_url || booking.guest_photo_url) && (
             <div className="mt-4 pt-4 border-t border-gray-200">
               <h4 className="text-lg font-semibold text-gray-800 mb-2">Check-in Documents</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {booking.id_card_image_url && (
-                  (() => {
-                    const imageUrl = `${API.defaults.baseURL.replace(/\/$/, '')}/${booking.is_package ? 'packages/booking/checkin-image' : 'bookings/checkin-image'}/${booking.id_card_image_url}`;
-                    return (
-                      <div className="text-center">
-                        <p className="text-sm font-medium text-gray-600 mb-1">ID Card</p>
-                        <img src={imageUrl} alt="ID Card" className="w-full h-auto rounded-lg border shadow-sm cursor-pointer" onClick={() => onImageClick(imageUrl)} />
-                      </div>
-                    );
-                  })()
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {/* Legacy Single Images */}
+                {!booking.checkin_documents?.length && booking.id_card_image_url && (
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-gray-600 mb-1">ID Card (Legacy)</p>
+                    <img
+                      src={`${API.defaults.baseURL.replace(/\/$/, '')}/${booking.is_package ? 'packages/booking/checkin-image' : 'bookings/checkin-image'}/${booking.id_card_image_url}`}
+                      alt="ID Card"
+                      className="w-full h-32 object-cover rounded-lg border shadow-sm cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => onImageClick(`${API.defaults.baseURL.replace(/\/$/, '')}/${booking.is_package ? 'packages/booking/checkin-image' : 'bookings/checkin-image'}/${booking.id_card_image_url}`)}
+                    />
+                  </div>
                 )}
-                {booking.guest_photo_url && (
-                  (() => {
-                    const imageUrl = `${API.defaults.baseURL.replace(/\/$/, '')}/${booking.is_package ? 'packages/booking/checkin-image' : 'bookings/checkin-image'}/${booking.guest_photo_url}`;
-                    return (
-                      <div className="text-center">
-                        <p className="text-sm font-medium text-gray-600 mb-1">Guest Photo</p>
-                        <img src={imageUrl} alt="Guest" className="w-full h-auto rounded-lg border shadow-sm cursor-pointer" onClick={() => onImageClick(imageUrl)} />
-                      </div>
-                    );
-                  })()
+                {!booking.checkin_documents?.length && booking.guest_photo_url && (
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-gray-600 mb-1">Guest Photo (Legacy)</p>
+                    <img
+                      src={`${API.defaults.baseURL.replace(/\/$/, '')}/${booking.is_package ? 'packages/booking/checkin-image' : 'bookings/checkin-image'}/${booking.guest_photo_url}`}
+                      alt="Guest"
+                      className="w-full h-32 object-cover rounded-lg border shadow-sm cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => onImageClick(`${API.defaults.baseURL.replace(/\/$/, '')}/${booking.is_package ? 'packages/booking/checkin-image' : 'bookings/checkin-image'}/${booking.guest_photo_url}`)}
+                    />
+                  </div>
                 )}
+
+                {/* New Multiple Documents */}
+                {booking.checkin_documents?.map((doc, idx) => {
+                  const imageUrl = `${API.defaults.baseURL.replace(/\/$/, '')}/${booking.is_package ? 'packages/booking/checkin-image' : 'bookings/checkin-image'}/${doc.image_url}`;
+                  return (
+                    <div key={doc.id || idx} className="text-center">
+                      <p className="text-sm font-medium text-gray-600 mb-1">
+                        {doc.type === 'id_card' ? 'ID Card' : 'Guest Photo'}
+                      </p>
+                      <img
+                        src={imageUrl}
+                        alt={doc.type}
+                        className="w-full h-32 object-cover rounded-lg border shadow-sm cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => onImageClick(imageUrl)}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -173,14 +192,14 @@ const ExtendBookingModal = ({ booking, onSave, onClose, feedback, isSubmitting }
   // Safety check: ensure booking exists and has required properties
   if (!booking || !booking.check_out || !booking.id) {
     return (
-      <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg">
+      <Modal isOpen={true} onClose={onClose} title="Error">
+        <div className="p-4">
           <p className="text-red-600">Error: Invalid booking data. Please close and try again.</p>
           <button onClick={onClose} className="mt-4 w-full bg-indigo-600 text-white font-semibold py-2 rounded-md hover:bg-indigo-700 transition-colors">
             Close
           </button>
         </div>
-      </div>
+      </Modal>
     );
   }
 
@@ -197,69 +216,69 @@ const ExtendBookingModal = ({ booking, onSave, onClose, feedback, isSubmitting }
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <motion.div
-        initial={{ opacity: 0, y: -50 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 50 }}
-        className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg"
+    <Modal isOpen={true} onClose={onClose} title="Extend Booking">
+      <div className="space-y-4 text-gray-700">
+        <p><strong>Current Check-in:</strong> {booking.check_in}</p>
+        <p><strong>Current Check-out:</strong> {booking.check_out}</p>
+        <div className="flex flex-col">
+          <label className="text-sm font-medium text-gray-700 mb-1">New Check-out Date</label>
+          <input
+            type="date"
+            value={newCheckout || ''}
+            onChange={(e) => {
+              const newValue = e.target.value;
+              if (newValue) {
+                setNewCheckout(newValue);
+              }
+            }}
+            min={minDate || ''}
+            className="w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500"
+          />
+        </div>
+      </div>
+      <button
+        onClick={handleSave}
+        disabled={isSubmitting || !newCheckout || !minDate || newCheckout <= minDate}
+        className="mt-6 w-full bg-indigo-600 text-white font-semibold py-2 rounded-md hover:bg-indigo-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
       >
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-2xl font-bold text-gray-800">Extend Booking</h3>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        <div className="space-y-4 text-gray-700">
-          <p><strong>Current Check-in:</strong> {booking.check_in}</p>
-          <p><strong>Current Check-out:</strong> {booking.check_out}</p>
-          <div className="flex flex-col">
-            <label className="text-sm font-medium text-gray-700 mb-1">New Check-out Date</label>
-            <input
-              type="date"
-              value={newCheckout || ''}
-              onChange={(e) => {
-                const newValue = e.target.value;
-                if (newValue) {
-                  setNewCheckout(newValue);
-                }
-              }}
-              min={minDate || ''}
-              className="w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500"
-            />
-          </div>
-        </div>
-        <button
-          onClick={handleSave}
-          disabled={isSubmitting || !newCheckout || !minDate || newCheckout <= minDate}
-          className="mt-6 w-full bg-indigo-600 text-white font-semibold py-2 rounded-md hover:bg-indigo-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-        >
-          {isSubmitting ? "Saving..." : "Save"}
-        </button>
-      </motion.div>
-    </div>
+        {isSubmitting ? "Saving..." : "Save"}
+      </button>
+    </Modal>
   );
 };
 
 const CheckInModal = ({ booking, onSave, onClose, feedback, isSubmitting }) => {
-  const [idCardImage, setIdCardImage] = useState(null);
-  const [guestPhoto, setGuestPhoto] = useState(null);
-  const [idCardPreview, setIdCardPreview] = useState(null);
-  const [guestPhotoPreview, setGuestPhotoPreview] = useState(null);
+  const [idCardImages, setIdCardImages] = useState([]);
+  const [guestPhotos, setGuestPhotos] = useState([]);
+  const [idCardPreviews, setIdCardPreviews] = useState([]);
+  const [guestPhotoPreviews, setGuestPhotoPreviews] = useState([]);
 
   const handleFileChange = (e, type) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = Array.from(e.target.files);
+    if (!files || files.length === 0) return;
 
-    const previewUrl = URL.createObjectURL(file);
+    // Create previews
+    const newPreviews = files.map(file => URL.createObjectURL(file));
+
     if (type === 'id') {
-      setIdCardImage(file);
-      setIdCardPreview(previewUrl);
+      setIdCardImages(prev => [...prev, ...files]);
+      setIdCardPreviews(prev => [...prev, ...newPreviews]);
     } else {
-      setGuestPhoto(file);
-      setGuestPhotoPreview(previewUrl);
+      setGuestPhotos(prev => [...prev, ...files]);
+      setGuestPhotoPreviews(prev => [...prev, ...newPreviews]);
+    }
+
+    // Reset input value to allow selecting the same file again if needed
+    e.target.value = '';
+  };
+
+  const removeFile = (index, type) => {
+    if (type === 'id') {
+      setIdCardImages(prev => prev.filter((_, i) => i !== index));
+      setIdCardPreviews(prev => prev.filter((_, i) => i !== index));
+    } else {
+      setGuestPhotos(prev => prev.filter((_, i) => i !== index));
+      setGuestPhotoPreviews(prev => prev.filter((_, i) => i !== index));
     }
   };
 
@@ -271,37 +290,97 @@ const CheckInModal = ({ booking, onSave, onClose, feedback, isSubmitting }) => {
       return;
     }
 
-    if (!idCardImage || !guestPhoto) {
-      alert("Please upload both ID card and guest photo.");
+    if (idCardImages.length === 0 || guestPhotos.length === 0) {
+      alert("Please upload at least one ID card and one guest photo.");
       return;
     }
-    onSave(booking.id, { id_card_image: idCardImage, guest_photo: guestPhoto });
+    // Pass arrays to onSave
+    onSave(booking.id, { id_card_images: idCardImages, guest_photos: guestPhotos });
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <motion.div initial={{ opacity: 0, y: -50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }} className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-2xl">
-        <h3 className="text-2xl font-bold text-gray-800 mb-4">Check-in Guest: {booking.guest_name}</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex flex-col items-center">
-            <label className="font-medium text-gray-700 mb-2">ID Card Image</label>
-            <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'id')} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" required />
-            {idCardPreview && <img src={idCardPreview} alt="ID Preview" className="mt-4 w-full h-40 object-contain rounded-lg border" />}
+    <Modal isOpen={true} onClose={onClose} title={`Check-in Guest: ${booking.guest_name}`}>
+      <div className="space-y-6">
+        <div>
+          <label className="block font-medium text-gray-700 mb-2">ID Card Images (Add One or Multiple)</label>
+          <div className="flex items-center gap-4">
+            <label className="cursor-pointer bg-indigo-50 text-indigo-700 font-semibold py-2 px-4 rounded-full border border-indigo-200 hover:bg-indigo-100 transition-colors">
+              <span>+ Add Files</span>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => handleFileChange(e, 'id')}
+                className="hidden"
+              />
+            </label>
+            <span className="text-sm text-gray-500">{idCardImages.length} file(s) selected</span>
           </div>
-          <div className="flex flex-col items-center">
-            <label className="font-medium text-gray-700 mb-2">Guest Photo</label>
-            <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'guest')} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" required />
-            {guestPhotoPreview && <img src={guestPhotoPreview} alt="Guest Preview" className="mt-4 w-full h-40 object-contain rounded-lg border" />}
+
+          {idCardPreviews.length > 0 && (
+            <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
+              {idCardPreviews.map((preview, idx) => (
+                <div key={idx} className="relative group">
+                  <img src={preview} alt={`ID Preview ${idx}`} className="w-full h-24 object-cover rounded-lg border" />
+                  <button
+                    onClick={() => removeFile(idx, 'id')}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Remove"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div>
+          <label className="block font-medium text-gray-700 mb-2">Guest Photos (Add One or Multiple)</label>
+          <div className="flex items-center gap-4">
+            <label className="cursor-pointer bg-indigo-50 text-indigo-700 font-semibold py-2 px-4 rounded-full border border-indigo-200 hover:bg-indigo-100 transition-colors">
+              <span>+ Add Files</span>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => handleFileChange(e, 'guest')}
+                className="hidden"
+              />
+            </label>
+            <span className="text-sm text-gray-500">{guestPhotos.length} file(s) selected</span>
           </div>
+
+          {guestPhotoPreviews.length > 0 && (
+            <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
+              {guestPhotoPreviews.map((preview, idx) => (
+                <div key={idx} className="relative group">
+                  <img src={preview} alt={`Guest Preview ${idx}`} className="w-full h-24 object-cover rounded-lg border" />
+                  <button
+                    onClick={() => removeFile(idx, 'guest')}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Remove"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-        <div className="flex gap-4 mt-6">
-          <button onClick={onClose} className="w-full bg-gray-200 text-gray-800 font-semibold py-2 rounded-md hover:bg-gray-300 transition-colors">Cancel</button>
-          <button onClick={handleSave} disabled={isSubmitting || !idCardImage || !guestPhoto} className="w-full bg-indigo-600 text-white font-semibold py-2 rounded-md hover:bg-indigo-700 transition-colors disabled:bg-gray-400">
-            {isSubmitting ? "Checking in..." : "Confirm Check-in"}
-          </button>
-        </div>
-      </motion.div>
-    </div>
+      </div>
+
+      <div className="flex gap-4 mt-8">
+        <button onClick={onClose} className="w-full bg-gray-200 text-gray-800 font-semibold py-2 rounded-md hover:bg-gray-300 transition-colors">Cancel</button>
+        <button onClick={handleSave} disabled={isSubmitting || idCardImages.length === 0 || guestPhotos.length === 0} className="w-full bg-indigo-600 text-white font-semibold py-2 rounded-md hover:bg-indigo-700 transition-colors disabled:bg-gray-400">
+          {isSubmitting ? "Checking in..." : "Confirm Check-in"}
+        </button>
+      </div>
+    </Modal>
   );
 };
 
@@ -312,47 +391,39 @@ const EarlyCheckInModal = ({ booking, onConfirm, onClose }) => {
   const today = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 z-[70]">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md border-l-4 border-yellow-500"
-      >
-        <div className="flex items-start mb-4">
-          <div className="bg-yellow-100 p-2 rounded-full mr-3">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
-          <div>
-            <h3 className="text-xl font-bold text-gray-800">Early Check-in Warning</h3>
-            <p className="text-gray-800 mt-1">
-              This booking is scheduled for <span className="font-semibold text-gray-900">{checkInDate}</span>.
-            </p>
-          </div>
+    <Modal isOpen={true} onClose={onClose} title="Early Check-in Warning" maxWidth="max-w-md">
+      <div className="flex items-start mb-4">
+        <div className="bg-yellow-100 p-2 rounded-full mr-3 shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
         </div>
-
-        <p className="text-gray-800 mb-6 bg-gray-50 p-3 rounded-lg text-sm border border-gray-200">
-          Checking in now will update the scheduled check-in date to today (<span className="font-semibold text-gray-900">{today}</span>).
-        </p>
-
-        <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={() => onConfirm(booking)}
-            className="flex-1 px-4 py-2 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition-colors shadow-sm"
-          >
-            Proceed with Early Check-in
-          </button>
+        <div>
+          <p className="text-gray-800 mt-1">
+            This booking is scheduled for <span className="font-semibold text-gray-900">{checkInDate}</span>.
+          </p>
         </div>
-      </motion.div>
-    </div>
+      </div>
+
+      <p className="text-gray-800 mb-6 bg-gray-50 p-3 rounded-lg text-sm border border-gray-200">
+        Checking in now will update the scheduled check-in date to today (<span className="font-semibold text-gray-900">{today}</span>).
+      </p>
+
+      <div className="flex gap-3">
+        <button
+          onClick={onClose}
+          className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={() => onConfirm(booking)}
+          className="flex-1 px-4 py-2 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition-colors shadow-sm"
+        >
+          Proceed with Early Check-in
+        </button>
+      </div>
+    </Modal>
   );
 };
 
@@ -1083,7 +1154,11 @@ const Bookings = () => {
       setBookings(prev => dedupeBookings([newPackageBooking, ...prev]));
     } catch (err) {
       console.error(err);
-      const errorMessage = err.response?.data?.detail || "Failed to process package booking.";
+      const errorMessage = typeof err.response?.data?.detail === 'string'
+        ? err.response.data.detail
+        : (Array.isArray(err.response?.data?.detail)
+          ? err.response.data.detail.map(e => e.msg).join(", ")
+          : "Failed to process package booking.");
       showBannerMessage("error", errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -1469,7 +1544,11 @@ const Bookings = () => {
       setBookings(prev => dedupeBookings([newBooking, ...prev]));
     } catch (err) {
       console.error("Booking creation error:", err);
-      const errorMessage = err.response?.data?.message || "Error creating booking.";
+      const errorMessage = typeof err.response?.data?.detail === 'string'
+        ? err.response.data.detail
+        : (Array.isArray(err.response?.data?.detail)
+          ? err.response.data.detail.map(e => e.msg).join(", ")
+          : "Failed to load more bookings.");
       showBannerMessage("error", errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -1637,8 +1716,12 @@ const Bookings = () => {
     }
 
     const formData = new FormData();
-    formData.append("id_card_image", images.id_card_image);
-    formData.append("guest_photo", images.guest_photo);
+    if (images.id_card_images && images.id_card_images.length > 0) {
+      images.id_card_images.forEach(file => formData.append("id_card_images", file));
+    }
+    if (images.guest_photos && images.guest_photos.length > 0) {
+      images.guest_photos.forEach(file => formData.append("guest_photos", file));
+    }
 
     // Use display ID for API call
     const displayId = generateBookingId(booking || bookingToCheckIn);
@@ -1680,7 +1763,11 @@ const Bookings = () => {
       setBookingToCheckIn(null);
     } catch (err) {
       console.error("Check-in error:", err);
-      const errorMessage = err.response?.data?.detail || "Failed to check in guest.";
+      const errorMessage = typeof err.response?.data?.detail === 'string'
+        ? err.response.data.detail
+        : (Array.isArray(err.response?.data?.detail)
+          ? err.response.data.detail.map(e => e.msg).join(", ")
+          : "Failed to check in guest.");
       showBannerMessage("error", errorMessage);
     } finally {
       setIsSubmitting(false);

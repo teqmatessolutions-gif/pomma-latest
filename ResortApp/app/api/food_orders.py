@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from typing import List, Optional
 from app.schemas.foodorder import FoodOrderCreate, FoodOrderOut, FoodOrderUpdate
 from app.curd import foodorder as crud  # ✅ Correct import
 from app.utils.auth import get_db, get_current_user
 from app.models.user import User
-from typing import List
 
 router = APIRouter(prefix="/food-orders", tags=["Food Orders"])
 
@@ -20,17 +20,42 @@ def create_order(order: FoodOrderCreate, db: Session = Depends(get_db), current_
 def create_order_slash(order: FoodOrderCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return _create_order_impl(order, db, current_user)
 
-def _get_orders_impl(db: Session, skip: int = 0, limit: int = 20):
+def _get_orders_impl(db: Session, skip: int = 0, limit: int = 20, from_date: Optional[str] = None, to_date: Optional[str] = None, fromDate: Optional[str] = None, toDate: Optional[str] = None):
     """Helper function for get_orders"""
-    return crud.get_food_orders(db, skip=skip, limit=limit)
+    from app.models.foodorder import FoodOrder
+    from datetime import datetime
+    
+    query = db.query(FoodOrder)
+    
+    # Date filtering
+    final_start = from_date or fromDate
+    final_end = to_date or toDate
+    
+    try:
+        if final_start:
+            if len(final_start) == 10 and "-" in final_start:
+                dt_start = datetime.strptime(final_start, "%Y-%m-%d")
+                dt_start = dt_start.replace(hour=0, minute=0, second=0, microsecond=0)
+                query = query.filter(FoodOrder.created_at >= dt_start)
+            
+        if final_end:
+            if len(final_end) == 10 and "-" in final_end:
+                dt_end = datetime.strptime(final_end, "%Y-%m-%d")
+                dt_end = dt_end.replace(hour=23, minute=59, second=59, microsecond=999999)
+                query = query.filter(FoodOrder.created_at <= dt_end)
+                
+    except Exception as e:
+        print(f"ERROR parsing dates in food orders: {e}")
+    
+    return query.order_by(FoodOrder.id.desc()).offset(skip).limit(limit).all()
 
 @router.get("", response_model=List[FoodOrderOut])
-def get_orders(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
-    return _get_orders_impl(db, skip, limit)
+def get_orders(db: Session = Depends(get_db), skip: int = 0, limit: int = 20, from_date: Optional[str] = None, to_date: Optional[str] = None, fromDate: Optional[str] = None, toDate: Optional[str] = None):
+    return _get_orders_impl(db, skip, limit, from_date, to_date, fromDate, toDate)
 
 @router.get("/", response_model=List[FoodOrderOut])  # Handle trailing slash
-def get_orders_slash(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
-    return _get_orders_impl(db, skip, limit)
+def get_orders_slash(db: Session = Depends(get_db), skip: int = 0, limit: int = 20, from_date: Optional[str] = None, to_date: Optional[str] = None, fromDate: Optional[str] = None, toDate: Optional[str] = None):
+    return _get_orders_impl(db, skip, limit, from_date, to_date, fromDate, toDate)
 
 @router.delete("/{order_id}")
 def delete_order(order_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):

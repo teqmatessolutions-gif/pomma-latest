@@ -25,6 +25,7 @@ class GuestBookingHistory(BaseModel):
     rooms: List[str]
     id_card_image_url: Optional[str] = None
     guest_photo_url: Optional[str] = None
+    checkin_documents: List[booking_schema.CheckInDocumentOut] = []
 
 class GuestFoodOrderHistory(BaseModel):
     id: int
@@ -244,8 +245,10 @@ def get_user_history(
 
 @router.get("/service-charges")
 def get_service_charges(
-    from_date: Optional[date] = Query(None),
-    to_date: Optional[date] = Query(None),
+    from_date: Optional[str] = Query(None),
+    to_date: Optional[str] = Query(None),
+    fromDate: Optional[str] = Query(None),
+    toDate: Optional[str] = Query(None),
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 20
@@ -259,10 +262,24 @@ def get_service_charges(
         )
     )
 
-    if from_date:
-        query = query.filter(models.AssignedService.assigned_at >= from_date)
-    if to_date:
-        query = query.filter(models.AssignedService.assigned_at <= to_date)
+    # Date filtering - support both parameter formats
+    final_start = from_date or fromDate
+    final_end = to_date or toDate
+
+    try:
+        if final_start:
+            if len(final_start) == 10 and "-" in final_start:
+                dt_start = datetime.strptime(final_start, "%Y-%m-%d")
+                query = query.filter(models.AssignedService.assigned_at >= dt_start)
+        
+        if final_end:
+            if len(final_end) == 10 and "-" in final_end:
+                dt_end = datetime.strptime(final_end, "%Y-%m-%d")
+                # Add one day to make it inclusive
+                dt_end_inclusive = dt_end + timedelta(days=1)
+                query = query.filter(models.AssignedService.assigned_at < dt_end_inclusive)
+    except Exception as e:
+        print(f"ERROR parsing dates in service-charges: {e}")
 
     assigned_services = query.order_by(models.AssignedService.assigned_at.desc()).offset(skip).limit(limit).all()
     return [
@@ -430,8 +447,10 @@ def get_all_package_bookings(
 
 @router.get("/employees")
 def get_all_employees(
-    from_date: Optional[date] = Query(None),
-    to_date: Optional[date] = Query(None),
+    from_date: Optional[str] = Query(None),
+    to_date: Optional[str] = Query(None),
+    fromDate: Optional[str] = Query(None),
+    toDate: Optional[str] = Query(None),
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 20
@@ -439,10 +458,23 @@ def get_all_employees(
     """Retrieves a list of all active employees and their salaries."""
     # The Employee model itself doesn't have an 'is_active' flag. We assume all listed employees are active.
     query = db.query(models.Employee)
-    if from_date:
-        query = query.filter(models.Employee.join_date >= from_date)
-    if to_date:
-        query = query.filter(models.Employee.join_date <= to_date)
+    
+    # Date filtering - support both parameter formats
+    final_start = from_date or fromDate
+    final_end = to_date or toDate
+    
+    try:
+        if final_start:
+            if len(final_start) == 10 and "-" in final_start:
+                dt_start = datetime.strptime(final_start, "%Y-%m-%d").date()
+                query = query.filter(models.Employee.join_date >= dt_start)
+        
+        if final_end:
+            if len(final_end) == 10 and "-" in final_end:
+                dt_end = datetime.strptime(final_end, "%Y-%m-%d").date()
+                query = query.filter(models.Employee.join_date <= dt_end)
+    except Exception as e:
+        print(f"ERROR parsing dates in employees: {e}")
     employees = query.order_by(models.Employee.name).offset(skip).limit(limit).all()
     return [
         {
@@ -457,8 +489,10 @@ def get_all_employees(
 
 @router.get("/checkin-by-employee", response_model=List[CheckinByEmployeeOut])
 def get_checkin_by_employee_report(
-    from_date: Optional[date] = Query(None),
-    to_date: Optional[date] = Query(None),
+    from_date: Optional[str] = Query(None),
+    to_date: Optional[str] = Query(None),
+    fromDate: Optional[str] = Query(None),
+    toDate: Optional[str] = Query(None),
     db: Session = Depends(get_db)
 ):
     """
@@ -478,10 +512,22 @@ def get_checkin_by_employee_report(
         .filter(models.PackageBooking.status.in_(["checked-in", "checked_out"]))
     )
 
-    # This example will only count regular bookings for simplicity.
-    # A more advanced implementation would union these two queries.
-    if from_date: regular_checkins = regular_checkins.filter(models.Booking.check_in >= from_date)
-    if to_date: regular_checkins = regular_checkins.filter(models.Booking.check_in <= to_date)
+    # Date filtering - support both parameter formats
+    final_start = from_date or fromDate
+    final_end = to_date or toDate
+    
+    try:
+        if final_start:
+            if len(final_start) == 10 and "-" in final_start:
+                dt_start = datetime.strptime(final_start, "%Y-%m-%d").date()
+                regular_checkins = regular_checkins.filter(models.Booking.check_in >= dt_start)
+        
+        if final_end:
+            if len(final_end) == 10 and "-" in final_end:
+                dt_end = datetime.strptime(final_end, "%Y-%m-%d").date()
+                regular_checkins = regular_checkins.filter(models.Booking.check_in <= dt_end)
+    except Exception as e:
+        print(f"ERROR parsing dates in checkin-by-employee: {e}")
 
     results = regular_checkins.group_by(models.User.name).order_by(func.count(models.Booking.id).desc()).all()
     return [{"employee_name": name, "checkin_count": count} for name, count in results]
@@ -587,7 +633,8 @@ def _get_guest_profile_data(db: Session, email: Optional[str], mobile: Optional[
 
     # 2. Fetch all bookings (regular and package) for the guest
     regular_bookings = db.query(models.Booking).options(
-        joinedload(models.Booking.booking_rooms).joinedload(models.booking.BookingRoom.room)
+        joinedload(models.Booking.booking_rooms).joinedload(models.booking.BookingRoom.room),
+        joinedload(models.Booking.checkin_documents)
     ).filter(*filters).all()
 
     package_bookings = db.query(models.PackageBooking).options(
@@ -602,7 +649,8 @@ def _get_guest_profile_data(db: Session, email: Optional[str], mobile: Optional[
         room_numbers = [br.room.number for br in b.booking_rooms if br.room]
         booking_history.append(GuestBookingHistory(
             id=b.id, type="Regular", check_in=b.check_in, check_out=b.check_out, status=b.status,
-            rooms=room_numbers, id_card_image_url=b.id_card_image_url, guest_photo_url=b.guest_photo_url
+            rooms=room_numbers, id_card_image_url=b.id_card_image_url, guest_photo_url=b.guest_photo_url,
+            checkin_documents=b.checkin_documents
         ))
         all_room_ids.update([br.room_id for br in b.booking_rooms])
 

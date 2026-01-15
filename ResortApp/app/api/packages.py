@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, BackgroundTasks
 from sqlalchemy.orm import Session, joinedload
-from typing import List, Union
+from typing import List, Union, Optional
 import os
 from app.models.user import User
 from app.models.room import Room
@@ -457,15 +457,46 @@ def book_package_guest_api(
         )
 
 @router.get("/bookingsall", response_model=List[PackageBookingOut])
-def get_bookings(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+def get_bookings(
+    db: Session = Depends(get_db), 
+    skip: int = 0, 
+    limit: int = 20,
+    from_date: Optional[str] = None,
+    to_date: Optional[str] = None,
+    fromDate: Optional[str] = None,
+    toDate: Optional[str] = None
+):
+    from datetime import datetime
+    
     try:
         # It's possible for a package to be deleted, leaving an orphaned booking.
         # We must filter to only include bookings that still have a valid package_id.
         # We also need to eagerly load the related package and room data for the frontend.
-        result = db.query(PackageBooking).options(
+        query = db.query(PackageBooking).options(
             joinedload(PackageBooking.package),
             joinedload(PackageBooking.rooms).joinedload(PackageBookingRoom.room)
-        ).filter(PackageBooking.package_id.is_not(None)).offset(skip).limit(limit).all()
+        ).filter(PackageBooking.package_id.is_not(None))
+        
+        # Date filtering
+        final_start = from_date or fromDate
+        final_end = to_date or toDate
+        
+        try:
+            if final_start:
+                if len(final_start) == 10 and "-" in final_start:
+                    dt_start = datetime.strptime(final_start, "%Y-%m-%d")
+                    dt_start = dt_start.replace(hour=0, minute=0, second=0, microsecond=0)
+                    query = query.filter(PackageBooking.check_in >= dt_start.date())
+                
+            if final_end:
+                if len(final_end) == 10 and "-" in final_end:
+                    dt_end = datetime.strptime(final_end, "%Y-%m-%d")
+                    query = query.filter(PackageBooking.check_in <= dt_end.date())
+                    
+        except Exception as e:
+            print(f"ERROR parsing dates in package bookings: {e}")
+        
+        result = query.offset(skip).limit(limit).all()
         return result if result is not None else []
     except Exception as e:
         import traceback
@@ -727,12 +758,14 @@ def extend_package_booking_checkout(booking_id: Union[str, int], new_checkout: s
 @router.put("/booking/{booking_id}/check-in", response_model=PackageBookingOut)
 def check_in_package_booking(
     booking_id: Union[str, int],
-    id_card_image: UploadFile = File(...),
-    guest_photo: UploadFile = File(...),
+    id_card_images: List[UploadFile] = File(default=[]), # Changed to accept multiple files
+    guest_photos: List[UploadFile] = File(default=[]),   # Changed to accept multiple files
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     from datetime import date
+    from app.models.Package import PackageCheckInDocument # Import valid model
+    
     # Parse display ID (PK-000001) or accept numeric ID
     numeric_id, booking_type = parse_display_id(str(booking_id))
     if numeric_id is None:
@@ -751,13 +784,22 @@ def check_in_package_booking(
 
     # Normalize status to be robust against case/whitespace/underscore differences
     normalized_status = (booking.status or "").strip().lower().replace("_", "-")
+    
+    # Check if there are existing documents in the new table
+    # This helps with the recovery logic (if old columns are empty but new table has data)
+    has_documents = db.query(PackageCheckInDocument).filter(PackageCheckInDocument.package_booking_id == booking.id).count() > 0
+    
     # Allow check-in when:
     #  - status is 'booked' (normal case), OR
     #  - status is 'checked-out' but no check-in images were ever saved (recover-from-state issue)
     # This prevents lock-out when UI shows BOOKED but DB flipped due to earlier process.
     recoverable_checked_out = (
-        normalized_status == "checked-out" and not booking.id_card_image_url and not booking.guest_photo_url
+        normalized_status == "checked-out" and 
+        not booking.id_card_image_url and 
+        not booking.guest_photo_url and
+        not has_documents
     )
+    
     today = date.today()
     if booking.check_in > today:
         # early check-in: verify availability for the gap [today, booking.check_in)
@@ -795,19 +837,53 @@ def check_in_package_booking(
             detail=f"Package booking {booking_id} cannot be checked in. Expected status 'booked', found '{booking.status}'."
         )
 
-    # Save ID card image
-    id_card_filename = f"id_pkg_{booking_id}_{uuid.uuid4().hex}.jpg"
-    id_card_path = os.path.join(CHECKIN_UPLOAD_DIR, id_card_filename)
-    with open(id_card_path, "wb") as buffer:
-        shutil.copyfileobj(id_card_image.file, buffer)
-    booking.id_card_image_url = id_card_filename
+    # Helper function to save file and create document record
+    def save_document(file: UploadFile, doc_type: str):
+        if not file or not file.filename:
+            return None
+            
+        file_ext = os.path.splitext(file.filename)[1]
+        unique_filename = f"{doc_type}_pkg_{booking_id}_{uuid.uuid4().hex}{file_ext}"
+        file_path = os.path.join(CHECKIN_UPLOAD_DIR, unique_filename)
+        
+        try:
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+                
+            # Create document record
+            doc = PackageCheckInDocument(
+                package_booking_id=booking.id,
+                type=doc_type,
+                image_url=unique_filename
+            )
+            db.add(doc)
+            return unique_filename
+        except Exception as e:
+            print(f"Error saving {doc_type} for package booking {booking_id}: {e}")
+            return None
 
-    # Save guest photo
-    guest_photo_filename = f"guest_pkg_{booking_id}_{uuid.uuid4().hex}.jpg"
-    guest_photo_path = os.path.join(CHECKIN_UPLOAD_DIR, guest_photo_filename)
-    with open(guest_photo_path, "wb") as buffer:
-        shutil.copyfileobj(guest_photo.file, buffer)
-    booking.guest_photo_url = guest_photo_filename
+    # Process ID Card Images
+    first_id_card = None
+    if id_card_images:
+        for file in id_card_images:
+            saved_filename = save_document(file, "id_card")
+            if saved_filename and not first_id_card:
+                first_id_card = saved_filename
+
+    # Process Guest Photos
+    first_guest_photo = None
+    if guest_photos:
+        for file in guest_photos:
+            saved_filename = save_document(file, "guest_photo")
+            if saved_filename and not first_guest_photo:
+                first_guest_photo = saved_filename
+
+    # Populate legacy columns for backward compatibility if they are empty
+    if first_id_card and not booking.id_card_image_url:
+        booking.id_card_image_url = first_id_card
+        
+    if first_guest_photo and not booking.guest_photo_url:
+        booking.guest_photo_url = first_guest_photo
 
     booking.status = "checked-in"
     booking.user_id = current_user.id

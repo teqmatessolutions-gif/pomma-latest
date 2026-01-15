@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
+from typing import Optional
 from app.curd import expenses as expense_crud
 from app.utils.auth import get_db, get_current_user
 from app.schemas.expenses import ExpenseOut
@@ -59,8 +60,41 @@ async def create_expense(
     }
 
 @router.get("", response_model=list[ExpenseOut])
-def get_expenses(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
-    expenses = expense_crud.get_all_expenses(db, skip=skip, limit=limit)
+def get_expenses(
+    db: Session = Depends(get_db), 
+    skip: int = 0, 
+    limit: int = 20,
+    from_date: Optional[str] = None,
+    to_date: Optional[str] = None,
+    fromDate: Optional[str] = None,
+    toDate: Optional[str] = None
+):
+    from app.models.expense import Expense
+    from datetime import datetime
+    
+    query = db.query(Expense)
+    
+    # Date filtering
+    final_start = from_date or fromDate
+    final_end = to_date or toDate
+    
+    try:
+        if final_start:
+            if len(final_start) == 10 and "-" in final_start:
+                dt_start = datetime.strptime(final_start, "%Y-%m-%d")
+                dt_start = dt_start.replace(hour=0, minute=0, second=0, microsecond=0)
+                query = query.filter(Expense.date >= dt_start.date())
+            
+        if final_end:
+            if len(final_end) == 10 and "-" in final_end:
+                dt_end = datetime.strptime(final_end, "%Y-%m-%d")
+                query = query.filter(Expense.date <= dt_end.date())
+                
+    except Exception as e:
+        print(f"ERROR parsing dates in expenses: {e}")
+    
+    expenses = query.order_by(Expense.id.desc()).offset(skip).limit(limit).all()
+    
     result = []
     for exp in expenses:
         emp = db.query(Employee).filter(Employee.id == exp.employee_id).first()

@@ -11,6 +11,41 @@ import { formatCurrency } from './utils/currency';
 // API base URL utility
 import { getApiBaseUrl, getMediaBaseUrl } from './utils/env';
 
+// Helper to combine gallery and legacy images for display
+const getRoomDisplayImages = (room) => {
+    if (!room) return [];
+
+    // Create a safe copy of potential images, filtering out any null/undefined entries immediately
+    let images = room.images ? room.images.filter(img => img && img.image_url) : [];
+
+    // Check for legacy image
+    if (room.image_url) {
+        // Check if legacy image is already in gallery
+        const isPrimaryInGallery = images.some(img => img.image_url === room.image_url);
+        if (!isPrimaryInGallery) {
+            // Prepend to show primary first
+            images.unshift({ image_url: room.image_url });
+        }
+    }
+
+    // Fallback if absolutely no images
+    if (images.length === 0) {
+        return []; // Caller handles empty
+    }
+
+    // Final safety check to ensure no raw strings or malformed objects slipped in
+    return images.filter(img => img && typeof img.image_url === 'string');
+};
+
+// Helper to combine/sanitize package images
+const getPackageDisplayImages = (pkg) => {
+    if (!pkg) return [];
+    // Filter for valid image objects
+    let images = pkg.images ? pkg.images.filter(img => img && img.image_url) : [];
+    // If we ever added a legacy field, handle it here. For now, just safety.
+    return images;
+};
+
 // Custom hook to detect if an element is in the viewport
 import ProgressiveImage from './components/ProgressiveImage';
 import LockScreen from './components/LockScreen';
@@ -795,6 +830,50 @@ export default function App() {
     const [packages, setPackages] = useState([]);
     const [resortInfo, setResortInfo] = useState(null);
     const [galleryImages, setGalleryImages] = useState([]);
+    const [roomImageIndices, setRoomImageIndices] = useState({});
+    const [roomDetailsImageIndex, setRoomDetailsImageIndex] = useState(0);
+    const [packageDetailsImageIndex, setPackageDetailsImageIndex] = useState(0);
+    const [hoveredRoomId, setHoveredRoomId] = useState(null);
+
+    // Auto-play for hovered room card
+    // Global Auto-play for Room Listings
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setRoomImageIndices(prevIndices => {
+                const newIndices = { ...prevIndices };
+                rooms.forEach(room => {
+                    const displayImages = getRoomDisplayImages(room);
+                    if (displayImages.length > 1) {
+                        const currentIndex = newIndices[room.id] || 0;
+                        newIndices[room.id] = (currentIndex + 1) % displayImages.length;
+                    }
+                });
+                return newIndices;
+            });
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [rooms]);
+
+    // Global Auto-play for Packages
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setPackageImageIndex(prevIndices => {
+                const newIndices = { ...prevIndices };
+                packages.forEach(pkg => {
+                    if (pkg.images && pkg.images.length > 1) {
+                        const currentIndex = newIndices[pkg.id] || 0;
+                        newIndices[pkg.id] = (currentIndex + 1) % pkg.images.length;
+                    }
+                });
+                return newIndices;
+            });
+        }, 3000);
+        return () => clearInterval(interval);
+    }, [packages]);
+
+
+
     const [reviews, setReviews] = useState([]);
     const [bannerData, setBannerData] = useState([]);
     const [signatureExperiences, setSignatureExperiences] = useState([]);
@@ -969,6 +1048,19 @@ export default function App() {
     const [serviceDetailsImageIndex, setServiceDetailsImageIndex] = useState(0);
     const [isRoomDetailsOpen, setIsRoomDetailsOpen] = useState(false);
     const [selectedRoomForDetails, setSelectedRoomForDetails] = useState(null);
+
+    // Auto-play for Room Details Modal
+    useEffect(() => {
+        if (!isRoomDetailsOpen || !selectedRoomForDetails) return;
+
+        const displayImages = getRoomDisplayImages(selectedRoomForDetails);
+        if (displayImages.length <= 1) return;
+
+        const interval = setInterval(() => {
+            setRoomDetailsImageIndex(prev => (prev + 1) % displayImages.length);
+        }, 3000);
+        return () => clearInterval(interval);
+    }, [isRoomDetailsOpen, selectedRoomForDetails]);
     const [isExperienceDetailsOpen, setIsExperienceDetailsOpen] = useState(false);
     const [selectedExperienceForDetails, setSelectedExperienceForDetails] = useState(null);
     const [isFoodDetailsOpen, setIsFoodDetailsOpen] = useState(false);
@@ -1214,7 +1306,7 @@ export default function App() {
                 const roomsData = await safeFetch("/rooms/test", []);
                 const bookingsData = await safeFetch("/bookings?limit=500&skip=0", { bookings: [] });
                 const packageBookingsData = await safeFetch("/packages/bookingsall?limit=500&skip=0", []);
-                const resortInfoData = await safeFetch("/resort-info/", []);
+                const resortInfoData = await safeFetch("/frontend/resort-info/", []);
 
                 // Non‑critical / image-heavy endpoints – errors should not break the page
                 const [
@@ -1233,14 +1325,14 @@ export default function App() {
                     safeFetch("/food-items/", []),
                     safeFetch("/food-categories/", []),
                     safeFetch("/packages/", []),
-                    safeFetch("/gallery/", []),
-                    safeFetch("/reviews/", []),
-                    safeFetch("/header-banner/", []),
+                    safeFetch("/frontend/gallery/", []),
+                    safeFetch("/frontend/reviews/", []),
+                    safeFetch("/frontend/header-banner/", []),
                     safeFetch("/services/", []),
-                    safeFetch("/signature-experiences/", []),
-                    safeFetch("/plan-weddings/", []),
-                    safeFetch("/nearby-attractions/", []),
-                    safeFetch("/nearby-attraction-banners/", []),
+                    safeFetch("/frontend/signature-experiences/", []),
+                    safeFetch("/frontend/plan-weddings/", []),
+                    safeFetch("/frontend/nearby-attractions/", []),
+                    safeFetch("/frontend/nearby-attraction-banners/", []),
                 ]);
 
                 setAllRooms(roomsData);
@@ -2398,25 +2490,30 @@ export default function App() {
                                     {/* Featured Large Package */}
                                     {packages.filter(p => p.status !== 'Disabled')[0] && (() => {
                                         const featuredPkg = packages.filter(p => p.status !== 'Disabled')[0];
+                                        const displayImages = getPackageDisplayImages(featuredPkg);
                                         const imgIndex = packageImageIndex[featuredPkg.id] || 0;
-                                        const currentImage = featuredPkg.images && featuredPkg.images[imgIndex];
+                                        const currentImage = displayImages[imgIndex];
                                         const isUnavailable = featuredPkg.status === 'Coming Soon' || featuredPkg.status === 'Disabled';
                                         const isComingSoon = featuredPkg.status === 'Coming Soon';
                                         return (
                                             <div
                                                 key={featuredPkg.id}
-                                                onClick={() => !isUnavailable && handleOpenPackageDetails(featuredPkg)}
+                                                onClick={() => {
+                                                    if (!isUnavailable) {
+                                                        handleOpenPackageDetails(featuredPkg);
+                                                        setPackageDetailsImageIndex(0);
+                                                    }
+                                                }}
                                                 className={`${theme.bgCard} rounded-3xl overflow-hidden shadow-2xl border ${theme.border} transition-all duration-500 hover:shadow-3xl reveal cursor-pointer`}
                                                 style={{ transitionDelay: '80ms' }}
                                             >
                                                 <div className="flex flex-col md:flex-row items-stretch">
                                                     {/* Large Image Section - Left */}
                                                     <div className="w-full md:w-1/2 h-80 md:h-[500px] overflow-hidden relative">
-                                                        <img
+                                                        <ProgressiveImage
                                                             src={currentImage ? getImageUrl(currentImage.image_url) : ITEM_PLACEHOLDER}
                                                             alt={featuredPkg.title}
                                                             className="w-full h-full object-cover transition-transform duration-700 hover:scale-110 reveal"
-                                                            loading="lazy"
                                                             onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                                         />
                                                         {/* Status Badge (Top Right) */}
@@ -2500,11 +2597,10 @@ export default function App() {
                                                     >
                                                         {/* Image Container */}
                                                         <div className="relative h-64 overflow-hidden">
-                                                            <img
+                                                            <ProgressiveImage
                                                                 src={currentImage ? getImageUrl(currentImage.image_url) : ITEM_PLACEHOLDER}
                                                                 alt={pkg.title}
                                                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 reveal"
-                                                                loading="lazy"
                                                                 onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                                             />
                                                             {/* Price badge - always visible */}
@@ -2643,16 +2739,73 @@ export default function App() {
                                                 className={`group relative ${theme.bgCard} rounded-2xl overflow-hidden luxury-shadow transition-all duration-300 transition-all duration-500 transform hover:-translate-y-2 border ${theme.cardBorder || theme.border} h-full flex flex-col cursor-pointer`}
                                             >
                                                 {/* Image Container with Overlay */}
-                                                <div className="relative h-48 overflow-hidden">
-                                                    <img
-                                                        src={getImageUrl(room.image_url)}
+                                                <div
+                                                    className="relative h-48 overflow-hidden"
+                                                >
+                                                    <ProgressiveImage
+                                                        src={
+                                                            (() => {
+                                                                const displayImages = getRoomDisplayImages(room);
+                                                                if (!displayImages || displayImages.length === 0) return ITEM_PLACEHOLDER;
+
+                                                                const currentIndex = roomImageIndices[room.id] || 0;
+                                                                // Ensure index is valid and positive
+                                                                const safeIndex = Math.abs(currentIndex % displayImages.length);
+                                                                const targetImage = displayImages[safeIndex];
+
+                                                                // Ultimate safety check
+                                                                if (!targetImage || !targetImage.image_url) return ITEM_PLACEHOLDER;
+
+                                                                return getImageUrl(targetImage.image_url);
+                                                            })()
+                                                        }
                                                         alt={room.type}
                                                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                                         onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                                     />
                                                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
+                                                    {/* Image Slider Controls (Arrows) */}
+                                                    {getRoomDisplayImages(room).length > 1 && (
+                                                        <>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    const count = getRoomDisplayImages(room).length;
+                                                                    setRoomImageIndices(prev => ({ ...prev, [room.id]: ((prev[room.id] || 0) === 0 ? count - 1 : (prev[room.id] || 0) - 1) }));
+                                                                }}
+                                                                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all z-20"
+                                                            >
+                                                                <ChevronLeft className="w-4 h-4" />
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    const count = getRoomDisplayImages(room).length;
+                                                                    setRoomImageIndices(prev => ({ ...prev, [room.id]: ((prev[room.id] || 0) + 1) % count }));
+                                                                }}
+                                                                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all z-20"
+                                                            >
+                                                                <ChevronRight className="w-4 h-4" />
+                                                            </button>
+                                                        </>
+                                                    )}
 
+                                                    {/* Image Slider Dots */}
+                                                    {getRoomDisplayImages(room).length > 1 && (
+                                                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/60 backdrop-blur-sm px-3 py-2 rounded-full z-10 transition-opacity duration-300 opacity-0 group-hover:opacity-100">
+                                                            {getRoomDisplayImages(room).map((_, imgIdx) => (
+                                                                <button
+                                                                    key={imgIdx}
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setRoomImageIndices(prev => ({ ...prev, [room.id]: imgIdx }));
+                                                                    }}
+                                                                    className={`w-2 h-2 rounded-full transition-all ${imgIdx === (roomImageIndices[room.id] || 0) ? 'bg-white' : 'bg-white/40'}`}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    )}
 
                                                     {/* Availability Badge - Only show when dates are selected */}
                                                     {/* Availability Badge */}
@@ -2812,7 +2965,7 @@ export default function App() {
                                                         }}
                                                         className={`relative group h-[400px] sm:h-[460px] lg:h-[520px] rounded-[32px] overflow-hidden bg-black shadow-[0_35px_80px_rgba(12,61,38,0.35)] transition-transform duration-700 ease-[cubic-bezier(.4,.0,.2,1)] will-change-transform ${offset === 0 ? 'cursor-pointer' : 'scale-[0.9] opacity-70 blur-[1.5px]'}`}
                                                     >
-                                                        <img
+                                                        <ProgressiveImage
                                                             src={getImageUrl(experience.image_url)}
                                                             alt={experience.title}
                                                             className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1500ms] ease-out group-hover:scale-[1.12]"
@@ -2902,7 +3055,7 @@ export default function App() {
                                 <div key={wedding.id}>
                                     {/* Background Images with Animation and Auto-Change */}
                                     <div className="absolute inset-0">
-                                        <img
+                                        <ProgressiveImage
                                             src={getImageUrl(wedding.image_url)}
                                             alt={wedding.title}
                                             className={`absolute inset-0 w-[110%] h-[110%] object-cover object-center transition-all duration-[10000ms] ease-in-out ${index === currentWeddingIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-110'} animate-[slow-pan_20s_ease-in-out_infinite]`}
@@ -2994,7 +3147,7 @@ export default function App() {
                                             >
                                                 <div className="relative h-64 overflow-hidden">
                                                     {service.images && service.images.length > 0 ? (
-                                                        <img
+                                                        <ProgressiveImage
                                                             src={getImageUrl(service.images[0].image_url)}
                                                             alt={service.name}
                                                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -3096,7 +3249,7 @@ export default function App() {
                                                         className={`group relative ${theme.bgCard} rounded-2xl overflow-hidden luxury-shadow transition-all duration-300 transform hover:-translate-y-2 border ${theme.cardBorder || theme.border} cursor-pointer`}
                                                     >
                                                         <div className="relative h-40 overflow-hidden">
-                                                            <img
+                                                            <ProgressiveImage
                                                                 src={getImageUrl(food.images?.[0]?.image_url)}
                                                                 alt={food.name}
                                                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
@@ -3167,11 +3320,10 @@ export default function App() {
                                             className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 reveal cursor-pointer"
                                             style={{ height: getGalleryCardHeight(index), transitionDelay: `${(index % 5) * 70}ms` }}
                                         >
-                                            <img
+                                            <ProgressiveImage
                                                 src={getImageUrl(image.image_url)}
                                                 alt={image.caption || 'Gallery image'}
                                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                                loading="lazy"
                                                 onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                             />
 
@@ -3199,7 +3351,7 @@ export default function App() {
                         <section className="relative w-full h-[520px] md:h-[620px] overflow-hidden rounded-3xl mt-20 mb-10 bg-[#0f5132]/5">
                             {activeNearbyAttractionBanners.map((banner, index) => (
                                 <div key={banner.id} className="absolute inset-0">
-                                    <img
+                                    <ProgressiveImage
                                         src={getImageUrl(banner.image_url)}
                                         alt={banner.title}
                                         className={`absolute inset-0 w-full h-full object-cover transition-all duration-[9000ms] ease-in-out ${index === currentAttractionBannerIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-110'}`}
@@ -3268,7 +3420,7 @@ export default function App() {
                                             <div className={`flex flex-col ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} items-stretch`}>
                                                 {/* Image Section */}
                                                 <div className="w-full md:w-1/2 overflow-hidden flex items-center justify-center">
-                                                    <img
+                                                    <ProgressiveImage
                                                         src={getImageUrl(attraction.image_url)}
                                                         alt={attraction.title}
                                                         className="w-full h-auto object-contain transition-transform duration-700 hover:scale-105"
@@ -3957,8 +4109,9 @@ export default function App() {
                                         {packages
                                             .filter(pkg => pkg.status !== 'Disabled' && pkg.status !== 'Coming Soon')
                                             .map((pkg) => {
+                                                const displayImages = getPackageDisplayImages(pkg);
                                                 const imgIndex = packageImageIndex[pkg.id] || 0;
-                                                const currentImage = pkg.images && pkg.images[imgIndex];
+                                                const currentImage = displayImages[imgIndex];
                                                 const isComingSoon = pkg.status === 'Coming Soon';
                                                 return (
                                                     <div
@@ -3968,7 +4121,7 @@ export default function App() {
                                                             handleOpenPackageBookingForm(pkg.id);
                                                             setIsPackageSelectionOpen(false);
                                                         }}
-                                                        className={`${theme.bgCard} rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 border ${theme.border} ${isComingSoon ? 'cursor-not-allowed grayscale-[0.3]' : 'cursor-pointer transform hover:-translate-y-1'}`}
+                                                        className={`${theme.bgCard} rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 border ${theme.border} ${isComingSoon ? 'cursor-not-allowed grayscale-[0.3]' : 'cursor-pointer transform hover:-translate-y-1'} group`}
                                                     >
                                                         {/* Image Container */}
                                                         <div className="relative h-48 overflow-hidden">
@@ -3984,6 +4137,32 @@ export default function App() {
                                                                 <div className="absolute top-3 right-3 px-3 py-1 bg-amber-500 text-white text-xs font-bold rounded-full shadow-lg z-20 uppercase tracking-wider backdrop-blur-sm border border-white/20">
                                                                     Coming Soon
                                                                 </div>
+                                                            )}
+
+                                                            {/* Image Slider Controls (Arrows) */}
+                                                            {pkg.images && pkg.images.length > 1 && (
+                                                                <>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            const count = pkg.images.length;
+                                                                            setPackageImageIndex(prev => ({ ...prev, [pkg.id]: ((prev[pkg.id] || 0) === 0 ? count - 1 : (prev[pkg.id] || 0) - 1) }));
+                                                                        }}
+                                                                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-1.5 rounded-full z-20 opacity-0 group-hover:opacity-100 transition-all"
+                                                                    >
+                                                                        <ChevronLeft className="w-4 h-4" />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            const count = pkg.images.length;
+                                                                            setPackageImageIndex(prev => ({ ...prev, [pkg.id]: ((prev[pkg.id] || 0) + 1) % count }));
+                                                                        }}
+                                                                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-1.5 rounded-full z-20 opacity-0 group-hover:opacity-100 transition-all"
+                                                                    >
+                                                                        <ChevronRight className="w-4 h-4" />
+                                                                    </button>
+                                                                </>
                                                             )}
 
                                                             {/* Image Slider Dots */}
@@ -4054,7 +4233,7 @@ export default function App() {
 
                             {/* Image Container */}
                             <div className="relative max-w-6xl max-h-[85vh] w-full">
-                                <img
+                                <ProgressiveImage
                                     src={getImageUrl(galleryImages[selectedGalleryImageIndex].image_url)}
                                     alt={galleryImages[selectedGalleryImageIndex].caption || 'Gallery image'}
                                     className="w-full h-full object-contain rounded-lg"
@@ -4127,7 +4306,7 @@ export default function App() {
                                 {selectedFoodForDetails.images && selectedFoodForDetails.images.length > 0 && (
                                     <div className="relative mb-6">
                                         <div className="relative h-96 rounded-2xl overflow-hidden">
-                                            <img
+                                            <ProgressiveImage
                                                 src={getImageUrl(selectedFoodForDetails.images[0].image_url)}
                                                 alt={selectedFoodForDetails.name}
                                                 className="w-full h-full object-cover"
@@ -4188,7 +4367,7 @@ export default function App() {
                                 {/* Image Section */}
                                 <div className="relative mb-6">
                                     <div className="relative h-96 rounded-2xl overflow-hidden">
-                                        <img
+                                        <ProgressiveImage
                                             src={getImageUrl(selectedExperienceForDetails.image_url)}
                                             alt={selectedExperienceForDetails.title}
                                             className="w-full h-full object-cover"
@@ -4239,6 +4418,7 @@ export default function App() {
                                     onClick={() => {
                                         setIsRoomDetailsOpen(false);
                                         setSelectedRoomForDetails(null);
+                                        setRoomDetailsImageIndex(0); // Reset image index on close
                                     }}
                                     className={`p-2 rounded-full ${theme.textSecondary} hover:${theme.textPrimary} transition-colors`}
                                 >
@@ -4251,16 +4431,77 @@ export default function App() {
                                 <div className="relative mb-6">
                                     <div className="relative h-96 rounded-2xl overflow-hidden">
                                         <img
-                                            src={getImageUrl(selectedRoomForDetails.image_url)}
+                                            src={
+                                                (() => {
+                                                    const displayImages = getRoomDisplayImages(selectedRoomForDetails);
+                                                    if (!displayImages || displayImages.length === 0) return ITEM_PLACEHOLDER;
+
+                                                    const safeIndex = Math.abs(roomDetailsImageIndex % displayImages.length);
+                                                    const targetImage = displayImages[safeIndex];
+
+                                                    if (!targetImage || !targetImage.image_url) return ITEM_PLACEHOLDER;
+                                                    return getImageUrl(targetImage.image_url);
+                                                })()
+                                            }
                                             alt={selectedRoomForDetails.type}
                                             className="w-full h-full object-cover"
                                             onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                         />
 
+                                        {/* Image Navigation Arrows */}
+                                        {getRoomDisplayImages(selectedRoomForDetails).length > 1 && (
+                                            <>
+                                                <button
+                                                    onClick={() => {
+                                                        const count = getRoomDisplayImages(selectedRoomForDetails).length;
+                                                        setRoomDetailsImageIndex((prev) =>
+                                                            prev === 0 ? count - 1 : prev - 1
+                                                        );
+                                                    }}
+                                                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all"
+                                                >
+                                                    <ChevronLeft className="w-6 h-6" />
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        const count = getRoomDisplayImages(selectedRoomForDetails).length;
+                                                        setRoomDetailsImageIndex((prev) =>
+                                                            prev === count - 1 ? 0 : prev + 1
+                                                        );
+                                                    }}
+                                                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all"
+                                                >
+                                                    <ChevronRight className="w-6 h-6" />
+                                                </button>
+                                                {/* Dots */}
+                                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full">
+                                                    {getRoomDisplayImages(selectedRoomForDetails).map((_, idx) => (
+                                                        <button
+                                                            key={idx}
+                                                            onClick={() => setRoomDetailsImageIndex(idx)}
+                                                            className={`w-2 h-2 rounded-full transition-all ${idx === roomDetailsImageIndex ? 'bg-white w-8' : 'bg-white/40'}`}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </>
+                                        )}
+
                                         {/* Room Number Badge */}
-                                        <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full">
-                                            <span className="text-white font-semibold">Room #{selectedRoomForDetails.number}</span>
-                                        </div>
+                                        {getRoomDisplayImages(selectedRoomForDetails).length <= 1 ? null : (
+                                            <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full">
+                                                <span className="text-white font-semibold">Room #{selectedRoomForDetails.number}</span>
+                                            </div>
+                                        )}
+                                        {/* (If multiple images, room number badge might clutter, but let's keep it consistent or move it) 
+                                           Actually, let's keep badges but ensure z-index if needed. They are absolute so they will overlay image. 
+                                           The arrows are also absolute. 
+                                        */}
+                                        {!(getRoomDisplayImages(selectedRoomForDetails).length > 1) && (
+                                            <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full">
+                                                <span className="text-white font-semibold">Room #{selectedRoomForDetails.number}</span>
+                                            </div>
+                                        )}
+
 
                                         {/* Capacity Badge */}
                                         <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full">
@@ -4395,7 +4636,7 @@ export default function App() {
                                 {selectedServiceForDetails.images && selectedServiceForDetails.images.length > 0 && (
                                     <div className="relative mb-6">
                                         <div className="relative h-96 rounded-2xl overflow-hidden">
-                                            <img
+                                            <ProgressiveImage
                                                 src={getImageUrl(selectedServiceForDetails.images[serviceDetailsImageIndex].image_url)}
                                                 alt={selectedServiceForDetails.name}
                                                 className="w-full h-full object-cover"
@@ -4459,8 +4700,12 @@ export default function App() {
                         <div className={`w-full max-w-2xl ${theme.bgCard} rounded-3xl shadow-2xl flex flex-col max-h-[90vh] my-8 overflow-hidden`}>
                             {/* Header Image */}
                             <div className="relative h-64 md:h-80">
-                                <img
-                                    src={selectedPackageDetails.images && selectedPackageDetails.images.length > 0 ? getImageUrl(selectedPackageDetails.images[0].image_url) : ITEM_PLACEHOLDER}
+                                <ProgressiveImage
+                                    src={
+                                        selectedPackageDetails.images && selectedPackageDetails.images.length > 0
+                                            ? getImageUrl(selectedPackageDetails.images[packageDetailsImageIndex].image_url)
+                                            : ITEM_PLACEHOLDER
+                                    }
                                     alt={selectedPackageDetails.title}
                                     className="w-full h-full object-cover"
                                 />
@@ -4471,6 +4716,51 @@ export default function App() {
                                 >
                                     <X className="w-6 h-6" />
                                 </button>
+
+                                {/* Image Navigation Arrows (Overlay) */}
+                                {selectedPackageDetails.images && selectedPackageDetails.images.length > 1 && (
+                                    <>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setPackageDetailsImageIndex((prev) =>
+                                                    prev === 0 ? selectedPackageDetails.images.length - 1 : prev - 1
+                                                );
+                                            }}
+                                            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all"
+                                        >
+                                            <ChevronLeft className="w-6 h-6" />
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setPackageDetailsImageIndex((prev) =>
+                                                    prev === selectedPackageDetails.images.length - 1 ? 0 : prev + 1
+                                                );
+                                            }}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all"
+                                        >
+                                            <ChevronRight className="w-6 h-6" />
+                                        </button>
+                                    </>
+                                )}
+
+                                {/* Image Dots Indicator */}
+                                {selectedPackageDetails.images && selectedPackageDetails.images.length > 1 && (
+                                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/60 backdrop-blur-sm px-3 py-2 rounded-full z-20">
+                                        {selectedPackageDetails.images.map((_, idx) => (
+                                            <button
+                                                key={idx}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setPackageDetailsImageIndex(idx);
+                                                }}
+                                                className={`w-2 h-2 rounded-full transition-all ${idx === packageDetailsImageIndex ? 'bg-white w-8' : 'bg-white/40'}`}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+
                                 <div className="absolute bottom-6 left-6 right-6">
                                     <h3 className="text-3xl md:text-4xl font-extrabold text-white mb-2 shadow-sm">{selectedPackageDetails.title}</h3>
                                     <div className="flex flex-wrap gap-2">

@@ -36,7 +36,7 @@ export const getMediaBaseUrl = () => {
 
   // Default for development
   if (isLocalhost()) {
-    return "http://localhost:8010";
+    return "http://localhost:8000";
   }
 
   // Default for production

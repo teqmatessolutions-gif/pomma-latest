@@ -24,10 +24,25 @@ class BillBreakdown(BaseModel):
     package_charges: Optional[float] = 0.0
     
     # GST breakdown
-    room_gst: Optional[float] = 0.0  # GST on room charges (12% if <= 7500, 18% if > 7500)
-    food_gst: Optional[float] = 0.0  # GST on food charges (5% always)
-    package_gst: Optional[float] = 0.0  # GST on package charges (12% if <= 7500, 18% if > 7500)
-    total_gst: Optional[float] = 0.0  # Total GST amount
+    room_gst: Optional[float] = 0.0  # Total GST on room charges
+    room_cgst: Optional[float] = 0.0
+    room_sgst: Optional[float] = 0.0
+    
+    food_gst: Optional[float] = 0.0  # Total GST on food charges
+    food_cgst: Optional[float] = 0.0
+    food_sgst: Optional[float] = 0.0
+    
+    service_gst: Optional[float] = 0.0 # Total GST on service charges
+    service_cgst: Optional[float] = 0.0
+    service_sgst: Optional[float] = 0.0
+    
+    package_gst: Optional[float] = 0.0  # Total GST on package charges
+    package_cgst: Optional[float] = 0.0
+    package_sgst: Optional[float] = 0.0
+    
+    total_gst: Optional[float] = 0.0  # Grand Total GST
+    cgst: Optional[float] = 0.0       # Grand Total CGST
+    sgst: Optional[float] = 0.0       # Grand Total SGST
     
     # Detailed lists
     food_items: List[FoodOrderItem] = []
@@ -60,6 +75,9 @@ class CheckoutFull(BaseModel):
     created_at: Optional[datetime]
     guest_name: Optional[str] = ""
     room_number: Optional[str] = ""
+    pdf_url: Optional[str] = None
+    charges: Optional[BillBreakdown] = None
+    checkout_date: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -83,6 +101,7 @@ class CheckoutDetail(BaseModel):
     food_orders: List[dict] = []
     services: List[dict] = []
     booking_details: Optional[dict] = None
+    charges: Optional[BillBreakdown] = None
 
     class Config:
         from_attributes = True

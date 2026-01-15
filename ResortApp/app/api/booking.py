@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, BackgroundTasks
 from sqlalchemy.orm import Session, joinedload, load_only
 from sqlalchemy import or_, and_
-from typing import List, Union
+from typing import List, Union, Optional
 from app.utils.auth import get_db, get_current_user
 from app.utils.booking_id import parse_display_id
 from app.models.booking import Booking, BookingRoom
@@ -29,13 +29,44 @@ class PaginatedBookingResponse(BaseModel):
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
 @router.get("", response_model=PaginatedBookingResponse)
-def get_bookings(db: Session = Depends(get_db), skip: int = 0, limit: int = 20, order_by: str = "id", order: str = "desc"):
+def get_bookings(
+    db: Session = Depends(get_db), 
+    skip: int = 0, 
+    limit: int = 20, 
+    order_by: str = "id", 
+    order: str = "desc",
+    from_date: Optional[str] = None,
+    to_date: Optional[str] = None,
+    fromDate: Optional[str] = None,
+    toDate: Optional[str] = None
+):
+    from datetime import datetime
+    
     try:
         # Get regular bookings with room details, ordered by latest first
         query = db.query(Booking).options(
             joinedload(Booking.booking_rooms).joinedload(BookingRoom.room),
             joinedload(Booking.user).joinedload(User.role)
         )
+        
+        # Date filtering
+        final_start = from_date or fromDate
+        final_end = to_date or toDate
+        
+        try:
+            if final_start:
+                if len(final_start) == 10 and "-" in final_start:
+                    dt_start = datetime.strptime(final_start, "%Y-%m-%d")
+                    dt_start = dt_start.replace(hour=0, minute=0, second=0, microsecond=0)
+                    query = query.filter(Booking.check_in >= dt_start.date())
+                
+            if final_end:
+                if len(final_end) == 10 and "-" in final_end:
+                    dt_end = datetime.strptime(final_end, "%Y-%m-%d")
+                    query = query.filter(Booking.check_in <= dt_end.date())
+                    
+        except Exception as e:
+            print(f"ERROR parsing dates in bookings: {e}")
         
         # Apply ordering
         if order_by == "id" and order == "desc":
@@ -135,7 +166,8 @@ def get_booking_details(booking_id: Union[str, int], is_package: bool, db: Sessi
     else: # Regular booking
         booking = db.query(Booking).options(
             joinedload(Booking.booking_rooms).joinedload(BookingRoom.room),
-            joinedload(Booking.user).joinedload(User.role)
+            joinedload(Booking.user).joinedload(User.role),
+            joinedload(Booking.checkin_documents)
         ).filter(Booking.id == booking_id).first()
 
         if not booking:
@@ -154,6 +186,7 @@ def get_booking_details(booking_id: Union[str, int], is_package: bool, db: Sessi
             children=booking.children,
             id_card_image_url=getattr(booking, 'id_card_image_url', None),
             guest_photo_url=getattr(booking, 'guest_photo_url', None),
+            checkin_documents=booking.checkin_documents,
             user=booking.user,
             is_package=False,
             rooms=[br.room for br in booking.booking_rooms if br.room]
@@ -713,12 +746,25 @@ def create_guest_booking(booking: BookingCreate, background_tasks: BackgroundTas
 @router.put("/{booking_id}/check-in", response_model=BookingOut)
 def check_in_booking(
     booking_id: Union[str, int],
-    id_card_image: UploadFile = File(...),
-    guest_photo: UploadFile = File(...),
+    id_card_images: Optional[List[UploadFile]] = File(default=None),
+    guest_photos: Optional[List[UploadFile]] = File(default=None),
+    # Legacy fields for backward compatibility (optional now)
+    id_card_image: Optional[UploadFile] = File(default=None),
+    guest_photo: Optional[UploadFile] = File(default=None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     from datetime import date
+    from app.models.booking import CheckInDocument
+
+    # Ensure lists are initialized
+    if id_card_images is None:
+        id_card_images = []
+    if guest_photos is None:
+        guest_photos = []
+
+    print(f"DEBUG Check-in: ID Cards={len(id_card_images)}, Guest Photos={len(guest_photos)}, Legacy ID={bool(id_card_image)}, Legacy Photo={bool(guest_photo)}")
+
     # Parse display ID (BK-000001) or accept numeric ID
     numeric_id, booking_type = parse_display_id(str(booking_id))
     if numeric_id is None:
@@ -759,19 +805,66 @@ def check_in_booking(
         # Update check-in date to today
         booking.check_in = today
 
-    # Save ID card image
-    id_card_filename = f"id_{booking_id}_{uuid.uuid4().hex}.jpg"
-    id_card_path = os.path.join(UPLOAD_DIR, id_card_filename)
-    with open(id_card_path, "wb") as buffer:
-        shutil.copyfileobj(id_card_image.file, buffer)
-    booking.id_card_image_url = id_card_filename
+    # Consolidate files
+    all_id_cards = []
+    if id_card_image:
+        all_id_cards.append(id_card_image)
+    if id_card_images:
+        all_id_cards.extend(id_card_images)
 
-    # Save guest photo
-    guest_photo_filename = f"guest_{booking_id}_{uuid.uuid4().hex}.jpg"
-    guest_photo_path = os.path.join(UPLOAD_DIR, guest_photo_filename)
-    with open(guest_photo_path, "wb") as buffer:
-        shutil.copyfileobj(guest_photo.file, buffer)
-    booking.guest_photo_url = guest_photo_filename
+    all_guest_photos = []
+    if guest_photo:
+        all_guest_photos.append(guest_photo)
+    if guest_photos:
+        all_guest_photos.extend(guest_photos)
+
+    # Require at least one of each if strictly enforcing check-in requirements
+    if not all_id_cards:
+        raise HTTPException(status_code=400, detail="At least one ID card image is required.")
+    if not all_guest_photos:
+        raise HTTPException(status_code=400, detail="At least one Guest photo is required.")
+
+    # Process ID Cards
+    first_id_filename = None
+    for file in all_id_cards:
+        filename = f"id_{booking_id}_{uuid.uuid4().hex}.jpg"
+        file_path = os.path.join(UPLOAD_DIR, filename)
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        # Create Document Record
+        db.add(CheckInDocument(
+            booking_id=booking.id,
+            type="id_card",
+            image_url=filename
+        ))
+        
+        if not first_id_filename:
+            first_id_filename = filename
+
+    # Process Guest Photos
+    first_photo_filename = None
+    for file in all_guest_photos:
+        filename = f"guest_{booking_id}_{uuid.uuid4().hex}.jpg"
+        file_path = os.path.join(UPLOAD_DIR, filename)
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+            
+        # Create Document Record
+        db.add(CheckInDocument(
+            booking_id=booking.id,
+            type="guest_photo",
+            image_url=filename
+        ))
+
+        if not first_photo_filename:
+            first_photo_filename = filename
+
+    # Update Legacy Columns (Backwards Compatibility)
+    # If legacy columns are already set, we might overwrite them or keep them. 
+    # Current logic: Overwrite with the first new upload.
+    booking.id_card_image_url = first_id_filename
+    booking.guest_photo_url = first_photo_filename
 
     booking.status = "checked-in"
 

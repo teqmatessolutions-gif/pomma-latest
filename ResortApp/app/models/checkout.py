@@ -25,6 +25,7 @@ class Checkout(Base):
     booking_id = Column(Integer, ForeignKey("bookings.id"), nullable=True, unique=True)
     package_booking_id = Column(Integer, ForeignKey("package_bookings.id"), nullable=True, unique=True)
     payment_status = Column(String) 
+    pdf_url = Column(String, nullable=True) 
 
     booking = relationship("Booking", back_populates="checkout", uselist=False)
     package_booking = relationship("PackageBooking", back_populates="checkout", uselist=False)

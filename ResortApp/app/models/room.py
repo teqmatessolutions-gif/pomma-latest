@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean
+from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -46,6 +46,22 @@ class Room(Base):
         "FoodOrder",
         back_populates="room"
     )
+
+    images = relationship(
+        "RoomImage",
+        back_populates="room",
+        cascade="all, delete-orphan"
+    )
+
+class RoomImage(Base):
+    __tablename__ = "room_images"
+
+    id = Column(Integer, primary_key=True, index=True)
+    room_id = Column(Integer, ForeignKey("rooms.id"), nullable=False)
+    image_url = Column(String, nullable=False)
+    
+    room = relationship("Room", back_populates="images")
+
 
 
     def __repr__(self):

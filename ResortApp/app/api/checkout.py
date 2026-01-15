@@ -1,8 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body, UploadFile, File
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import or_, func, and_
-from typing import List
-from datetime import date, datetime, time
+from sqlalchemy import or_, and_, desc, cast, Date
+from typing import List, Optional
+from datetime import date, datetime, time, timedelta
+import random
+import string
+import os
+import shutil
 
 # Assume your utility and model imports are set up correctly
 from app.utils.auth import get_db, get_current_user
@@ -22,11 +26,118 @@ router = APIRouter(prefix="/bill", tags=["checkout"])
 # room_numbers: List[str]
 
 
+# Helper function to calculate charges from checkout totals
+def calculate_charges_breakdown(checkout: Checkout) -> BillBreakdown:
+    # Reconstruct charges breakdown based on stored totals
+    charges = BillBreakdown()
+    charges.room_charges = checkout.room_total
+    charges.food_charges = checkout.food_total
+    charges.service_charges = checkout.service_total
+    charges.package_charges = checkout.package_total
+    
+    # Re-calculate GST components
+    # Food & Service are always 5%
+    if charges.food_charges > 0:
+        charges.food_gst = charges.food_charges * 0.05
+        charges.food_cgst = charges.food_gst / 2
+        charges.food_sgst = charges.food_gst / 2
+        
+    if charges.service_charges > 0:
+        charges.service_gst = charges.service_charges * 0.05
+        charges.service_cgst = charges.service_gst / 2
+        charges.service_sgst = charges.service_gst / 2
+        
+    # Room/Package GST is the remainder of the tax_amount
+    calculated_other_tax = (charges.food_gst or 0) + (charges.service_gst or 0)
+    remaining_tax = max(0, (checkout.tax_amount or 0) - calculated_other_tax)
+    
+    if charges.package_charges > 0:
+        charges.package_gst = remaining_tax
+        charges.package_cgst = remaining_tax / 2
+        charges.package_sgst = remaining_tax / 2
+    elif charges.room_charges > 0:
+        charges.room_gst = remaining_tax
+        charges.room_cgst = remaining_tax / 2
+        charges.room_sgst = remaining_tax / 2
+        
+    charges.total_gst = checkout.tax_amount
+    charges.cgst = charges.total_gst / 2
+    charges.sgst = charges.total_gst / 2
+    charges.total_due = (charges.room_charges or 0) + (charges.food_charges or 0) + (charges.service_charges or 0) + (charges.package_charges or 0)
+    
+    return charges
+
 @router.get("/checkouts", response_model=List[CheckoutFull])
-def get_all_checkouts(db: Session = Depends(get_db), current_user: User = Depends(get_current_user), skip: int = 0, limit: int = 20):
-    """Retrieves a list of all completed checkouts, ordered by most recent."""
-    checkouts = db.query(Checkout).order_by(Checkout.id.desc()).offset(skip).limit(limit).all()
-    return checkouts if checkouts else []
+def get_all_checkouts(
+    db: Session = Depends(get_db), 
+    current_user: User = Depends(get_current_user), 
+    skip: int = 0, 
+    limit: int = 20,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    from_date: Optional[str] = None,
+    to_date: Optional[str] = None,
+    # Defensive: Handle potential automatic camelCase conversion by frontend/axios interceptors
+    fromDate: Optional[str] = None,
+    toDate: Optional[str] = None
+):
+    """Retrieves a list of checkouts, optionally filtered by date."""
+    query = db.query(Checkout)
+
+    # Debug logging
+    print(f"DEBUG Params: s={start_date}, e={end_date}, fd={from_date}, td={to_date}, fD={fromDate}, tD={toDate}")
+
+    # Use explicit start_date/end_date if provided, else fallback to from_date/to_date or camelCase variants
+    final_start = start_date or from_date or fromDate
+    final_end = end_date or to_date or toDate
+
+    try:
+        if final_start:
+            # Handle YYYY-MM-DD
+            if len(final_start) == 10 and "-" in final_start:
+                dt_start = datetime.strptime(final_start, "%Y-%m-%d")
+                # Start of day
+                dt_start = dt_start.replace(hour=0, minute=0, second=0, microsecond=0)
+                query = query.filter(Checkout.checkout_date >= dt_start)
+                print(f"DEBUG: Applied Start Filter (DT): >= {dt_start}")
+            # Handle ISO string (e.g. from frontend date picker sometimes)
+            elif "T" in final_start:
+                # Basic ISO parsing
+                query = query.filter(Checkout.checkout_date >= dt_start)
+                print(f"DEBUG: Applied Start Filter (ISO): >= {dt_start}")
+            else:
+                # Fallback string
+                query = query.filter(Checkout.checkout_date >= final_start)
+            
+        if final_end:
+            if len(final_end) == 10 and "-" in final_end:
+                dt_end = datetime.strptime(final_end, "%Y-%m-%d")
+                # End of day
+                query = query.filter(Checkout.checkout_date <= dt_end)
+                print(f"DEBUG: Applied End Filter (DT): <= {dt_end}")
+            elif "T" in final_end:
+                query = query.filter(Checkout.checkout_date <= dt_end)
+                print(f"DEBUG: Applied End Filter (ISO): <= {dt_end}")
+            else:
+                query = query.filter(Checkout.checkout_date <= final_end)
+
+    except Exception as e:
+        print(f"ERROR parsing dates: {e}")
+        # Fallback to string comparison
+        if final_start: query = query.filter(Checkout.checkout_date >= final_start)
+        if final_end: query = query.filter(Checkout.checkout_date <= final_end)
+
+    checkouts = query.order_by(Checkout.id.desc()).offset(skip).limit(limit).all()
+    print(f"DEBUG: Found {len(checkouts)} records after filtering.")
+    
+    # Enrich with calculated charges
+    result = []
+    for c in checkouts:
+        c_full = CheckoutFull.from_orm(c)
+        c_full.charges = calculate_charges_breakdown(c)
+        result.append(c_full)
+        
+    return result
 
 @router.get("/checkouts/{checkout_id}/details")
 def get_checkout_details(checkout_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -228,6 +339,68 @@ def get_checkout_details(checkout_id: int, db: Session = Depends(get_db), curren
              pkg_booking = db.query(PackageBooking).filter(PackageBooking.id == checkout.package_booking_id).first()
              if pkg_booking: guest_name = pkg_booking.guest_name
 
+    # Reconstruct charges breakdown for frontend compatibility
+    charges = BillBreakdown()
+    charges.room_charges = checkout.room_total
+    charges.food_charges = checkout.food_total
+    charges.service_charges = checkout.service_total
+    charges.package_charges = checkout.package_total
+    
+    # Re-calculate GST components (Estimates based on current logic as specific GST components aren't stored)
+    # Food & Service are always 5%
+    if charges.food_charges > 0:
+        charges.food_gst = charges.food_charges * 0.05
+        charges.food_cgst = charges.food_gst / 2
+        charges.food_sgst = charges.food_gst / 2
+        
+    if charges.service_charges > 0:
+        charges.service_gst = charges.service_charges * 0.05
+        charges.service_cgst = charges.service_gst / 2
+        charges.service_sgst = charges.service_gst / 2
+        
+    # Room/Package GST is the remainder of the tax_amount
+    # This ensures the total tax matches the stored record exactly
+    calculated_other_tax = (charges.food_gst or 0) + (charges.service_gst or 0)
+    remaining_tax = max(0, (checkout.tax_amount or 0) - calculated_other_tax)
+    
+    if charges.package_charges > 0:
+        charges.package_gst = remaining_tax
+        charges.package_cgst = remaining_tax / 2
+        charges.package_sgst = remaining_tax / 2
+    elif charges.room_charges > 0:
+        charges.room_gst = remaining_tax
+        charges.room_cgst = remaining_tax / 2
+        charges.room_sgst = remaining_tax / 2
+        
+    charges.total_gst = checkout.tax_amount
+    charges.total_due = (charges.room_charges or 0) + (charges.food_charges or 0) + (charges.service_charges or 0) + (charges.package_charges or 0)
+
+    # Flatten food items for display
+    # The frontend expects a flat list of items in the modal
+    flat_food_items = []
+    for order in food_orders:
+         for item in order["items"]:
+              existing = next((x for x in flat_food_items if x.item_name == item["item_name"]), None)
+              if existing:
+                   existing.quantity += item["quantity"]
+                   existing.amount += item["total"]
+              else:
+                   flat_food_items.append(schemas.FoodOrderItem(
+                        item_name=item["item_name"],
+                        quantity=item["quantity"],
+                        amount=item["total"]
+                   ))
+    charges.food_items = flat_food_items
+
+    # Flatten service items
+    flat_service_items = []
+    for service in services:
+         flat_service_items.append(schemas.ServiceItem(
+              service_name=service["service_name"],
+              charges=service["charges"]
+         ))
+    charges.service_items = flat_service_items
+
     return {
         "id": checkout.id,
         "booking_id": checkout.booking_id,
@@ -248,7 +421,8 @@ def get_checkout_details(checkout_id: int, db: Session = Depends(get_db), curren
         "room_numbers": room_numbers,
         "food_orders": food_orders,
         "services": services,
-        "booking_details": booking_details
+        "booking_details": booking_details,
+        "charges": charges
     }
 
 @router.get("/active-rooms", response_model=List[dict])
@@ -475,29 +649,44 @@ def _calculate_bill_for_single_room(db: Session, room_number: str):
     charges.service_items = [{"service_name": ass.service.name, "charges": ass.service.charges} for ass in unbilled_services]
     
     # Calculate GST
-    # Room charges: 12% GST if <= 7500, 18% GST if > 7500
+    # Room charges: 5% GST if <= 7500, 18% GST if > 7500
     room_charge_amount = charges.room_charges or 0
     if room_charge_amount > 0:
         if room_charge_amount <= 7500:
-            charges.room_gst = room_charge_amount * 0.12
+            charges.room_gst = room_charge_amount * 0.05
         else:
             charges.room_gst = room_charge_amount * 0.18
+        charges.room_cgst = charges.room_gst / 2
+        charges.room_sgst = charges.room_gst / 2
     
-    # Package charges: Same rule as room charges (12% if <= 7500, 18% if > 7500)
+    # Package charges: Same rule as room charges (5% if <= 7500, 18% if > 7500)
     package_charge_amount = charges.package_charges or 0
     if package_charge_amount > 0:
         if package_charge_amount <= 7500:
-            charges.package_gst = package_charge_amount * 0.12
+            charges.package_gst = package_charge_amount * 0.05
         else:
             charges.package_gst = package_charge_amount * 0.18
+        charges.package_cgst = charges.package_gst / 2
+        charges.package_sgst = charges.package_gst / 2
     
     # Food charges: 5% GST always
     food_charge_amount = charges.food_charges or 0
     if food_charge_amount > 0:
         charges.food_gst = food_charge_amount * 0.05
+        charges.food_cgst = charges.food_gst / 2
+        charges.food_sgst = charges.food_gst / 2
+
+    # Service charges: 5% GST
+    service_charge_amount = charges.service_charges or 0
+    if service_charge_amount > 0:
+        charges.service_gst = service_charge_amount * 0.05
+        charges.service_cgst = charges.service_gst / 2
+        charges.service_sgst = charges.service_gst / 2
     
-    # Total GST
-    charges.total_gst = (charges.room_gst or 0) + (charges.food_gst or 0) + (charges.package_gst or 0)
+    # Grand Total GST
+    charges.total_gst = (charges.room_gst or 0) + (charges.food_gst or 0) + (charges.service_gst or 0) + (charges.package_gst or 0)
+    charges.cgst = charges.total_gst / 2
+    charges.sgst = charges.total_gst / 2
     
     # Total due (subtotal before GST)
     charges.total_due = sum([charges.room_charges, charges.food_charges, charges.service_charges, charges.package_charges])
@@ -643,29 +832,44 @@ def _calculate_bill_for_entire_booking(db: Session, room_number: str):
     charges.service_items = [{"service_name": ass.service.name, "charges": ass.service.charges} for ass in unbilled_services]
 
     # Calculate GST
-    # Room charges: 12% GST if <= 7500, 18% GST if > 7500
+    # Room charges: 5% GST if <= 7500, 18% GST if > 7500
     room_charge_amount = charges.room_charges or 0
     if room_charge_amount > 0:
         if room_charge_amount <= 7500:
-            charges.room_gst = room_charge_amount * 0.12
+            charges.room_gst = room_charge_amount * 0.05
         else:
             charges.room_gst = room_charge_amount * 0.18
+        charges.room_cgst = charges.room_gst / 2
+        charges.room_sgst = charges.room_gst / 2
     
-    # Package charges: Same rule as room charges (12% if <= 7500, 18% if > 7500)
+    # Package charges: Same rule as room charges (5% if <= 7500, 18% if > 7500)
     package_charge_amount = charges.package_charges or 0
     if package_charge_amount > 0:
         if package_charge_amount <= 7500:
-            charges.package_gst = package_charge_amount * 0.12
+            charges.package_gst = package_charge_amount * 0.05
         else:
             charges.package_gst = package_charge_amount * 0.18
+        charges.package_cgst = charges.package_gst / 2
+        charges.package_sgst = charges.package_gst / 2
     
     # Food charges: 5% GST always
     food_charge_amount = charges.food_charges or 0
     if food_charge_amount > 0:
         charges.food_gst = food_charge_amount * 0.05
+        charges.food_cgst = charges.food_gst / 2
+        charges.food_sgst = charges.food_gst / 2
+
+    # Service charges: 5% GST
+    service_charge_amount = charges.service_charges or 0
+    if service_charge_amount > 0:
+        charges.service_gst = service_charge_amount * 0.05
+        charges.service_cgst = charges.service_gst / 2
+        charges.service_sgst = charges.service_gst / 2
     
-    # Total GST
-    charges.total_gst = (charges.room_gst or 0) + (charges.food_gst or 0) + (charges.package_gst or 0)
+    # Grand Total GST
+    charges.total_gst = (charges.room_gst or 0) + (charges.food_gst or 0) + (charges.service_gst or 0) + (charges.package_gst or 0)
+    charges.cgst = charges.total_gst / 2
+    charges.sgst = charges.total_gst / 2
 
     # Total due (subtotal before GST)
     charges.total_due = sum([charges.room_charges, charges.food_charges, charges.service_charges, charges.package_charges])
@@ -967,3 +1171,53 @@ def process_booking_checkout(room_number: str, request: CheckoutRequest, db: Ses
             grand_total=new_checkout.grand_total,
             checkout_date=new_checkout.checkout_date or new_checkout.created_at
         )
+
+
+@router.post("/checkout/{checkout_id}/upload-pdf")
+def upload_checkout_pdf(
+    checkout_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Uploads a PDF invoice for a specific checkout record.
+    """
+    print(f"DEBUG: Handling upload for checkout_id={checkout_id}")
+    # print(f"DEBUG: DB URL: {db.bind.url}") 
+    checkout = db.query(Checkout).filter(Checkout.id == checkout_id).first()
+    if not checkout:
+        print(f"DEBUG: Checkout {checkout_id} NOT FOUND in DB.")
+        raise HTTPException(status_code=404, detail="Checkout not found")
+    else:
+        print(f"DEBUG: Checkout {checkout_id} FOUND. Proceeding with upload.")
+
+    # Validate file type (optional but recommended)
+    if not file.content_type == "application/pdf":
+        raise HTTPException(status_code=400, detail="Only PDF files are allowed.")
+
+    # Create upload directory if it doesn't exist
+    upload_dir = "uploads/invoices"
+    os.makedirs(upload_dir, exist_ok=True)
+
+    # Generate unique filename
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    filename = f"invoice_{checkout_id}_{timestamp}_{file.filename}"
+    file_path = os.path.join(upload_dir, filename)
+
+    try:
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save file: {str(e)}")
+
+    # Update checkout record with the RELATIVE URL path
+    # Frontends usually expect /uploads/..., conform to that convention
+    # Force forward slashes for URL compatibility
+    relative_path = f"/{upload_dir}/{filename}".replace("\\", "/")
+    
+    checkout.pdf_url = relative_path
+    db.commit()
+    db.refresh(checkout)
+
+    return {"message": "PDF uploaded successfully", "pdf_url": relative_path}

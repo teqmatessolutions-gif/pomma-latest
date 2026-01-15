@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Float, Integer, String, ForeignKey, Date
+from sqlalchemy import Column, Float, Integer, String, ForeignKey, Date, DateTime
 from sqlalchemy.orm import relationship
+from datetime import datetime
 from app.database import Base
 from .room import Room
 from .user import User
@@ -28,6 +29,22 @@ class Booking(Base):
         back_populates="booking",
         cascade="all, delete-orphan"
     )
+    checkin_documents = relationship(
+        "CheckInDocument",
+        back_populates="booking",
+        cascade="all, delete-orphan"
+    )
+
+class CheckInDocument(Base):
+    __tablename__ = "checkin_documents"
+
+    id = Column(Integer, primary_key=True, index=True)
+    booking_id = Column(Integer, ForeignKey("bookings.id"))
+    type = Column(String)  # "id_card" or "guest_photo"
+    image_url = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    booking = relationship("Booking", back_populates="checkin_documents")
 
 class BookingRoom(Base):
     __tablename__ = "booking_rooms"

@@ -167,7 +167,12 @@ app.include_router(auth.router, prefix="/api", tags=["Authentication"])
 app.include_router(user.router, prefix="/api", tags=["Users"])
 app.include_router(room.router, prefix="/api", tags=["Rooms"])
 app.include_router(packages.router, prefix="/api", tags=["Packages"])
-app.include_router(frontend.router, prefix="/api", tags=["Frontend"])
+# Test endpoint to verify routing
+@app.get("/api/frontend/test")
+async def test_frontend_route():
+    return {"message": "Frontend routing works!"}
+
+app.include_router(frontend.router, prefix="/api/frontend", tags=["Frontend"])
 app.include_router(booking.router, prefix="/api", tags=["Booking"])
 app.include_router(checkout.router, prefix="/api", tags=["Checkout"])
 app.include_router(dashboard.router, prefix="/api", tags=["Dashboard"])

@@ -60,6 +60,12 @@ class PackageBooking(Base):
         cascade="all, delete-orphan"
     )
 
+    checkin_documents = relationship(
+        "PackageCheckInDocument",
+        back_populates="package_booking",
+        cascade="all, delete-orphan"
+    )
+
 
 class PackageBookingRoom(Base):
     __tablename__ = "package_booking_rooms"
@@ -70,3 +76,15 @@ class PackageBookingRoom(Base):
     # Relationships
     package_booking = relationship("PackageBooking", back_populates="rooms")
     room = relationship("Room", back_populates="package_booking_rooms")
+
+
+class PackageCheckInDocument(Base):
+    __tablename__ = "package_checkin_documents"
+
+    id = Column(Integer, primary_key=True, index=True)
+    package_booking_id = Column(Integer, ForeignKey("package_bookings.id"))
+    type = Column(String)  # "id_card" or "guest_photo"
+    image_url = Column(String)
+    created_at = Column(DateTime, default=func.now())
+
+    package_booking = relationship("PackageBooking", back_populates="checkin_documents")

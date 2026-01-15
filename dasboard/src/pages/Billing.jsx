@@ -7,6 +7,7 @@ import { DollarSign, BedDouble, Users, Utensils, Package, Hash, Calendar, Credit
 import jsPDF from 'jspdf';
 import { useNavigate } from "react-router-dom";
 import autoTable from 'jspdf-autotable';
+import html2canvas from 'html2canvas';
 // Make sure to place your logo in the specified path or update the path accordingly.
 import { useInfiniteScroll } from "./useInfiniteScroll";
 import pommaLogo from '../assets/pommalogo.png';
@@ -169,118 +170,166 @@ const CheckoutDetailModal = React.memo(({ checkout, onClose }) => {
               </div>
             )}
 
-            {/* Food Orders */}
+            {/* 3. Itemized Charges by Category */}
+
+            {/* ROOM CHARGES SECTION */}
+            {(details.room_total > 0 || details.package_total > 0) && (
+              <div className="border-t pt-4">
+                <h3 className="text-lg font-semibold mb-3 text-indigo-700">Room Charges</h3>
+                <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                  {details.room_total > 0 && (
+                    <div className="flex justify-between">
+                      <span>Room Charges ({details.stay_nights} nights):</span>
+                      <span className="font-medium">{formatCurrency(details.room_total)}</span>
+                    </div>
+                  )}
+                  {details.package_total > 0 && (
+                    <div className="flex justify-between">
+                      <span>Package Charges:</span>
+                      <span className="font-medium">{formatCurrency(details.package_total)}</span>
+                    </div>
+                  )}
+
+                  {/* Room Tax Breakdown */}
+                  {(details.charges?.room_cgst > 0 || details.charges?.package_cgst > 0) && (
+                    <div className="flex justify-between text-sm text-gray-600 pl-4 border-l-2 border-indigo-200">
+                      <span>CGST:</span>
+                      <span>{formatCurrency((details.charges?.room_cgst || 0) + (details.charges?.package_cgst || 0))}</span>
+                    </div>
+                  )}
+                  {(details.charges?.room_sgst > 0 || details.charges?.package_sgst > 0) && (
+                    <div className="flex justify-between text-sm text-gray-600 pl-4 border-l-2 border-indigo-200">
+                      <span>SGST:</span>
+                      <span>{formatCurrency((details.charges?.room_sgst || 0) + (details.charges?.package_sgst || 0))}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between pt-2 border-t font-semibold">
+                    <span>Section Total:</span>
+                    <span>{formatCurrency(
+                      (details.room_total || 0) + (details.package_total || 0) +
+                      ((details.charges?.room_gst || 0) + (details.charges?.package_gst || 0))
+                    )}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* FOOD CHARGES SECTION */}
             {details.food_orders && details.food_orders.length > 0 && (
               <div className="border-t pt-4">
-                <h3 className="text-lg font-semibold mb-3">Food Orders</h3>
+                <h3 className="text-lg font-semibold mb-3 text-indigo-700">Food & Beverage</h3>
                 <div className="space-y-4">
                   {details.food_orders.map((order, idx) => (
-                    <div key={idx} className="bg-gray-50 p-4 rounded-lg">
+                    <div key={idx} className="bg-gray-50 p-4 rounded-lg border border-gray-100">
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <p className="font-semibold">Order #{order.id}</p>
-                          <p className="text-sm text-gray-500">Room: {order.room_number}</p>
-                          <p className="text-sm text-gray-500">{new Date(order.created_at).toLocaleString()}</p>
+                          <p className="font-medium">Order #{order.id} <span className="text-xs text-gray-500">({order.room_number})</span></p>
+                          <p className="text-xs text-gray-400">{new Date(order.created_at).toLocaleString()}</p>
                         </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-indigo-600">{formatCurrency(order.amount)}</p>
-                          <p className="text-sm text-gray-500">{order.status}</p>
-                        </div>
+                        <span className="font-semibold">{formatCurrency(order.amount)}</span>
                       </div>
-                      <div className="mt-2 space-y-1">
+                      <div className="mt-1 space-y-1 pl-2 border-l-2 border-gray-200">
                         {order.items?.map((item, itemIdx) => (
-                          <div key={itemIdx} className="flex justify-between text-sm">
+                          <div key={itemIdx} className="flex justify-between text-sm text-gray-600">
                             <span>{item.item_name} x {item.quantity}</span>
-                            <span className="font-medium">{formatCurrency(item.total)}</span>
+                            <span>{formatCurrency(item.total)}</span>
                           </div>
                         ))}
                       </div>
                     </div>
                   ))}
+
+                  {/* Food Section Summary */}
+                  <div className="bg-indigo-50 p-3 rounded-lg space-y-1 mt-2">
+                    <div className="flex justify-between font-medium">
+                      <span>Food Subtotal:</span>
+                      <span>{formatCurrency(details.food_total)}</span>
+                    </div>
+                    {details.charges?.food_cgst > 0 && (
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>CGST (2.5%):</span>
+                        <span>{formatCurrency(details.charges.food_cgst)}</span>
+                      </div>
+                    )}
+                    {details.charges?.food_sgst > 0 && (
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>SGST (2.5%):</span>
+                        <span>{formatCurrency(details.charges.food_sgst)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between pt-1 border-t border-indigo-200 font-bold text-indigo-700">
+                      <span>Food Total:</span>
+                      <span>{formatCurrency((details.food_total || 0) + (details.charges?.food_gst || 0))}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Services */}
+            {/* SERVICE CHARGES SECTION */}
             {details.services && details.services.length > 0 && (
               <div className="border-t pt-4">
-                <h3 className="text-lg font-semibold mb-3">Services</h3>
+                <h3 className="text-lg font-semibold mb-3 text-indigo-700">Services</h3>
                 <div className="space-y-2">
                   {details.services.map((service, idx) => (
-                    <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+                    <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
                       <div>
-                        <p className="font-semibold">{service.service_name}</p>
-                        <p className="text-sm text-gray-500">Room: {service.room_number}</p>
-                        {service.created_at && (
-                          <p className="text-xs text-gray-400">{new Date(service.created_at).toLocaleString()}</p>
-                        )}
+                        <p className="font-medium">{service.service_name}</p>
+                        <p className="text-xs text-gray-500">Room: {service.room_number} | {new Date(service.created_at).toLocaleString()}</p>
                       </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-indigo-600">{formatCurrency(service.charges)}</p>
-                        <p className="text-sm text-gray-500">{service.status}</p>
-                      </div>
+                      <span className="font-semibold">{formatCurrency(service.charges)}</span>
                     </div>
                   ))}
+
+                  {/* Service Section Summary */}
+                  <div className="bg-indigo-50 p-3 rounded-lg space-y-1 mt-2">
+                    <div className="flex justify-between font-medium">
+                      <span>Services Subtotal:</span>
+                      <span>{formatCurrency(details.service_total)}</span>
+                    </div>
+                    {details.charges?.service_cgst > 0 && (
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>CGST (2.5%):</span>
+                        <span>{formatCurrency(details.charges.service_cgst)}</span>
+                      </div>
+                    )}
+                    {details.charges?.service_sgst > 0 && (
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>SGST (2.5%):</span>
+                        <span>{formatCurrency(details.charges.service_sgst)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between pt-1 border-t border-indigo-200 font-bold text-indigo-700">
+                      <span>Services Total:</span>
+                      <span>{formatCurrency((details.service_total || 0) + (details.charges?.service_gst || 0))}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Bill Summary */}
-            <div className="border-t pt-4">
-              <h3 className="text-lg font-semibold mb-3">Bill Summary</h3>
-              <div className="space-y-2">
-                {details.room_total > 0 && (
-                  <div className="flex justify-between">
-                    <span>Room Charges:</span>
-                    <span className="font-medium">{formatCurrency(details.room_total)}</span>
-                  </div>
-                )}
-                {details.package_total > 0 && (() => {
-                  let breakdown = "";
-                  if (details.booking_details && details.booking_details.check_in && details.booking_details.check_out) {
-                    const start = new Date(details.booking_details.check_in);
-                    const end = new Date(details.booking_details.check_out);
-                    const nights = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24));
-                    if (nights > 0) {
-                      const rate = details.package_total / nights;
-                      breakdown = `(${formatCurrency(rate)} x ${nights} days)`;
-                    }
-                  }
-                  return (
-                    <div className="flex justify-between">
-                      <div>
-                        <span>Package Charges:</span>
-                        {breakdown && <span className="text-xs text-gray-500 ml-2">{breakdown}</span>}
-                      </div>
-                      <span className="font-medium">{formatCurrency(details.package_total)}</span>
-                    </div>
-                  );
-                })()}
-                {details.food_total > 0 && (
-                  <div className="flex justify-between">
-                    <span>Food Charges:</span>
-                    <span className="font-medium">{formatCurrency(details.food_total)}</span>
-                  </div>
-                )}
-                {details.service_total > 0 && (
-                  <div className="flex justify-between">
-                    <span>Service Charges:</span>
-                    <span className="font-medium">{formatCurrency(details.service_total)}</span>
-                  </div>
-                )}
-                {details.tax_amount > 0 && (
-                  <div className="flex justify-between">
-                    <span>Tax:</span>
-                    <span className="font-medium">{formatCurrency(details.tax_amount)}</span>
-                  </div>
-                )}
+            {/* Bill Summary - Grand Total Only */}
+            <div className="border-t pt-4 mt-4">
+              <h3 className="text-lg font-semibold mb-3">Invoice Summary</h3>
+              <div className="space-y-2 bg-gray-100 p-4 rounded-xl">
+                <div className="flex justify-between text-gray-600">
+                  <span>Total Charges (Excl. Tax):</span>
+                  <span className="font-medium">{formatCurrency(details.charges.total_due)}</span>
+                </div>
+
+                <div className="flex justify-between text-gray-600">
+                  <span>Total Tax (CGST + SGST):</span>
+                  <span className="font-medium">{formatCurrency(details.tax_amount)}</span>
+                </div>
+
                 {details.discount_amount > 0 && (
                   <div className="flex justify-between text-red-600">
                     <span>Discount:</span>
                     <span className="font-medium">-{formatCurrency(details.discount_amount)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-xl font-bold text-indigo-600 pt-2 border-t">
+                <div className="flex justify-between text-2xl font-bold text-indigo-700 pt-3 border-t border-gray-300 mt-2">
                   <span>Grand Total:</span>
                   <span>{formatCurrency(details.grand_total)}</span>
                 </div>
@@ -306,6 +355,7 @@ const Billing = () => {
   const [billData, setBillData] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("Card");
   const [discount, setDiscount] = useState(0);
+  const [invoiceId, setInvoiceId] = useState(null); // New state for Invoice ID
   const [loading, setLoading] = useState(false);
   const [bannerMessage, setBannerMessage] = useState({ type: null, text: "" });
   const [activeRooms, setActiveRooms] = useState([]);
@@ -324,6 +374,20 @@ const Billing = () => {
   const [toDate, setToDate] = useState("");
   const [minAmount, setMinAmount] = useState("");
   const [maxAmount, setMaxAmount] = useState("");
+
+  const [kpiData, setKpiData] = useState({
+    checkouts_today: 0,
+    checkouts_total: 0,
+    available_rooms: 0,
+    booked_rooms: 0,
+    food_revenue_today: 0,
+    package_bookings_today: 0,
+  });
+
+  const [chartData, setChartData] = useState({
+    revenue_breakdown: [],
+    weekly_performance: [],
+  });
 
   // Function to show banner message
   const showBannerMessage = (type, text) => {
@@ -356,19 +420,6 @@ const Billing = () => {
   }, [isFetchingMore, hasMoreCheckouts, checkouts.length]);
 
   const loadMoreRef = useInfiniteScroll(loadMoreCheckouts, hasMoreCheckouts, isFetchingMore);
-  const [kpiData, setKpiData] = useState({
-    checkouts_today: 0,
-    checkouts_total: 0,
-    available_rooms: 0,
-    booked_rooms: 0,
-    food_revenue_today: 0,
-    package_bookings_today: 0,
-  });
-
-  const [chartData, setChartData] = useState({
-    revenue_breakdown: [],
-    weekly_performance: [],
-  });
 
   // Extract unique payment methods from checkouts
   const paymentMethods = useMemo(() => {
@@ -461,10 +512,24 @@ const Billing = () => {
     setMaxAmount("");
   };
 
+  const [resortInfo, setResortInfo] = useState(null);
+
   // Fetch initial data on component mount
   useEffect(() => {
     fetchInitialData();
+    fetchResortInfo();
   }, []);
+
+  const fetchResortInfo = async () => {
+    try {
+      const res = await api.get('/frontend/resort-info/');
+      if (res.data && res.data.length > 0) {
+        setResortInfo(res.data[0]);
+      }
+    } catch (err) {
+      console.error("Failed to fetch resort info:", err);
+    }
+  };
 
   const fetchInitialData = async () => {
     try {
@@ -564,6 +629,7 @@ const Billing = () => {
     }
     setLoading(true);
     setBillData(null);
+    setInvoiceId(null);
     setDiscount(0); // Reset discount when fetching a new bill
     try {
       // Extract actual room number from composite key if needed
@@ -617,10 +683,37 @@ const Billing = () => {
         discount_amount: discountAmount,
         checkout_mode: checkoutMode,
       });
+
+      // --- PDF Upload Logic ---
+      const checkoutId = res.data.checkout_id;
+
+      // 1. Set Invoice ID and wait for render so html2canvas captures it
+      setInvoiceId(checkoutId);
+      await new Promise(resolve => setTimeout(resolve, 150));
+
+      // Generate PDF blob immediately
+      const pdfBlob = await generatePDF('blob');
+      if (pdfBlob) {
+        const formData = new FormData();
+        // The filename on server is generated, but we pass a name here for the form
+        formData.append('file', pdfBlob, `bill_${checkoutId}.pdf`);
+
+        try {
+          await api.post(`/bill/checkout/${checkoutId}/upload-pdf`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+          console.log("PDF uploaded successfully");
+        } catch (uploadErr) {
+          console.error("Failed to upload generated PDF:", uploadErr);
+          showBannerMessage("warning", `Checkout successful, but PDF upload failed: ${uploadErr.message}`);
+        }
+      }
+
       const roomCount = billData.room_numbers?.length || 1;
       const modeText = checkoutMode === "single" ? "single room" : "all rooms";
       setBillData(null);
       setDiscount(0);
+      setInvoiceId(null);
       setRoomNumber(""); // Clear input on successful checkout
       setCheckoutMode("multiple"); // Reset to default
       showBannerMessage("success", `Checkout successful! ${roomCount} room(s) (${modeText}) checked out. Checkout ID: ${res.data.checkout_id}`);
@@ -656,120 +749,57 @@ const Billing = () => {
 
   const handleCancelBill = () => {
     setBillData(null);
+    setInvoiceId(null);
     setDiscount(0);
     showBannerMessage("success", "Bill cancelled. You can select another room.");
   };
 
-  const generatePDF = (action = 'print') => {
+  const generatePDF = async (action = 'print') => {
     if (!billData) return;
 
-    const doc = new jsPDF();
+    // Use the actual bill-details container
+    const input = document.getElementById('bill-details');
+    if (!input) {
+      console.error("Statement element not found");
+      showBannerMessage("error", "Could not find bill details to generate PDF.");
+      return;
+    }
 
-    // 1. Add Logo and Hotel Info
     try {
-      doc.addImage(pommaLogo, 'PNG', 15, 10, 40, 20); // x, y, width, height
-    } catch (e) {
-      console.error("Could not add logo to PDF", e);
-    }
+      // Create canvas from the HTML element
+      const canvas = await html2canvas(input, {
+        scale: 2, // Higher scale for better resolution
+        useCORS: true, // Allow loading cross-origin images (like logo)
+        logging: false,
+        backgroundColor: '#ffffff' // Ensure white background
+      });
 
-    doc.setFontSize(22);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Invoice', 105, 25, { align: 'center' });
+      const imgData = canvas.toDataURL('image/png');
 
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(100, 100, 100);
-    doc.text('Pomma Resort', 195, 33, { align: 'right' });
-    doc.text('Munnar, Kerala', 195, 38, { align: 'right' });
-    doc.text('contact@pommaholidays.com', 195, 43, { align: 'right' });
-    doc.setTextColor(0, 0, 0); // Reset color
+      // Calculate dimensions to fit A4 page
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
 
-    // 2. Bill Details
-    // Horizontal Line separator
-    doc.setDrawColor(200, 200, 200); // Light gray
-    doc.line(14, 48, 196, 48);
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Bill To:', 14, 58);
-    doc.setFont('helvetica', 'normal');
-    doc.text(billData.guest_name, 14, 64);
-    doc.text(`Rooms: ${billData.room_numbers.join(', ')}`, 14, 70);
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
 
-    doc.setFont('helvetica', 'bold');
-    doc.text('Check-in:', 130, 58);
-    doc.setFont('helvetica', 'normal');
-    doc.text(new Date(billData.check_in).toLocaleDateString(), 155, 58);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Check-out:', 130, 64);
-    doc.setFont('helvetica', 'normal');
-    doc.text(new Date(billData.check_out).toLocaleDateString(), 155, 64);
-
-    // 3. Itemized Charges Table
-    const chargesBody = [];
-    if (billData.charges.room_charges > 0) chargesBody.push(['Room Charges', `Stay for ${billData.stay_nights} nights`, formatCurrency(billData.charges.room_charges)]);
-    if (billData.charges.package_charges > 0) {
-      const nightlyRate = billData.stay_nights > 0 ? billData.charges.package_charges / billData.stay_nights : 0;
-      chargesBody.push(['Package Charges', `Package for ${billData.stay_nights} nights (${formatCurrency(nightlyRate)} x ${billData.stay_nights})`, formatCurrency(billData.charges.package_charges)]);
-    }
-    billData.charges.food_items.forEach(item => chargesBody.push([`Food: ${item.item_name}`, `Quantity: ${item.quantity}`, formatCurrency(item.amount)]));
-    billData.charges.service_items.forEach(item => chargesBody.push([`Service: ${item.service_name}`, '', formatCurrency(item.charges)]));
-
-    autoTable(doc, {
-      startY: 85,
-      head: [['Description', 'Details', 'Amount']],
-      body: chargesBody,
-      theme: 'striped',
-      headStyles: { fillColor: [38, 41, 61] } // Dark blue color
-    });
-
-    // 4. Totals with GST breakdown
-    const subtotal = billData.charges.total_due;
-    const totalGST = billData.charges.total_gst || 0;
-    const grandTotal = Math.max(0, subtotal + totalGST - (parseFloat(discount) || 0));
-    const totals = [
-      ['Subtotal', formatCurrency(subtotal)],
-      ...(billData.charges.room_gst > 0 ? [['Room GST', `+${formatCurrency(billData.charges.room_gst || 0)}`]] : []),
-      ...(billData.charges.package_gst > 0 ? [['Package GST', `+${formatCurrency(billData.charges.package_gst || 0)}`]] : []),
-      ...(billData.charges.food_gst > 0 ? [['Food GST (5%)', `+${formatCurrency(billData.charges.food_gst || 0)}`]] : []),
-      ['Total GST', `+${formatCurrency(totalGST)}`],
-      ...(discount > 0 ? [['Discount', `-${formatCurrency(parseFloat(discount))}`]] : []),
-      ['Grand Total', formatCurrency(grandTotal)]
-    ];
-
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 2,
-      body: totals,
-      theme: 'plain',
-      tableWidth: 'wrap',
-      margin: { left: 120 },
-      styles: { cellPadding: 1.5, fontSize: 11 },
-      columnStyles: {
-        0: { fontStyle: 'bold', halign: 'right' },
-        1: { fontStyle: 'bold', halign: 'right' }
-      },
-      didParseCell: (data) => {
-        if (data.row.index === totals.length - 1) { // Grand Total row
-          data.cell.styles.fontStyle = 'bold';
-          data.cell.styles.fontSize = 14;
-        }
+      if (action === 'blob') {
+        return pdf.output('blob');
+      } else if (action === 'download') {
+        pdf.save(`Invoice_${billData.guest_name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+      } else { // Default to print
+        pdf.autoPrint();
+        window.open(pdf.output('bloburl'), '_blank');
       }
-    });
-
-    // 5. Footer
-    const pageCount = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(10);
-      doc.text('Thank you for staying with us!', 105, doc.internal.pageSize.height - 10, { align: 'center' });
-    }
-
-    // 6. Perform action
-    if (action === 'print') {
-      doc.autoPrint();
-      doc.output('dataurlnewwindow'); // Opens PDF in new window with print dialog
-    } else {
-      doc.save(`bill-room-${billData.room_numbers.join('-')}.pdf`); // Downloads the file
+    } catch (err) {
+      console.error("Error generating PDF:", err);
+      showBannerMessage("error", "Failed to generate PDF invoice.");
     }
   };
 
@@ -784,47 +814,71 @@ const Billing = () => {
     text += `Rooms: ${billData.room_numbers.join(', ')}\n`;
     text += `Check-in: ${new Date(billData.check_in).toLocaleDateString()}\n`;
     text += `Check-out: ${new Date(billData.check_out).toLocaleDateString()}\n`;
-    text += `${line}\n`;
-    text += `${bold('Itemized Charges:')}\n`;
-    if (billData.charges.room_charges > 0) text += `Room Charges: ${formatCurrency(billData.charges.room_charges)}\n`;
-    if (billData.charges.package_charges > 0) {
-      const nightlyRate = billData.stay_nights > 0 ? billData.charges.package_charges / billData.stay_nights : 0;
-      text += `Package Charges: ${formatCurrency(billData.charges.package_charges)} (${formatCurrency(nightlyRate)} x ${billData.stay_nights} nights)\n`;
+    if (resortInfo?.gst_no) {
+      text += `GST No: ${resortInfo.gst_no}\n`;
+    }
+    text += `${line}\n\n`;
+
+    // 1. ROOM CHARGES
+    if (billData.charges.room_charges > 0 || billData.charges.package_charges > 0) {
+      text += `${bold('ROOM CHARGES')}\n`;
+      if (billData.charges.room_charges > 0) {
+        text += `Room Rent: ${formatCurrency(billData.charges.room_charges)}\n`;
+      }
+      if (billData.charges.package_charges > 0) {
+        text += `Package: ${formatCurrency(billData.charges.package_charges)}\n`;
+      }
+
+      const roomTax = (billData.charges.room_gst || 0) + (billData.charges.package_gst || 0);
+      if (roomTax > 0) {
+        text += `CGST: ${formatCurrency(roomTax / 2)}\n`;
+        text += `SGST: ${formatCurrency(roomTax / 2)}\n`;
+      }
+      text += `Room Total: ${formatCurrency((billData.charges.room_charges || 0) + (billData.charges.package_charges || 0) + roomTax)}\n\n`;
     }
 
+    // 2. FOOD CHARGES
     if (billData.charges.food_items.length > 0) {
-      text += `\nFood & Beverage:\n`;
+      text += `${bold('FOOD & BEVERAGE')}\n`;
       billData.charges.food_items.forEach(item => {
-        text += `- ${item.item_name} (x${item.quantity}): ${formatCurrency(item.amount)}\n`;
+        text += `- ${item.item_name} x${item.quantity}: ${formatCurrency(item.amount)}\n`;
       });
+      text += `Subtotal: ${formatCurrency(billData.charges.food_charges)}\n`;
+      if (billData.charges.food_gst > 0) {
+        text += `CGST (2.5%): ${formatCurrency(billData.charges.food_cgst)}\n`;
+        text += `SGST (2.5%): ${formatCurrency(billData.charges.food_sgst)}\n`;
+      }
+      text += `Food Total: ${formatCurrency((billData.charges.food_charges || 0) + (billData.charges.food_gst || 0))}\n\n`;
     }
+
+    // 3. SERVICE CHARGES
     if (billData.charges.service_items.length > 0) {
-      text += `\nAdditional Services:\n`;
+      text += `${bold('SERVICES')}\n`;
       billData.charges.service_items.forEach(item => {
         text += `- ${item.service_name}: ${formatCurrency(item.charges)}\n`;
       });
+      text += `Subtotal: ${formatCurrency(billData.charges.service_charges)}\n`;
+      if (billData.charges.service_gst > 0) {
+        text += `CGST (2.5%): ${formatCurrency(billData.charges.service_cgst)}\n`;
+        text += `SGST (2.5%): ${formatCurrency(billData.charges.service_sgst)}\n`;
+      }
+      text += `Services Total: ${formatCurrency((billData.charges.service_charges || 0) + (billData.charges.service_gst || 0))}\n\n`;
     }
-    text += `${line}\n`;
-    text += `Subtotal: ${formatCurrency(billData.charges.total_due)}\n`;
-    // GST Breakdown
-    if (billData.charges.room_gst > 0) {
-      const gstRate = billData.charges.room_charges <= 7500 ? '12%' : '18%';
-      text += `Room GST (${gstRate}): +${formatCurrency(billData.charges.room_gst || 0)}\n`;
-    }
-    if (billData.charges.package_gst > 0) {
-      const gstRate = billData.charges.package_charges <= 7500 ? '12%' : '18%';
-      text += `Package GST (${gstRate}): +${formatCurrency(billData.charges.package_gst || 0)}\n`;
-    }
-    if (billData.charges.food_gst > 0) {
-      text += `Food GST (5%): +${formatCurrency(billData.charges.food_gst || 0)}\n`;
-    }
-    text += `Total GST: +${formatCurrency(billData.charges.total_gst || 0)}\n`;
-    if (discount > 0) text += `Discount: -${formatCurrency(parseFloat(discount))}\n`;
-    text += `${bold('Grand Total:')} ${formatCurrency(Math.max(0, billData.charges.total_due + (billData.charges.total_gst || 0) - discount))}\n`;
-    text += `${line}\nThank you for staying with us!`;
 
-    return encodeURIComponent(text);
+    text += `${line}\n`;
+    text += `Subtotal (Excl. Tax): ${formatCurrency(billData.charges.total_due)}\n`;
+    text += `Total Tax: ${formatCurrency(billData.charges.total_gst)}\n`;
+    if (discount > 0) text += `Discount: -${formatCurrency(parseFloat(discount))}\n`;
+
+    // Grand Total calculation
+    const grandTotal = Math.max(0, billData.charges.total_due + (billData.charges.total_gst || 0) - (parseFloat(discount) || 0));
+    text += `${bold('GRAND TOTAL: ' + formatCurrency(grandTotal))}\n`;
+    text += `${line}\n`;
+    text += `Thank you for staying with us!`;
+
+    return text;
   };
+
 
   const handleWhatsAppShare = () => {
     const billText = generateBillText(true);
@@ -1018,7 +1072,20 @@ const Billing = () => {
                   Cancel
                 </button>
               </div>
+
+              {/* Logo and GST Header */}
+              <div className="flex justify-between items-start mb-6 border-b pb-4">
+                <img src={pommaLogo} alt="Pomma Holidays" className="h-16 object-contain" />
+                <div className="text-right text-sm text-gray-900">
+                  <p className="font-bold text-gray-800 text-lg">{resortInfo?.name || 'Pomma Resort'}</p>
+                  <p className="whitespace-pre-line">{resortInfo?.address || resortInfo?.property_location || 'Munnar, Kerala'}</p>
+                  <p>{resortInfo?.support_email || resortInfo?.email || 'contact@pommaholidays.com'}</p>
+                  {resortInfo?.gst_no && <p className="font-semibold text-gray-800">GST No: {resortInfo.gst_no}</p>}
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-x-4 gap-y-2 mb-4 text-sm">
+                <p><span className="font-semibold">Invoice No:</span> {invoiceId || 'Pending'}</p>
                 <p><span className="font-semibold">Guest Name:</span> {billData.guest_name}</p>
                 <p><span className="font-semibold">Rooms:</span> {billData.room_numbers.join(', ')} ({billData.room_numbers.length})</p>
                 <p><span className="font-semibold">Check-in:</span> {new Date(billData.check_in).toLocaleDateString()}</p>
@@ -1028,63 +1095,146 @@ const Billing = () => {
               </div>
 
               <div className="mt-4 pt-4 border-t">
-                <h3 className="font-bold text-gray-800 mb-2">Itemized Charges:</h3>
-                <ul className="list-disc list-inside space-y-1 text-gray-800">
-                  {billData.charges.room_charges > 0 && (() => {
-                    const roomRate = billData.stay_nights > 0 ? billData.charges.room_charges / billData.stay_nights : 0;
-                    return (
-                      <li>
-                        Room Charges: {formatCurrency(roomRate)} * {billData.stay_nights} nights = {formatCurrency(billData.charges.room_charges)}
-                      </li>
-                    );
-                  })()}
-                  {billData.charges.package_charges > 0 && (() => {
-                    const nightlyRate = billData.stay_nights > 0 ? billData.charges.package_charges / billData.stay_nights : 0;
-                    return (
-                      <li>
-                        Package Charges: {formatCurrency(nightlyRate)} * {billData.stay_nights} nights = {formatCurrency(billData.charges.package_charges)}
-                      </li>
-                    );
-                  })()}
-                </ul>
+                <div className="mt-4 pt-4 border-t space-y-6">
 
-                {billData.charges.food_items.length > 0 && (
-                  <div className="mt-3">
-                    <h4 className="font-semibold text-gray-700">Food & Beverage:</h4>
-                    <ul className="list-decimal list-inside ml-4 text-sm text-gray-700">
-                      {billData.charges.food_items.map((item, i) => <li key={i}>{item.item_name} (x{item.quantity}) - {formatCurrency(item.amount)}</li>)}
-                    </ul>
+                  {/* 1. ROOM CHARGES */}
+                  {(billData.charges.room_charges > 0 || billData.charges.package_charges > 0) && (
+                    <div>
+                      <h3 className="font-semibold text-indigo-700 mb-2 border-b pb-1">Room Charges</h3>
+                      <ul className="space-y-1 text-sm text-gray-800">
+                        {billData.charges.room_charges > 0 && (
+                          <li className="flex justify-between">
+                            <span>Room Rent ({billData.stay_nights} nights)</span>
+                            <span>{formatCurrency(billData.charges.room_charges)}</span>
+                          </li>
+                        )}
+                        {billData.charges.package_charges > 0 && (
+                          <li className="flex justify-between">
+                            <span>Package Charges ({billData.stay_nights} nights)</span>
+                            <span>{formatCurrency(billData.charges.package_charges)}</span>
+                          </li>
+                        )}
+
+                        {/* Room GST Breakdown */}
+                        {(billData.charges.room_cgst > 0 || billData.charges.package_cgst > 0) && (
+                          <li className="flex justify-between text-gray-800 pl-4 border-l-2 border-indigo-100">
+                            <span>CGST</span>
+                            <span>{formatCurrency((billData.charges.room_cgst || 0) + (billData.charges.package_cgst || 0))}</span>
+                          </li>
+                        )}
+                        {(billData.charges.room_sgst > 0 || billData.charges.package_sgst > 0) && (
+                          <li className="flex justify-between text-gray-800 pl-4 border-l-2 border-indigo-100">
+                            <span>SGST</span>
+                            <span>{formatCurrency((billData.charges.room_sgst || 0) + (billData.charges.package_sgst || 0))}</span>
+                          </li>
+                        )}
+                        <li className="flex justify-between font-medium pt-1 border-t border-gray-100 mt-1">
+                          <span>Section Total</span>
+                          <span>{formatCurrency((billData.charges.room_charges || 0) + (billData.charges.package_charges || 0) + (billData.charges.room_gst || 0) + (billData.charges.package_gst || 0))}</span>
+                        </li>
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* 2. FOOD CHARGES */}
+                  {billData.charges.food_items.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-indigo-700 mb-2 border-b pb-1">Food & Beverage</h3>
+                      <ul className="space-y-1 text-sm text-gray-800">
+                        {billData.charges.food_items.map((item, i) => (
+                          <li key={i} className="flex justify-between">
+                            <span>{item.item_name} (x{item.quantity})</span>
+                            <span>{formatCurrency(item.amount)}</span>
+                          </li>
+                        ))}
+
+                        <div className="pl-4 mt-2 border-l-2 border-indigo-100 space-y-1">
+                          <li className="flex justify-between text-gray-900 font-medium">
+                            <span>Subtotal</span>
+                            <span>{formatCurrency(billData.charges.food_charges)}</span>
+                          </li>
+                          {billData.charges.food_cgst > 0 && (
+                            <li className="flex justify-between text-gray-800">
+                              <span>CGST (2.5%)</span>
+                              <span>{formatCurrency(billData.charges.food_cgst)}</span>
+                            </li>
+                          )}
+                          {billData.charges.food_sgst > 0 && (
+                            <li className="flex justify-between text-gray-800">
+                              <span>SGST (2.5%)</span>
+                              <span>{formatCurrency(billData.charges.food_sgst)}</span>
+                            </li>
+                          )}
+                        </div>
+
+                        <li className="flex justify-between font-medium pt-1 border-t border-gray-100 mt-1">
+                          <span>Section Total</span>
+                          <span>{formatCurrency((billData.charges.food_charges || 0) + (billData.charges.food_gst || 0))}</span>
+                        </li>
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* 3. SERVICE CHARGES */}
+                  {billData.charges.service_items.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-indigo-700 mb-2 border-b pb-1">Services</h3>
+                      <ul className="space-y-1 text-sm text-gray-800">
+                        {billData.charges.service_items.map((item, i) => (
+                          <li key={i} className="flex justify-between">
+                            <span>{item.service_name}</span>
+                            <span>{formatCurrency(item.charges)}</span>
+                          </li>
+                        ))}
+
+                        <div className="pl-4 mt-2 border-l-2 border-indigo-100 space-y-1">
+                          <li className="flex justify-between text-gray-900 font-medium">
+                            <span>Subtotal</span>
+                            <span>{formatCurrency(billData.charges.service_charges)}</span>
+                          </li>
+                          {billData.charges.service_cgst > 0 && (
+                            <li className="flex justify-between text-gray-800">
+                              <span>CGST (2.5%)</span>
+                              <span>{formatCurrency(billData.charges.service_cgst)}</span>
+                            </li>
+                          )}
+                          {billData.charges.service_sgst > 0 && (
+                            <li className="flex justify-between text-gray-800">
+                              <span>SGST (2.5%)</span>
+                              <span>{formatCurrency(billData.charges.service_sgst)}</span>
+                            </li>
+                          )}
+                        </div>
+
+                        <li className="flex justify-between font-medium pt-1 border-t border-gray-100 mt-1">
+                          <span>Section Total</span>
+                          <span>{formatCurrency((billData.charges.service_charges || 0) + (billData.charges.service_gst || 0))}</span>
+                        </li>
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* GRAND TOTAL SUMMARY */}
+                  <div className="mt-4 pt-4 border-t text-right space-y-1 bg-gray-50 p-3 rounded-lg">
+                    <div className="flex justify-between text-sm text-gray-900 font-medium">
+                      <span>Total Charges (Excl. Tax):</span>
+                      <span>{formatCurrency(billData.charges.total_due)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-gray-900 font-medium">
+                      <span>Total Tax (CGST + SGST):</span>
+                      <span>+{formatCurrency(billData.charges.total_gst || 0)}</span>
+                    </div>
+                    {discount > 0 && (
+                      <div className="flex justify-between text-sm text-red-600">
+                        <span>Discount:</span>
+                        <span>-{formatCurrency(parseFloat(discount))}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between font-bold text-xl text-indigo-700 pt-2 border-t border-gray-200 mt-2">
+                      <span>Grand Total:</span>
+                      <span>{formatCurrency(Math.max(0, billData.charges.total_due + (billData.charges.total_gst || 0) - discount))}</span>
+                    </div>
                   </div>
-                )}
-
-                {billData.charges.service_items.length > 0 && (
-                  <div className="mt-3">
-                    <h4 className="font-semibold text-gray-700">Additional Services:</h4>
-                    <ul className="list-decimal list-inside ml-4 text-sm text-gray-700">
-                      {billData.charges.service_items.map((item, i) => <li key={i}>{item.service_name} - {formatCurrency(item.charges)}</li>)}
-                    </ul>
-                  </div>
-                )}
-
-                <div className="mt-4 pt-4 border-t text-right space-y-1">
-                  <p className="text-sm text-gray-700 font-medium">Subtotal: {formatCurrency(billData.charges.total_due)}</p>
-                  {/* GST Breakdown */}
-                  {billData.charges.room_gst > 0 && (
-                    <p className="text-sm text-gray-700">Room GST ({billData.charges.room_charges <= 7500 ? '12%' : '18%'}): +{formatCurrency(billData.charges.room_gst || 0)}</p>
-                  )}
-                  {billData.charges.package_gst > 0 && (
-                    <p className="text-sm text-gray-700">Package GST ({billData.charges.package_charges <= 7500 ? '12%' : '18%'}): +{formatCurrency(billData.charges.package_gst || 0)}</p>
-                  )}
-                  {billData.charges.food_gst > 0 && (
-                    <p className="text-sm text-gray-700">Food GST (5%): +{formatCurrency(billData.charges.food_gst || 0)}</p>
-                  )}
-                  <p className="text-sm text-gray-800 font-semibold">Total GST: +{formatCurrency(billData.charges.total_gst || 0)}</p>
-                  {discount > 0 && (
-                    <p className="text-sm text-green-600">Discount: -{formatCurrency(parseFloat(discount))}</p>
-                  )}
-                  <p className="font-bold text-xl text-gray-900">
-                    Grand Total: {formatCurrency(Math.max(0, billData.charges.total_due + (billData.charges.total_gst || 0) - discount))}
-                  </p>
                 </div>
               </div>
             </div>
@@ -1289,12 +1439,23 @@ const Billing = () => {
                   <th className="p-2 sm:p-3 hidden md:table-cell">Payment</th>
                   <th className="p-2 sm:p-3 hidden lg:table-cell">Date</th>
                   <th className="p-2 sm:p-3 text-right">Total</th>
+                  <th className="p-2 sm:p-3 text-center">Receipt</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {filteredCheckouts.length > 0 ? (
                   filteredCheckouts.map((c) => (
-                    <tr key={c.id} className="hover:bg-indigo-50 cursor-pointer" onClick={() => setSelectedCheckout(c)}>
+                    <tr key={c.id} className="hover:bg-indigo-50 cursor-pointer" onClick={() => {
+                      if (c.pdf_url) {
+                        let pdfUrl = c.pdf_url;
+                        if (!pdfUrl.startsWith('http')) {
+                          pdfUrl = getApiBaseUrl().replace('/api', '') + pdfUrl;
+                        }
+                        window.open(pdfUrl, '_blank');
+                      } else {
+                        setSelectedCheckout(c);
+                      }
+                    }}>
                       <td className="p-2 sm:p-3 font-medium text-gray-800 text-xs sm:text-sm">{c.id}</td>
                       <td className="p-2 sm:p-3 font-semibold text-gray-900 text-xs sm:text-sm hidden sm:table-cell">{c.guest_name}</td>
                       <td className="p-2 sm:p-3 text-gray-800 text-xs sm:text-sm">{c.room_number}</td>
@@ -1302,11 +1463,31 @@ const Billing = () => {
                       <td className="p-2 sm:p-3 text-gray-800 text-xs sm:text-sm hidden md:table-cell">{c.payment_method}</td>
                       <td className="p-2 sm:p-3 text-gray-800 text-xs sm:text-sm hidden lg:table-cell">{new Date(c.created_at).toLocaleDateString()}</td>
                       <td className="p-2 sm:p-3 font-bold text-gray-900 text-right text-xs sm:text-sm">{formatCurrency(c.grand_total)}</td>
+                      <td className="p-2 sm:p-3 text-center" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          onClick={() => {
+                            if (c.pdf_url) {
+                              let pdfUrl = c.pdf_url;
+                              if (!pdfUrl.startsWith('http')) {
+                                pdfUrl = getApiBaseUrl().replace('/api', '') + pdfUrl;
+                              }
+                              window.open(pdfUrl, '_blank');
+                            } else {
+                              // Fallback: open details view (which has download option)
+                              setSelectedCheckout(c);
+                            }
+                          }}
+                          className={`${c.pdf_url ? 'text-indigo-600 hover:text-indigo-900' : 'text-gray-400'} transition-colors`}
+                          title={c.pdf_url ? "Download Saved Bill" : "View Details"}
+                        >
+                          <CreditCard size={18} />
+                        </button>
+                      </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="7" className="p-4 text-center text-gray-500 text-sm sm:text-base">
+                    <td colSpan="8" className="p-4 text-center text-gray-500 text-sm sm:text-base">
                       {activeFiltersCount > 0 ? (
                         <div className="flex flex-col items-center gap-2">
                           <span>No checkouts match your filters.</span>

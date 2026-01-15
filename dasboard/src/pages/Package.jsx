@@ -746,6 +746,53 @@ const Packages = () => {
         <KpiCard title="Total Revenue" value={`₹${totalRevenue.toLocaleString()}`} color="bg-gradient-to-r from-purple-500 to-purple-700" icon={<i className="fas fa-rupee-sign"></i>} />
       </div>
 
+      {/* Action Buttons */}
+      <div className="flex flex-col md:flex-row gap-4 mb-8">
+        <button
+          onClick={() => {
+            setCreateForm({
+              title: "",
+              description: "",
+              price: "",
+              booking_type: "room_type",
+              selected_room_types: [],
+              status: "Available",
+              priority: "",
+              images: []
+            });
+            setImagePreviews([]);
+            setSelectedFiles([]);
+            setIsCreateModalOpen(true);
+          }}
+          className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex items-center justify-center gap-3"
+        >
+          <i className="fas fa-plus-circle text-2xl"></i>
+          <span className="text-xl">Create New Package</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setEditingBooking(null);
+            setBookingForm({
+              package_id: "",
+              guest_name: "",
+              guest_email: "",
+              guest_mobile: "",
+              check_in: "",
+              check_out: "",
+              adults: 2,
+              children: 0,
+              room_ids: []
+            });
+            setIsBookModalOpen(true);
+          }}
+          className="flex-1 bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white font-bold py-4 px-6 rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex items-center justify-center gap-3"
+        >
+          <i className="fas fa-calendar-plus text-2xl"></i>
+          <span className="text-xl">Book a Package</span>
+        </button>
+      </div>
+
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 mb-8 md:mb-12">
         <Card title="Bookings by Package" className="lg:col-span-1">
@@ -848,52 +895,7 @@ const Packages = () => {
         </div>
       </Card>
 
-      {/* Action Buttons */}
-      <div className="flex flex-col md:flex-row gap-4 mb-8">
-        <button
-          onClick={() => {
-            setCreateForm({
-              title: "",
-              description: "",
-              price: "",
-              booking_type: "room_type",
-              selected_room_types: [],
-              status: "Available",
-              priority: "",
-              images: []
-            });
-            setImagePreviews([]);
-            setSelectedFiles([]);
-            setIsCreateModalOpen(true);
-          }}
-          className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex items-center justify-center gap-3"
-        >
-          <i className="fas fa-plus-circle text-2xl"></i>
-          <span className="text-xl">Create New Package</span>
-        </button>
 
-        <button
-          onClick={() => {
-            setEditingBooking(null);
-            setBookingForm({
-              package_id: "",
-              guest_name: "",
-              guest_email: "",
-              guest_mobile: "",
-              check_in: "",
-              check_out: "",
-              adults: 2,
-              children: 0,
-              room_ids: []
-            });
-            setIsBookModalOpen(true);
-          }}
-          className="flex-1 bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white font-bold py-4 px-6 rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex items-center justify-center gap-3"
-        >
-          <i className="fas fa-calendar-plus text-2xl"></i>
-          <span className="text-xl">Book a Package</span>
-        </button>
-      </div>
 
       {/* Edit Package Modal */}
       <Modal isOpen={!!editingPackage} title={editingPackage ? `Edit Package: ${editingPackage.title}` : "Edit Package"} onClose={() => setEditingPackage(null)}>

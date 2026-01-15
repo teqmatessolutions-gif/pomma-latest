@@ -3,6 +3,7 @@ import DashboardLayout from "../layout/DashboardLayout";
 import API from "../services/api";
 import { toast } from "react-hot-toast";
 import { motion } from "framer-motion";
+import { Edit, Trash2 } from "lucide-react";
 import { getMediaBaseUrl } from "../utils/env";
 import Modal from "../components/Modal";
 
@@ -229,11 +230,7 @@ const FoodManagement = () => {
         setEditCategoryId(null);
         toast.success("Category updated successfully!");
       } else {
-        if (!categoryImageFile) {
-          toast.error("Please select an image for the new category.");
-          setIsLoading(false);
-          return;
-        }
+
         await API.post("/food-categories", formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -460,27 +457,30 @@ const FoodManagement = () => {
               {categories.map((cat) => (
                 <motion.div
                   key={cat.id}
-                  className="bg-gray-50 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 relative flex flex-col items-center group p-4"
+                  className="bg-gray-50 rounded-2xl shadow-md p-4 flex flex-col items-center hover:shadow-lg transition-all"
                   whileHover={{ y: -5 }}
                 >
                   <img
-                    src={getImageUrl(`static/food_categories/${cat.image}`)}
+                    src={getImageUrl(cat.image ? `static/food_categories/${cat.image}` : "")}
                     alt={cat.name}
                     className="w-24 h-24 object-cover rounded-full mb-3 border-4 border-white shadow-lg"
                   />
-                  <p className="font-semibold text-center text-gray-800">{cat.name}</p>
-                  <div className="absolute top-2 right-2 flex flex-col gap-2 transition-all duration-300 opacity-0 group-hover:opacity-100">
+                  <p className="font-bold text-lg text-gray-800 mb-3">{cat.name}</p>
+
+                  <div className="flex gap-3 mt-auto">
                     <button
                       onClick={() => handleCategoryEdit(cat)}
-                      className="bg-blue-600 text-white w-8 h-8 flex items-center justify-center rounded-full shadow hover:bg-blue-700"
+                      className="bg-blue-100 text-blue-600 p-2 rounded-full hover:bg-blue-200 transition-colors"
+                      title="Edit Category"
                     >
-                      <i className="fas fa-pencil-alt text-xs"></i>
+                      <Edit size={18} />
                     </button>
                     <button
                       onClick={() => handleCategoryDelete(cat.id)}
-                      className="bg-red-600 text-white w-8 h-8 flex items-center justify-center rounded-full shadow hover:bg-red-700"
+                      className="bg-red-100 text-red-600 p-2 rounded-full hover:bg-red-200 transition-colors"
+                      title="Delete Category"
                     >
-                      <i className="fas fa-trash-alt text-xs"></i>
+                      <Trash2 size={18} />
                     </button>
                   </div>
                 </motion.div>

@@ -144,23 +144,89 @@ const BookingModal = ({ onClose, roomNumber, bookings, filter, setFilter, checki
 };
 
 // Image Modal for viewing full room image
-const ImageModal = ({ imageUrl, onClose }) => {
-  if (!imageUrl) return null;
+// Image Modal for viewing full room image gallery
+const ImageModal = ({ room, onClose }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Construct images list: Legacy + Gallery
+  const images = [];
+  if (room.image_url) images.push(room.image_url);
+  if (room.images && room.images.length > 0) {
+    room.images.forEach(img => images.push(img.image_url));
+  }
+
+  // Auto-play
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentIndex(prev => (prev + 1) % images.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [images.length]);
+
+  if (!room || images.length === 0) return null;
+
+  const nextImage = (e) => {
+    e.stopPropagation();
+    setCurrentIndex(prev => (prev + 1) % images.length);
+  };
+
+  const prevImage = (e) => {
+    e.stopPropagation();
+    setCurrentIndex(prev => (prev === 0 ? images.length - 1 : prev - 1));
+  };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
-      <div className="relative max-w-3xl w-full mx-4">
+    <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50 backdrop-blur-sm" onClick={onClose}>
+      <div className="relative max-w-4xl w-full mx-4" onClick={e => e.stopPropagation()}>
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 text-white text-3xl font-bold hover:text-gray-300"
+          className="absolute -top-12 right-0 text-white text-3xl font-bold hover:text-gray-300 transition-colors z-[60]"
         >
           &times;
         </button>
-        <img
-          src={getImageUrl(imageUrl)}
-          alt="Room"
-          className="w-full h-auto rounded-2xl shadow-lg"
-        />
+
+        <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-black">
+          <img
+            src={getImageUrl(images[currentIndex])}
+            alt={`Room View ${currentIndex + 1}`}
+            className="w-full h-auto max-h-[85vh] object-contain mx-auto"
+          />
+
+          {/* Navigation Arrows */}
+          {images.length > 1 && (
+            <>
+              <button
+                onClick={prevImage}
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all"
+              >
+                <i className="fas fa-chevron-left text-xl"></i>
+              </button>
+              <button
+                onClick={nextImage}
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all"
+              >
+                <i className="fas fa-chevron-right text-xl"></i>
+              </button>
+            </>
+          )}
+
+          {/* Dots */}
+          {images.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/50 px-3 py-2 rounded-full">
+              {images.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentIndex(idx)}
+                  className={`w-2 h-2 rounded-full transition-all ${idx === currentIndex ? 'bg-white' : 'bg-white/40'}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+        <p className="text-center text-white mt-4 text-lg font-medium">
+          Room {room.number} - Image {currentIndex + 1} of {images.length}
+        </p>
       </div>
     </div>
   );
@@ -176,28 +242,18 @@ const Rooms = () => {
     status: "Available",
     adults: 2,
     children: 0,
-    image: null,
-    air_conditioning: false,
-    wifi: false,
-    bathroom: false,
-    living_area: false,
-    terrace: false,
-    parking: false,
-    kitchen: false,
-    family_room: false,
-    bbq: false,
-    garden: false,
-    dining: false,
     breakfast: false,
+    images: [], // Changed from image: null to images: []
   });
-  const [previewImage, setPreviewImage] = useState(null);
+  const [previewImages, setPreviewImages] = useState([]);
+  const [existingImages, setExistingImages] = useState([]); // For edit mode
   const [bannerMessage, setBannerMessage] = useState({ type: null, text: "" });
   const [bookings, setBookings] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editRoomId, setEditRoomId] = useState(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [selectedRoomNumber, setSelectedRoomNumber] = useState(null);
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedRoomForGallery, setSelectedRoomForGallery] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [page, setPage] = useState(1);
@@ -299,29 +355,66 @@ const Rooms = () => {
 
   const handleChange = (e) => {
     const { name, value, files, type, checked } = e.target;
-    if (name === "image") {
-      const file = files[0];
-      if (file) {
-        // Check file size (50MB limit to match server configuration)
-        const maxSize = 50 * 1024 * 1024; // 50MB in bytes
-        if (file.size > maxSize) {
-          showBannerMessage("error", "Image file is too large. Please select an image smaller than 50MB.");
-          return;
-        }
+    if (name === "images") { // Changed from image to images
+      if (files) {
+        const newFiles = Array.from(files);
+        const validFiles = [];
+        const newPreviews = [];
 
-        // Check file type
-        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-        if (!allowedTypes.includes(file.type)) {
-          showBannerMessage("error", "Please select a valid image file (JPEG, PNG, or WebP).");
-          return;
-        }
+        newFiles.forEach(file => {
+          // Check size and type
+          const maxSize = 50 * 1024 * 1024;
+          if (file.size > maxSize) {
+            toast.error(`File ${file.name} is too large (>50MB)`);
+            return;
+          }
+          if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type)) {
+            toast.error(`File ${file.name} has invalid type`);
+            return;
+          }
+          validFiles.push(file);
+          newPreviews.push(URL.createObjectURL(file));
+        });
+
+        setForm(prev => ({ ...prev, images: [...prev.images, ...validFiles] }));
+        setPreviewImages(prev => [...prev, ...newPreviews]);
       }
-      setForm((prev) => ({ ...prev, image: file }));
-      setPreviewImage(file ? URL.createObjectURL(file) : null);
     } else if (type === "checkbox") {
       setForm((prev) => ({ ...prev, [name]: checked }));
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const removeNewImage = (index) => {
+    setForm(prev => {
+      const newImages = [...prev.images];
+      newImages.splice(index, 1);
+      return { ...prev, images: newImages };
+    });
+    setPreviewImages(prev => {
+      const newPreviews = [...prev];
+      URL.revokeObjectURL(newPreviews[index]); // Cleanup
+      newPreviews.splice(index, 1);
+      return newPreviews;
+    });
+  };
+
+  const removeExistingImage = async (imageId) => {
+    if (!window.confirm("Are you sure you want to delete this image?")) return;
+    try {
+      if (imageId === 'legacy') {
+        await API.delete(`/rooms/${editRoomId}/legacy-image`);
+      } else {
+        await API.delete(`/rooms/images/${imageId}`);
+      }
+      setExistingImages(prev => prev.filter(img => img.id !== imageId));
+      toast.success("Image deleted");
+      // Update main list if primary was deleted (simplified: just fetch rooms again)
+      fetchRooms();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to delete image");
     }
   };
 
@@ -335,7 +428,14 @@ const Rooms = () => {
     formData.append("status", form.status);
     formData.append("adults", form.adults);
     formData.append("children", form.children);
-    if (form.image) formData.append("image", form.image);
+    formData.append("children", form.children);
+
+    // Append multiple images
+    if (form.images && form.images.length > 0) {
+      form.images.forEach(image => {
+        formData.append("images", image);
+      });
+    }
 
     // Append feature fields
     formData.append("air_conditioning", form.air_conditioning);
@@ -375,7 +475,7 @@ const Rooms = () => {
         status: "Available",
         adults: 2,
         children: 0,
-        image: null,
+        images: [],
         air_conditioning: false,
         wifi: false,
         bathroom: false,
@@ -389,7 +489,8 @@ const Rooms = () => {
         dining: false,
         breakfast: false,
       });
-      setPreviewImage(null);
+      setPreviewImages([]);
+      setExistingImages([]);
       fetchRooms();
     } catch (err) {
       console.error("API error:", err);
@@ -409,7 +510,7 @@ const Rooms = () => {
       status: room.status,
       adults: room.adults,
       children: room.children,
-      image: null,
+      images: [], // Reset new images
       air_conditioning: room.air_conditioning || false,
       wifi: room.wifi || false,
       bathroom: room.bathroom || false,
@@ -423,7 +524,21 @@ const Rooms = () => {
       dining: room.dining || false,
       breakfast: room.breakfast || false,
     });
-    setPreviewImage(getImageUrl(room.image_url));
+    // Set existing images from room data
+    // Combine gallery images with legacy image_url if not already present
+    let imgs = [...(room.images || [])];
+    if (room.image_url) {
+      // Check if primary image is already in gallery (by URL match)
+      // Note: Backend might use relative paths, so we loosely match or rely on exact string
+      const isPrimaryInGallery = imgs.some(img => img.image_url === room.image_url);
+
+      if (!isPrimaryInGallery) {
+        // Prepend legacy image so it appears first
+        imgs.unshift({ id: 'legacy', image_url: room.image_url });
+      }
+    }
+    setExistingImages(imgs);
+    setPreviewImages([]);
     setBannerMessage({ type: null, text: "" });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -496,8 +611,10 @@ const Rooms = () => {
               garden: false,
               dining: false,
               breakfast: false,
+              images: [],
             });
-            setPreviewImage(null);
+            setPreviewImages([]);
+            setExistingImages([]);
             setIsModalOpen(true);
           }}
           className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex items-center justify-center gap-3"
@@ -605,25 +722,52 @@ const Rooms = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Room Image</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Room Images</label>
               <input
                 type="file"
-                name="image"
+                name="images"
+                multiple
                 accept="image/jpeg,image/jpg,image/png,image/webp"
                 onChange={handleChange}
                 className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all"
               />
-              <p className="text-xs text-gray-500 mt-1">Max file size: 50MB. Supported formats: JPEG, PNG, WebP</p>
+              <p className="text-xs text-gray-500 mt-1">Select multiple images. Max 50MB each.</p>
             </div>
 
-            {/* Show preview if image selected */}
-            {previewImage && (
-              <img
-                src={previewImage}
-                alt="Preview"
-                className="w-full h-32 object-cover rounded-lg border-2 border-gray-200"
-              />
-            )}
+            {/* Image Previews Grid */}
+            <div className="md:col-span-2 lg:col-span-3">
+              {(existingImages.length > 0 || previewImages.length > 0) && (
+                <label className="block text-sm font-medium text-gray-700 mb-2">Gallery</label>
+              )}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {/* Existing Images */}
+                {existingImages.map((img) => (
+                  <div key={img.id} className="relative group">
+                    <img src={getImageUrl(img.image_url)} alt="Room" className="w-full h-32 object-cover rounded-lg" />
+                    <button
+                      type="button"
+                      onClick={() => removeExistingImage(img.id)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 w-6 h-6 flex items-center justify-center opacity-70 group-hover:opacity-100 transition-opacity"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+                {/* New Previews */}
+                {previewImages.map((url, idx) => (
+                  <div key={idx} className="relative group">
+                    <img src={url} alt="Preview" className="w-full h-32 object-cover rounded-lg border-2 border-indigo-200" />
+                    <button
+                      type="button"
+                      onClick={() => removeNewImage(idx)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 w-6 h-6 flex items-center justify-center opacity-70 group-hover:opacity-100 transition-opacity"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
 
             {/* Room Features Section */}
             <div className="md:col-span-2 lg:col-span-3">
@@ -796,8 +940,8 @@ const Rooms = () => {
                 <img
                   src={getImageUrl(room.image_url)}
                   alt={`Room ${room.number}`}
-                  className="h-48 w-full object-cover cursor-pointer"
-                  onClick={() => setSelectedImage(room.image_url)}
+                  className="h-48 w-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                  onClick={() => setSelectedRoomForGallery(room)}
                 />
                 <span className={`absolute top-2 right-2 px-3 py-1 text-xs font-semibold text-white rounded-full ${room.status === 'Available' ? 'bg-green-500' :
                   room.status === 'Disabled' ? 'bg-red-600' :
@@ -901,10 +1045,10 @@ const Rooms = () => {
       )}
 
       {/* Image Modal */}
-      {selectedImage && (
+      {selectedRoomForGallery && (
         <ImageModal
-          imageUrl={selectedImage}
-          onClose={() => setSelectedImage(null)}
+          room={selectedRoomForGallery}
+          onClose={() => setSelectedRoomForGallery(null)}
         />
       )}
     </DashboardLayout>

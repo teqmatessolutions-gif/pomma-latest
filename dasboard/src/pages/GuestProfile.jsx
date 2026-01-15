@@ -214,9 +214,35 @@ const GuestProfile = () => {
                                             <td className="p-3">{b.check_in} to {b.check_out}</td>
                                             <td className="p-3">{b.rooms.join(', ')}</td>
                                             <td className="p-3"><span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">{b.status}</span></td>
-                                            <td className="p-3 flex items-center gap-4">
-                                                {b.id_card_image_url && <a href={getImageUrl(b.id_card_image_url)} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline flex items-center"><FileText size={16} className="mr-1" /> ID Card</a>}
-                                                {b.guest_photo_url && <a href={getImageUrl(b.guest_photo_url)} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline flex items-center"><Camera size={16} className="mr-1" /> Photo</a>}
+                                            <td className="p-3">
+                                                <div className="flex flex-wrap gap-2">
+                                                    {/* Legacy Single Images */}
+                                                    {!b.checkin_documents?.length && b.id_card_image_url && (
+                                                        <a href={getImageUrl(b.id_card_image_url)} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline flex items-center bg-indigo-50 px-2 py-1 rounded text-xs gap-1 border border-indigo-200">
+                                                            <FileText size={14} /> ID (Legacy)
+                                                        </a>
+                                                    )}
+                                                    {!b.checkin_documents?.length && b.guest_photo_url && (
+                                                        <a href={getImageUrl(b.guest_photo_url)} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline flex items-center bg-indigo-50 px-2 py-1 rounded text-xs gap-1 border border-indigo-200">
+                                                            <Camera size={14} /> Photo (Legacy)
+                                                        </a>
+                                                    )}
+
+                                                    {/* New Multiple Documents */}
+                                                    {b.checkin_documents?.map((doc, idx) => (
+                                                        <a
+                                                            key={doc.id}
+                                                            href={getImageUrl(doc.image_url)}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-indigo-600 hover:underline flex items-center bg-indigo-50 px-2 py-1 rounded text-xs gap-1 border border-indigo-200"
+                                                            title={`Uploaded on ${new Date(doc.created_at).toLocaleDateString()}`}
+                                                        >
+                                                            {doc.type === 'id_card' ? <FileText size={14} /> : <Camera size={14} />}
+                                                            {doc.type === 'id_card' ? `ID ${idx + 1}` : `Photo ${idx + 1}`}
+                                                        </a>
+                                                    ))}
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}

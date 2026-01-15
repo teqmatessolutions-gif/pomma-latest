@@ -18,7 +18,7 @@ const BannerMessage = ({ message, onClose, autoDismiss = true, duration = 5000 }
   const icon = isSuccess ? '✅' : '❌';
 
   return (
-    <div className={`fixed top-4 right-4 z-50 ${bgColor} text-white shadow-xl rounded-lg max-w-sm`}>
+    <div className={`fixed top-4 right-4 z-[100] ${bgColor} text-white shadow-xl rounded-lg max-w-sm`}>
       <div className="px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center">

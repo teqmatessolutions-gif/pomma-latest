@@ -527,10 +527,12 @@ const Services = () => {
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
             <select value={filters.room} onChange={(e) => setFilters({ ...filters, room: e.target.value })} className="border p-2 rounded-lg">
               <option value="">All Rooms</option>
-              {assignedServices.map((s) => {
-                const room = s.room;
-                return room ? <option key={room.id} value={room.id}>Room {room.number}</option> : null;
-              }).filter(Boolean)}
+              {Array.from(new Map(assignedServices.map(s => [s.room?.id, s.room])).values())
+                .filter(room => room) // filter out undefined/null rooms
+                .sort((a, b) => a.number - b.number) // optional: sort by room number
+                .map((room) => (
+                  <option key={room.id} value={room.id}>Room {room.number}</option>
+                ))}
             </select>
             <select value={filters.employee} onChange={(e) => setFilters({ ...filters, employee: e.target.value })} className="border p-2 rounded-lg">
               <option value="">All Employees</option>

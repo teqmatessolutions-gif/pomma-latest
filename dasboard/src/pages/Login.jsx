@@ -111,7 +111,7 @@ export default function LoginPage() {
         <div className="flex justify-center mb-6">
           <div className="relative">
             <div className="absolute inset-0 bg-emerald-100/30 rounded-full blur-xl"></div>
-            <div className="relative bg-gradient-to-br from-emerald-50 to-green-50 p-4 rounded-2xl shadow-lg border border-emerald-200/50">
+            <div className="relative bg-[#1a4d3a] p-4 rounded-2xl shadow-lg border border-emerald-200/50">
               <img
                 src={pommaLogo}
                 alt="Pomma Holidays Logo"

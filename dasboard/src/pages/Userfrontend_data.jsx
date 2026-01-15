@@ -49,18 +49,18 @@ const getImageUrl = (imagePath) => {
             hostname.startsWith("192.168.");
 
         if (isLocalhost) {
-            baseUrl = 'http://localhost:8010';
+            baseUrl = 'http://localhost:8000';
         } else if (isPommaDeployment()) {
             baseUrl = `${window.location.origin}/pomma`;
         } else {
             baseUrl = process.env.NODE_ENV === 'production'
                 ? 'https://www.teqmates.com'
-                : 'http://localhost:8010';
+                : 'http://localhost:8000';
         }
     } else {
         baseUrl = process.env.NODE_ENV === 'production'
             ? 'https://www.teqmates.com'
-            : 'http://localhost:8010';
+            : 'http://localhost:8000';
     }
 
     // Normalize the path
@@ -252,14 +252,14 @@ export default function ResortCMS() {
                 nearbyAttrRes,
                 nearbyAttrBannerRes
             ] = await Promise.all([
-                api.get("/header-banner"),
-                api.get("/gallery"),
-                api.get("/reviews"),
-                api.get("/resort-info"),
-                api.get("/signature-experiences"),
-                api.get("/plan-weddings"),
-                api.get("/nearby-attractions"),
-                api.get("/nearby-attraction-banners"),
+                api.get("/frontend/header-banner"),
+                api.get("/frontend/gallery"),
+                api.get("/frontend/reviews"),
+                api.get("/frontend/resort-info"),
+                api.get("/frontend/signature-experiences"),
+                api.get("/frontend/plan-weddings"),
+                api.get("/frontend/nearby-attractions"),
+                api.get("/frontend/nearby-attraction-banners"),
             ]);
             setResortData({
                 banners: bannersRes.data || [],
@@ -441,14 +441,14 @@ export default function ResortCMS() {
     };
 
     const sectionConfigs = {
-        banners: { title: "Header Banner", endpoint: "/header-banner/", fields: [{ name: "title", placeholder: "Banner Title" }, { name: "subtitle", placeholder: "Banner Description" }, { name: "image", type: "file" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: true },
-        gallery: { title: "Gallery Image", endpoint: "/gallery/", fields: [{ name: "caption", placeholder: "Image Caption" }, { name: "image", type: "file" }], isMultipart: true },
-        reviews: { title: "Review", endpoint: "/reviews/", fields: [{ name: "name", placeholder: "Customer Name" }, { name: "comment", placeholder: "Review Comment" }, { name: "rating", placeholder: "Rating (1-5)", type: "number" }], isMultipart: false },
-        resortInfo: { title: "Resort Info", endpoint: "/resort-info/", fields: [{ name: "name", placeholder: "Resort Name" }, { name: "address", placeholder: "Resort Address" }, { name: "gst_no", placeholder: "GST No" }, { name: "email", placeholder: "Email" }, { name: "support_email", placeholder: "Support Email" }, { name: "contact_no", placeholder: "Contact No" }, { name: "property_location", placeholder: "Property Location" }, { name: "facebook", placeholder: "Facebook URL" }, { name: "instagram", placeholder: "Instagram URL" }, { name: "twitter", placeholder: "Twitter URL" }, { name: "linkedin", placeholder: "LinkedIn URL" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: false },
-        signatureExperiences: { title: "Signature Experience", endpoint: "/signature-experiences/", fields: [{ name: "title", placeholder: "Experience Title" }, { name: "description", placeholder: "Description", type: "textarea" }, { name: "image", type: "file" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: true },
-        planWeddings: { title: "Plan Your Wedding", endpoint: "/plan-weddings/", fields: [{ name: "title", placeholder: "Title" }, { name: "description", placeholder: "Description", type: "textarea" }, { name: "image", type: "file" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: true },
-        nearbyAttractions: { title: "Nearby Attraction", endpoint: "/nearby-attractions/", fields: [{ name: "title", placeholder: "Attraction Title" }, { name: "description", placeholder: "Description", type: "textarea" }, { name: "map_link", placeholder: "Google Maps Link (optional)" }, { name: "image", type: "file" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: true },
-        nearbyAttractionBanners: { title: "Nearby Attraction Banner", endpoint: "/nearby-attraction-banners/", fields: [{ name: "title", placeholder: "Banner Title" }, { name: "subtitle", placeholder: "Banner Subtitle", type: "textarea" }, { name: "image", type: "file" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: true },
+        banners: { title: "Header Banner", endpoint: "/frontend/header-banner/", fields: [{ name: "title", placeholder: "Banner Title" }, { name: "subtitle", placeholder: "Banner Description" }, { name: "image", type: "file" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: true },
+        gallery: { title: "Gallery Image", endpoint: "/frontend/gallery/", fields: [{ name: "caption", placeholder: "Image Caption" }, { name: "image", type: "file" }], isMultipart: true },
+        reviews: { title: "Review", endpoint: "/frontend/reviews/", fields: [{ name: "name", placeholder: "Customer Name" }, { name: "comment", placeholder: "Review Comment" }, { name: "rating", placeholder: "Rating (1-5)", type: "number" }], isMultipart: false },
+        resortInfo: { title: "Resort Info", endpoint: "/frontend/resort-info/", fields: [{ name: "name", placeholder: "Resort Name" }, { name: "address", placeholder: "Resort Address" }, { name: "gst_no", placeholder: "GST No" }, { name: "email", placeholder: "Email" }, { name: "support_email", placeholder: "Support Email" }, { name: "contact_no", placeholder: "Contact No" }, { name: "property_location", placeholder: "Property Location" }, { name: "facebook", placeholder: "Facebook URL" }, { name: "instagram", placeholder: "Instagram URL" }, { name: "twitter", placeholder: "Twitter URL" }, { name: "linkedin", placeholder: "LinkedIn URL" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: false },
+        signatureExperiences: { title: "Signature Experience", endpoint: "/frontend/signature-experiences/", fields: [{ name: "title", placeholder: "Experience Title" }, { name: "description", placeholder: "Description", type: "textarea" }, { name: "image", type: "file" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: true },
+        planWeddings: { title: "Plan Your Wedding", endpoint: "/frontend/plan-weddings/", fields: [{ name: "title", placeholder: "Title" }, { name: "description", placeholder: "Description", type: "textarea" }, { name: "image", type: "file" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: true },
+        nearbyAttractions: { title: "Nearby Attraction", endpoint: "/frontend/nearby-attractions/", fields: [{ name: "title", placeholder: "Attraction Title" }, { name: "description", placeholder: "Description", type: "textarea" }, { name: "map_link", placeholder: "Google Maps Link (optional)" }, { name: "image", type: "file" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: true },
+        nearbyAttractionBanners: { title: "Nearby Attraction Banner", endpoint: "/frontend/nearby-attraction-banners/", fields: [{ name: "title", placeholder: "Banner Title" }, { name: "subtitle", placeholder: "Banner Subtitle", type: "textarea" }, { name: "image", type: "file" }, { name: "is_active", type: "checkbox", placeholder: "Is Active?" }], isMultipart: true },
     };
 
     if (isLoading) {

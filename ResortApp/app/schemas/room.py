@@ -1,5 +1,13 @@
 from pydantic import BaseModel
+from typing import List
 
+class RoomImage(BaseModel):
+    id: int
+    image_url: str
+
+    model_config = {
+        "from_attributes": True
+    }
 class RoomBase(BaseModel):
     number: str
     type: str
@@ -28,6 +36,7 @@ class RoomOut(RoomBase):
     status: str
     priority: int | None = None
     image_url: str | None = None
+    images: List[RoomImage] = []
 
     model_config = {
         "from_attributes": True  # enables from_orm in Pydantic v2
