@@ -1506,8 +1506,15 @@ export default function App() {
         // If dates are not selected, we don't filter by availability (except status)
         if (!checkIn || !checkOut || !room) return true;
 
-        const checkInDate = new Date(checkIn);
-        const checkOutDate = new Date(checkOut);
+        // Helper to normalize date to midnight (strip time)
+        const toMidnight = (d) => {
+            const date = new Date(d);
+            date.setHours(0, 0, 0, 0);
+            return date;
+        };
+
+        const checkInDate = toMidnight(checkIn);
+        const checkOutDate = toMidnight(checkOut);
 
         if (isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) return true;
 
@@ -1520,8 +1527,8 @@ export default function App() {
             if (!hasRoom) return false;
 
             // Date Overlap Check
-            const bCheckIn = new Date(booking.check_in);
-            const bCheckOut = new Date(booking.check_out);
+            const bCheckIn = toMidnight(booking.check_in);
+            const bCheckOut = toMidnight(booking.check_out);
 
             return (bCheckIn < checkOutDate && bCheckOut > checkInDate);
         });
@@ -1535,8 +1542,8 @@ export default function App() {
             const hasRoom = booking.rooms && Array.isArray(booking.rooms) && booking.rooms.some(r => r.id === room.id);
             if (!hasRoom) return false;
 
-            const bCheckIn = new Date(booking.check_in);
-            const bCheckOut = new Date(booking.check_out);
+            const bCheckIn = toMidnight(booking.check_in);
+            const bCheckOut = toMidnight(booking.check_out);
 
             return (bCheckIn < checkOutDate && bCheckOut > checkInDate);
         });
