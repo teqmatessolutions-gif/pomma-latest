@@ -145,6 +145,7 @@ const Packages = () => {
   const [rooms, setRooms] = useState([]);
   const [allRooms, setAllRooms] = useState([]); // Store all rooms for filtering
   const [bookings, setBookings] = useState([]);
+  const [regularBookings, setRegularBookings] = useState([]); // Store regular bookings
   const [editingBooking, setEditingBooking] = useState(null);
   const [editingPackage, setEditingPackage] = useState(null); // Package being edited
   const [packageFilter, setPackageFilter] = useState("");
@@ -191,16 +192,18 @@ const Packages = () => {
 
   const fetchData = async () => {
     try {
-      const [packageRes, roomRes, bookingRes] = await Promise.all([
+      const [packageRes, roomRes, bookingRes, regularBookingRes] = await Promise.all([
         api.get("/packages"),
         api.get("/rooms"),
-        api.get("/packages/bookingsall")
+        api.get("/packages/bookingsall"),
+        api.get("/bookings?limit=2000") // Fetch regular bookings
       ]);
       const allRoomsData = roomRes.data || [];
       setPackages(packageRes.data || []);
       setAllRooms(allRoomsData);
       setRooms(allRoomsData.filter(r => r.status === "Available")); // Initial available rooms
       setBookings(bookingRes.data || []);
+      setRegularBookings(regularBookingRes.data?.bookings || []);
     } catch (err) {
       toast.error("Failed to load data.");
       console.error(err);
@@ -217,12 +220,20 @@ const Packages = () => {
       const selectedPackage = packages.find(p => p.id === parseInt(bookingForm.package_id));
 
       let availableRooms = allRooms.filter(room => {
-        // Check if room has any conflicting bookings
-        // Only consider bookings with status "booked" or "checked-in" as conflicts
-        const hasConflict = bookings.some(booking => {
-          const normalizedStatus = booking.status?.toLowerCase().replace(/_/g, '-');
-          // Only check for "booked" or "checked-in" status - all other statuses are available
-          if (normalizedStatus !== "booked" && normalizedStatus !== "checked-in") return false;
+        // First check strict status availability
+        const normalizedStatus = (room.status || '').toLowerCase().trim();
+        const unavailableStatuses = ['disabled', 'coming soon', 'maintenance', 'occupied', 'checked-in'];
+        if (unavailableStatuses.includes(normalizedStatus)) return false;
+
+        // Check for conflicts in BOTH package and regular bookings
+        const allRelevantBookings = [
+          ...bookings.map(b => ({ ...b, is_package: true })),
+          ...regularBookings.map(b => ({ ...b, is_package: false }))
+        ];
+
+        const hasConflict = allRelevantBookings.some(booking => {
+          const normalizedBookingStatus = (booking.status || '').toLowerCase().replace(/_/g, '-').trim();
+          if (normalizedBookingStatus !== "booked" && normalizedBookingStatus !== "checked-in") return false;
 
           const bookingCheckIn = new Date(booking.check_in);
           const bookingCheckOut = new Date(booking.check_out);
@@ -230,15 +241,17 @@ const Packages = () => {
           const requestedCheckOut = new Date(bookingForm.check_out);
 
           // Check if room is part of this booking
-          const isRoomInBooking = booking.rooms && booking.rooms.some(r => r.room.id === room.id);
+          const isRoomInBooking = booking.rooms && booking.rooms.some(r => {
+            // Robust check for room ID in both booking types
+            const roomId = r.room?.id || r.room_id || r.id;
+            return roomId === room.id;
+          });
           if (!isRoomInBooking) return false;
 
           // Check for date overlap
           return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
         });
 
-        // If there are no conflicting bookings for the selected dates, room is available
-        // Don't filter by room.status - availability is determined by booking conflicts, not status field
         return !hasConflict;
       });
 

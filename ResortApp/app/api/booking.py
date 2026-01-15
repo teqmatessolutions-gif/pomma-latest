@@ -6,7 +6,7 @@ from sqlalchemy import or_, and_
 from typing import List, Union, Optional
 from app.utils.auth import get_db, get_current_user
 from app.utils.booking_id import parse_display_id
-from app.models.booking import Booking, BookingRoom
+from app.models.booking import Booking, BookingRoom, CheckInDocument
 from app.models.user import User
 from app.models.room import Room
 from app.models.Package import Package, PackageBooking, PackageBookingRoom
@@ -55,16 +55,20 @@ def get_bookings(
         final_end = to_date or toDate
         
         try:
-            if final_start:
-                if len(final_start) == 10 and "-" in final_start:
-                    dt_start = datetime.strptime(final_start, "%Y-%m-%d")
-                    dt_start = dt_start.replace(hour=0, minute=0, second=0, microsecond=0)
-                    query = query.filter(Booking.check_in >= dt_start.date())
-                
-            if final_end:
-                if len(final_end) == 10 and "-" in final_end:
-                    dt_end = datetime.strptime(final_end, "%Y-%m-%d")
-                    query = query.filter(Booking.check_in <= dt_end.date())
+            if final_start and final_end:
+                dt_start = datetime.strptime(final_start, "%Y-%m-%d").date()
+                dt_end = datetime.strptime(final_end, "%Y-%m-%d").date()
+                # Robust date overlap logic: (booking.check_in < requested_check_out AND booking.check_out > requested_check_in)
+                query = query.filter(
+                    Booking.check_in < dt_end,
+                    Booking.check_out > dt_start
+                )
+            elif final_start:
+                dt_start = datetime.strptime(final_start, "%Y-%m-%d").date()
+                query = query.filter(Booking.check_in >= dt_start)
+            elif final_end:
+                dt_end = datetime.strptime(final_end, "%Y-%m-%d").date()
+                query = query.filter(Booking.check_in <= dt_end)
                     
         except Exception as e:
             print(f"ERROR parsing dates in bookings: {e}")

@@ -642,7 +642,7 @@ const Bookings = () => {
       const [roomsRes, bookingsRes, packageBookingsRes, packageRes] = await Promise.all([
         API.get("/rooms", authHeader()),
         API.get("/bookings?skip=0&limit=20&order_by=id&order=desc", authHeader()), // Order by latest first
-        API.get("/packages/bookingsall?skip=0&limit=500", authHeader()), // Reduced from 10000 to 500 for performance
+        API.get("/packages/bookingsall?skip=0&limit=2000", authHeader()), // Increased to 2000
         API.get("/packages?limit=100", authHeader()),
       ]);
 
@@ -651,8 +651,8 @@ const Bookings = () => {
       const packageBookings = packageBookingsRes.data || [];
       const todaysDate = new Date().toISOString().split("T")[0];
 
-      // Reduced limit for better performance - KPI calculation uses sample data
-      const allBookingsRes = await API.get("/bookings?limit=500&order_by=id&order=desc", authHeader()); // Reduced from 10000 to 500
+      // Higher limit for comprehensive availability checks
+      const allBookingsRes = await API.get("/bookings?limit=2000&order_by=id&order=desc", authHeader()); // Increased from 500 to 2000
       const allRegularBookings = allBookingsRes.data.bookings;
 
       // Combine regular bookings and package bookings
@@ -764,14 +764,15 @@ const Bookings = () => {
     if (formData.checkIn && formData.checkOut && allRooms.length > 0) {
       const availableRooms = allRooms.filter(room => {
         // First check strict status availability
-        if (['Disabled', 'Coming Soon', 'Maintenance'].includes(room.status)) return false;
+        const normalizedStatus = (room.status || '').toLowerCase().trim();
+        const unavailableStatuses = ['disabled', 'coming soon', 'maintenance', 'occupied', 'checked-in'];
+        if (unavailableStatuses.includes(normalizedStatus)) return false;
 
         // Check if room has any conflicting bookings
-        // Only consider bookings with status "booked" or "checked-in" as conflicts
         const hasConflict = bookings.some(booking => {
-          const normalizedStatus = booking.status?.toLowerCase().replace(/_/g, '-');
+          const normalizedBookingStatus = (booking.status || '').toLowerCase().replace(/_/g, '-').trim();
           // Only check for "booked" or "checked-in" status - all other statuses are available
-          if (normalizedStatus !== "booked" && normalizedStatus !== "checked-in") return false;
+          if (normalizedBookingStatus !== "booked" && normalizedBookingStatus !== "checked-in") return false;
 
           const bookingCheckIn = new Date(booking.check_in);
           const bookingCheckOut = new Date(booking.check_out);
@@ -806,14 +807,15 @@ const Bookings = () => {
 
       let availableRooms = allRooms.filter(room => {
         // First check strict status availability
-        if (['Disabled', 'Coming Soon', 'Maintenance'].includes(room.status)) return false;
+        const normalizedStatus = (room.status || '').toLowerCase().trim();
+        const unavailableStatuses = ['disabled', 'coming soon', 'maintenance', 'occupied', 'checked-in'];
+        if (unavailableStatuses.includes(normalizedStatus)) return false;
 
         // Check if room has any conflicting bookings
-        // Only consider bookings with status "booked" or "checked-in" as conflicts
         const hasConflict = bookings.some(booking => {
-          const normalizedStatus = booking.status?.toLowerCase().replace(/_/g, '-');
+          const normalizedBookingStatus = (booking.status || '').toLowerCase().replace(/_/g, '-').trim();
           // Only check for "booked" or "checked-in" status - all other statuses are available
-          if (normalizedStatus !== "booked" && normalizedStatus !== "checked-in") return false;
+          if (normalizedBookingStatus !== "booked" && normalizedBookingStatus !== "checked-in") return false;
 
           const bookingCheckIn = new Date(booking.check_in);
           const bookingCheckOut = new Date(booking.check_out);
@@ -822,7 +824,6 @@ const Bookings = () => {
 
           // Check if room is part of this booking
           const isRoomInBooking = booking.rooms && booking.rooms.some(r => {
-            // Handle both nested (r.room.id) and direct (r.id) room references
             const roomId = r.room?.id || r.room_id || r.id;
             return roomId === room.id;
           });
@@ -832,8 +833,6 @@ const Bookings = () => {
           return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
         });
 
-        // If there are no conflicting bookings for the selected dates, room is available
-        // Don't filter by room.status - availability is determined by booking conflicts, not status field
         return !hasConflict;
       });
 

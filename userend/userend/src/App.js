@@ -1304,8 +1304,8 @@ export default function App() {
             try {
                 // Essential data for layout
                 const roomsData = await safeFetch("/rooms/test", []);
-                const bookingsData = await safeFetch("/bookings?limit=500&skip=0", { bookings: [] });
-                const packageBookingsData = await safeFetch("/packages/bookingsall?limit=500&skip=0", []);
+                const bookingsData = await safeFetch("/bookings?limit=2000&skip=0", { bookings: [] });
+                const packageBookingsData = await safeFetch("/packages/bookingsall?limit=2000&skip=0", []);
                 const resortInfoData = await safeFetch("/frontend/resort-info/", []);
 
                 // Non‑critical / image-heavy endpoints – errors should not break the page
@@ -1587,7 +1587,7 @@ export default function App() {
                 const bookingCheckOut = new Date(booking.check_out);
 
                 const isRoomInBooking = booking.rooms && booking.rooms.some(r => {
-                    const roomId = r.room?.id || r.id;
+                    const roomId = r.room?.id || r.room_id || r.id;
                     return roomId === room.id;
                 });
                 if (!isRoomInBooking) return false;
@@ -3682,7 +3682,11 @@ export default function App() {
                                                         .filter(room => selectedRoomType === 'All' || room.type === selectedRoomType)
                                                         .map(room => {
                                                             const isSelected = bookingData.room_ids?.includes(room.id);
-                                                            const isUnavailable = room.status === 'Maintenance' || room.status === 'Coming Soon' || room.status === 'Disabled';
+                                                            // Enhanced availability check
+                                                            const hasUnavailableStatus = ['Maintenance', 'Coming Soon', 'Disabled', 'Occupied', 'Checked-in'].includes(room.status);
+                                                            // Check if room is unavailable based on bookings (only if dates are selected)
+                                                            const isOccupiedByBooking = (bookingData.check_in && bookingData.check_out && roomAvailability[room.id] === false);
+                                                            const isUnavailable = hasUnavailableStatus || isOccupiedByBooking;
                                                             return (
                                                                 <div
                                                                     key={room.id}
