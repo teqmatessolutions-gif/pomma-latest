@@ -4232,11 +4232,11 @@ export default function App() {
                             </button>
 
                             {/* Image Container */}
-                            <div className="relative max-w-6xl max-h-[85vh] w-full">
-                                <ProgressiveImage
+                            <div className="relative max-w-6xl w-full flex items-center justify-center h-[85vh]">
+                                <img
                                     src={getImageUrl(galleryImages[selectedGalleryImageIndex].image_url)}
                                     alt={galleryImages[selectedGalleryImageIndex].caption || 'Gallery image'}
-                                    className="w-full h-full object-contain rounded-lg"
+                                    className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
                                     onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                 />
 
