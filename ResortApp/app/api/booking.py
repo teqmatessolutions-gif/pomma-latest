@@ -743,7 +743,7 @@ def create_guest_booking(booking: BookingCreate, background_tasks: BackgroundTas
 # -------------------------------
 # Check-in a booking
 # -------------------------------
-@router.put("/{booking_id}/check-in", response_model=BookingOut)
+@router.put("/{booking_id}/check-in")
 def check_in_booking(
     booking_id: Union[str, int],
     id_card_images: Optional[List[UploadFile]] = File(default=None),
@@ -764,8 +764,6 @@ def check_in_booking(
             id_card_images = []
         if guest_photos is None:
             guest_photos = []
-
-        # print(f"DEBUG Check-in: ID Cards={len(id_card_images)}, Guest Photos={len(guest_photos)}, Legacy ID={bool(id_card_image)}, Legacy Photo={bool(guest_photo)}")
 
         # Parse display ID (BK-000001) or accept numeric ID
         numeric_id, booking_type = parse_display_id(str(booking_id))
@@ -880,7 +878,17 @@ def check_in_booking(
 
         db.commit()
         db.refresh(booking)
-        return booking
+        
+        # simplified return to avoid JSON serialization errors with UploadFile objects
+        return {
+            "status": "success",
+            "message": "Check-in successful",
+            "id": booking.id,
+            "display_id": f"BK-{str(booking.id).zfill(6)}",
+            "status": booking.status,
+            "check_in": booking.check_in,
+            "check_out": booking.check_out,
+        }
 
     except HTTPException:
         # Re-raise standard HTTP exceptions
