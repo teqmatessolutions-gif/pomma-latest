@@ -10,7 +10,7 @@ class FoodOrder(Base):
     room_id = Column(Integer, ForeignKey("rooms.id"))
     amount = Column(Float)
     assigned_employee_id = Column(Integer, ForeignKey("employees.id"))
-    status = Column(String, default="active")
+    status = Column(String, default="pending")
     billing_status = Column(String, default="unbilled")
     created_at = Column(DateTime, default=datetime.utcnow)
     

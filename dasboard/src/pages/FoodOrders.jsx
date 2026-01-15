@@ -342,7 +342,14 @@ export default function FoodOrders() {
   };
 
   const filteredOrders = orders.filter((order) => {
-    const matchStatus = statusFilter ? order.status === statusFilter : true;
+    let matchStatus = true;
+    if (statusFilter) {
+      if (statusFilter === "pending") {
+        matchStatus = order.status === "pending" || order.status === "active";
+      } else {
+        matchStatus = order.status === statusFilter;
+      }
+    }
     const matchDate = dateFilter ? order.created_at?.startsWith(dateFilter) : true;
     return matchStatus && matchDate;
   });

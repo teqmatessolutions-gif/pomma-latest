@@ -71,7 +71,7 @@ def create_food_order(db: Session, order_data: FoodOrderCreate):
         room_id=order_data.room_id,
         amount=order_data.amount,
         assigned_employee_id=order_data.assigned_employee_id,
-        status="active",
+        status="pending",
         billing_status="unbilled",
         booking_id=active_booking_id,
         package_booking_id=active_package_booking_id
