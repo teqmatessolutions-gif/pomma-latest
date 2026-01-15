@@ -743,7 +743,7 @@ def create_guest_booking(booking: BookingCreate, background_tasks: BackgroundTas
 # -------------------------------
 # Check-in a booking
 # -------------------------------
-@router.put("/bookings/{booking_id}/check-in")
+@router.put("/{booking_id}/check-in")
 async def check_in_booking(
     booking_id: str,
     request: Request,
