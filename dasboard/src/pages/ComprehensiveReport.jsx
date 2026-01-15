@@ -459,10 +459,7 @@ export default function ComprehensiveReport() {
             <label htmlFor="to-date" className="block text-sm font-medium text-gray-700">To Date</label>
             <input type="date" id="to-date" value={toDate} onChange={e => setToDate(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
           </div>
-          {/* Debug Display */}
-          <div className="text-xs text-gray-400">
-            Debug: {fromDate || 'None'} to {toDate || 'None'}
-          </div>
+          {/* Debug Display Removed */}
           <button
             onClick={() => { setFromDate(""); setToDate(""); }}
             className="bg-gray-800 text-white px-4 py-2 rounded-md text-sm hover:bg-gray-700 transition"
