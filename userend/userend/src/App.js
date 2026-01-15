@@ -3684,8 +3684,8 @@ export default function App() {
                                                             const isSelected = bookingData.room_ids?.includes(room.id);
                                                             // Enhanced availability check
                                                             const hasUnavailableStatus = ['Maintenance', 'Coming Soon', 'Disabled', 'Occupied', 'Checked-in'].includes(room.status);
-                                                            // Check if room is unavailable based on bookings (only if dates are selected)
-                                                            const isOccupiedByBooking = (bookingData.check_in && bookingData.check_out && roomAvailability[room.id] === false);
+                                                            // Only show as available if explicitly marked as available (true), otherwise treat as unavailable when dates are selected
+                                                            const isOccupiedByBooking = (bookingData.check_in && bookingData.check_out && roomAvailability[room.id] !== true);
                                                             const isUnavailable = hasUnavailableStatus || isOccupiedByBooking;
                                                             return (
                                                                 <div
