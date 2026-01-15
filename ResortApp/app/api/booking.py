@@ -1,5 +1,5 @@
-# booking.py
-from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, BackgroundTasks, Request
+from datetime import date
 from sqlalchemy.orm import Session, joinedload, load_only
 from sqlalchemy import or_, and_
 from typing import List, Union, Optional
@@ -743,28 +743,32 @@ def create_guest_booking(booking: BookingCreate, background_tasks: BackgroundTas
 # -------------------------------
 # Check-in a booking
 # -------------------------------
-@router.put("/{booking_id}/check-in")
-def check_in_booking(
-    booking_id: Union[str, int],
-    id_card_images: Optional[List[UploadFile]] = File(default=None),
-    guest_photos: Optional[List[UploadFile]] = File(default=None),
-    # Legacy fields for backward compatibility (optional now)
-    id_card_image: Optional[UploadFile] = File(default=None),
-    guest_photo: Optional[UploadFile] = File(default=None),
+@router.put("/bookings/{booking_id}/check-in")
+async def check_in_booking(
+    booking_id: str,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    from datetime import date
-    from app.models.booking import CheckInDocument
-    import traceback
-    print(f"DEBUG: Entered check_in_booking v2 for booking {booking_id}")
-
+    print(f"DEBUG: Entered check_in_booking v3 (Manual Parse) for booking {booking_id}")
+    
     try:
-        # Ensure lists are initialized
-        if id_card_images is None:
-            id_card_images = []
-        if guest_photos is None:
-            guest_photos = []
+        # Manually parse form data
+        form = await request.form()
+        
+        # Extract files - handle both list and single item cases
+        id_card_images = form.getlist("id_card_images")
+        guest_photos = form.getlist("guest_photos")
+        
+        # Also check for single file keys if frontend sends them differently
+        if not id_card_images and "id_card_image" in form:
+            id_card_images.append(form["id_card_image"])
+        if not guest_photos and "guest_photo" in form:
+            guest_photos.append(form["guest_photo"])
+
+        # Create consolidated lists (already done above, but for consistency variable names)
+        all_id_cards = [f for f in id_card_images if isinstance(f, UploadFile)]
+        all_guest_photos = [f for f in guest_photos if isinstance(f, UploadFile)]
 
         # Parse display ID (BK-000001) or accept numeric ID
         numeric_id, booking_type = parse_display_id(str(booking_id))
@@ -806,19 +810,6 @@ def check_in_booking(
             # Update check-in date to today
             booking.check_in = today
 
-        # Consolidate files
-        all_id_cards = []
-        if id_card_image:
-            all_id_cards.append(id_card_image)
-        if id_card_images:
-            all_id_cards.extend(id_card_images)
-
-        all_guest_photos = []
-        if guest_photo:
-            all_guest_photos.append(guest_photo)
-        if guest_photos:
-            all_guest_photos.extend(guest_photos)
-
         # Require at least one of each if strictly enforcing check-in requirements
         if not all_id_cards:
             raise HTTPException(status_code=400, detail="At least one ID card image is required.")
@@ -830,6 +821,7 @@ def check_in_booking(
         for file in all_id_cards:
             filename = f"id_{booking_id}_{uuid.uuid4().hex}.jpg"
             file_path = os.path.join(UPLOAD_DIR, filename)
+            # Use file.file which is the SpooledTemporaryFile
             with open(file_path, "wb") as buffer:
                 shutil.copyfileobj(file.file, buffer)
             
@@ -850,7 +842,7 @@ def check_in_booking(
             file_path = os.path.join(UPLOAD_DIR, filename)
             with open(file_path, "wb") as buffer:
                 shutil.copyfileobj(file.file, buffer)
-                
+            
             # Create Document Record
             db.add(CheckInDocument(
                 booking_id=booking.id,
@@ -861,14 +853,11 @@ def check_in_booking(
             if not first_photo_filename:
                 first_photo_filename = filename
 
-        # Update Legacy Columns (Backwards Compatibility)
-        # If legacy columns are already set, we might overwrite them or keep them. 
-        # Current logic: Overwrite with the first new upload.
+        # Update Booking Status
+        booking.status = "checked-in"
         booking.id_card_image_url = first_id_filename
         booking.guest_photo_url = first_photo_filename
-
-        booking.status = "checked-in"
-
+        
         # Save the ID of the user who performed the check-in
         booking.user_id = current_user.id
 
@@ -879,8 +868,8 @@ def check_in_booking(
 
         db.commit()
         db.refresh(booking)
-        
-        # simplified return to avoid JSON serialization errors with UploadFile objects
+
+        # Simplified Return to avoid Pydantic serialization of anything complex
         return {
             "status": "success",
             "message": "Check-in successful",
