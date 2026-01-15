@@ -355,8 +355,8 @@ const Services = () => {
     const fromDate = filters.from ? new Date(filters.from) : null;
     const toDate = filters.to ? new Date(filters.to) : null;
     return (
-      (!filters.room || s.room_id === parseInt(filters.room)) &&
-      (!filters.employee || s.employee_id === parseInt(filters.employee)) &&
+      (!filters.room || s.room?.id === parseInt(filters.room)) &&
+      (!filters.employee || s.employee?.id === parseInt(filters.employee)) &&
       (!filters.status || s.status === filters.status) &&
       (!fromDate || assignedDate >= fromDate) &&
       (!toDate || assignedDate <= toDate)
