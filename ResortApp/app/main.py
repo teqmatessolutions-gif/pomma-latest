@@ -40,9 +40,15 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.exception_handler(TypeError)
+async def type_error_debug(request: Request, exc: TypeError):
+    import traceback
+    print(f"DEBUG: Caught TypeError for {request.method} {request.url}")
+    traceback.print_exc()
+    return JSONResponse(status_code=500, content={"detail": f"Debug TypeError: {str(exc)}"})
 
 # Global License/Health Check Middleware
 from starlette.requests import Request
