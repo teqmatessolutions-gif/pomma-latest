@@ -755,10 +755,14 @@ async def check_in_booking(
     try:
         # Manually parse form data
         form = await request.form()
+        print(f"DEBUG: Form keys: {form.keys()}")
         
         # Extract files - handle both list and single item cases
         id_card_images = form.getlist("id_card_images")
         guest_photos = form.getlist("guest_photos")
+        print(f"DEBUG: id_card_images count: {len(id_card_images)}")
+        if id_card_images:
+            print(f"DEBUG: First ID card type: {type(id_card_images[0])}")
         
         # Also check for single file keys if frontend sends them differently
         if not id_card_images and "id_card_image" in form:
@@ -766,9 +770,12 @@ async def check_in_booking(
         if not guest_photos and "guest_photo" in form:
             guest_photos.append(form["guest_photo"])
 
-        # Create consolidated lists (already done above, but for consistency variable names)
-        all_id_cards = [f for f in id_card_images if isinstance(f, UploadFile)]
-        all_guest_photos = [f for f in guest_photos if isinstance(f, UploadFile)]
+        # Create consolidated lists using duck typing (check for filename attribute)
+        # This handles both Starlette UploadFile and FastAPI UploadFile variations
+        all_id_cards = [f for f in id_card_images if hasattr(f, "filename")]
+        all_guest_photos = [f for f in guest_photos if hasattr(f, "filename")]
+        
+        print(f"DEBUG: Filtered all_id_cards count: {len(all_id_cards)}")
 
         # Parse display ID (BK-000001) or accept numeric ID
         numeric_id, booking_type = parse_display_id(str(booking_id))
