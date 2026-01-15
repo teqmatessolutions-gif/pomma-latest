@@ -785,9 +785,31 @@ const Billing = () => {
 
       const imgProps = pdf.getImageProperties(imgData);
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      const pdfHeight = pdf.internal.pageSize.getHeight();
 
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      // Calculate the height of the image when scaled to fit the PDF width
+      const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+      // If the image fits on one page, add it directly
+      if (imgHeight <= pdfHeight) {
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight);
+      } else {
+        // Image is taller than one page - split across multiple pages
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        // Add first page
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+        heightLeft -= pdfHeight;
+
+        // Add additional pages as needed
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeight; // Negative value to shift image up
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+          heightLeft -= pdfHeight;
+        }
+      }
 
       if (action === 'blob') {
         return pdf.output('blob');
