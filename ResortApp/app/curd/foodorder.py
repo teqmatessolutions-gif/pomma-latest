@@ -109,12 +109,63 @@ def get_food_orders(db: Session, skip: int = 0, limit: int = 100):
         # Priority 2: Check linked package booking
         elif order.package_booking:
              order.guest_name = order.package_booking.guest_name
-        # Priority 3: Fallback to current room status (legacy/active check)
+    # Priority 3: Fallback using historical lookup if guest attribute is missing
         elif hasattr(order, 'room_id') and order.room_id:
+            # First try current active guest (existing logic)
             guest_name = get_guest_for_room(order.room_id, db)
+            
+            # If not found (e.g. guest checked out), try historical lookup using order creation time
+            if not guest_name and order.created_at:
+                 guest_name = get_historical_guest_for_room(db, order.room_id, order.created_at)
+            
             if guest_name:
                 order.guest_name = guest_name
     return orders
+
+def get_historical_guest_for_room(db: Session, room_id: int, timestamp):
+    """
+    Get guest name for a room at a specific point in time.
+    Useful for finding guests for historical orders after they have checked out.
+    """
+    if not room_id or not timestamp:
+        return None
+        
+    # Convert timestamp to date for comparison
+    from datetime import datetime
+    check_date = timestamp.date() if isinstance(timestamp, datetime) else timestamp
+
+    # Check regular bookings
+    # Find booking where check_in <= date <= check_out
+    historical_booking = (
+        db.query(Booking)
+        .join(BookingRoom)
+        .filter(BookingRoom.room_id == room_id)
+        .filter(Booking.status != "cancelled")  # Ignore cancelled
+        .filter(Booking.check_in <= check_date)
+        .filter(Booking.check_out >= check_date)
+        .order_by(Booking.id.desc())
+        .first()
+    )
+    
+    if historical_booking:
+        return historical_booking.guest_name
+        
+    # Check package bookings
+    historical_pkg_booking = (
+        db.query(PackageBooking)
+        .join(PackageBookingRoom)
+        .filter(PackageBookingRoom.room_id == room_id)
+        .filter(PackageBooking.status != "cancelled")
+        .filter(PackageBooking.check_in <= check_date)
+        .filter(PackageBooking.check_out >= check_date)
+        .order_by(PackageBooking.id.desc())
+        .first()
+    )
+    
+    if historical_pkg_booking:
+        return historical_pkg_booking.guest_name
+        
+    return None
 
 def delete_food_order(db: Session, order_id: int):
     order = db.query(FoodOrder).filter(FoodOrder.id == order_id).first()
