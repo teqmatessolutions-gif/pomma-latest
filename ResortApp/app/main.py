@@ -50,6 +50,24 @@ async def type_error_debug(request: Request, exc: TypeError):
     traceback.print_exc()
     return JSONResponse(status_code=500, content={"detail": f"Debug TypeError: {str(exc)}"})
 
+from fastapi.exceptions import RequestValidationError
+from fastapi.encoders import jsonable_encoder
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    # Sanitize error details to remove non-serializable objects (like UploadFile)
+    errors = exc.errors()
+    for error in errors:
+        if "input" in error:
+            # If input is an object (like UploadFile), convert to string representation
+            if not isinstance(error["input"], (str, int, float, bool, type(None))):
+                 error["input"] = str(error["input"])
+    
+    return JSONResponse(
+        status_code=422,
+        content=jsonable_encoder({"detail": errors, "body": errors}),
+    )
+
 # Global License/Health Check Middleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
