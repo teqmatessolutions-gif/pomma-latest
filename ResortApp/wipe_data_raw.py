@@ -23,7 +23,7 @@ def wipe_data_raw():
         "guest_suggestions", "check_availability",
 
         # 4. Bookings & Packages (Children)
-        "booking_rooms", "package_checkin_documents", 
+        "booking_rooms", "checkin_documents", "package_checkin_documents", 
         "package_booking_rooms", "package_bookings", 
         "package_images",
 
