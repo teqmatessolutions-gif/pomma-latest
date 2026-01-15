@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Toaster } from 'react-hot-toast';
 import LockScreen from "./components/LockScreen";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login.jsx";
@@ -83,6 +84,7 @@ function App() {
   }
   return (
     <Router basename={basename}>
+      <Toaster position="top-right" reverseOrder={false} />
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/dashboard" element={

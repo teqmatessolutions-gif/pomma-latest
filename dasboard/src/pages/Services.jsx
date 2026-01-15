@@ -641,6 +641,25 @@ const Services = () => {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Service Images</label>
+
+            {/* Display Existing Images */}
+            {editingService && editingService.images && editingService.images.length > 0 && (
+              <div className="mb-4">
+                <p className="text-xs text-gray-500 mb-2 font-semibold">Existing Images:</p>
+                <div className="grid grid-cols-4 gap-2">
+                  {editingService.images.map((img, idx) => (
+                    <div key={img.id || idx} className="relative group">
+                      <img
+                        src={getImageUrl(img.image_url)}
+                        alt={`Existing ${idx + 1}`}
+                        className="w-full h-24 object-cover rounded-lg border shadow-sm"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 transition-colors cursor-pointer relative">
               <input
                 type="file"

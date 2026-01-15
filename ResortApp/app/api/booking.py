@@ -763,7 +763,7 @@ def check_in_booking(
     if guest_photos is None:
         guest_photos = []
 
-    print(f"DEBUG Check-in: ID Cards={len(id_card_images)}, Guest Photos={len(guest_photos)}, Legacy ID={bool(id_card_image)}, Legacy Photo={bool(guest_photo)}")
+    # print(f"DEBUG Check-in: ID Cards={len(id_card_images)}, Guest Photos={len(guest_photos)}, Legacy ID={bool(id_card_image)}, Legacy Photo={bool(guest_photo)}")
 
     # Parse display ID (BK-000001) or accept numeric ID
     numeric_id, booking_type = parse_display_id(str(booking_id))
