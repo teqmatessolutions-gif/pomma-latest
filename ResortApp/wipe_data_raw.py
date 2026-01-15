@@ -73,7 +73,4 @@ def wipe_data_raw():
         db.close()
 
 if __name__ == "__main__":
-    wipe_data_raw.py_data_raw()
-# Correcting the function name call at the end
-if __name__ == "__main__":
     wipe_data_raw()
