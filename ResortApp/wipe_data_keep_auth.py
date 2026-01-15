@@ -76,14 +76,13 @@ def wipe_data_keep_auth():
         print("- Deleting Package Bookings...")
         db.query(PackageBooking).delete()
         
-        # 6. Reset Master Data Status
-        # Reset rooms to Available
-        print("- Resetting Room Status to 'Available'...")
-        db.query(Room).update({"status": "Available"})
+        # 6. Delete Rooms (User requested to remove rooms too)
+        print("- Deleting Rooms...")
+        db.query(Room).delete()
 
         db.commit()
         print("Cleanup completed successfully.")
-        print("Preserved: Users, Roles, Employees, Rooms, Services, Food Items/Categories, Packages.")
+        print("Preserved: Users, Roles, Employees, Services, Food Items/Categories, Packages.")
 
     except Exception as e:
         print(f"Error during cleanup: {e}")
