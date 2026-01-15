@@ -757,6 +757,7 @@ def check_in_booking(
     from datetime import date
     from app.models.booking import CheckInDocument
     import traceback
+    print(f"DEBUG: Entered check_in_booking v2 for booking {booking_id}")
 
     try:
         # Ensure lists are initialized
