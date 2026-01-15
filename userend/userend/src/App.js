@@ -3682,9 +3682,8 @@ export default function App() {
                                                         .filter(room => selectedRoomType === 'All' || room.type === selectedRoomType)
                                                         .filter(room => {
                                                             // Hide unavailable rooms completely
-                                                            const hasUnavailableStatus = ['Maintenance', 'Coming Soon', 'Disabled', 'Occupied', 'Checked-in'].includes(room.status);
-                                                            const isOccupiedByBooking = (bookingData.check_in && bookingData.check_out && roomAvailability[room.id] !== true);
-                                                            const isUnavailable = hasUnavailableStatus || isOccupiedByBooking;
+                                                            const hasUnavailableStatus = ['Maintenance', 'Coming Soon', 'Disabled'].includes(room.status);
+                                                            const isUnavailable = hasUnavailableStatus;
                                                             return !isUnavailable; // Only show available rooms
                                                         })
                                                         .map(room => {
