@@ -3680,13 +3680,17 @@ export default function App() {
                                                     rooms
                                                         .filter(room => room.status !== 'Disabled')
                                                         .filter(room => selectedRoomType === 'All' || room.type === selectedRoomType)
-                                                        .map(room => {
-                                                            const isSelected = bookingData.room_ids?.includes(room.id);
-                                                            // Enhanced availability check
+                                                        .filter(room => {
+                                                            // Hide unavailable rooms completely
                                                             const hasUnavailableStatus = ['Maintenance', 'Coming Soon', 'Disabled', 'Occupied', 'Checked-in'].includes(room.status);
-                                                            // Only show as available if explicitly marked as available (true), otherwise treat as unavailable when dates are selected
                                                             const isOccupiedByBooking = (bookingData.check_in && bookingData.check_out && roomAvailability[room.id] !== true);
                                                             const isUnavailable = hasUnavailableStatus || isOccupiedByBooking;
+                                                            return !isUnavailable; // Only show available rooms
+                                                        })
+                                                        .map(room => {
+                                                            const isSelected = bookingData.room_ids?.includes(room.id);
+                                                            // Room is available if it passed the filter above
+                                                            const isUnavailable = false;
                                                             return (
                                                                 <div
                                                                     key={room.id}
