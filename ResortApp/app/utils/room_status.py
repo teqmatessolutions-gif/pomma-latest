@@ -34,7 +34,7 @@ def update_room_statuses(db: Session):
                         BookingRoom.room_id == room.id,
                         Booking.status.in_(['booked', 'checked-in', 'checked_in', 'Booked', 'Checked-in', 'Checked-In', 'Checked_in', 'Checked_In', 'occupied', 'Occupied']),
                         Booking.check_in <= today,
-                        Booking.check_out > today
+                        Booking.check_out >= today
                     ).first()
                     
                     # Check for active package bookings too
@@ -43,7 +43,7 @@ def update_room_statuses(db: Session):
                         PackageBookingRoom.room_id == room.id,
                         PackageBooking.status.in_(['booked', 'checked-in', 'checked_in', 'Booked', 'Checked-in', 'Checked-In', 'Checked_in', 'Checked_In', 'occupied', 'Occupied']),
                         PackageBooking.check_in <= today,
-                        PackageBooking.check_out > today
+                        PackageBooking.check_out >= today
                     ).first()
                     
                     new_status = None

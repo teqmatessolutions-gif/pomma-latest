@@ -561,7 +561,17 @@ const Rooms = () => {
   // Filter rooms
   const filteredRooms = rooms.filter(room => {
     const typeMatch = filter.type === 'all' || room.type === filter.type;
-    const statusMatch = filter.status === 'all' || room.status === filter.status;
+    let statusMatch = false;
+
+    if (filter.status === 'all') {
+      statusMatch = true;
+    } else if (filter.status === 'Booked') {
+      // "Booked" filter should show all occupied-type statuses
+      statusMatch = ['Booked', 'Occupied', 'Checked-in', 'booked', 'occupied', 'checked-in'].includes(room.status);
+    } else {
+      statusMatch = room.status === filter.status;
+    }
+
     return typeMatch && statusMatch;
   });
 

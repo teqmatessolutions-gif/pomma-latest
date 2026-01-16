@@ -46,6 +46,24 @@ const getPackageDisplayImages = (pkg) => {
     return images;
 };
 
+// Helper to render text with bold formatting supported via <b> tags
+const renderFormattedText = (text) => {
+    if (!text) return null;
+    // Split by <b>...</b> tags (case insensitive)
+    // capture the delimiter to include it in the parts
+    const parts = text.split(/(<b>.*?<\/b>)/gi);
+
+    return parts.map((part, index) => {
+        const lower = part.toLowerCase();
+        if (lower.startsWith('<b>') && lower.endsWith('</b>')) {
+            // Remove tags and render bold
+            const content = part.slice(3, -4);
+            return <strong key={index} className="font-bold">{content}</strong>;
+        }
+        return part;
+    });
+};
+
 // Custom hook to detect if an element is in the viewport
 import ProgressiveImage from './components/ProgressiveImage';
 import LockScreen from './components/LockScreen';
@@ -3471,7 +3489,7 @@ export default function App() {
                                                     </h3>
                                                     <div className="w-20 h-1 bg-gradient-to-r from-[#0f5132] via-[#1a7042] to-[#c99c4e] mb-6"></div>
                                                     <p className={`text-base md:text-lg ${theme.textSecondary} leading-relaxed`}>
-                                                        {attraction.description}
+                                                        {renderFormattedText(attraction.description)}
                                                     </p>
                                                     {attraction.map_link && (
                                                         <a
@@ -4396,7 +4414,7 @@ export default function App() {
                                     <div className="space-y-4">
                                         <h4 className={`text-xl font-bold ${theme.textPrimary}`}>Description</h4>
                                         <p className={`text-base ${theme.textSecondary} leading-relaxed`}>
-                                            {selectedFoodForDetails.description}
+                                            {renderFormattedText(selectedFoodForDetails.description)}
                                         </p>
                                     </div>
                                 )}
@@ -4455,12 +4473,12 @@ export default function App() {
                                                 return (
                                                     <div key={idx} className="flex items-start gap-3">
                                                         <span className="mt-1.5 inline-flex w-2 h-2 rounded-full bg-[#c99c4e]" />
-                                                        <span>{trimmed.replace(/^[•-]\s*/, '')}</span>
+                                                        <span>{renderFormattedText(trimmed.replace(/^[•-]\s*/, ''))}</span>
                                                     </div>
                                                 );
                                             }
 
-                                            return <p key={idx}>{trimmed}</p>;
+                                            return <p key={idx}>{renderFormattedText(trimmed)}</p>;
                                         })}
                                     </div>
                                 </div>
@@ -4747,7 +4765,7 @@ export default function App() {
                                 <div className="space-y-4">
                                     <h4 className={`text-xl font-bold ${theme.textPrimary}`}>About This Service</h4>
                                     <p className={`text-base ${theme.textSecondary} leading-relaxed whitespace-pre-line`}>
-                                        {selectedServiceForDetails.description}
+                                        {renderFormattedText(selectedServiceForDetails.description)}
                                     </p>
                                 </div>
                             </div>
@@ -4850,7 +4868,7 @@ export default function App() {
                                     <div>
                                         <h4 className={`text-lg font-bold ${theme.textPrimary} mb-2`}>Description</h4>
                                         <p className={`${theme.textSecondary} leading-relaxed whitespace-pre-line`}>
-                                            {selectedPackageDetails.description}
+                                            {renderFormattedText(selectedPackageDetails.description)}
                                         </p>
                                     </div>
 
