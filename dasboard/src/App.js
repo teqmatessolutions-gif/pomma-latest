@@ -1,28 +1,30 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense, lazy } from "react";
 import { Toaster } from 'react-hot-toast';
 import LockScreen from "./components/LockScreen";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Login from "./pages/Login.jsx";
 import { ProtectedRoute } from "./layout/DashboardLayout";
-import Dashboard from "./pages/Dashboard.jsx";
-import RoleForm from "./pages/Roleform.jsx";
-import Bookings from "./pages/Bookings.jsx";
-import CreateRooms from "./pages/CreateRooms.jsx";
-import Users from "./pages/Users.jsx";
-import Services from "./pages/Services.jsx";
-import Expenses from "./pages/Expenses.jsx";
-import FoodOrder from "./pages/FoodOrders.jsx";
-import FoodCategory from "./pages/FoodCategory.jsx";
-import FoodItem from "./pages/Fooditem.jsx";
-import Billing from "./pages/Billing.jsx";
-import Account from "./pages/Account.jsx";
-import Userfrontend_data from "./pages/Userfrontend_data.jsx"; // ✅ Add FoodItem import
+import Loading from "./components/Loading";
 
-import Package from "./pages/Package.jsx"; // ✅ Add FoodItem import
-import ComprehensiveReport from "./pages/ComprehensiveReport.jsx";
-import GuestProfile from "./pages/GuestProfile.jsx";
-import UserHistory from "./pages/UserHistory.jsx";
-import EmployeeManagement from "./pages/EmployeeManagement.jsx";
+// Lazy Load Pages for Performance
+const Login = lazy(() => import("./pages/Login.jsx"));
+const Dashboard = lazy(() => import("./pages/Dashboard.jsx"));
+const RoleForm = lazy(() => import("./pages/Roleform.jsx"));
+const Bookings = lazy(() => import("./pages/Bookings.jsx"));
+const CreateRooms = lazy(() => import("./pages/CreateRooms.jsx"));
+const Users = lazy(() => import("./pages/Users.jsx"));
+const Services = lazy(() => import("./pages/Services.jsx"));
+const Expenses = lazy(() => import("./pages/Expenses.jsx"));
+const FoodOrder = lazy(() => import("./pages/FoodOrders.jsx"));
+const FoodCategory = lazy(() => import("./pages/FoodCategory.jsx"));
+const FoodItem = lazy(() => import("./pages/Fooditem.jsx"));
+const Billing = lazy(() => import("./pages/Billing.jsx"));
+const Account = lazy(() => import("./pages/Account.jsx"));
+const Userfrontend_data = lazy(() => import("./pages/Userfrontend_data.jsx"));
+const Package = lazy(() => import("./pages/Package.jsx"));
+const ComprehensiveReport = lazy(() => import("./pages/ComprehensiveReport.jsx"));
+const GuestProfile = lazy(() => import("./pages/GuestProfile.jsx"));
+const UserHistory = lazy(() => import("./pages/UserHistory.jsx"));
+const EmployeeManagement = lazy(() => import("./pages/EmployeeManagement.jsx"));
 
 const getRouterBasename = () => {
   // During build/SSR, use the PUBLIC_URL or default to /pommaadmin for production
@@ -85,136 +87,138 @@ function App() {
   return (
     <Router basename={basename}>
       <Toaster position="top-right" reverseOrder={false} />
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/dashboard" element={
-          <ProtectedRoute requiredPermission="/dashboard">
-            <Dashboard />
-          </ProtectedRoute>
-        } />
-        <Route path="/bookings" element={
-          <ProtectedRoute requiredPermission="/bookings">
-            <Bookings />
-          </ProtectedRoute>
-        } />
-        <Route path="/rooms" element={
-          <ProtectedRoute requiredPermission="/rooms">
-            <CreateRooms />
-          </ProtectedRoute>
-        } />
-        <Route path="/users" element={
-          <ProtectedRoute requiredPermission="/users">
-            <Users />
-          </ProtectedRoute>
-        } />
-        <Route path="/services" element={
-          <ProtectedRoute requiredPermission="/services">
-            <Services />
-          </ProtectedRoute>
-        } />
-        <Route path="/expenses" element={
-          <ProtectedRoute requiredPermission="/expenses">
-            <Expenses />
-          </ProtectedRoute>
-        } />
-        {/* Protected Routes */}
-        <Route
-          path="/roles"
-          element={
-            <ProtectedRoute requiredPermission="/roles">
-              <RoleForm />
+      <Suspense fallback={<Loading />}>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/dashboard" element={
+            <ProtectedRoute requiredPermission="/dashboard">
+              <Dashboard />
             </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/billing"
-          element={
-            <ProtectedRoute requiredPermission="/billing">
-              <Billing />
+          } />
+          <Route path="/bookings" element={
+            <ProtectedRoute requiredPermission="/bookings">
+              <Bookings />
             </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/food-orders"
-          element={
-            <ProtectedRoute requiredPermission="/food-orders">
-              <FoodOrder />
+          } />
+          <Route path="/rooms" element={
+            <ProtectedRoute requiredPermission="/rooms">
+              <CreateRooms />
             </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/food-categories"
-          element={
-            <ProtectedRoute requiredPermission="/food-categories">
-              <FoodCategory />
+          } />
+          <Route path="/users" element={
+            <ProtectedRoute requiredPermission="/users">
+              <Users />
             </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/food-items"
-          element={
-            <ProtectedRoute requiredPermission="/food-items">
-              <FoodItem />
+          } />
+          <Route path="/services" element={
+            <ProtectedRoute requiredPermission="/services">
+              <Services />
             </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/account"
-          element={
-            <ProtectedRoute requiredPermission="/account">
-              <Account />
+          } />
+          <Route path="/expenses" element={
+            <ProtectedRoute requiredPermission="/expenses">
+              <Expenses />
             </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/Userfrontend_data"
-          element={
-            <ProtectedRoute requiredPermission="/Userfrontend_data">
-              <Userfrontend_data />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/package"
-          element={
-            <ProtectedRoute requiredPermission="/package">
-              <Package />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/report"
-          element={
-            <ProtectedRoute requiredPermission="/report">
-              <ComprehensiveReport />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/guestprofiles"
-          element={
-            <ProtectedRoute requiredPermission="/guestprofiles">
-              <GuestProfile />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/user-history"
-          element={
-            <ProtectedRoute requiredPermission="/user-history">
-              <UserHistory />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/employee-management"
-          element={
-            <ProtectedRoute requiredPermission="/employee-management">
-              <EmployeeManagement />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
+          } />
+          {/* Protected Routes */}
+          <Route
+            path="/roles"
+            element={
+              <ProtectedRoute requiredPermission="/roles">
+                <RoleForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/billing"
+            element={
+              <ProtectedRoute requiredPermission="/billing">
+                <Billing />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/food-orders"
+            element={
+              <ProtectedRoute requiredPermission="/food-orders">
+                <FoodOrder />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/food-categories"
+            element={
+              <ProtectedRoute requiredPermission="/food-categories">
+                <FoodCategory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/food-items"
+            element={
+              <ProtectedRoute requiredPermission="/food-items">
+                <FoodItem />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/account"
+            element={
+              <ProtectedRoute requiredPermission="/account">
+                <Account />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/Userfrontend_data"
+            element={
+              <ProtectedRoute requiredPermission="/Userfrontend_data">
+                <Userfrontend_data />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/package"
+            element={
+              <ProtectedRoute requiredPermission="/package">
+                <Package />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/report"
+            element={
+              <ProtectedRoute requiredPermission="/report">
+                <ComprehensiveReport />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/guestprofiles"
+            element={
+              <ProtectedRoute requiredPermission="/guestprofiles">
+                <GuestProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user-history"
+            element={
+              <ProtectedRoute requiredPermission="/user-history">
+                <UserHistory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/employee-management"
+            element={
+              <ProtectedRoute requiredPermission="/employee-management">
+                <EmployeeManagement />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </Suspense>
     </Router>
   );
 }
