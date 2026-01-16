@@ -1343,25 +1343,24 @@ const Bookings = () => {
 
         if (fromDate || toDate) {
           const checkInDate = new Date(b.check_in);
-          const checkOutDate = new Date(b.check_out);
-          checkInDate.setHours(0, 0, 0, 0); // Normalize times for accurate comparison
-          checkOutDate.setHours(0, 0, 0, 0);
+          // Normalized times for accurate comparison (already default in JS Date from YYYY-MM-DD but explicit is good)
+          checkInDate.setHours(0, 0, 0, 0);
 
           if (fromDate && toDate) {
-            // Both dates specified: booking overlaps if it intersects with the range
+            // Both dates specified: check-in date must be within range [from, to] inclusive
             const from = new Date(fromDate);
             const to = new Date(toDate);
             from.setHours(0, 0, 0, 0);
             to.setHours(0, 0, 0, 0);
 
-            dateMatch = checkInDate <= to && checkOutDate >= from;
+            dateMatch = checkInDate >= from && checkInDate <= to;
           } else if (fromDate) {
-            // Only from date specified: booking must end on or after this date
+            // Only from date specified: check-in date must be on or after this date
             const from = new Date(fromDate);
             from.setHours(0, 0, 0, 0);
-            dateMatch = checkOutDate >= from;
+            dateMatch = checkInDate >= from;
           } else if (toDate) {
-            // Only to date specified: booking must start on or before this date
+            // Only to date specified: check-in date must be on or before this date
             const to = new Date(toDate);
             to.setHours(0, 0, 0, 0);
             dateMatch = checkInDate <= to;
