@@ -42,10 +42,10 @@ def save_image_file(image: UploadFile) -> str:
         
         image.file.seek(0)
         with Image.open(image.file) as img:
-            img.thumbnail((400, 400), Image.Resampling.LANCZOS)
+            img.thumbnail((400, 400), Image.Resampling.BICUBIC)
             if img.mode in ("RGBA", "P"):
                 img = img.convert("RGB")
-            img.save(thumb_path, "JPEG", quality=80, optimize=True)
+            img.save(thumb_path, "JPEG", quality=80)
             
         return f"uploads/rooms/{filename}"
     except Exception as e:

@@ -40,10 +40,10 @@ def generate_thumbnails_for_dirs(directories):
                     
                 try:
                     with Image.open(filepath) as img:
-                        img.thumbnail((200, 200), Image.Resampling.LANCZOS)
+                        img.thumbnail((200, 200), Image.Resampling.BICUBIC)
                         if img.mode in ("RGBA", "P"):
                             img = img.convert("RGB")
-                        img.save(thumb_path, "JPEG", quality=60, optimize=True)
+                        img.save(thumb_path, "JPEG", quality=60)
                         logger.info(f"Created missing thumb: {thumb_filename}")
                         count += 1
                 except Exception as e:

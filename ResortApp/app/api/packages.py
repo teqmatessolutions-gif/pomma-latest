@@ -193,10 +193,10 @@ async def update_package_api(
                 file_content = img.file.read()
                 
                 with Image.open(io.BytesIO(file_content)) as img_pil:
-                   img_pil.thumbnail((200, 200), Image.Resampling.LANCZOS)
+                   img_pil.thumbnail((200, 200), Image.Resampling.BICUBIC)
                    if img_pil.mode in ("RGBA", "P"):
                        img_pil = img_pil.convert("RGB")
-                   img_pil.save(thumb_path, "JPEG", quality=60, optimize=True)
+                   img_pil.save(thumb_path, "JPEG", quality=60)
             except Exception as thumb_error:
                 print(f"Warning: Failed to generate thumbnail for {filename}: {thumb_error}")
         
