@@ -262,6 +262,7 @@ const Rooms = () => {
   const [bookingCheckinFilter, setBookingCheckinFilter] = useState(""); // Check-in date filter
   const [bookingCheckoutFilter, setBookingCheckoutFilter] = useState(""); // Check-out date filter
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Function to show banner message
   const showBannerMessage = (type, text) => {
@@ -420,6 +421,8 @@ const Rooms = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+
     const formData = new FormData();
     formData.append("number", form.number);
     formData.append("type", form.type);
@@ -492,9 +495,9 @@ const Rooms = () => {
       setPreviewImages([]);
       setExistingImages([]);
       fetchRooms();
-    } catch (err) {
-      console.error("API error:", err);
       showBannerMessage("error", `Error ${isEditing ? "updating" : "creating"} room`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -908,9 +911,20 @@ const Rooms = () => {
             <div className="md:col-span-2 lg:col-span-3 flex items-center gap-4">
               <button
                 type="submit"
-                className="w-full bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-indigo-700 transition-transform transform hover:-translate-y-1"
+                disabled={isSubmitting}
+                className={`w-full bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-indigo-700 transition-transform transform hover:-translate-y-1 flex justify-center items-center gap-2 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
               >
-                {isEditing ? "Update Room" : "Add Room"}
+                {isSubmitting ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    {isEditing ? "Updating..." : "Creating..."}
+                  </>
+                ) : (
+                  isEditing ? "Update Room" : "Add Room"
+                )}
               </button>
               <button
                 type="button"
