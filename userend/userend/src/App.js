@@ -1503,52 +1503,37 @@ export default function App() {
     };
 
     const checkRoomAvailability = useCallback((room, checkIn, checkOut) => {
-        // If dates are not selected, we don't filter by availability (except status)
         if (!checkIn || !checkOut || !room) return true;
 
-        // Helper to normalize date to midnight (strip time)
-        const toMidnight = (d) => {
-            const date = new Date(d);
-            date.setHours(0, 0, 0, 0);
-            return date;
+        const requestedCheckIn = new Date(checkIn);
+        const requestedCheckOut = new Date(checkOut);
+
+        if (isNaN(requestedCheckIn.getTime()) || isNaN(requestedCheckOut.getTime())) return true;
+
+        // Helper to check conflict against a list of bookings
+        const hasConflictInList = (list) => {
+            return list.some(booking => {
+                const normalizedBookingStatus = (booking.status || '').toLowerCase().replace(/_/g, '-').trim();
+                // Match Dashboard: Only check "booked" or "checked-in"
+                if (normalizedBookingStatus !== "booked" && normalizedBookingStatus !== "checked-in") return false;
+
+                // Link check
+                const isRoomInBooking = booking.rooms && Array.isArray(booking.rooms) && booking.rooms.some(r => {
+                    const roomId = r.room?.id || r.room_id || r.id;
+                    return roomId === room.id;
+                });
+                if (!isRoomInBooking) return false;
+
+                const bookingCheckIn = new Date(booking.check_in);
+                const bookingCheckOut = new Date(booking.check_out);
+
+                // Match Dashboard: Date overlap logic
+                return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
+            });
         };
 
-        const checkInDate = toMidnight(checkIn);
-        const checkOutDate = toMidnight(checkOut);
-
-        if (isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) return true;
-
-        // Check regular bookings
-        const hasBookingConflict = (bookings || []).some(booking => {
-            if (!booking || booking.status === 'cancelled' || booking.status === 'Cancelled') return false;
-
-            // Link check: Does this booking include this room?
-            const hasRoom = booking.rooms && Array.isArray(booking.rooms) && booking.rooms.some(r => r.id === room.id);
-            if (!hasRoom) return false;
-
-            // Date Overlap Check
-            const bCheckIn = toMidnight(booking.check_in);
-            const bCheckOut = toMidnight(booking.check_out);
-
-            return (bCheckIn < checkOutDate && bCheckOut > checkInDate);
-        });
-
-        if (hasBookingConflict) return false;
-
-        // Check package bookings
-        const hasPackageConflict = (packageBookings || []).some(booking => {
-            if (!booking || booking.status === 'cancelled' || booking.status === 'Cancelled') return false;
-
-            const hasRoom = booking.rooms && Array.isArray(booking.rooms) && booking.rooms.some(r => r.id === room.id);
-            if (!hasRoom) return false;
-
-            const bCheckIn = toMidnight(booking.check_in);
-            const bCheckOut = toMidnight(booking.check_out);
-
-            return (bCheckIn < checkOutDate && bCheckOut > checkInDate);
-        });
-
-        if (hasPackageConflict) return false;
+        if (hasConflictInList(bookings || [])) return false;
+        if (hasConflictInList(packageBookings || [])) return false;
 
         return true;
     }, [bookings, packageBookings]);
@@ -3728,8 +3713,12 @@ export default function App() {
                                                     .filter(room => room.status !== 'Disabled')
                                                     .filter(room => selectedRoomType === 'All' || room.type === selectedRoomType)
                                                     .filter(room => {
-                                                        const hasUnavailableStatus = ['Maintenance', 'Coming Soon', 'Disabled'].includes(room.status);
-                                                        if (hasUnavailableStatus) return false;
+                                                        // Match Dashboard: Strict Status Filter
+                                                        const normalizedStatus = (room.status || '').toLowerCase().trim();
+                                                        const unavailableStatuses = ['disabled', 'coming soon', 'maintenance', 'occupied', 'checked-in'];
+                                                        if (unavailableStatuses.includes(normalizedStatus)) return false;
+
+                                                        // Date Availability Filter
                                                         if (bookingData.check_in && bookingData.check_out) {
                                                             return checkRoomAvailability(room, bookingData.check_in, bookingData.check_out);
                                                         }
@@ -3740,15 +3729,15 @@ export default function App() {
                                                         .filter(room => room.status !== 'Disabled')
                                                         .filter(room => selectedRoomType === 'All' || room.type === selectedRoomType)
                                                         .filter(room => {
-                                                            // 1. Basic Status Filter
-                                                            const hasUnavailableStatus = ['Maintenance', 'Coming Soon', 'Disabled'].includes(room.status);
-                                                            if (hasUnavailableStatus) return false;
+                                                            // Match Dashboard: Strict Status Filter
+                                                            const normalizedStatus = (room.status || '').toLowerCase().trim();
+                                                            const unavailableStatuses = ['disabled', 'coming soon', 'maintenance', 'occupied', 'checked-in'];
+                                                            if (unavailableStatuses.includes(normalizedStatus)) return false;
 
-                                                            // 2. Date Availability Filter
+                                                            // Date Availability Filter
                                                             if (bookingData.check_in && bookingData.check_out) {
                                                                 return checkRoomAvailability(room, bookingData.check_in, bookingData.check_out);
                                                             }
-
                                                             return true;
                                                         })
                                                         .map(room => {
