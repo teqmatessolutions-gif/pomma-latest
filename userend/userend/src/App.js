@@ -2916,7 +2916,7 @@ export default function App() {
                                                                 {room.bbq && <span className="px-2 py-1 bg-red-50 text-red-700 rounded-md border border-red-100">BBQ</span>}
                                                                 {room.garden && <span className="px-2 py-1 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-100">Garden</span>}
                                                                 {room.dining && <span className="px-2 py-1 bg-amber-50 text-amber-700 rounded-md border border-amber-100">Dining</span>}
-                                                                {room.breakfast && <span className="px-2 py-1 bg-cyan-50 text-cyan-700 rounded-md border border-cyan-100">B'fast</span>}
+                                                                {room.breakfast && <span className="px-2 py-1 bg-cyan-50 text-cyan-700 rounded-md border border-cyan-100">Complimentary Breakfast</span>}
                                                             </div>
                                                         )}
                                                     </div>
