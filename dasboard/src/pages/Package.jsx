@@ -443,6 +443,8 @@ const Packages = () => {
 
   const handleEditSubmit = async e => {
     e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const data = new FormData();
       data.append("title", editForm.title);
@@ -491,11 +493,15 @@ const Packages = () => {
       setEditNewImagePreviews([]);
       setEditSelectedFiles([]);
       fetchData();
+      setEditSelectedFiles([]);
+      fetchData();
     } catch (err) {
       console.error(err);
       const errorMsg = err.response?.data?.detail;
       const message = typeof errorMsg === 'string' ? errorMsg : 'Failed to update package';
       showBannerMessage("error", message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1005,9 +1011,18 @@ const Packages = () => {
               </div>
             )}
 
-            <div className="flex gap-3">
-              <button type="button" onClick={() => setEditingPackage(null)} className="w-1/2 bg-gray-200 text-gray-800 font-semibold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:-translate-y-1">Cancel</button>
-              <button type="submit" className="w-1/2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:-translate-y-1">Update Package ✏️</button>
+            <div className="flex flex-col gap-3">
+              {isSubmitting && (
+                <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2 overflow-hidden">
+                  <div className="bg-indigo-600 h-2.5 rounded-full w-full animate-pulse"></div>
+                </div>
+              )}
+              <div className="flex gap-3">
+                <button type="button" onClick={() => setEditingPackage(null)} disabled={isSubmitting} className="w-1/2 bg-gray-200 text-gray-800 font-semibold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed">Cancel</button>
+                <button type="submit" disabled={isSubmitting} className="w-1/2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed">
+                  {isSubmitting ? "Updating..." : "Update Package ✏️"}
+                </button>
+              </div>
             </div>
           </form>
         )}
@@ -1086,6 +1101,12 @@ const Packages = () => {
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {isSubmitting && (
+            <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4 overflow-hidden">
+              <div className="bg-indigo-600 h-2.5 rounded-full w-full animate-pulse"></div>
             </div>
           )}
 

@@ -188,34 +188,7 @@ export default function DashboardLayout({ children }) {
     };
   }, [location.pathname]);
 
-  // Effect to create and manage the animated bubble background
-  useEffect(() => {
-    const bubbleContainer = document.getElementById('bubble-background');
-    if (!bubbleContainer) return;
-    bubbleContainer.innerHTML = ''; // Clear existing bubbles on theme change
 
-    const createBubble = () => {
-      const bubble = document.createElement('span');
-      const size = Math.random() * 60 + 20; // Bubble size between 20px and 80px
-      const animationDuration = Math.random() * 10 + 10; // Duration between 10s and 20s
-      const delay = Math.random() * 5; // Start delay up to 5s
-      const left = Math.random() * 100; // Horizontal start position
-
-      bubble.style.width = `${size}px`;
-      bubble.style.height = `${size}px`;
-      bubble.style.left = `${left}%`;
-      bubble.style.animationDuration = `${animationDuration}s`;
-      bubble.style.animationDelay = `${delay}s`;
-      bubble.style.backgroundColor = `var(--bubble-color)`; // Use theme color
-
-      bubble.classList.add('bubble');
-      bubbleContainer.appendChild(bubble);
-    };
-
-    for (let i = 0; i < 30; i++) { // Create 30 bubbles
-      createBubble();
-    }
-  }, [currentTheme]);
 
 
   const { role, permissions, user } = getUserPermissions();
@@ -316,33 +289,7 @@ export default function DashboardLayout({ children }) {
         </button>
       )}
 
-      {/* Bubble animation styles */}
-      <style>
-        {`
-        @keyframes moveBubbles {
-          0% { transform: translateY(0) rotate(0deg); opacity: 0; border-radius: 0; }
-          50% { opacity: 1; border-radius: 50%; }
-          100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
-        }
 
-        .bubble {
-          position: absolute;
-          bottom: -150px;
-          animation: moveBubbles infinite ease-in;
-          filter: blur(2px);
-          border-radius: 50%;
-        }
-
-        @media (max-width: 1024px) {
-          .bubble {
-            display: none; /* Hide bubbles on mobile for better performance */
-          }
-        }
-        `}
-      </style>
-
-      {/* Bubble container */}
-      <div id="bubble-background" className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0"></div>
 
       <div className="flex h-full w-full relative z-10">
         {/* Mobile overlay for sidebar - Moved here for correct z-index stacking */}
