@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.curd import food_item
@@ -45,6 +45,7 @@ async def create_item(
 
 @router.put("/{item_id}")
 async def update_item(
+    request: Request,
     item_id: int,
     name: str = Form(...),
     description: str = Form(...),
@@ -52,9 +53,26 @@ async def update_item(
     available: bool = Form(...),
     category_id: int = Form(...),
     images: list[UploadFile] = File(None),
+    keep_image_ids: str = Form(""), # Comma-separated list of IDs to keep
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    form_data = await request.form()
+    print(f"DEBUG: Raw Form Keys received: {form_data.keys()}")
+    
+    print(f"DEBUG: update_item called for item_id: {item_id}")
+    print(f"DEBUG: keep_image_ids received raw: '{keep_image_ids}'")
+    
+    # Parse keep_image_ids string to list of ints
+    keep_ids_list = []
+    if keep_image_ids and keep_image_ids.strip():
+        try:
+            keep_ids_list = [int(id_str) for id_str in keep_image_ids.split(",") if id_str.strip().isdigit()]
+        except ValueError:
+            print(f"Error parsing keep_image_ids: {keep_image_ids}")
+            
+    print(f"DEBUG: Parsed keep_ids_list: {keep_ids_list}")
+
     image_paths = []
     if images and images[0].filename:
         for image in images:
@@ -70,7 +88,7 @@ async def update_item(
         available=available, category_id=category_id
     )
     
-    updated_item = food_item.update_food_item(db, item_id, item_data, image_paths)
+    updated_item = food_item.update_food_item(db, item_id, item_data, image_paths, keep_ids_list)
     if updated_item is None:
         raise HTTPException(status_code=404, detail="Food item not found")
     return updated_item

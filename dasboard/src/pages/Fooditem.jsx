@@ -32,6 +32,7 @@ const FoodItems = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [message, setMessage] = useState({ type: "", text: "" });
   const [images, setImages] = useState([]);
+  const [existingImages, setExistingImages] = useState([]); // Store existing images {id, image_url}
   const [imagePreviews, setImagePreviews] = useState([]);
   const [foodItems, setFoodItems] = useState([]);
   const [editingItemId, setEditingItemId] = useState(null);
@@ -75,7 +76,20 @@ const FoodItems = () => {
   };
 
   const handleRemoveImage = (index) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
+    // Determine if the index refers to an existing image or a new file
+    // The previews list combines existing (first) + new (second)
+    const existingCount = existingImages.length;
+
+    if (index < existingCount) {
+      // Removing an existing image
+      setExistingImages((prev) => prev.filter((_, i) => i !== index));
+    } else {
+      // Removing a new file
+      // Adjust index to map to 'images' array (index - existingCount)
+      const newFileIndex = index - existingCount;
+      setImages((prev) => prev.filter((_, i) => i !== newFileIndex));
+    }
+    // Always remove from previews
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -86,8 +100,15 @@ const FoodItems = () => {
     setPrice(item.price);
     setSelectedCategory(item.category_id);
     setAvailable(item.available);
-    setImagePreviews(item.images?.map((img) => getImageUrl(img.image_url)) || []);
-    setImages([]);
+
+    // Set existing images
+    setExistingImages(item.images || []);
+
+    // Generate previews: Existing images + New Files (none initially)
+    const existingPreviews = item.images?.map((img) => getImageUrl(img.image_url)) || [];
+    setImagePreviews(existingPreviews);
+
+    setImages([]); // Clear new file uploads
     setIsModalOpen(true);
   };
 
@@ -97,6 +118,7 @@ const FoodItems = () => {
     setPrice("");
     setSelectedCategory("");
     setImages([]);
+    setExistingImages([]);
     setImagePreviews([]);
     setEditingItemId(null);
     setAvailable(true);
@@ -131,22 +153,33 @@ const FoodItems = () => {
     formData.append("price", price);
     formData.append("category_id", selectedCategory);
     formData.append("available", available);
+
+    // Append new images
     images.forEach((img) => formData.append("images", img));
+
+    // Append kept (existing) image IDs as comma-separated string (Package Logic)
+    if (editingItemId) {
+      if (existingImages.length > 0) {
+        const keepIds = existingImages.map(img => img.id).join(",");
+        formData.append("keep_image_ids", keepIds);
+      } else {
+        // If empty, send empty string to imply delete all existing
+        formData.append("keep_image_ids", "");
+      }
+    }
 
     try {
       if (editingItemId) {
         await API.put(`/food-items/${editingItemId}`, formData, {
-          headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
+          headers: { Authorization: `Bearer ${token}` }, // Content-Type handled automatically
         });
         setMessage({ type: "success", text: "Food item updated successfully!" });
       } else {
         await API.post("/food-items", formData, {
-          headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
+          headers: { Authorization: `Bearer ${token}` }, // Content-Type handled automatically
         });
         setMessage({ type: "success", text: "Food item created successfully!" });
       }
-      fetchFoodItems();
-      resetForm();
       fetchFoodItems();
       resetForm();
       setIsModalOpen(false);
@@ -155,8 +188,6 @@ const FoodItems = () => {
       console.error("Failed to save food item", err);
       const errorMsg = err.response?.data?.detail || err.message || "Failed to save food item. Please try again.";
       setMessage({ type: "error", text: errorMsg });
-      setMessage({ type: "error", text: errorMsg });
-      // BannerMessage handles auto-dismiss
     }
   };
 

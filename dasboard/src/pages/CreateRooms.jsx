@@ -495,6 +495,8 @@ const Rooms = () => {
       setPreviewImages([]);
       setExistingImages([]);
       fetchRooms();
+    } catch (err) {
+      console.error("Error submitting room:", err);
       showBannerMessage("error", `Error ${isEditing ? "updating" : "creating"} room`);
     } finally {
       setIsSubmitting(false);

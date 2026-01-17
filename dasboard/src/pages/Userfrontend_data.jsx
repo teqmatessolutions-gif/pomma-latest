@@ -146,6 +146,7 @@ const FormModal = ({ isOpen, onClose, onSubmit, fields, initialData, title, isMu
     const [selectedFile, setSelectedFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         if (initialData) {
@@ -157,6 +158,8 @@ const FormModal = ({ isOpen, onClose, onSubmit, fields, initialData, title, isMu
             setFormState({});
             setImagePreview(null);
         }
+        setError(null);
+        setSelectedFile(null); // Ensure selectedFile is reset when modal opens
     }, [initialData, isOpen]);
 
     const handleFormChange = (e) => {
@@ -165,6 +168,7 @@ const FormModal = ({ isOpen, onClose, onSubmit, fields, initialData, title, isMu
             setSelectedFile(files[0]);
             setImagePreview(URL.createObjectURL(files[0]));
             setFormState({ ...formState, [name]: files[0] });
+            setError(null); // Clear error on file selection
         } else if (type === 'checkbox') {
             setFormState({ ...formState, [name]: checked });
         } else {
@@ -174,7 +178,20 @@ const FormModal = ({ isOpen, onClose, onSubmit, fields, initialData, title, isMu
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Client-side validation for missing images in multipart forms
+        if (isMultipart) {
+            // If it's a new item (no initialData) OR existing item with no previous image
+            // AND no new file is selected.
+            const hasExistingImage = initialData && initialData.image_url;
+            if (!selectedFile && !hasExistingImage) {
+                setError("Please select an image to continue.");
+                return;
+            }
+        }
+
         setIsLoading(true);
+        setError(null);
         try {
             await onSubmit(formState, selectedFile);
             onClose();
@@ -213,6 +230,19 @@ const FormModal = ({ isOpen, onClose, onSubmit, fields, initialData, title, isMu
                             </div>
                         ))}
                         {imagePreview && <div className="mt-4"><img src={imagePreview} alt="Preview" className="w-40 h-40 object-cover rounded-lg shadow-md" /></div>}
+
+                        {/* Validation Error Message */}
+                        {error && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm font-medium flex items-center gap-2"
+                            >
+                                <FaTimes className="text-red-500" />
+                                {error}
+                            </motion.div>
+                        )}
+
                         <button type="submit" disabled={isLoading} className="w-full mt-6 py-3 px-6 bg-violet-600 text-white rounded-lg font-semibold shadow-md hover:bg-violet-700 transition-all duration-200 disabled:bg-gray-400">
                             {isLoading ? "Saving..." : "Save Changes"}
                         </button>

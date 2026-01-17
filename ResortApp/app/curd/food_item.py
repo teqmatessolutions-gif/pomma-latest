@@ -46,13 +46,23 @@ def update_food_item_availability(db: Session, item_id: int, available: bool):
         return {"msg": "Availability updated"}
     return {"msg": "Item not found"}
 
-def update_food_item(db: Session, item_id: int, item: FoodItemCreate, image_paths: list[str] = None):
+def update_food_item(db: Session, item_id: int, item: FoodItemCreate, image_paths: list[str] = None, kept_image_ids: list[int] = None):
     db_item = db.query(FoodItem).filter(FoodItem.id == item_id).first()
     if not db_item:
         return None
     
     for key, value in item.dict().items():
         setattr(db_item, key, value)
+    
+    # Handle image deletions if kept_image_ids is provided
+    if kept_image_ids is not None:
+        # Get all current images for this item
+        current_images = db.query(FoodItemImage).filter(FoodItemImage.item_id == item_id).all()
+        # Find images to delete (those whose IDs are NOT in the kept list)
+        for img in current_images:
+            if img.id not in kept_image_ids:
+                db.delete(img) # Delete from DB
+                # Optional: Delete file from disk if needed, but DB sync is primary requirement
     
     if image_paths:
         for path in image_paths:

@@ -287,6 +287,12 @@ export default function DashboardLayout({ children }) {
     return hasPermission;
   });
 
+  const handleNavClick = () => {
+    if (window.innerWidth < 1024) {
+      setCollapsed(true);
+    }
+  };
+
   return (
     <div
       className="flex h-screen overflow-hidden transition-colors duration-300 font-sans"
@@ -297,11 +303,17 @@ export default function DashboardLayout({ children }) {
     >
       <LicenseOverlay />
       {/* Mobile overlay for sidebar */}
-      {!collapsed && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={() => setCollapsed(true)}
-        />
+
+
+      {/* Mobile Menu Toggle - Visible only when sidebar is collapsed on mobile */}
+      {collapsed && (
+        <button
+          onClick={() => setCollapsed(false)}
+          className="fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md text-gray-600 hover:text-gray-900 lg:hidden hover:bg-gray-50 transition-colors"
+          aria-label="Open Menu"
+        >
+          <Menu size={24} />
+        </button>
       )}
 
       {/* Bubble animation styles */}
@@ -333,6 +345,13 @@ export default function DashboardLayout({ children }) {
       <div id="bubble-background" className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0"></div>
 
       <div className="flex h-full w-full relative z-10">
+        {/* Mobile overlay for sidebar - Moved here for correct z-index stacking */}
+        {!collapsed && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            onClick={() => setCollapsed(true)}
+          />
+        )}
 
         {/* Sidebar container */}
         <div
@@ -414,6 +433,7 @@ export default function DashboardLayout({ children }) {
                 <Link
                   key={idx}
                   to={item.to}
+                  onClick={handleNavClick}
                   className={`
                     group block flex items-center gap-4 p-3 rounded-xl
                     transition-all duration-200 cursor-pointer
@@ -440,6 +460,7 @@ export default function DashboardLayout({ children }) {
           <div className="p-4 border-t" style={{ borderColor: 'var(--accent-bg)' }}>
             <Link
               to="/"
+              onClick={handleNavClick}
               className="group block flex items-center gap-4 p-3 rounded-xl transition-all duration-200 cursor-pointer hover:opacity-75"
               style={{
                 backgroundColor: 'transparent',

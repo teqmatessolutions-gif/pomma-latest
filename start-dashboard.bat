@@ -1,6 +1,6 @@
 @echo off
 echo Starting Dashboard...
-cd C:\Resort\Resortwithlandingpagenew\Resortwithlandingpage\Resort_first\dasboard
+cd /d "%~dp0dasboard"
 npm start
 pause
 
