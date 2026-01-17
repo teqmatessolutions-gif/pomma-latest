@@ -34,8 +34,9 @@ const FoodManagement = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
-  const [images, setImages] = useState([]);
-  const [imagePreviews, setImagePreviews] = useState([]);
+  const [images, setImages] = useState([]); // New image files to upload
+  const [existingImages, setExistingImages] = useState([]); // Existing image objects from DB
+  const [imagePreviews, setImagePreviews] = useState([]); // All previews (existing + new)
   const [foodItems, setFoodItems] = useState([]);
   const [editingItemId, setEditingItemId] = useState(null);
   const [available, setAvailable] = useState(true);
@@ -103,7 +104,17 @@ const FoodManagement = () => {
   };
 
   const handleRemoveImage = (index) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
+    // Determine if we are removing an existing image or a new one
+    if (index < existingImages.length) {
+      // Removing an existing image
+      setExistingImages((prev) => prev.filter((_, i) => i !== index));
+    } else {
+      // Removing a newly added image
+      // The index in the 'images' array is offset by existingImages.length
+      const newImageIndex = index - existingImages.length;
+      setImages((prev) => prev.filter((_, i) => i !== newImageIndex));
+    }
+    // Always remove from the unified previews list
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -114,8 +125,17 @@ const FoodManagement = () => {
     setPrice(item.price);
     setSelectedCategory(item.category_id);
     setAvailable(item.available);
-    setImagePreviews(item.images?.map((img) => getImageUrl(img.image_url)) || []);
+
+    // Store existing images
+    setExistingImages(item.images || []);
+
+    // Create previews correctly: existing URLs first
+    const existingPreviews = (item.images || []).map((img) => getImageUrl(img.image_url));
+    setImagePreviews(existingPreviews);
+
+    // Reset new images
     setImages([]);
+
     setIsFoodItemModalOpen(true);
   };
 
@@ -125,6 +145,7 @@ const FoodManagement = () => {
     setPrice("");
     setSelectedCategory("");
     setImages([]);
+    setExistingImages([]);
     setImagePreviews([]);
     setEditingItemId(null);
     setAvailable(true);
@@ -140,7 +161,15 @@ const FoodManagement = () => {
     formData.append("price", price);
     formData.append("category_id", selectedCategory);
     formData.append("available", available);
+
+    // Append new images
     images.forEach((img) => formData.append("images", img));
+
+    // Append IDs of existing images to keep
+    if (editingItemId) {
+      const keepIds = existingImages.map(img => img.id).join(",");
+      formData.append("keep_image_ids", keepIds);
+    }
 
     try {
       if (editingItemId) {
