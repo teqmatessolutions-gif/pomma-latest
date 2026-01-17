@@ -44,8 +44,7 @@ const FoodManagement = () => {
 
   // === State for Food Categories ===
   const [categoryName, setCategoryName] = useState("");
-  const [categoryImageFile, setCategoryImageFile] = useState(null);
-  const [categoryPreviewUrl, setCategoryPreviewUrl] = useState(null);
+
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [editCategoryId, setEditCategoryId] = useState(null);
@@ -200,15 +199,7 @@ const FoodManagement = () => {
   };
 
   // === Food Category Handlers ===
-  const handleCategoryImageChange = (e) => {
-    const file = e.target.files[0];
-    setCategoryImageFile(file);
-    if (file) {
-      setCategoryPreviewUrl(URL.createObjectURL(file));
-    } else {
-      setCategoryPreviewUrl(null);
-    }
-  };
+
 
   const handleCategorySubmit = async (e) => {
     e.preventDefault();
@@ -220,7 +211,7 @@ const FoodManagement = () => {
 
     const formData = new FormData();
     formData.append("name", categoryName);
-    if (categoryImageFile) formData.append("image", categoryImageFile);
+
 
     try {
       if (editCategoryId) {
@@ -237,8 +228,7 @@ const FoodManagement = () => {
         toast.success("Category added successfully!");
       }
       setCategoryName("");
-      setCategoryImageFile(null);
-      setCategoryPreviewUrl(null);
+
       fetchCategories();
     } catch (err) {
       console.error("Failed to save category:", err);
@@ -252,8 +242,7 @@ const FoodManagement = () => {
   const handleCategoryEdit = (cat) => {
     setEditCategoryId(cat.id);
     setCategoryName(cat.name);
-    setCategoryPreviewUrl(getImageUrl(`static/food_categories/${cat.image}`));
-    setCategoryImageFile(null);
+
   };
 
   const handleCategoryDelete = async (id) => {
@@ -417,13 +406,7 @@ const FoodManagement = () => {
                 className="w-full border border-gray-300 rounded-xl px-4 py-3 mb-4 focus:ring-2 focus:ring-indigo-500 transition duration-200"
                 required
               />
-              <label className="block text-gray-700 font-medium mb-2">Category Image</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleCategoryImageChange}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-              />
+
               <button
                 type="submit"
                 className="w-full bg-indigo-600 text-white font-bold py-3 mt-8 rounded-xl shadow-lg hover:bg-indigo-700 transition duration-300"
@@ -433,7 +416,7 @@ const FoodManagement = () => {
               </button>
               {editCategoryId && (
                 <button
-                  onClick={() => { setEditCategoryId(null); setCategoryName(""); setCategoryImageFile(null); setCategoryPreviewUrl(null); }}
+                  onClick={() => { setEditCategoryId(null); setCategoryName(""); }}
                   className="w-full mt-3 py-3 rounded-xl border border-gray-300 text-gray-600 font-semibold hover:bg-gray-100 transition-all duration-300"
                   type="button"
                 >
@@ -442,13 +425,7 @@ const FoodManagement = () => {
               )}
             </div>
 
-            <div className="flex justify-center items-center w-full md:w-48 h-48 bg-gray-100 rounded-2xl shadow-inner overflow-hidden">
-              {categoryPreviewUrl ? (
-                <img src={categoryPreviewUrl} alt="Preview" className="w-full h-full object-cover" />
-              ) : (
-                <p className="text-gray-500 text-center px-2 text-sm">No image selected</p>
-              )}
-            </div>
+
           </form>
 
           <div className="mt-12">
