@@ -334,18 +334,7 @@ export default function ReportsDashboard() {
   return (
     <DashboardLayout>
       {/* Animated Background */}
-      <div className="bubbles-container">
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-      </div>
+
 
       <div className="p-6 md:p-8 space-y-8 bg-gray-50 min-h-screen">
         <div className="flex justify-between items-center">

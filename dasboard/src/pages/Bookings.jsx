@@ -1849,18 +1849,7 @@ const Bookings = () => {
         duration={5000}
       />
       {/* Animated Background */}
-      <div className="bubbles-container">
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-      </div>
+
 
       <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gray-100 min-h-screen font-sans">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 tracking-tight">Booking Management Dashboard</h1>

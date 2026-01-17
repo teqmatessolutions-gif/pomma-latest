@@ -352,18 +352,7 @@ const Dashboard = () => {
   return (
     <DashboardLayout>
       {/* The new bubble animation background container */}
-      <div className="bubbles-container">
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-      </div>
+
 
       <div className="relative max-w-[1400px] mx-auto px-2 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
         <header className="flex items-end justify-between gap-4 flex-wrap">

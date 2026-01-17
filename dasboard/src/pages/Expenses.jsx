@@ -133,18 +133,7 @@ const Expenses = () => {
   return (
     <DashboardLayout>
       {/* Animated Background */}
-      <div className="bubbles-container">
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-      </div>
+
 
       <h1 className="text-3xl font-bold mb-6 text-gray-800">Expense Management</h1>
 

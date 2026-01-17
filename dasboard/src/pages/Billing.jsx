@@ -924,18 +924,7 @@ const Billing = () => {
         duration={5000}
       />
       {/* Animated Background */}
-      <div className="bubbles-container">
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-        <li></li>
-      </div>
+
 
       <div className="p-2 sm:p-4 md:p-6 bg-gray-50 min-h-screen">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 mb-4 sm:mb-6">Business Dashboard & Checkout</h1>
