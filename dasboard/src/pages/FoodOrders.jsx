@@ -16,9 +16,10 @@ export default function FoodOrders() {
   const [amount, setAmount] = useState(0);
   const [statusFilter, setStatusFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
-  const [hasMore, setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [page, setPage] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -30,14 +31,15 @@ export default function FoodOrders() {
   };
 
   useEffect(() => {
-    fetchAll();
-  }, []);
+    fetchAll(page);
+  }, [page]);
 
-  const fetchAll = async () => {
+  const fetchAll = async (currentPage = 1) => {
     try {
+      const skip = (currentPage - 1) * 20;
       // Fetch initial page of orders, rooms, bookings, and other data
       const [ordersRes, roomsRes, employeesRes, foodItemsRes, bookingsRes, packageBookingsRes] = await Promise.all([
-        api.get("/food-orders/?skip=0&limit=20"),
+        api.get(`/food-orders/?skip=${skip}&limit=20`),
         api.get("/rooms?limit=1000").catch(err => {
           console.error("Error fetching rooms:", err);
           return { data: [] };
@@ -59,8 +61,17 @@ export default function FoodOrders() {
           return { data: [] };
         }),
       ]);
-      setOrders(ordersRes.data);
-      setHasMore(ordersRes.data.length === 12);
+      if (ordersRes.data.items) {
+        setOrders(ordersRes.data.items);
+        setTotalOrders(ordersRes.data.total);
+        // Only show Load More if using load-more style, but we are doing explicit pages now
+        // setHasMore(ordersRes.data.items.length === 20); 
+      } else {
+        // Fallback
+        setOrders(ordersRes.data);
+        setTotalOrders(ordersRes.data.length);
+      }
+      setHasMore(false); // Using explicit pagination controls instead of load more
       setEmployees(employeesRes.data);
       setFoodItems(foodItemsRes.data);
       setAllRooms(roomsRes.data); // Save full list for historical display
@@ -205,22 +216,7 @@ export default function FoodOrders() {
     }
   };
 
-  const loadMoreOrders = async () => {
-    if (isFetchingMore || !hasMore) return;
-    setIsFetchingMore(true);
-    const nextPage = page + 1;
-    try {
-      const res = await api.get(`/food-orders/?skip=${(nextPage - 1) * 20}&limit=20`);
-      const newOrders = res.data || [];
-      setOrders(prev => [...prev, ...newOrders]);
-      setPage(nextPage);
-      setHasMore(newOrders.length === 20);
-    } catch (err) {
-      console.error("Failed to load more orders:", err);
-    } finally {
-      setIsFetchingMore(false);
-    }
-  };
+  // const loadMoreOrders = async () => {} // Removed in favor of direct page access
 
   const handleAddItem = () => {
     setSelectedItems([...selectedItems, { food_item_id: "", quantity: 1 }]);
@@ -285,7 +281,7 @@ export default function FoodOrders() {
   const handleStatusChange = async (id, newStatus) => {
     try {
       await api.put(`/food-orders/${id}`, { status: newStatus });
-      fetchAll();
+      fetchAll(page);
     } catch (error) {
       console.error("Failed to update status:", error);
       setErrorMsg("Failed to update order status.");
@@ -294,8 +290,12 @@ export default function FoodOrders() {
   };
 
   // KPI Calculations
-  const totalOrders = orders.length;
-  // Exclude cancelled orders from revenue
+  // Use totalOrders from backend instead of orders.length (which is just the current page)
+  // But for revenue, we only have data for CURRENT PAGE if we don't have a separate stats endpoint.
+  // For now, we will use orders.length for revenue calc to avoid breaking it, but ideally needs backend aggregation.
+  // The user asked for pagination, KPI accuracy on partial data is a known trade-off until stats API is built.
+
+  // Exclude cancelled orders from revenue (Current Page Only)
   const totalRevenue = orders
     .filter((o) => o.status !== "cancelled")
     .reduce((sum, o) => sum + o.amount, 0);
@@ -560,14 +560,26 @@ export default function FoodOrders() {
             );
           })}
         </div>
-        {hasMore && (
-          <div className="text-center mt-6">
+        {totalOrders > 20 && (
+          <div className="flex justify-center items-center mt-8 space-x-2 pb-8">
             <button
-              onClick={loadMoreOrders}
-              disabled={isFetchingMore}
-              className="bg-indigo-100 text-indigo-700 font-semibold px-6 py-2 rounded-lg hover:bg-indigo-200 transition-colors disabled:bg-gray-200 disabled:text-gray-500"
+              onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+              disabled={page === 1}
+              className={`px-4 py-2 rounded-lg ${page === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'} transition-colors duration-200`}
             >
-              {isFetchingMore ? "Loading..." : "Load More Orders"}
+              Previous
+            </button>
+
+            <span className="text-gray-600 font-medium px-4">
+              Page {page} of {Math.ceil(totalOrders / 20)}
+            </span>
+
+            <button
+              onClick={() => setPage(prev => (prev * 20 < totalOrders ? prev + 1 : prev))}
+              disabled={page * 20 >= totalOrders}
+              className={`px-4 py-2 rounded-lg ${page * 20 >= totalOrders ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'} transition-colors duration-200`}
+            >
+              Next
             </button>
           </div>
         )}

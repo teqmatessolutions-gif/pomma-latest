@@ -48,3 +48,11 @@ class FoodOrderUpdate(BaseModel):
     status: Optional[str] = None
     billing_status: Optional[str] = None
     items: Optional[List[FoodOrderItemCreate]] = None
+
+class FoodOrderPaginationOut(BaseModel):
+    items: List[FoodOrderOut]
+    total: int
+    page: int
+    limit: int
+
+    model_config = ConfigDict(from_attributes=True)

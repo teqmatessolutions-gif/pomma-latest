@@ -92,6 +92,7 @@ def create_food_order(db: Session, order_data: FoodOrderCreate):
     return order
 
 def get_food_orders(db: Session, skip: int = 0, limit: int = 100):
+    total = db.query(FoodOrder).count()
     # Eager load relationships
     # Eager load relationships including bookings for historical guest data
     orders = db.query(FoodOrder).options(
@@ -100,7 +101,7 @@ def get_food_orders(db: Session, skip: int = 0, limit: int = 100):
         joinedload(FoodOrder.employee),
         joinedload(FoodOrder.booking),
         joinedload(FoodOrder.package_booking)
-    ).offset(skip).limit(limit).all()
+    ).order_by(FoodOrder.id.desc()).offset(skip).limit(limit).all()
 
     for order in orders:
         # Priority 1: Check linked regular booking
@@ -120,7 +121,7 @@ def get_food_orders(db: Session, skip: int = 0, limit: int = 100):
             
             if guest_name:
                 order.guest_name = guest_name
-    return orders
+    return {"items": orders, "total": total, "limit": limit, "skip": skip}
 
 def get_historical_guest_for_room(db: Session, room_id: int, timestamp):
     """

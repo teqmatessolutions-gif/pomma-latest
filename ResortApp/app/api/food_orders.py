@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from app.schemas.foodorder import FoodOrderCreate, FoodOrderOut, FoodOrderUpdate
+from app.schemas.foodorder import FoodOrderCreate, FoodOrderOut, FoodOrderUpdate, FoodOrderPaginationOut
 from app.curd import foodorder as crud  # ✅ Correct import
 from app.utils.auth import get_db, get_current_user
 from app.models.user import User
@@ -47,15 +47,56 @@ def _get_orders_impl(db: Session, skip: int = 0, limit: int = 20, from_date: Opt
     except Exception as e:
         print(f"ERROR parsing dates in food orders: {e}")
     
-    return query.order_by(FoodOrder.id.desc()).offset(skip).limit(limit).all()
+    # Calculate Total Count
+    total = query.count()
 
-@router.get("", response_model=List[FoodOrderOut])
+    # Fetch Items with Pagination
+    items = query.order_by(FoodOrder.id.desc()).offset(skip).limit(limit).all()
+
+    # Populate guest names manually for these items (logic copied from crud.get_food_orders)
+    # Ideally, we should unify this logic, but for now we apply the same enhancement
+    for order in items:
+        # Priority 1: Check linked regular booking
+        if order.booking:
+             order.guest_name = order.booking.guest_name
+        # Priority 2: Check linked package booking
+        elif order.package_booking:
+             order.guest_name = order.package_booking.guest_name
+    # Priority 3: Fallback using historical lookup if guest attribute is missing
+        elif hasattr(order, 'room_id') and order.room_id:
+            # First try current active guest (existing logic)
+            guest_name = crud.get_guest_for_room(order.room_id, db)
+            
+            # If not found (e.g. guest checked out), try historical lookup using order creation time
+            if not guest_name and order.created_at:
+                 guest_name = crud.get_historical_guest_for_room(db, order.room_id, order.created_at)
+            
+            if guest_name:
+                order.guest_name = guest_name
+
+    return {"items": items, "total": total}
+
+@router.get("", response_model=None)
 def get_orders(db: Session = Depends(get_db), skip: int = 0, limit: int = 20, from_date: Optional[str] = None, to_date: Optional[str] = None, fromDate: Optional[str] = None, toDate: Optional[str] = None):
-    return _get_orders_impl(db, skip, limit, from_date, to_date, fromDate, toDate)
+    data = _get_orders_impl(db, skip, limit, from_date, to_date, fromDate, toDate)
+    page = (skip // limit) + 1 if limit > 0 else 1
+    return {
+        "items": data["items"],
+        "total": data["total"],
+        "page": page,
+        "limit": limit
+    }
 
-@router.get("/", response_model=List[FoodOrderOut])  # Handle trailing slash
+@router.get("/", response_model=None)  # Handle trailing slash
 def get_orders_slash(db: Session = Depends(get_db), skip: int = 0, limit: int = 20, from_date: Optional[str] = None, to_date: Optional[str] = None, fromDate: Optional[str] = None, toDate: Optional[str] = None):
-    return _get_orders_impl(db, skip, limit, from_date, to_date, fromDate, toDate)
+    data = _get_orders_impl(db, skip, limit, from_date, to_date, fromDate, toDate)
+    page = (skip // limit) + 1 if limit > 0 else 1
+    return {
+        "items": data["items"],
+        "total": data["total"],
+        "page": page,
+        "limit": limit
+    }
 
 @router.delete("/{order_id}")
 def delete_order(order_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
