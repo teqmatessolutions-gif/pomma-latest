@@ -682,7 +682,7 @@ const Packages = () => {
   });
 
   const totalPackages = packages.length;
-  const totalBookings = bookings.length;
+  // totalBookings is now a state variable managed by pagination
   const totalRevenue = bookings.reduce((sum, b) => sum + (b.package?.price || 0), 0);
 
   // Charts
