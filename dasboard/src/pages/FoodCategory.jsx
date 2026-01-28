@@ -69,6 +69,10 @@ const FoodManagement = () => {
   };
 
   useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
     fetchFoodItems(currentPage);
   }, [currentPage]); // Fetch whenever page changes
 
