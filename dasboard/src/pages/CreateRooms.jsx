@@ -3,7 +3,6 @@ import { formatCurrency } from '../utils/currency';
 import DashboardLayout from "../layout/DashboardLayout";
 import BannerMessage from "../components/BannerMessage";
 import API from "../services/api";
-import { LineChart, Line, ResponsiveContainer, Tooltip as RechartsTooltip } from "recharts";
 import { toast } from "react-hot-toast";
 import { motion } from "framer-motion";
 import { getMediaBaseUrl } from "../utils/env";
@@ -283,13 +282,7 @@ const Rooms = () => {
       // Handle paginated response
       const roomData = res.data?.items || (Array.isArray(res.data) ? res.data : []);
 
-      const dataWithTrend = roomData.map((r) => ({
-        ...r,
-        trend:
-          r.trend ||
-          Array.from({ length: 7 }, () => Math.floor(Math.random() * 1000)),
-      }));
-      setRooms(dataWithTrend || []);
+      setRooms(roomData || []);
       setHasMore(roomData.length === 20);
       setPage(1);
     } catch (error) {
@@ -307,8 +300,7 @@ const Rooms = () => {
       // Handle paginated response
       const newRooms = res.data?.items || (Array.isArray(res.data) ? res.data : []);
 
-      const dataWithTrend = newRooms.map((r) => ({ ...r, trend: Array.from({ length: 7 }, () => Math.floor(Math.random() * 1000)) }));
-      setRooms(prev => [...prev, ...dataWithTrend]);
+      setRooms(prev => [...prev, ...newRooms]);
       setPage(nextPage);
       setHasMore(newRooms.length === 20);
     } catch (err) {
@@ -1008,13 +1000,8 @@ const Rooms = () => {
                   </div>
                 )}
 
-                <div className="h-16 mt-4">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={(room.trend || []).map((v, i) => ({ day: i + 1, value: v }))}>
-                      <RechartsTooltip contentStyle={{ fontSize: '12px', padding: '2px 5px' }} />
-                      <Line type="monotone" dataKey="value" stroke="#4f46e5" strokeWidth={2} dot={false} />
-                    </LineChart>
-                  </ResponsiveContainer>
+                <div className="mt-4">
+                  {/* Chart removed for performance */}
                 </div>
                 <div className="mt-auto pt-4 border-t border-gray-200 flex flex-col gap-2">
                   <div className="flex justify-between gap-2">
