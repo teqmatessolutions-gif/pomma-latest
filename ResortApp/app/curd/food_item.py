@@ -18,17 +18,19 @@ def create_food_item(db: Session, item: FoodItemCreate, image_paths: list[str]):
     return db_item
 
 def get_all_food_items(db: Session, skip: int = 0, limit: int = 1000):
+    total = db.query(FoodItem).count()
     items = (
         db.query(FoodItem)
         .options(
             joinedload(FoodItem.images),
             joinedload(FoodItem.category)
         )
+        .order_by(FoodItem.id.desc())
         .offset(skip)
         .limit(limit)
         .all()
     )
-    return items 
+    return {"items": items, "total": total, "limit": limit, "skip": skip} 
 
 def delete_food_item(db: Session, item_id: int):
     item = db.query(FoodItem).filter(FoodItem.id == item_id).first()

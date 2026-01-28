@@ -27,5 +27,15 @@ class FoodItemOut(BaseModel):
     images: List[FoodItemImageOut] = []
     category: Optional[FoodCategoryOut] = None
 
+
+    class Config:
+        from_attributes = True
+
+class FoodItemPaginationOut(BaseModel):
+    items: List[FoodItemOut]
+    total: int
+    page: int
+    limit: int
+
     class Config:
         from_attributes = True

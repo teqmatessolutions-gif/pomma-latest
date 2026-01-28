@@ -43,6 +43,11 @@ const FoodManagement = () => {
   const [filters, setFilters] = useState({ search: "", category: "all", availability: "all" });
   const [isFoodItemModalOpen, setIsFoodItemModalOpen] = useState(false);
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(20);
+  const [totalItems, setTotalItems] = useState(0);
+
   // === State for Food Categories ===
   const [categoryName, setCategoryName] = useState("");
 
@@ -58,7 +63,7 @@ const FoodManagement = () => {
     setError(null);
     try {
       await fetchCategories();
-      await fetchFoodItems();
+      await fetchFoodItems(currentPage);
     } catch (err) {
       setError("Failed to load data. Please try again later.");
       toast.error("Failed to load data.");
@@ -68,8 +73,8 @@ const FoodManagement = () => {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchFoodItems(currentPage);
+  }, [currentPage]); // Fetch whenever page changes
 
   const fetchCategories = async () => {
     try {
@@ -83,12 +88,20 @@ const FoodManagement = () => {
     }
   };
 
-  const fetchFoodItems = async () => {
+  const fetchFoodItems = async (page = 1) => {
     try {
-      const res = await API.get("/food-items", {
+      const skip = (page - 1) * itemsPerPage;
+      const res = await API.get(`/food-items?skip=${skip}&limit=${itemsPerPage}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setFoodItems(res.data);
+      // Handle new backend structure { items, total, page, limit }
+      if (res.data.items) {
+        setFoodItems(res.data.items);
+        setTotalItems(res.data.total);
+      } else {
+        // Fallback if backend not ready (though we just updated it)
+        setFoodItems(res.data);
+      }
     } catch (err) {
       console.error("Failed to fetch items", err);
       throw err;
@@ -183,7 +196,7 @@ const FoodManagement = () => {
         });
         toast.success("Food item added successfully!");
       }
-      fetchFoodItems();
+      fetchFoodItems(currentPage);
       resetForm();
       setIsFoodItemModalOpen(false);
     } catch (err) {
@@ -199,7 +212,7 @@ const FoodManagement = () => {
     setIsLoading(true);
     try {
       await API.delete(`/food-items/${id}`, { headers: { Authorization: `Bearer ${token}` } });
-      fetchFoodItems();
+      fetchFoodItems(currentPage);
       toast.success("Food item deleted successfully!");
     } catch (err) {
       console.error("Delete failed", err);
@@ -217,7 +230,7 @@ const FoodManagement = () => {
         null,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      fetchFoodItems();
+      fetchFoodItems(currentPage);
       toast.success(`Item status toggled to ${item.available ? 'Not Available' : 'Available'}`);
     } catch (err) {
       console.error("Failed to toggle availability", err);
@@ -620,6 +633,30 @@ const FoodManagement = () => {
             >
               {editingItemId ? "Update Item" : "Create Item"}
             </button>
+            {/* Pagination Controls */}
+            {totalItems > itemsPerPage && (
+              <div className="flex justify-center items-center mt-8 space-x-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className={`px-4 py-2 rounded-lg ${currentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'} transition-colors duration-200`}
+                >
+                  Previous
+                </button>
+
+                <span className="text-gray-600 font-medium px-4">
+                  Page {currentPage} of {Math.ceil(totalItems / itemsPerPage)}
+                </span>
+
+                <button
+                  onClick={() => setCurrentPage(prev => (prev * itemsPerPage < totalItems ? prev + 1 : prev))}
+                  disabled={currentPage * itemsPerPage >= totalItems}
+                  className={`px-4 py-2 rounded-lg ${currentPage * itemsPerPage >= totalItems ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'} transition-colors duration-200`}
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         </form>
       </Modal >
