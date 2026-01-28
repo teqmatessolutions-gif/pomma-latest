@@ -62,12 +62,12 @@ const Services = () => {
     try {
       const skip = (currentPage - 1) * 20;
       const [sRes, aRes, rRes, eRes, bRes, pbRes] = await Promise.all([
-        api.get("/services?limit=1000"),
+        api.get("/services?limit=20"),
         api.get(`/services/assigned?skip=${skip}&limit=20`),
-        api.get("/rooms?limit=1000"),
+        api.get("/rooms?limit=20"),
         api.get("/employees"),
-        api.get("/bookings?limit=1000").catch(() => ({ data: { bookings: [] } })),
-        api.get("/packages/bookingsall?limit=1000").catch(() => ({ data: [] })),
+        api.get("/bookings?limit=20").catch(() => ({ data: { bookings: [] } })),
+        api.get("/packages/bookingsall?limit=20").catch(() => ({ data: [] })),
       ]);
       setServices(sRes.data);
       if (aRes.data.items) {

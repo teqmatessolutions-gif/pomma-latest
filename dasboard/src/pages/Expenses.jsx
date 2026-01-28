@@ -73,7 +73,7 @@ const Expenses = () => {
 
   const fetchEmployees = async () => {
     try {
-      const res = await API.get("/employees?limit=1000"); // Fetch all for dropdown
+      const res = await API.get("/employees?limit=20"); // Fetch all for dropdown
       // Handle both paginated and non-paginated employee responses
       if (res.data?.items) {
         setEmployees(Array.isArray(res.data.items) ? res.data.items : []);

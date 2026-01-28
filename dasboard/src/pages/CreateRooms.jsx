@@ -316,7 +316,7 @@ const Rooms = () => {
   const fetchBookings = async (roomNumber) => {
     try {
       // Get all bookings and filter by room number
-      const response = await API.get("/bookings?limit=1000");
+      const response = await API.get("/bookings?limit=20");
       const allBookings = response.data.bookings || [];
 
       // Filter bookings that include this room (all statuses)

@@ -40,7 +40,7 @@ export default function FoodOrders() {
       // Fetch initial page of orders, rooms, bookings, and other data
       const [ordersRes, roomsRes, employeesRes, foodItemsRes, bookingsRes, packageBookingsRes] = await Promise.all([
         api.get(`/food-orders/?skip=${skip}&limit=20`),
-        api.get("/rooms?limit=1000").catch(err => {
+        api.get("/rooms?limit=20").catch(err => {
           console.error("Error fetching rooms:", err);
           return { data: [] };
         }),
@@ -52,11 +52,11 @@ export default function FoodOrders() {
           console.error("Error fetching food items:", err);
           return { data: [] };
         }),
-        api.get("/bookings?limit=1000").catch(err => {
+        api.get("/bookings?limit=20").catch(err => {
           console.error("Error fetching bookings:", err);
           return { data: { bookings: [] } };
         }),
-        api.get("/packages/bookingsall?limit=1000").catch(err => {
+        api.get("/packages/bookingsall?limit=20").catch(err => {
           console.error("Error fetching package bookings:", err);
           return { data: [] };
         }),

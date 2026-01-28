@@ -62,7 +62,7 @@ const Employee = () => {
 
   const fetchRoles = async () => {
     try {
-      const res = await API.get("/roles?limit=1000"); // Fetch all roles for the dropdown
+      const res = await API.get("/roles?limit=20"); // Fetch roles for the dropdown
       setRoles(res.data);
     } catch (err) {
       console.error("Error fetching roles:", err);

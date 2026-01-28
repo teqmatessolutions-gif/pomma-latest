@@ -1058,7 +1058,7 @@ const EmployeeListAndForm = () => {
 
   const fetchRoles = async () => {
     try {
-      const res = await api.get("/roles?limit=1000");
+      const res = await api.get("/roles?limit=20");
       setRoles(res.data);
     } catch (err) {
       console.error("Error fetching roles:", err);

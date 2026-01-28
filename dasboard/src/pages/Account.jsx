@@ -194,7 +194,7 @@ export default function ReportsDashboard() {
         const foodOrdersReq = API.get(`/reports/food-orders?${queryString}`).catch(() => API.get(`/food-orders?${queryString}`));
         const expensesReq = API.get(`/reports/expenses?${queryString}`).catch(() => API.get(`/expenses?${queryString}`));
         const employeesReq = API.get(`/employees?${queryString}`);
-        const roomsReq = API.get(`/rooms?skip=0&limit=1000`).catch(() => ({ data: [] }));
+        const roomsReq = API.get(`/rooms?skip=0&limit=20`).catch(() => ({ data: [] }));
         const [roomBookingsRes, packageBookingsRes, foodOrdersRes, expensesRes, employeesRes, roomsRes] = await Promise.all([
           roomBookingsReq, packageBookingsReq, foodOrdersReq, expensesReq, employeesReq, roomsReq
         ]);

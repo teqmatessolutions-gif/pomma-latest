@@ -204,7 +204,7 @@ const Packages = () => {
         api.get("/packages"),
         api.get("/rooms"),
         api.get(`/packages/bookingsall?skip=${bookingSkip}&limit=${bookingsLimit}`),
-        api.get("/bookings?limit=2000") // Fetch regular bookings
+        api.get("/bookings?limit=20") // Fetch regular bookings
       ]);
       const allRoomsData = roomRes.data || [];
       setPackages(packageRes.data || []);

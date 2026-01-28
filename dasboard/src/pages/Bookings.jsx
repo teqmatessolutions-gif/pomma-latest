@@ -648,7 +648,7 @@ const Bookings = () => {
         API.get("/rooms", authHeader()),
         API.get(`/bookings?skip=${skip}&limit=${limit}&order_by=id&order=desc`, authHeader()),
         API.get(`/packages/bookingsall?skip=${skip}&limit=${limit}`, authHeader()),
-        API.get("/packages?limit=100", authHeader()),
+        API.get("/packages?limit=20", authHeader()),
       ]);
 
       const allRooms = roomsRes.data;

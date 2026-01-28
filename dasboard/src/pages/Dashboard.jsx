@@ -39,14 +39,14 @@ const Dashboard = () => {
       // Fetch all endpoints with individual error handling to prevent complete failure
       // Reduced limits for better performance (pagination handles the rest)
       const results = await Promise.allSettled([
-        API.get("/bookings?limit=500").catch(err => ({ error: err, data: { bookings: [] } })),
-        API.get("/rooms?limit=2000").catch(err => ({ error: err, data: [] })),
-        API.get("/expenses?limit=500").catch(err => ({ error: err, data: [] })),
-        API.get("/food-orders?limit=500").catch(err => ({ error: err, data: [] })),
-        API.get("/services/assigned?limit=500").catch(err => ({ error: err, data: [] })),
-        API.get("/bill/checkouts?limit=500").catch(err => ({ error: err, data: [] })),
-        API.get("/packages?limit=500").catch(err => ({ error: err, data: [] })),
-        API.get("/packages/bookingsall?limit=500").catch(err => ({ error: err, data: [] })),
+        API.get("/bookings?limit=20").catch(err => ({ error: err, data: { bookings: [] } })),
+        API.get("/rooms?limit=20").catch(err => ({ error: err, data: [] })),
+        API.get("/expenses?limit=20").catch(err => ({ error: err, data: [] })),
+        API.get("/food-orders?limit=20").catch(err => ({ error: err, data: [] })),
+        API.get("/services/assigned?limit=20").catch(err => ({ error: err, data: [] })),
+        API.get("/bill/checkouts?limit=20").catch(err => ({ error: err, data: [] })),
+        API.get("/packages?limit=20").catch(err => ({ error: err, data: [] })),
+        API.get("/packages/bookingsall?limit=20").catch(err => ({ error: err, data: [] })),
       ]);
 
       console.log('[Dashboard] API responses received:', {
