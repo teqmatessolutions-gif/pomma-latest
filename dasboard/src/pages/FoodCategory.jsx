@@ -305,8 +305,9 @@ const FoodManagement = () => {
   };
 
   // Derived State & Calculations
-  const totalItems = foodItems.length;
+  // totalItems is now a state variable managed by pagination
   const totalCategories = categories.length;
+  // NOTE: availableItemsCount currently only counts items on the displayed page
   const availableItemsCount = foodItems.filter(item => item.available).length;
 
   const filteredFoodItems = foodItems.filter(item => {
