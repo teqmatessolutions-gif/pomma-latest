@@ -206,14 +206,16 @@ export default function ReportsDashboard() {
 
         // Use a single state update to prevent blinking
         // Normalize food orders to include room_number and created_at if possible
-        const normalizedFood = (foodOrdersRes.data || []).map(o => ({
+        const foodOrdersData = foodOrdersRes.data?.items || foodOrdersRes.data || [];
+        const normalizedFood = (Array.isArray(foodOrdersData) ? foodOrdersData : []).map(o => ({
           ...o,
           room_number: o.room_number || (o.room_id && map[o.room_id]) || '-',
           created_at: formatDateTimeIST(o.created_at || o.createdAt),
         }));
 
         // Normalize expenses to avoid N/A and ensure consistent keys
-        const normalizedExpenses = (expensesRes.data || []).map(e => ({
+        const expensesData = expensesRes.data?.items || expensesRes.data || [];
+        const normalizedExpenses = (Array.isArray(expensesData) ? expensesData : []).map(e => ({
           category: e.category || '-',
           description: e.description || '-',
           amount: e.amount != null ? e.amount : '-',
@@ -221,7 +223,8 @@ export default function ReportsDashboard() {
         }));
 
         // Normalize employees: convert join_date -> hire_date, role object -> role name
-        const normalizedEmployees = (employeesRes.data || []).map(emp => ({
+        const employeesData = employeesRes.data?.items || employeesRes.data || [];
+        const normalizedEmployees = (Array.isArray(employeesData) ? employeesData : []).map(emp => ({
           name: emp.name || '-',
           role: (emp.role?.name) || emp.role || '-',
           salary: emp.salary != null ? emp.salary : '-',
@@ -229,8 +232,8 @@ export default function ReportsDashboard() {
         }));
 
         setDetailedData({
-          roomBookings: roomBookingsRes.data.bookings || [],
-          packageBookings: packageBookingsRes.data || [],
+          roomBookings: roomBookingsRes.data?.bookings || roomBookingsRes.data?.items || (Array.isArray(roomBookingsRes.data) ? roomBookingsRes.data : []),
+          packageBookings: packageBookingsRes.data?.items || (Array.isArray(packageBookingsRes.data) ? packageBookingsRes.data : []),
           foodOrders: normalizedFood,
           expenses: normalizedExpenses,
           employees: normalizedEmployees,
@@ -285,7 +288,13 @@ export default function ReportsDashboard() {
         };
         return API.get(`${fallback[dataType]}?${queryString}`);
       });
-      let newData = dataType === 'roomBookings' ? (response.data.bookings || []) : (response.data || []);
+
+      let newData = [];
+      if (dataType === 'roomBookings') {
+        newData = response.data?.bookings || response.data?.items || (Array.isArray(response.data) ? response.data : []);
+      } else {
+        newData = response.data?.items || (Array.isArray(response.data) ? response.data : []);
+      }
       if (dataType === 'foodOrders') {
         newData = newData.map(o => ({ ...o, room_number: o.room_number || (o.room_id && roomMap[o.room_id]) || '-', created_at: formatDateTimeIST(o.created_at || o.createdAt) }));
       }

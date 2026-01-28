@@ -42,7 +42,8 @@ const UserHistory = () => {
       ]);
 
       const users = usersRes.data || [];
-      const employees = employeesRes.data || [];
+      // Handle paginated employee response
+      const employees = employeesRes.data?.items ? employeesRes.data.items : (Array.isArray(employeesRes.data) ? employeesRes.data : []);
 
       // Create a map of employees by user_id for quick lookup
       const employeeMap = new Map();
@@ -367,7 +368,8 @@ const AttendanceTracking = () => {
     const currentUser = getCurrentUser();
     api.get('/employees')
       .then(res => {
-        let employeeData = res.data;
+        // Handle paginated employee response
+        let employeeData = res.data?.items ? res.data.items : (Array.isArray(res.data) ? res.data : []);
         if (currentUser && currentUser.role?.toLowerCase() !== 'admin') {
           // Filter to only show the logged-in user's employee record
           employeeData = employeeData.filter(emp => emp.user_id === currentUser.user_id);
@@ -804,7 +806,8 @@ const MonthlyReport = () => {
     const currentUser = getCurrentUser();
     api.get('/employees')
       .then(res => {
-        let employeeData = res.data;
+        // Handle paginated employee response
+        let employeeData = res.data?.items ? res.data.items : (Array.isArray(res.data) ? res.data : []);
         if (currentUser && currentUser.role?.toLowerCase() !== 'admin') {
           // Filter to only show the logged-in user's employee record
           employeeData = employeeData.filter(emp => emp.user_id === currentUser.user_id);
