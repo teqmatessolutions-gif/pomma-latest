@@ -47,8 +47,9 @@ const Services = () => {
     to: "",
   });
   const [loading, setLoading] = useState(true);
-  const [hasMore, setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
   const [page, setPage] = useState(1);
+  const [totalAssigned, setTotalAssigned] = useState(0); // New state for total count
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [createSuccess, setCreateSuccess] = useState("");
   const [assignSuccess, setAssignSuccess] = useState("");
@@ -56,19 +57,29 @@ const Services = () => {
   const [assignError, setAssignError] = useState("");
 
   // Fetch all data
-  const fetchAll = async () => {
+  const fetchAll = async (currentPage = 1) => {
     setLoading(true);
     try {
+      const skip = (currentPage - 1) * 20;
       const [sRes, aRes, rRes, eRes, bRes, pbRes] = await Promise.all([
         api.get("/services?limit=1000"),
-        api.get("/services/assigned?skip=0&limit=20"),
+        api.get(`/services/assigned?skip=${skip}&limit=20`),
         api.get("/rooms?limit=1000"),
         api.get("/employees"),
         api.get("/bookings?limit=1000").catch(() => ({ data: { bookings: [] } })),
         api.get("/packages/bookingsall?limit=1000").catch(() => ({ data: [] })),
       ]);
       setServices(sRes.data);
-      setAssignedServices(aRes.data);
+      if (aRes.data.items) {
+        setAssignedServices(aRes.data.items);
+        setTotalAssigned(aRes.data.total);
+        // Only show Load More if using load-more style, but we are doing explicit pages now
+      } else {
+        // Fallback
+        setAssignedServices(aRes.data);
+        setTotalAssigned(aRes.data.length);
+      }
+      setHasMore(false); // Using explicit pagination controls instead of load more
       setAllRooms(rRes.data);
       setEmployees(eRes.data);
 
@@ -180,8 +191,8 @@ const Services = () => {
       console.log(`Filtered checked-in rooms: ${checkedInRooms.length}`, checkedInRooms.map(r => `${r.number} (status: ${r.status})`));
       setRooms(checkedInRooms);
     } catch (error) {
-      setHasMore(aRes.data.length === 10);
-      setPage(1);
+      // setHasMore(aRes.data.length === 10); // Logic replaced by total count check
+      // setPage(1);
       console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
@@ -189,25 +200,10 @@ const Services = () => {
   };
 
   useEffect(() => {
-    fetchAll();
-  }, []);
+    fetchAll(page);
+  }, [page]);
 
-  const loadMoreAssigned = async () => {
-    if (isFetchingMore || !hasMore) return;
-    setIsFetchingMore(true);
-    const nextPage = page + 1;
-    try {
-      const res = await api.get(`/services/assigned?skip=${(nextPage - 1) * 20}&limit=20`);
-      const newAssigned = res.data || [];
-      setAssignedServices(prev => [...prev, ...newAssigned]);
-      setPage(nextPage);
-      setHasMore(newAssigned.length === 20);
-    } catch (err) {
-      console.error("Failed to load more assigned services:", err);
-    } finally {
-      setIsFetchingMore(false);
-    }
-  };
+  // const loadMoreAssigned = async () => {} // Removed in favor of direct page access
 
   // Handle image selection
   const handleImageChange = (e) => {
@@ -264,7 +260,7 @@ const Services = () => {
       setImagePreviews([]);
       setEditingService(null); // Reset editing state
       setIsCreateModalOpen(false); // Close modal
-      fetchAll();
+      fetchAll(page);
       setTimeout(() => setCreateSuccess(""), 3000);
     } catch (err) {
       console.error("Failed to save service", err);
@@ -291,7 +287,7 @@ const Services = () => {
     if (window.confirm("Are you sure you want to delete this service?")) {
       try {
         await api.delete(`/services/${id}`);
-        fetchAll();
+        fetchAll(page);
       } catch (err) {
         console.error("Failed to delete service", err);
         alert("Failed to delete service.");
@@ -330,7 +326,7 @@ const Services = () => {
         room_id: parseInt(assignForm.room_id),
       });
       setAssignForm({ service_id: "", employee_id: "", room_id: "", status: "pending" });
-      fetchAll();
+      fetchAll(page);
       setAssignSuccess("Service assigned successfully! ✅");
       setIsAssignModalOpen(false); // Close modal
       setTimeout(() => setAssignSuccess(""), 3000);
@@ -344,7 +340,7 @@ const Services = () => {
   const handleStatusChange = async (id, newStatus) => {
     try {
       await api.patch(`/services/assigned/${id}`, { status: newStatus });
-      fetchAll();
+      fetchAll(page);
     } catch (error) {
       console.error("Failed to update status:", error);
     }
@@ -364,7 +360,7 @@ const Services = () => {
   });
 
   const totalServices = services.length;
-  const totalAssigned = assignedServices.length;
+  // const totalAssigned = assignedServices.length; // Replaced by state 'totalAssigned' from backend
   const completedCount = assignedServices.filter(s => s.status === "completed").length;
   const pendingCount = assignedServices.filter(s => s.status === "pending").length;
   const cancelledCount = assignedServices.filter(s => s.status === "cancelled").length;
@@ -507,14 +503,26 @@ const Services = () => {
                   ))}
                 </tbody>
               </table>
-              {hasMore && (
-                <div className="text-center mt-4">
+              {totalAssigned > 20 && (
+                <div className="flex justify-center items-center mt-4 space-x-2">
                   <button
-                    onClick={loadMoreAssigned}
-                    disabled={isFetchingMore}
-                    className="bg-indigo-100 text-indigo-700 font-semibold px-6 py-2 rounded-lg hover:bg-indigo-200 transition-colors disabled:bg-gray-200 disabled:text-gray-500"
+                    onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                    disabled={page === 1}
+                    className={`px-4 py-2 rounded-lg ${page === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'} transition-colors duration-200`}
                   >
-                    {isFetchingMore ? "Loading..." : "Load More"}
+                    Previous
+                  </button>
+
+                  <span className="text-gray-600 font-medium px-4">
+                    Page {page} of {Math.ceil(totalAssigned / 20)}
+                  </span>
+
+                  <button
+                    onClick={() => setPage(prev => (prev * 20 < totalAssigned ? prev + 1 : prev))}
+                    disabled={page * 20 >= totalAssigned}
+                    className={`px-4 py-2 rounded-lg ${page * 20 >= totalAssigned ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'} transition-colors duration-200`}
+                  >
+                    Next
                   </button>
                 </div>
               )}

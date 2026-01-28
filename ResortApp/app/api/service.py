@@ -113,9 +113,16 @@ def delete_service(service_id: int, db: Session = Depends(get_db), current_user:
 def assign_service(payload: service_schema.AssignedServiceCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return service_crud.create_assigned_service(db, payload)
 
-@router.get("/assigned", response_model=List[service_schema.AssignedServiceOut])
+@router.get("/assigned", response_model=None)
 def get_all_assigned_services(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
-    return service_crud.get_assigned_services(db, skip=skip, limit=limit)
+    data = service_crud.get_assigned_services(db, skip=skip, limit=limit)
+    page = (skip // limit) + 1 if limit > 0 else 1
+    return {
+        "items": data["items"],
+        "total": data["total"],
+        "page": page,
+        "limit": limit
+    }
 
 @router.patch("/assigned/{assigned_id}")
 def update_assigned_status(

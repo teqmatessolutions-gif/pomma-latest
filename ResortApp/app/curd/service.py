@@ -95,11 +95,15 @@ def get_assigned_services(db: Session, skip: int = 0, limit: int = 100):
     """
     Get all assigned services, ordered by assignment date (newest first).
     """
-    return db.query(AssignedService).options(
+    total = db.query(AssignedService).count()
+    services = db.query(AssignedService).options(
         joinedload(AssignedService.service),
         joinedload(AssignedService.employee),
         joinedload(AssignedService.room)
+        joinedload(AssignedService.room)
     ).order_by(AssignedService.assigned_at.desc()).offset(skip).limit(limit).all()
+    
+    return {"items": services, "total": total}
 
 def update_assigned_service_status(db: Session, assigned_id: int, update_data: AssignedServiceUpdate):
     assigned = db.query(AssignedService).filter(AssignedService.id == assigned_id).first()

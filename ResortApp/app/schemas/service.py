@@ -76,3 +76,12 @@ class AssignedServiceOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class AssignedServicePaginationOut(BaseModel):
+    items: List[AssignedServiceOut]
+    total: int
+    page: int
+    limit: int
+
+    class Config:
+        from_attributes = True
