@@ -74,7 +74,12 @@ const Expenses = () => {
   const fetchEmployees = async () => {
     try {
       const res = await API.get("/employees?limit=1000"); // Fetch all for dropdown
-      setEmployees(res.data);
+      // Handle both paginated and non-paginated employee responses
+      if (res.data?.items) {
+        setEmployees(Array.isArray(res.data.items) ? res.data.items : []);
+      } else {
+        setEmployees(Array.isArray(res.data) ? res.data : []);
+      }
     } catch (error) {
       console.error("Error fetching employees:", error);
       alert("Failed to fetch employees");
