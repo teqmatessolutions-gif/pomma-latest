@@ -53,7 +53,12 @@ const UserHistory = () => {
       try {
         // Assuming /employees endpoint returns all employees
         const response = await api.get("/employees");
-        setUsers(response.data || []);
+        // Handle both paginated and non-paginated employee responses
+        if (response.data?.items) {
+          setUsers(Array.isArray(response.data.items) ? response.data.items : []);
+        } else {
+          setUsers(Array.isArray(response.data) ? response.data : []);
+        }
       } catch (err) {
         console.error("Failed to fetch users:", err);
         setError("Could not load the list of users.");

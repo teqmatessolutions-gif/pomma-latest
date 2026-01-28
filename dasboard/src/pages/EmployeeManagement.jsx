@@ -196,7 +196,9 @@ const LeaveManagement = () => {
     const currentUser = getCurrentUser();
     api.get('/employees')
       .then(res => {
-        let employeeData = res.data;
+        // Handle paginated response
+        let employeeData = res.data?.items ? res.data.items : (Array.isArray(res.data) ? res.data : []);
+
         if (currentUser && currentUser.role?.toLowerCase() !== 'admin') {
           // Filter to only show the logged-in user's employee record
           employeeData = employeeData.filter(emp => emp.user_id === currentUser.user_id);
