@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { getImageUrl } from "../utils/image";
 import api from "../services/api";
 import { toast } from "react-hot-toast";
 import DashboardLayout from "../layout/DashboardLayout";
@@ -14,14 +15,7 @@ import { formatCurrency } from "../utils/currency";
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement);
 
-// Helper function to construct image URLs
-const getImageUrl = (imagePath) => {
-  if (!imagePath) return 'https://placehold.co/400x300/e2e8f0/a0aec0?text=No+Image';
-  if (imagePath.startsWith('http')) return imagePath;
-  const baseUrl = getMediaBaseUrl();
-  const path = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
-  return `${baseUrl}${path}`;
-};
+
 
 // KPI Card
 const KpiCard = ({ title, value, icon, color }) => (
@@ -864,7 +858,7 @@ const Packages = () => {
               <motion.div key={pkg.id} whileHover={{ y: -5 }} className="bg-gray-50 rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-all duration-300 flex flex-col">
                 {pkg.images && pkg.images.length > 0 ? (
                   <div className="relative">
-                    <img className="h-48 w-full object-cover cursor-pointer" src={getImageUrl(pkg.images[0].image_url)} alt={pkg.title} onClick={() => setSelectedPackageImages(pkg)} />
+                    <img className="h-48 w-full object-cover cursor-pointer" src={getImageUrl(pkg.images[0].image_url, true)} alt={pkg.title} onClick={() => setSelectedPackageImages(pkg)} />
                     {pkg.images.length > 1 && (
                       <div className="absolute top-2 right-2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm font-semibold">
                         +{pkg.images.length - 1} more
@@ -1004,7 +998,7 @@ const Packages = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                   {editExistingImages.map((img, index) => (
                     <div key={img.id} className="relative group">
-                      <img src={getImageUrl(img.image_url)} alt={`Existing ${index + 1}`} className="w-full h-32 object-cover rounded-lg shadow-md" />
+                      <img src={getImageUrl(img.image_url, true)} alt={`Existing ${index + 1}`} className="w-full h-32 object-cover rounded-lg shadow-md" />
                       <button type="button" onClick={() => handleRemoveExistingImage(img.id)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">×</button>
                     </div>
                   ))}

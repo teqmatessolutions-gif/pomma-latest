@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { getImageUrl } from "../utils/image";
 import DashboardLayout from "../layout/DashboardLayout";
 import api from "../services/api";
 import {
@@ -219,14 +220,7 @@ const Services = () => {
     setImagePreviews(previews);
   };
 
-  // Helper function to get image URL
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) return '';
-    if (imagePath.startsWith('http')) return imagePath;
-    const baseUrl = getMediaBaseUrl();
-    const path = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
-    return `${baseUrl}${path}`;
-  };
+
 
   // Create or Update service
   const handleSubmit = async () => {
@@ -480,7 +474,7 @@ const Services = () => {
                     <tr key={s.id} className={`${idx % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-gray-100 transition-colors`}>
                       <td className="py-3 px-4">
                         {s.images && s.images.length > 0 ? (
-                          <img src={getImageUrl(s.images[0].image_url)} alt={s.name} className="w-16 h-16 object-cover rounded border" />
+                          <img src={getImageUrl(s.images[0].image_url, true)} alt={s.name} className="w-16 h-16 object-cover rounded border" />
                         ) : (
                           <div className="w-16 h-16 bg-gray-200 rounded border flex items-center justify-center text-xs text-gray-400">No Image</div>
                         )}

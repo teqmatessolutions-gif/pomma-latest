@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { getImageUrl } from "../utils/image";
 import DashboardLayout from "../layout/DashboardLayout";
 import API from "../services/api";
 import { toast } from "react-hot-toast";
@@ -8,12 +9,7 @@ import { getMediaBaseUrl } from "../utils/env";
 import Modal from "../components/Modal";
 
 // Helper function to get correct image URL based on environment
-const getImageUrl = (imagePath) => {
-  if (!imagePath) return 'https://placehold.co/400x300/e2e8f0/a0aec0?text=No+Image';
-  if (imagePath.startsWith('http')) return imagePath;
-  const baseUrl = getMediaBaseUrl();
-  return imagePath.startsWith('/') ? `${baseUrl}${imagePath}` : `${baseUrl}/${imagePath}`;
-};
+
 
 // KPI Card for quick stats
 const KpiCard = ({ title, value, icon, color }) => (
@@ -396,7 +392,7 @@ const FoodManagement = () => {
               >
                 <div className="relative">
                   <img
-                    src={item.images?.[0] ? getImageUrl(item.images[0].image_url) : 'https://placehold.co/400x300/e2e8f0/a0aec0?text=No+Image'}
+                    src={item.images?.[0] ? getImageUrl(item.images[0].image_url, true) : 'https://placehold.co/400x300/e2e8f0/a0aec0?text=No+Image'}
                     alt={item.name}
                     className="h-48 w-full object-cover rounded-t-2xl"
                   />

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { formatCurrency } from '../utils/currency';
+import { getImageUrl } from "../utils/image";
 import DashboardLayout from "../layout/DashboardLayout";
 import BannerMessage from "../components/BannerMessage";
 import API from "../services/api";
@@ -8,14 +9,7 @@ import { motion } from "framer-motion";
 import { getMediaBaseUrl } from "../utils/env";
 import Modal from "../components/Modal";
 
-// Get the correct base URL based on environment
-const getImageUrl = (imageUrl) => {
-  if (!imageUrl) return 'https://placehold.co/400x300/e2e8f0/a0aec0?text=No+Image';
-  if (imageUrl.startsWith('http')) return imageUrl; // Already a full URL
-  const baseUrl = getMediaBaseUrl();
-  const normalized = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
-  return `${baseUrl}${normalized}`;
-};
+
 
 // KPI Card for quick stats
 const KpiCard = ({ title, value, icon, color }) => (
@@ -961,7 +955,7 @@ const Rooms = () => {
             <motion.div key={room.id} className="bg-gray-50 rounded-2xl shadow-md overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 flex flex-col" whileHover={{ y: -5 }}>
               <div className="relative">
                 <img
-                  src={getImageUrl(room.image_url)}
+                  src={getImageUrl(room.image_url, true)}
                   alt={`Room ${room.number}`}
                   className="h-48 w-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
                   onClick={() => setSelectedRoomForGallery(room)}

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { getImageUrl } from "../utils/image";
 import DashboardLayout from "../layout/DashboardLayout";
 import BannerMessage from "../components/BannerMessage";
 import API from "../services/api";
@@ -6,13 +7,7 @@ import { getMediaBaseUrl } from "../utils/env";
 import Modal from "../components/Modal";
 
 // Helper function to construct image URLs
-const getImageUrl = (imagePath) => {
-  if (!imagePath) return 'https://placehold.co/400x300/e2e8f0/a0aec0?text=No+Image';
-  if (imagePath.startsWith('http')) return imagePath;
-  const baseUrl = getMediaBaseUrl();
-  const path = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
-  return `${baseUrl}${path}`;
-};
+
 
 const bgColors = [
   "bg-red-50",
@@ -105,7 +100,7 @@ const FoodItems = () => {
     setExistingImages(item.images || []);
 
     // Generate previews: Existing images + New Files (none initially)
-    const existingPreviews = item.images?.map((img) => getImageUrl(img.image_url)) || [];
+    const existingPreviews = item.images?.map((img) => getImageUrl(img.image_url, true)) || [];
     setImagePreviews(existingPreviews);
 
     setImages([]); // Clear new file uploads
@@ -275,7 +270,7 @@ const FoodItems = () => {
                   {item.images?.map((img, idx) => (
                     <img
                       key={idx}
-                      src={getImageUrl(img.image_url)}
+                      src={getImageUrl(img.image_url, true)}
                       alt={`Food ${idx}`}
                       className="w-[60px] h-[60px] object-cover border rounded-xl shadow-sm hover:scale-110 transition"
                     />
