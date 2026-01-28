@@ -908,7 +908,7 @@ const Bookings = () => {
     }
   };
 
-  const loadMoreRef = useInfiniteScroll(loadMoreBookings, hasMoreBookings, isSubmitting);
+  // Removed obsolete useInfiniteScroll - now using explicit pagination controls
 
   const extractRoomNumber = useCallback((room) => {
     if (!room) return null;
