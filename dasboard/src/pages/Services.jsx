@@ -81,7 +81,12 @@ const Services = () => {
       }
       setHasMore(false); // Using explicit pagination controls instead of load more
       setAllRooms(rRes.data);
-      setEmployees(eRes.data);
+      // Handle both paginated and non-paginated employee responses
+      if (eRes.data?.items) {
+        setEmployees(Array.isArray(eRes.data.items) ? eRes.data.items : []);
+      } else {
+        setEmployees(Array.isArray(eRes.data) ? eRes.data : []);
+      }
 
       // Combine regular and package bookings
       const regularBookings = bRes.data?.bookings || [];
