@@ -2,7 +2,7 @@ from ast import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
-from app.schemas.user import UserCreate, UserOut, AdminSetupRequest, RoleCreate
+from app.schemas.user import UserCreate, UserOut, AdminSetupRequest, RoleCreate, UserPaginationOut
 from app.curd import user as crud_user
 from app.curd import role as crud_role
 from app.utils.auth import get_current_user
@@ -58,12 +58,21 @@ def setup_initial_admin(setup_data: AdminSetupRequest, db: Session = Depends(get
 
 def _get_users_impl(db: Session, current_user: User, skip: int = 0, limit: int = 20):
     """Helper function for get_users"""
-    return db.query(User).options(joinedload(User.role)).offset(skip).limit(limit).all()
+    """Helper function for get_users"""
+    total = db.query(User).count()
+    items = db.query(User).options(joinedload(User.role)).offset(skip).limit(limit).all()
+    page = (skip // limit) + 1 if limit > 0 else 1
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "limit": limit
+    }
 
-@router.get("")
+@router.get("", response_model=UserPaginationOut)
 def get_users(db: Session = Depends(get_db), current_user: User = Depends(get_current_user), skip: int = 0, limit: int = 20):
     return _get_users_impl(db, current_user, skip, limit)
 
-@router.get("/")  # Handle trailing slash
+@router.get("/", response_model=UserPaginationOut)  # Handle trailing slash
 def get_users_slash(db: Session = Depends(get_db), current_user: User = Depends(get_current_user), skip: int = 0, limit: int = 20):
     return _get_users_impl(db, current_user, skip, limit)

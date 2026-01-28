@@ -52,3 +52,10 @@ class UserOut(UserBase):
     phone: Optional[str]
     is_active: bool
     model_config = ConfigDict(from_attributes=True)
+
+class UserPaginationOut(BaseModel):
+    items: List[UserOut]
+    total: int
+    page: int
+    limit: int
+    model_config = ConfigDict(from_attributes=True)

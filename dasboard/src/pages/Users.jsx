@@ -11,7 +11,8 @@ const Users = () => {
   const [roles, setRoles] = useState([]);
   const [message, setMessage] = useState("");
   const [bannerMessage, setBannerMessage] = useState({ type: null, text: "" });
-  const [hasMore, setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
+  const [totalUsers, setTotalUsers] = useState(0);
 
   // Function to show banner message
   const showBannerMessage = (type, text) => {
@@ -30,38 +31,46 @@ const Users = () => {
     phone: "",
     role_id: "",
   });
-const handleView = (user) => {
-  setSelectedUser(user);
-  setShowViewModal(true);
-};
+  const handleView = (user) => {
+    setSelectedUser(user);
+    setShowViewModal(true);
+  };
 
-const handleEdit = (user) => {
-  setSelectedUser(user);
-  setForm({
-    name: user.name,
-    email: user.email,
-    phone: user.phone || "",
-    password: "",
-    role_id: user.role?.id || "",
-  });
-  setShowEditModal(true);
-};
+  const handleEdit = (user) => {
+    setSelectedUser(user);
+    setForm({
+      name: user.name,
+      email: user.email,
+      phone: user.phone || "",
+      password: "",
+      role_id: user.role?.id || "",
+    });
+    setShowEditModal(true);
+  };
 
   useEffect(() => {
     fetchUsers();
     fetchRoles();
-  }, []);
+  }, [page]);
 
   const fetchUsers = async () => {
     try {
-      const res = await API.get("/users?skip=0&limit=20", {
+      const skip = (page - 1) * 20;
+      const res = await API.get(`/users?skip=${skip}&limit=20`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-      setUsers(res.data);
-      setHasMore(res.data.length === 10);
-      setPage(1);
+
+      if (res.data.items) {
+        setUsers(res.data.items);
+        setTotalUsers(res.data.total);
+        setHasMore(false); // Using explicit controls now
+      } else {
+        setUsers(res.data);
+        setTotalUsers(res.data.length);
+      }
+      // setPage(1); // Do NOT reset page here, it loops!
     } catch (err) {
       console.error("Error fetching users:", err);
       showBannerMessage("error", "Failed to load users.");
@@ -103,61 +112,44 @@ const handleEdit = (user) => {
     }
   };
 
-  const loadMoreUsers = async () => {
-    if (isFetchingMore || !hasMore) return;
-    setIsFetchingMore(true);
-    const nextPage = page + 1;
-    try {
-      const res = await API.get(`/users?skip=${(nextPage - 1) * 20}&limit=20`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      const newUsers = res.data || [];
-      setUsers(prev => [...prev, ...newUsers]);
-      setPage(nextPage);
-      setHasMore(newUsers.length === 10);
-    } catch (err) {
-      console.error("Failed to load more users:", err);
-    } finally {
-      setIsFetchingMore(false);
-    }
-  };
+  // const loadMoreUsers = async () => {} // Removed in favor of direct page access
 
   return (
     <DashboardLayout>
-      <BannerMessage 
-        message={bannerMessage} 
+      <BannerMessage
+        message={bannerMessage}
         onClose={closeBannerMessage}
         autoDismiss={true}
         duration={5000}
       />
       {showViewModal && selectedUser && (
-  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
-    <div className="bg-white p-6 rounded-lg shadow-lg w-[400px]">
-      <h2 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">User Details</h2>
-      
-      <div className="space-y-2 text-gray-700 text-sm">
-        <p><strong>Name:</strong> {selectedUser.name}</p>
-        <p><strong>Email:</strong> {selectedUser.email}</p>
-        <p><strong>Phone:</strong> {selectedUser.phone || "-"}</p>
-        <p><strong>Role:</strong> {selectedUser.role?.name}</p>
-        <p><strong>Status:</strong> 
-          <span className={`ml-1 font-medium ${selectedUser.is_active ? "text-green-600" : "text-red-600"}`}>
-            {selectedUser.is_active ? "Active" : "Inactive"}
-          </span>
-        </p>
-      </div>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-[400px]">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">User Details</h2>
 
-      <div className="mt-6 text-right">
-        <button
-          onClick={() => setShowViewModal(false)}
-          className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-        >
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+            <div className="space-y-2 text-gray-700 text-sm">
+              <p><strong>Name:</strong> {selectedUser.name}</p>
+              <p><strong>Email:</strong> {selectedUser.email}</p>
+              <p><strong>Phone:</strong> {selectedUser.phone || "-"}</p>
+              <p><strong>Role:</strong> {selectedUser.role?.name}</p>
+              <p><strong>Status:</strong>
+                <span className={`ml-1 font-medium ${selectedUser.is_active ? "text-green-600" : "text-red-600"}`}>
+                  {selectedUser.is_active ? "Active" : "Inactive"}
+                </span>
+              </p>
+            </div>
+
+            <div className="mt-6 text-right">
+              <button
+                onClick={() => setShowViewModal(false)}
+                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="p-6 bg-white rounded-xl shadow">
         <h1 className="text-2xl font-bold mb-4">Users</h1>
@@ -252,21 +244,20 @@ const handleEdit = (user) => {
                 <td className="p-2 border">{user.phone || "-"}</td>
                 <td className="p-2 border text-center">
                   <span
-                    className={`px-2 py-1 rounded text-xs font-semibold ${
-                      user.is_active
+                    className={`px-2 py-1 rounded text-xs font-semibold ${user.is_active
                         ? "bg-green-100 text-green-700"
                         : "bg-red-100 text-red-600"
-                    }`}
+                      }`}
                   >
                     {user.is_active ? "Active" : "Inactive"}
                   </span>
                 </td>
                 <td className="p-2 border text-center">
                   <div className="flex gap-2 justify-center">
-                   <button onClick={() => handleView(user)} className="bg-blue-500 text-white px-3 py-1 rounded text-sm">View</button>
+                    <button onClick={() => handleView(user)} className="bg-blue-500 text-white px-3 py-1 rounded text-sm">View</button>
                     <button onClick={() => handleEdit(user)} className="bg-yellow-500 text-white px-3 py-1 rounded text-sm">Edit</button>
 
-                    
+
                   </div>
                 </td>
               </tr>
@@ -280,14 +271,26 @@ const handleEdit = (user) => {
             )}
           </tbody>
         </table>
-        {hasMore && (
-          <div className="text-center mt-4">
+        {totalUsers > 20 && (
+          <div className="flex justify-center items-center py-4 space-x-2 border-t border-gray-100 mt-4">
             <button
-              onClick={loadMoreUsers}
-              disabled={isFetchingMore}
-              className="bg-indigo-100 text-indigo-700 font-semibold px-6 py-2 rounded-lg hover:bg-indigo-200 transition-colors disabled:bg-gray-200 disabled:text-gray-500"
+              onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+              disabled={page === 1}
+              className={`px-4 py-2 rounded-lg ${page === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'} transition-colors duration-200`}
             >
-              {isFetchingMore ? "Loading..." : "Load More Users"}
+              Previous
+            </button>
+
+            <span className="text-gray-600 font-medium px-4">
+              Page {page} of {Math.ceil(totalUsers / 20)}
+            </span>
+
+            <button
+              onClick={() => setPage(prev => (prev * 20 < totalUsers ? prev + 1 : prev))}
+              disabled={page * 20 >= totalUsers}
+              className={`px-4 py-2 rounded-lg ${page * 20 >= totalUsers ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'} transition-colors duration-200`}
+            >
+              Next
             </button>
           </div>
         )}
