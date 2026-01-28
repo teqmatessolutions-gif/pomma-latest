@@ -151,6 +151,11 @@ const Packages = () => {
   const [packageFilter, setPackageFilter] = useState("");
   const [bookingToCheckIn, setBookingToCheckIn] = useState(null);
 
+  // Pagination State for Bookings
+  const [bookingsPage, setBookingsPage] = useState(1);
+  const [totalBookings, setTotalBookings] = useState(0);
+  const bookingsLimit = 20;
+
   const [bookingFilter, setBookingFilter] = useState({ guestName: "", status: "all", checkIn: "", checkOut: "" });
   const [createForm, setCreateForm] = useState({
     title: "",
@@ -192,17 +197,28 @@ const Packages = () => {
 
   const fetchData = async () => {
     try {
+      setLoading(true);
+      const bookingSkip = (bookingsPage - 1) * bookingsLimit;
+
       const [packageRes, roomRes, bookingRes, regularBookingRes] = await Promise.all([
         api.get("/packages"),
         api.get("/rooms"),
-        api.get("/packages/bookingsall"),
+        api.get(`/packages/bookingsall?skip=${bookingSkip}&limit=${bookingsLimit}`),
         api.get("/bookings?limit=2000") // Fetch regular bookings
       ]);
       const allRoomsData = roomRes.data || [];
       setPackages(packageRes.data || []);
       setAllRooms(allRoomsData);
       setRooms(allRoomsData.filter(r => r.status === "Available")); // Initial available rooms
-      setBookings(bookingRes.data || []);
+
+      if (bookingRes.data && bookingRes.data.items) {
+        setBookings(bookingRes.data.items);
+        setTotalBookings(bookingRes.data.total);
+      } else {
+        setBookings(bookingRes.data || []);
+        setTotalBookings((bookingRes.data || []).length);
+      }
+
       setRegularBookings(regularBookingRes.data?.bookings || []);
     } catch (err) {
       toast.error("Failed to load data.");
@@ -212,7 +228,7 @@ const Packages = () => {
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [bookingsPage]); // Re-fetch when page changes
 
   // Filter rooms based on selected dates and package booking type
   useEffect(() => {
@@ -1206,6 +1222,31 @@ const Packages = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Controls */}
+        {totalBookings > bookingsLimit && (
+          <div className="flex justify-center items-center py-4 space-x-2 border-t border-gray-100 mt-4">
+            <button
+              onClick={() => setBookingsPage(prev => Math.max(prev - 1, 1))}
+              disabled={bookingsPage === 1}
+              className={`px-4 py-2 rounded-lg ${bookingsPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'} transition-colors duration-200`}
+            >
+              Previous
+            </button>
+
+            <span className="text-gray-600 font-medium px-4">
+              Page {bookingsPage} of {Math.ceil(totalBookings / bookingsLimit)}
+            </span>
+
+            <button
+              onClick={() => setBookingsPage(prev => (prev * bookingsLimit < totalBookings ? prev + 1 : prev))}
+              disabled={bookingsPage * bookingsLimit >= totalBookings}
+              className={`px-4 py-2 rounded-lg ${bookingsPage * bookingsLimit >= totalBookings ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'} transition-colors duration-200`}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </Card>
 
       {bookingToCheckIn && (

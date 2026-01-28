@@ -8,7 +8,7 @@ from app.models.Package import Package, PackageBooking, PackageBookingRoom
 from app.models.frontend import ResortInfo
 from app.utils.auth import get_db, get_current_user
 from app.utils.booking_id import parse_display_id
-from app.schemas.packages import PackageBookingCreate, PackageOut, PackageBookingOut
+from app.schemas.packages import PackageBookingCreate, PackageOut, PackageBookingOut, PackageBookingPaginationOut
 from fastapi.responses import FileResponse
 from app.curd import packages as crud_package
 import shutil
@@ -456,7 +456,7 @@ def book_package_guest_api(
             detail=f"Failed to create package booking: {str(e)}"
         )
 
-@router.get("/bookingsall", response_model=List[PackageBookingOut])
+@router.get("/bookingsall", response_model=PackageBookingPaginationOut)
 def get_bookings(
     db: Session = Depends(get_db), 
     skip: int = 0, 
@@ -500,17 +500,33 @@ def get_bookings(
         except Exception as e:
             print(f"ERROR parsing dates in package bookings: {e}")
         
+        # Calculate total count before pagination
+        total = query.count()
+        
         result = query.offset(skip).limit(limit).all()
-        return result if result is not None else []
+        result_items = result if result is not None else []
+        
+        page = (skip // limit) + 1 if limit > 0 else 1
+        return {
+            "items": result_items,
+            "total": total,
+            "page": page,
+            "limit": limit
+        }
     except Exception as e:
         import traceback
         error_detail = f"Failed to fetch package bookings: {str(e)}\n{traceback.format_exc()}"
         print(f"ERROR: {error_detail}")
         import sys
         sys.stderr.write(f"ERROR in /packages/bookingsall: {error_detail}\n")
-        # Return empty list to prevent frontend breakage
+        # Return empty pagination structure to prevent frontend breakage
         print(f"Unexpected error in package bookings endpoint, returning empty list: {str(e)}")
-        return []
+        return {
+            "items": [],
+            "total": 0,
+            "page": 1,
+            "limit": limit
+        }
 
 
 def _list_packages_impl(db: Session, skip: int = 0, limit: int = 20):

@@ -89,3 +89,12 @@ class PackageBookingOut(PackageBookingBase):
 
     class Config:
         from_attributes = True
+
+class PackageBookingPaginationOut(BaseModel):
+    items: List[PackageBookingOut]
+    total: int
+    page: int
+    limit: int
+
+    class Config:
+        from_attributes = True
