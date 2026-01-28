@@ -72,21 +72,39 @@ const Dashboard = () => {
       }
 
       if (results[2].status === 'fulfilled' && !results[2].value.error) {
-        setExpenses(Array.isArray(results[2].value.data) ? results[2].value.data : []);
+        // Handle both paginated and non-paginated responses
+        const expensesData = results[2].value.data;
+        if (expensesData?.items) {
+          setExpenses(Array.isArray(expensesData.items) ? expensesData.items : []);
+        } else {
+          setExpenses(Array.isArray(expensesData) ? expensesData : []);
+        }
       } else {
         console.error("Failed to load expenses:", results[2].value?.error || results[2].reason);
         setExpenses([]);
       }
 
       if (results[3].status === 'fulfilled' && !results[3].value.error) {
-        setFoodOrders(Array.isArray(results[3].value.data) ? results[3].value.data : []);
+        // Handle both paginated and non-paginated responses
+        const foodOrdersData = results[3].value.data;
+        if (foodOrdersData?.items) {
+          setFoodOrders(Array.isArray(foodOrdersData.items) ? foodOrdersData.items : []);
+        } else {
+          setFoodOrders(Array.isArray(foodOrdersData) ? foodOrdersData : []);
+        }
       } else {
         console.error("Failed to load food orders:", results[3].value?.error || results[3].reason);
         setFoodOrders([]);
       }
 
       if (results[4].status === 'fulfilled' && !results[4].value.error) {
-        setAssignedServices(Array.isArray(results[4].value.data) ? results[4].value.data : []);
+        // Handle both paginated and non-paginated responses
+        const servicesData = results[4].value.data;
+        if (servicesData?.items) {
+          setAssignedServices(Array.isArray(servicesData.items) ? servicesData.items : []);
+        } else {
+          setAssignedServices(Array.isArray(servicesData) ? servicesData : []);
+        }
       } else {
         console.error("Failed to load services:", results[4].value?.error || results[4].reason);
         setAssignedServices([]);
@@ -107,7 +125,13 @@ const Dashboard = () => {
       }
 
       if (results[7].status === 'fulfilled' && !results[7].value.error) {
-        setPackageBookings(Array.isArray(results[7].value.data) ? results[7].value.data : []);
+        // Handle both paginated and non-paginated responses
+        const packageBookingsData = results[7].value.data;
+        if (packageBookingsData?.items) {
+          setPackageBookings(Array.isArray(packageBookingsData.items) ? packageBookingsData.items : []);
+        } else {
+          setPackageBookings(Array.isArray(packageBookingsData) ? packageBookingsData : []);
+        }
       } else {
         console.error("Failed to load package bookings:", results[7].value?.error || results[7].reason);
         setPackageBookings([]);
