@@ -227,15 +227,14 @@ export default function ComprehensiveReport() {
         ]);
 
         setReportData({
-          expenses: expensesRes.data || [],
-          serviceCharges: serviceChargesRes.data || [],
-          foodOrders: foodOrdersRes.data || [],
-          roomBookings: roomBookingsRes.data?.bookings || roomBookingsRes.data || [],
-          packageBookings: packageBookingsRes.data || [],
-          employees: employeesRes.data || [],
-          employees: employeesRes.data || [],
-          checkInByEmployee: checkInByEmployeeRes.data || [],
-          checkouts: checkoutsRes.data || [],
+          expenses: expensesRes.data?.items || expensesRes.data || [],
+          serviceCharges: serviceChargesRes.data?.items || serviceChargesRes.data || [],
+          foodOrders: foodOrdersRes.data?.items || foodOrdersRes.data || [],
+          roomBookings: roomBookingsRes.data?.bookings || roomBookingsRes.data?.items || roomBookingsRes.data || [],
+          packageBookings: packageBookingsRes.data?.items || packageBookingsRes.data || [],
+          employees: employeesRes.data?.items || employeesRes.data || [],
+          checkInByEmployee: checkInByEmployeeRes.data?.items || checkInByEmployeeRes.data || [],
+          checkouts: checkoutsRes.data?.items || checkoutsRes.data || [],
         });
       } catch (err) {
         console.error("Failed to fetch comprehensive report data:", err);
