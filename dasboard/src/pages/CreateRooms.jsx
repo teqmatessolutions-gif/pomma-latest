@@ -279,15 +279,18 @@ const Rooms = () => {
 
   const fetchRooms = async () => {
     try {
-      const res = await API.get("/rooms/test?skip=0&limit=20");
-      const dataWithTrend = res.data.map((r) => ({
+      const res = await API.get("/rooms?skip=0&limit=20");
+      // Handle paginated response
+      const roomData = res.data?.items || (Array.isArray(res.data) ? res.data : []);
+
+      const dataWithTrend = roomData.map((r) => ({
         ...r,
         trend:
           r.trend ||
           Array.from({ length: 7 }, () => Math.floor(Math.random() * 1000)),
       }));
       setRooms(dataWithTrend || []);
-      setHasMore(res.data.length === 20);
+      setHasMore(roomData.length === 20);
       setPage(1);
     } catch (error) {
       console.error("Error fetching rooms:", error);
@@ -301,7 +304,9 @@ const Rooms = () => {
     try {
       const nextPage = page + 1;
       const res = await API.get(`/rooms?skip=${(nextPage - 1) * 20}&limit=20`);
-      const newRooms = res.data || [];
+      // Handle paginated response
+      const newRooms = res.data?.items || (Array.isArray(res.data) ? res.data : []);
+
       const dataWithTrend = newRooms.map((r) => ({ ...r, trend: Array.from({ length: 7 }, () => Math.floor(Math.random() * 1000)) }));
       setRooms(prev => [...prev, ...dataWithTrend]);
       setPage(nextPage);
@@ -463,7 +468,7 @@ const Rooms = () => {
         setIsEditing(false);
         setEditRoomId(null);
       } else {
-        await API.post("/rooms/test", formData, {
+        await API.post("/rooms", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         showBannerMessage("success", "Room created successfully!");
