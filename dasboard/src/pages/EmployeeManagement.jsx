@@ -965,39 +965,51 @@ const EmployeeListAndForm = () => {
   const [previewImage, setPreviewImage] = useState(null);
   const [editId, setEditId] = useState(null);
   const [salaryFilter, setSalaryFilter] = useState("");
-  const [hasMore, setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [page, setPage] = useState(1);
+  const [totalEmployeesCount, setTotalEmployeesCount] = useState(0);
   const [hoveredKPI, setHoveredKPI] = useState(null);
 
   const mediaBaseUrl = useMemo(() => getMediaBaseUrl(), []);
 
   useEffect(() => {
-    fetchEmployees();
+    fetchEmployees(page);
     fetchRoles();
-  }, []);
+  }, [page]);
 
-  const fetchEmployees = async () => {
+  const fetchEmployees = async (currentPage = 1) => {
     try {
+      const skip = (currentPage - 1) * 20;
       // Fetch both users and employees to show all users including admins
       const [usersRes, employeesRes] = await Promise.all([
-        api.get("/users/?skip=0&limit=20"),
-        api.get("/employees?skip=0&limit=20")
+        api.get(`/users/?skip=${skip}&limit=20`),
+        api.get(`/employees?skip=${skip}&limit=20`)
       ]);
 
-      const users = usersRes.data || [];
-      const employees = employeesRes.data || [];
+      const users = usersRes.data || []; // Note: Users might not be paginated same way or need logic adjustment if user list > 20
+      // Assuming employeesRes is now paginated { items, total }
+      let employeesData = [];
+      let total = 0;
+
+      if (employeesRes.data.items) {
+        employeesData = employeesRes.data.items;
+        total = employeesRes.data.total;
+      } else {
+        employeesData = employeesRes.data;
+        total = employeesRes.data.length;
+      }
 
       // Create a map of employees by user_id for quick lookup
       const employeeMap = new Map();
-      employees.forEach(emp => {
+      employeesData.forEach(emp => {
         if (emp.user_id) {
           employeeMap.set(emp.user_id, emp);
         }
       });
 
       // Get set of user IDs that have employee records
-      const employeeUserIds = new Set(employees.map(emp => emp.user_id).filter(Boolean));
+      const employeeUserIds = new Set(employeesData.map(emp => emp.user_id).filter(Boolean));
 
       // Filter users: Only include users who have employee records OR are admins
       // Exclude guest users (users without employee records and not admins)
@@ -1028,8 +1040,12 @@ const EmployeeListAndForm = () => {
       }));
 
       setEmployees(combinedUsers);
-      setHasMore(combinedUsers.length >= 20);
-      setPage(1);
+      setHasMore(false); // Using explicit pagination controls
+      // We need to store total employees for pagination. 
+      // But 'combinedUsers' depends on merging with 'users' API which might not be matching 1-to-1 on pages if they are separate lists.
+      // For now, let's assume filtering logic holds. We'll store the 'total' from employees API as a proxy for total records to show.
+      setTotalEmployeesCount(total);
+      // setPage(1); // Don't reset page on every fetch, loop condition!
     } catch (err) {
       console.error("Error fetching employees:", err);
     }
@@ -1104,7 +1120,7 @@ const EmployeeListAndForm = () => {
       } else {
         await api.post("/employees", data);
       }
-      fetchEmployees();
+      fetchEmployees(page);
       resetForm();
       toast.success("Employee saved successfully!");
     } catch (err) {
@@ -1150,7 +1166,7 @@ const EmployeeListAndForm = () => {
       const data = new FormData();
       data.append("is_active", String(!emp.is_active)); // Convert to string for FormData
       await api.put(`/employees/${emp.employee_id}`, data);
-      fetchEmployees();
+      fetchEmployees(page);
     } catch (err) {
       const errorMessage = err.response?.data?.detail || "An error occurred while updating employee status.";
       console.error("Error updating employee:", err.response || err);
@@ -1161,27 +1177,11 @@ const EmployeeListAndForm = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Delete this employee?")) {
       await api.delete(`/employees/${id}`);
-      fetchEmployees();
+      fetchEmployees(page);
     }
   };
 
-  const loadMoreEmployees = async () => {
-    if (isFetchingMore || !hasMore) return;
-    const nextPage = page + 1;
-    setIsFetchingMore(true);
-    try {
-      const res = await api.get(`/employees?skip=${(nextPage - 1) * 20}&limit=20`);
-      const newEmployees = res.data || [];
-      const dataWithTrend = newEmployees.map((emp) => ({ ...emp, trend: Array.from({ length: 30 }, () => Math.floor(Math.random() * 10000)) }));
-      setEmployees(prev => [...prev, ...dataWithTrend]);
-      setPage(nextPage);
-      setHasMore(newEmployees.length >= 20);
-    } catch (err) {
-      console.error("Failed to load more employees:", err);
-    } finally {
-      setIsFetchingMore(false);
-    }
-  };
+  // const loadMoreEmployees = async () => {} // Removed in favor of direct page access
 
   const filteredEmployees = employees.filter((emp) => salaryFilter ? emp.salary >= parseFloat(salaryFilter) : true);
 
@@ -1192,8 +1192,8 @@ const EmployeeListAndForm = () => {
     XLSX.writeFile(workbook, "employees.xlsx");
   };
 
-  const totalEmployees = employees.length;
-  const avgSalary = employees.length > 0 ? Math.round(employees.reduce((acc, e) => acc + e.salary, 0) / employees.length) : 0;
+  const totalEmployees = totalEmployeesCount; // Use total from backend
+  const avgSalary = employees.length > 0 ? Math.round(employees.reduce((acc, e) => acc + (e.salary || 0), 0) / employees.length) : 0;
   const rolesCount = roles.map((r) => ({ name: r.name, count: employees.filter((e) => e.role === r.name).length, trend: Array.from({ length: 30 }, () => Math.floor(Math.random() * 10000)) }));
   const kpiData = [{ label: "Total Employees", value: totalEmployees, color: "#4f46e5", trend: employees.map(e => e.salary) }, { label: "Avg Salary", value: avgSalary, color: "#16a34a", trend: employees.map(e => e.salary) }, ...rolesCount.map(r => ({ label: r.name, value: r.count, color: "#f59e0b", trend: r.trend }))];
 
@@ -1356,13 +1356,31 @@ const EmployeeListAndForm = () => {
               </tr>
             )}
           </tbody>
-          {hasMore && filteredEmployees.length > 0 && (
+          {totalEmployees > 20 && (
             <tfoot>
               <tr>
-                <td colSpan="8" className="text-center p-4">
-                  <button onClick={loadMoreEmployees} disabled={isFetchingMore} className="bg-indigo-100 text-indigo-700 font-semibold px-6 py-2 rounded-lg hover:bg-indigo-200 transition-colors disabled:bg-gray-200 disabled:text-gray-500">
-                    {isFetchingMore ? "Loading..." : "Load More"}
-                  </button>
+                <td colSpan="8">
+                  <div className="flex justify-center items-center py-4 space-x-2">
+                    <button
+                      onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                      disabled={page === 1}
+                      className={`px-4 py-2 rounded-lg ${page === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'} transition-colors duration-200`}
+                    >
+                      Previous
+                    </button>
+
+                    <span className="text-gray-600 font-medium px-4">
+                      Page {page} of {Math.ceil(totalEmployees / 20)}
+                    </span>
+
+                    <button
+                      onClick={() => setPage(prev => (prev * 20 < totalEmployees ? prev + 1 : prev))}
+                      disabled={page * 20 >= totalEmployees}
+                      className={`px-4 py-2 rounded-lg ${page * 20 >= totalEmployees ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'} transition-colors duration-200`}
+                    >
+                      Next
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tfoot>

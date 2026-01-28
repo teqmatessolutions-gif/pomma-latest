@@ -14,7 +14,9 @@ def get_role_by_name(db: Session, role_name: str):
     return db.query(Role).filter(Role.name == role_name).first()
 
 def get_employees(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(Employee).offset(skip).limit(limit).all()
+    total = db.query(Employee).count()
+    items = db.query(Employee).offset(skip).limit(limit).all()
+    return {"items": items, "total": total}
 
 def create_employee(
     db: Session,

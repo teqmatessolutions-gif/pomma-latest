@@ -30,6 +30,15 @@ class Employee(BaseModel):
         # Use from_attributes for Pydantic V2 and above
         from_attributes = True
 
+class EmployeePaginationOut(BaseModel):
+    items: List[Employee]
+    total: int
+    page: int
+    limit: int
+
+    class Config:
+        from_attributes = True
+
 # Your other schemas for Leave can remain as they are.
 class LeaveBase(BaseModel):
     employee_id: int

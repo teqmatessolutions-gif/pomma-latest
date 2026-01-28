@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 from app.database import SessionLocal
-from app.schemas.employee import Employee, LeaveCreate, LeaveOut, EmployeeStatusOverview
+from app.schemas.employee import Employee, LeaveCreate, LeaveOut, EmployeeStatusOverview, EmployeePaginationOut
 from app.schemas.user import UserCreate
 # ✅ Corrected imports to point to the crud modules
 from app.curd import employee as crud_employee
@@ -91,13 +91,27 @@ def _list_employees_impl(db: Session, current_user: User, skip: int = 0, limit: 
     """Helper function for list_employees"""
     return crud_employee.get_employees(db, skip=skip, limit=limit)
 
-@router.get("", response_model=list[Employee])
+@router.get("", response_model=None)
 def list_employees(db: Session = Depends(get_db), current_user: User = Depends(get_current_user), skip: int = 0, limit: int = 20):
-    return _list_employees_impl(db, current_user, skip, limit)
+    data = _list_employees_impl(db, current_user, skip, limit)
+    page = (skip // limit) + 1 if limit > 0 else 1
+    return {
+        "items": data["items"],
+        "total": data["total"],
+        "page": page,
+        "limit": limit
+    }
 
-@router.get("/", response_model=list[Employee])  # Handle trailing slash
+@router.get("/", response_model=None)  # Handle trailing slash
 def list_employees_slash(db: Session = Depends(get_db), current_user: User = Depends(get_current_user), skip: int = 0, limit: int = 20):
-    return _list_employees_impl(db, current_user, skip, limit)
+    data = _list_employees_impl(db, current_user, skip, limit)
+    page = (skip // limit) + 1 if limit > 0 else 1
+    return {
+        "items": data["items"],
+        "total": data["total"],
+        "page": page,
+        "limit": limit
+    }
     
 @router.get("/status-overview", response_model=EmployeeStatusOverview)
 def get_employee_status_overview(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
