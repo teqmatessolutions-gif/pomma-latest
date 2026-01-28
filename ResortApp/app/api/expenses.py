@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import Optional
 from app.curd import expenses as expense_crud
 from app.utils.auth import get_db, get_current_user
-from app.schemas.expenses import ExpenseOut
+from app.schemas.expenses import ExpenseOut, ExpensePaginationOut
 from app.models.user import User
 from app.models.employee import Employee
 import os
@@ -59,7 +59,7 @@ async def create_expense(
         "employee_name": employee.name if employee else "N/A"
     }
 
-@router.get("", response_model=list[ExpenseOut])
+@router.get("", response_model=None)
 def get_expenses(
     db: Session = Depends(get_db), 
     skip: int = 0, 
@@ -93,6 +93,9 @@ def get_expenses(
     except Exception as e:
         print(f"ERROR parsing dates in expenses: {e}")
     
+    # Calculate Total
+    total = query.count()
+
     expenses = query.order_by(Expense.id.desc()).offset(skip).limit(limit).all()
     
     result = []
@@ -102,7 +105,16 @@ def get_expenses(
             **exp.__dict__,
             "employee_name": emp.name if emp else "N/A"
         })
-    return result
+    
+    # Calculate page number
+    page = (skip // limit) + 1 if limit > 0 else 1
+
+    return {
+        "items": result,
+        "total": total,
+        "page": page,
+        "limit": limit
+    }
 
 @router.get("/image/{filename}")
 def get_expense_image(filename: str):

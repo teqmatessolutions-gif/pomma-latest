@@ -11,8 +11,10 @@ const Expenses = () => {
   const [employees, setEmployees] = useState([]);
   const [imagePreview, setImagePreview] = useState(null);
   const [hoveredKPI, setHoveredKPI] = useState(null);
-  const [hasMore, setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalExpensesState, setTotalExpensesState] = useState(0); // Renamed to avoid collision with derived totalExpenses
 
   const [form, setForm] = useState({
     employee_id: "",
@@ -28,38 +30,41 @@ const Expenses = () => {
 
   useEffect(() => {
     fetchEmployees();
-    fetchExpenses();
   }, []);
 
-  const loadMoreExpenses = useCallback(async () => {
-    if (isFetchingMore || !hasMore) return;
-    setIsFetchingMore(true);
+  useEffect(() => {
+    fetchExpenses(page);
+  }, [page]);
+
+  // const loadMoreExpenses = useCallback(async () => {}) // Removed in favor of direct page access
+
+  // const loadMoreRef = useInfiniteScroll(loadMoreExpenses, hasMore, isFetchingMore); 
+
+  const fetchExpenses = async (currentPage = 1) => {
     try {
-      const res = await API.get(`/expenses?skip=${expenses.length}&limit=20`);
-      const newExpenses = res.data || [];
-      const dataWithTrend = newExpenses.map((exp) => ({ ...exp, trend: Array.from({ length: 30 }, () => Math.floor(Math.random() * 5000)) }));
-      setExpenses(prev => [...prev, ...dataWithTrend]);
-      if (newExpenses.length < 20) {
-        setHasMore(false);
+      const skip = (currentPage - 1) * 20;
+      const res = await API.get(`/expenses?skip=${skip}&limit=20`);
+
+      let newExpenses = [];
+      let total = 0;
+
+      if (res.data.items) {
+        newExpenses = res.data.items;
+        total = res.data.total;
+        setTotalExpensesState(res.data.total);
+      } else {
+        newExpenses = res.data;
+        total = res.data.length;
+        setTotalExpensesState(res.data.length);
       }
-    } catch (err) {
-      console.error("Failed to load more expenses:", err);
-    } finally {
-      setIsFetchingMore(false);
-    }
-  }, [isFetchingMore, hasMore, expenses.length]);
 
-  const loadMoreRef = useInfiniteScroll(loadMoreExpenses, hasMore, isFetchingMore);
-
-  const fetchExpenses = async () => {
-    try {
-      const res = await API.get("/expenses?skip=0&limit=20");
-      const dataWithTrend = res.data.map((exp) => ({
+      const dataWithTrend = newExpenses.map((exp) => ({
         ...exp,
         trend: Array.from({ length: 30 }, () => Math.floor(Math.random() * 5000)),
       }));
+
       setExpenses(dataWithTrend);
-      setHasMore(res.data.length === 20);
+      setHasMore(false); // Using explicit pagination controls
     } catch (error) {
       console.error("Error fetching expenses:", error);
       alert("Failed to fetch expenses");
@@ -101,7 +106,7 @@ const Expenses = () => {
       });
       setImagePreview(null);
       fileInputRef.current.value = "";
-      fetchExpenses();
+      fetchExpenses(page);
     } catch (error) {
       console.error("Error submitting expense:", error);
       alert("Failed to submit expense");
@@ -112,17 +117,19 @@ const Expenses = () => {
     if (!window.confirm("Are you sure you want to delete this expense?")) return;
     try {
       await API.delete(`/expenses/${id}`);
-      fetchExpenses();
+      fetchExpenses(page);
     } catch (error) {
       console.error("Delete failed:", error);
       alert("Failed to delete expense");
     }
   };
 
-  // KPI Calculations
-  const totalExpenses = expenses.length;
+  // KPI Calculations (Note: This is now PER PAGE. TODO: Add backend KPI endpoints)
+  const totalExpenses = totalExpensesState; // Use total from backed
+  // We can't calculate total amount correctly for all pages without a new endpoint.
+  // Converting totalAmount to be "Current Page Amount" for now.
   const totalAmount = expenses.reduce((acc, e) => acc + parseFloat(e.amount || 0), 0);
-  const avgExpense = totalExpenses ? Math.round(totalAmount / totalExpenses) : 0;
+  const avgExpense = expenses.length ? Math.round(totalAmount / expenses.length) : 0; // Avg of current page
 
   const kpiData = [
     { label: "Total Expenses", value: totalExpenses, color: "#4f46e5", trend: expenses.map(e => parseFloat(e.amount || 0)) },
@@ -304,10 +311,32 @@ const Expenses = () => {
                 </tr>
               )}
             </tbody>
-            {hasMore && expenses.length > 0 && (
-              <tbody ref={loadMoreRef}>
+            {totalExpenses > 20 && (
+              <tbody>
                 <tr>
-                  <td colSpan="8" className="text-center p-4">{isFetchingMore && <span className="text-indigo-600">Loading more...</span>}</td>
+                  <td colSpan="8">
+                    <div className="flex justify-center items-center py-4 space-x-2">
+                      <button
+                        onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                        disabled={page === 1}
+                        className={`px-4 py-2 rounded-lg ${page === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'} transition-colors duration-200`}
+                      >
+                        Previous
+                      </button>
+
+                      <span className="text-gray-600 font-medium px-4">
+                        Page {page} of {Math.ceil(totalExpenses / 20)}
+                      </span>
+
+                      <button
+                        onClick={() => setPage(prev => (prev * 20 < totalExpenses ? prev + 1 : prev))}
+                        disabled={page * 20 >= totalExpenses}
+                        className={`px-4 py-2 rounded-lg ${page * 20 >= totalExpenses ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'} transition-colors duration-200`}
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               </tbody>
             )}

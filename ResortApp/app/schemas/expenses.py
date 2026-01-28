@@ -32,3 +32,14 @@ class ExpenseOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+from typing import List
+
+class ExpensePaginationOut(BaseModel):
+    items: List[ExpenseOut]
+    total: int
+    page: int
+    limit: int
+
+    class Config:
+        from_attributes = True
