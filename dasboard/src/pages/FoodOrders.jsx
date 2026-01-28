@@ -72,7 +72,12 @@ export default function FoodOrders() {
         setTotalOrders(ordersRes.data.length);
       }
       setHasMore(false); // Using explicit pagination controls instead of load more
-      setEmployees(employeesRes.data);
+      // Handle both paginated and non-paginated employee responses
+      if (employeesRes.data?.items) {
+        setEmployees(Array.isArray(employeesRes.data.items) ? employeesRes.data.items : []);
+      } else {
+        setEmployees(Array.isArray(employeesRes.data) ? employeesRes.data : []);
+      }
       setFoodItems(foodItemsRes.data);
       setAllRooms(roomsRes.data); // Save full list for historical display
 
