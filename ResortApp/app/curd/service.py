@@ -100,7 +100,6 @@ def get_assigned_services(db: Session, skip: int = 0, limit: int = 100):
         joinedload(AssignedService.service),
         joinedload(AssignedService.employee),
         joinedload(AssignedService.room)
-        joinedload(AssignedService.room)
     ).order_by(AssignedService.assigned_at.desc()).offset(skip).limit(limit).all()
     
     return {"items": services, "total": total}
