@@ -34,6 +34,7 @@ const Dashboard = () => {
         setLoading(true);
       }
       setErr(null); // Clear any previous errors
+      console.log('[Dashboard] Starting data fetch...');
 
       // Fetch all endpoints with individual error handling to prevent complete failure
       // Reduced limits for better performance (pagination handles the rest)
@@ -47,6 +48,17 @@ const Dashboard = () => {
         API.get("/packages?limit=500").catch(err => ({ error: err, data: [] })),
         API.get("/packages/bookingsall?limit=500").catch(err => ({ error: err, data: [] })),
       ]);
+
+      console.log('[Dashboard] API responses received:', {
+        bookings: results[0].status,
+        rooms: results[1].status,
+        expenses: results[2].status,
+        foodOrders: results[3].status,
+        services: results[4].status,
+        billings: results[5].status,
+        packages: results[6].status,
+        packageBookings: results[7].status
+      });
 
       // Process results individually - allow partial failures
       if (results[0].status === 'fulfilled' && !results[0].value.error) {
@@ -147,6 +159,7 @@ const Dashboard = () => {
       setErr(e?.response?.data?.detail || "Failed to load dashboard data");
     } finally {
       if (showLoading) {
+        console.log('[Dashboard] Data fetch complete, setting loading to false');
         setLoading(false);
       }
     }
