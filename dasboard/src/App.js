@@ -45,8 +45,8 @@ const getRouterBasename = () => {
     return "/admin";
   }
 
-  // Default to root for localhost development
-  return "/";
+  // Default to /pommaadmin for production builds if not running on root
+  return "/pommaadmin";
 };
 
 function App() {
