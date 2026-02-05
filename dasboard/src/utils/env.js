@@ -54,12 +54,11 @@ export const getApiBaseUrl = () => {
     return "http://localhost:8000/api";
   }
 
-  // For assets served under /pommaadmin or /pommaholidays in production,
-  // build absolute API path off the current origin.
+  // For Pomma deployment in production
   if (typeof window !== "undefined" && isPommaDeployment()) {
-    return `${window.location.origin}/pommaapi/api`;
+    return `${window.location.origin}/api`;
   }
 
   // Sensible defaults for production
-  return "https://www.teqmates.com/pommaapi/api";
+  return "https://www.teqmates.com/api";
 };
