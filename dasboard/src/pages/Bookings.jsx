@@ -651,20 +651,22 @@ const Bookings = () => {
 
       const skip = (page - 1) * limit;
 
-      const [roomsRes, bookingsRes, packageBookingsRes, packageRes] = await Promise.all([
-        API.get("/rooms", authHeader()),
+      // 1. Fetch Bookings (Critical for Table)
+      // Fire off auxiliary requests in background without awaiting them immediately
+      const roomsPromise = API.get("/rooms", authHeader());
+      const packagesListPromise = API.get("/packages?limit=100", authHeader()); // Increased limit to ensure we get all for dropdowns
+
+      // Await only the booking data for fastest TTI (Time to Interactive)
+      const [bookingsRes, packageBookingsRes] = await Promise.all([
         API.get(`/bookings?skip=${skip}&limit=${limit}&order_by=id&order=desc`, authHeader()),
         API.get(`/packages/bookingsall?skip=${skip}&limit=${limit}`, authHeader()),
-        API.get("/packages?limit=20", authHeader()),
       ]);
-
-      const allRooms = roomsRes.data.items || (Array.isArray(roomsRes.data) ? roomsRes.data : []);
 
       // Handle Regular Bookings
       const initialBookings = bookingsRes.data.bookings || [];
       const regularTotal = bookingsRes.data.total || 0;
 
-      // Handle Package Bookings (New Pagination Schema)
+      // Handle Package Bookings
       let packageBookings = [];
       let packageTotal = 0;
       if (packageBookingsRes.data && packageBookingsRes.data.items) {
@@ -675,31 +677,16 @@ const Bookings = () => {
         packageTotal = packageBookings.length;
       }
 
-      const todaysDate = new Date().toISOString().split("T")[0];
-
-      // Combine regular bookings and package bookings for display
+      // Combine and display bookings immediately
       const allPackageBookings = packageBookings.map(pb => ({
         ...pb,
         is_package: true,
         rooms: pb.rooms || []
       }));
 
-      // Note: We are now paginating, so "active bookings count" for KPIs might be inaccurate if we only count the current page.
-      // Ideally, specific KPI endpoints should be created. For now, we rely on the returned totals if needed, 
-      // but the existing KPI logic filtered 'allBookings'. 
-      // To keep KPIs somewhat functional without separate endpoints, we might need a separate 'stats' call or accept page-only stats.
-      // The previous code fetched 2000 items to calc stats. Let's keep a simplified stat calc based on current page or explicit total.
-
       const combinedBookings = [...initialBookings, ...allPackageBookings];
 
-      const activeBookingsCount = regularTotal + packageTotal; // Approximation using totals
-      // This is not perfect for 'cancelled' vs 'active' breakdown since 'total' includes all statuses.
-      // Given the constraints, we will display totals from the current view or calculated totals.
-      // Correct approach: The backend should provide KPI stats.
-      // Attempting to calculate detailed KPIs (checked-in vs cancelled) from a paginated subset is impossible accurately.
-      // We will show stats based on what we have or placeholders.
-      // Actually, let's trust the 'total' for active for now, or just use page data for daily stats (which is usually recent).
-
+      const todaysDate = new Date().toISOString().split("T")[0];
       const todaysGuestsCheckin = combinedBookings
         .filter(b => b.check_in === todaysDate && b.status !== 'cancelled')
         .reduce((sum, b) => sum + b.adults + b.children, 0);
@@ -707,37 +694,6 @@ const Bookings = () => {
         .filter(b => b.check_out === todaysDate && b.status !== 'cancelled')
         .reduce((sum, b) => sum + b.adults + b.children, 0);
 
-      // Store all rooms for filtering
-      setAllRooms(allRooms);
-
-      // Set initial package rooms to all available rooms
-      setPackageRooms(allRooms.filter((r) => r.status === "Available"));
-
-      // Filtering logic relies on 'allBookings' to check for conflicts clearly.
-      // Since we only have a page, conflict checking for 'create booking' might be limited to this page's known bookings?
-      // NO. 'Create Booking' should ideally check backend for availability. 
-      // The current frontend code attempts to filter rooms by checking 'allBookings'. 
-      // This is a flaw in the original design if 'allBookings' meant 'everything in DB'.
-      // If we paginate, 'availableRooms' calculation client-side becomes incomplete.
-      // However, fixing the availability check to be server-side is a larger task.
-      // For now, we proceed with pagination implementation.
-
-      let availableRooms = allRooms;
-      // Note: 'bookings' state will now only contain the current page.
-      // Client-side availability filtering will only check against current page bookings.
-      // This is a known limitation of moving to pagination without server-side availability check.
-
-      if (formData.checkIn && formData.checkOut) {
-        // ... existing logic will run against paginated 'combinedBookings' later
-        // pass
-      } else {
-        availableRooms = allRooms.filter((r) => r.status === "Available");
-      }
-
-      setRooms(availableRooms);
-
-      // Sort combined bookings by ID descending (or date)
-      // Since we fetch page 1 from both, we have the latest of both.
       combinedBookings.sort((a, b) => {
         const idA = a.id || 0;
         const idB = b.id || 0;
@@ -745,24 +701,53 @@ const Bookings = () => {
       });
 
       setBookings(combinedBookings);
-      setPackages(packageRes.data || []);
       setTotalBookings(regularTotal + packageTotal);
 
-      // Calculate max pages
       const maxPages = Math.ceil(Math.max(regularTotal, packageTotal) / limit);
       setTotalPages(maxPages || 1);
 
-      setKpis({
-        activeBookings: combinedBookings.filter(b => ['booked', 'checked-in'].includes(b.status)).length, // Page only stats
+      // KPI logic (approximate based on page)
+      setKpis(prev => ({
+        ...prev,
+        activeBookings: combinedBookings.filter(b => ['booked', 'checked-in'].includes(b.status)).length,
         cancelledBookings: combinedBookings.filter(b => b.status === "cancelled").length,
-        availableRooms: availableRooms.length,
         todaysGuestsCheckin,
         todaysGuestsCheckout,
-      });
+      }));
+
+      // Stop loading spinner here - Table is ready!
+      setIsLoading(false);
+
+      // 2. Process Auxiliary Data (Rooms & Packages for Filters/Modals)
+      try {
+        const [roomsRes, packageRes] = await Promise.all([roomsPromise, packagesListPromise]);
+
+        const allRooms = roomsRes.data.items || (Array.isArray(roomsRes.data) ? roomsRes.data : []);
+        setAllRooms(allRooms);
+        setPackages(packageRes.data || []);
+
+        // Update room-dependent state
+        const availableRooms = allRooms.filter((r) => r.status === "Available");
+        setPackageRooms(availableRooms);
+
+        // Only override rooms filter if not already set (retaining existing logic logic which used allRooms)
+        if (!formData.checkIn) {
+          setRooms(availableRooms);
+        }
+
+        setKpis(prev => ({
+          ...prev,
+          availableRooms: availableRooms.length
+        }));
+
+      } catch (auxError) {
+        console.error("Error fetching auxiliary data (rooms/packages):", auxError);
+        // Don't show error banner if bookings loaded fine, just log it.
+      }
+
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
       showBannerMessage("error", "Failed to load dashboard data. Please try again.");
-    } finally {
       setIsLoading(false);
     }
   }, [authHeader, navigate, page, formData.checkIn, formData.checkOut]); // Added page dependency
