@@ -76,7 +76,7 @@ def _get_orders_impl(db: Session, skip: int = 0, limit: int = 20, from_date: Opt
 
     return {"items": items, "total": total}
 
-@router.get("", response_model=None)
+@router.get("", response_model=FoodOrderPaginationOut)
 def get_orders(db: Session = Depends(get_db), skip: int = 0, limit: int = 20, from_date: Optional[str] = None, to_date: Optional[str] = None, fromDate: Optional[str] = None, toDate: Optional[str] = None):
     data = _get_orders_impl(db, skip, limit, from_date, to_date, fromDate, toDate)
     page = (skip // limit) + 1 if limit > 0 else 1
@@ -87,7 +87,7 @@ def get_orders(db: Session = Depends(get_db), skip: int = 0, limit: int = 20, fr
         "limit": limit
     }
 
-@router.get("/", response_model=None)  # Handle trailing slash
+@router.get("/", response_model=FoodOrderPaginationOut)  # Handle trailing slash
 def get_orders_slash(db: Session = Depends(get_db), skip: int = 0, limit: int = 20, from_date: Optional[str] = None, to_date: Optional[str] = None, fromDate: Optional[str] = None, toDate: Optional[str] = None):
     data = _get_orders_impl(db, skip, limit, from_date, to_date, fromDate, toDate)
     page = (skip // limit) + 1 if limit > 0 else 1

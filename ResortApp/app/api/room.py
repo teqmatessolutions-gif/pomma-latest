@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from typing import List, Optional
 from PIL import Image
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import text, func
 from app.database import SessionLocal
-from app.schemas.room import RoomCreate, RoomOut
+from app.schemas.room import RoomCreate, RoomOut, RoomPaginatedResponse, RoomBookingHistoryItem
 from app.curd import room as crud_room
 from app.models.room import Room, RoomImage
 from app.models.booking import Booking, BookingRoom
@@ -138,7 +138,7 @@ def delete_room_test(room_id: int, db: Session = Depends(get_db)):
     return delete_room(room_id, db)
 
 # Test GET endpoint for fetching rooms
-@router.get("/test", response_model=list[RoomOut])
+@router.get("/test", response_model=RoomPaginatedResponse)
 def get_rooms_test(db: Session = Depends(get_db), skip: int = 0, limit: int = 100):
     return get_rooms(db, skip, limit)
 
@@ -242,18 +242,19 @@ def _get_rooms_impl(db: Session, skip: int = 0, limit: int = 20):
             except Exception: pass
         
         # RoomImage is loaded via relationship
+        total = db.query(Room).count()
         rooms = db.query(Room).order_by(func.coalesce(Room.priority, 999999).asc()).offset(skip).limit(limit).all()
-        return rooms
+        return {"total": total, "items": rooms}
         
     except HTTPException: raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching rooms: {str(e)}")
 
-@router.get("", response_model=list[RoomOut])
+@router.get("", response_model=RoomPaginatedResponse)
 def get_rooms(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
     return _get_rooms_impl(db, skip, limit)
 
-@router.get("/", response_model=list[RoomOut])
+@router.get("/", response_model=RoomPaginatedResponse)
 def get_rooms_slash(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
     return _get_rooms_impl(db, skip, limit)
 
@@ -420,3 +421,95 @@ def update_room(
     db.refresh(db_room)
     return db_room
 
+
+# ---------------- BOOKING HISTORY ----------------
+@router.get("/{room_id}/bookings", response_model=List[RoomBookingHistoryItem])
+def get_room_bookings(room_id: int, db: Session = Depends(get_db)):
+    """
+    Get all bookings (regular and package) for a specific room.
+    """
+    from app.models.Package import PackageBooking, PackageBookingRoom
+    from app.schemas.room import RoomBookingHistoryItem
+    
+    # 1. Fetch Regular Bookings
+    regular_bookings = (
+        db.query(Booking)
+        .join(BookingRoom)
+        .filter(BookingRoom.room_id == room_id)
+        .options(joinedload(Booking.booking_rooms).joinedload(BookingRoom.room))
+        .all()
+    )
+    
+    # 2. Fetch Package Bookings
+    package_bookings = (
+        db.query(PackageBooking)
+        .join(PackageBookingRoom)
+        .filter(PackageBookingRoom.room_id == room_id)
+        .options(joinedload(PackageBooking.package))
+        .all()
+    )
+    
+    results = []
+    
+    # Process Regular Bookings
+    for b in regular_bookings:
+        # Calculate total if missing (legacy data support)
+        calculated_total = b.total_amount
+        if not calculated_total or calculated_total == 0:
+            stay_days = max(1, (b.check_out - b.check_in).days)
+            room_total = sum((br.room.price or 0) for br in b.booking_rooms if br.room)
+            calculated_total = room_total * stay_days
+
+        results.append(RoomBookingHistoryItem(
+            id=b.id,
+            display_id=f"BK-{str(b.id).zfill(6)}",
+            booking_type="booking",
+            guest_name=b.guest_name,
+            guest_email=b.guest_email,
+            guest_mobile=b.guest_mobile,
+            check_in=str(b.check_in),
+            check_out=str(b.check_out),
+            status=b.status,
+            adults=b.adults,
+            children=b.children,
+            total_amount=calculated_total,
+            package_name=None
+        ))
+        
+    # Process Package Bookings
+    for pb in package_bookings:
+        # Calculate approximate total per room for package (prorated)? 
+        # For simplicity, we'll show the full package price or a note. 
+        # Actually, let's just show 0 or the full package price, but usually room history 
+        # cares more about dates and guest info.
+        
+        # Calculate package total
+        pkg_price = pb.package.price if pb.package else 0
+        stay_days = max(1, (pb.check_out - pb.check_in).days)
+        # Total for the whole booking (all rooms)
+        # If we want per-room, we'd divide by num rooms, but let's just show total package cost for now
+        # or maybe we can't easily know per-room cost without more logic.
+        # Let's show the full booking total amount.
+        booking_total = pkg_price * stay_days 
+        # If multiple rooms, this total is for the whole package booking group. 
+        
+        results.append(RoomBookingHistoryItem(
+            id=pb.id,
+            display_id=f"PK-{str(pb.id).zfill(6)}",
+            booking_type="package",
+            guest_name=pb.guest_name,
+            guest_email=pb.guest_email,
+            guest_mobile=pb.guest_mobile,
+            check_in=str(pb.check_in),
+            check_out=str(pb.check_out),
+            status=pb.status,
+            adults=pb.adults,
+            children=pb.children,
+            total_amount=booking_total,
+            package_name=pb.package.title if pb.package else "Unknown Package"
+        ))
+    
+    # 3. Sort by check-in date descending
+    results.sort(key=lambda x: x.check_in, reverse=True)
+    
+    return results

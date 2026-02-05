@@ -61,11 +61,13 @@ export default function FoodOrders() {
           return { data: [] };
         }),
       ]);
+
+      // Handle rooms pagination
+      const roomsData = roomsRes.data?.items || (Array.isArray(roomsRes.data) ? roomsRes.data : []);
+
       if (ordersRes.data.items) {
         setOrders(ordersRes.data.items);
         setTotalOrders(ordersRes.data.total);
-        // Only show Load More if using load-more style, but we are doing explicit pages now
-        // setHasMore(ordersRes.data.items.length === 20); 
       } else {
         // Fallback
         setOrders(ordersRes.data);
@@ -78,13 +80,17 @@ export default function FoodOrders() {
       } else {
         setEmployees(Array.isArray(employeesRes.data) ? employeesRes.data : []);
       }
-      setFoodItems(foodItemsRes.data);
-      setAllRooms(roomsRes.data); // Save full list for historical display
+      if (foodItemsRes.data?.items) {
+        setFoodItems(Array.isArray(foodItemsRes.data.items) ? foodItemsRes.data.items : []);
+      } else {
+        setFoodItems(Array.isArray(foodItemsRes.data) ? foodItemsRes.data : []);
+      }
+      setAllRooms(roomsData); // Save full list for historical display
 
       // Filter rooms to only show checked-in rooms (similar to Services page)
-      const allRooms = roomsRes.data;
+      const allRooms = roomsData;
       const regularBookings = bookingsRes.data?.bookings || [];
-      const packageBookings = (packageBookingsRes.data || []).map(pb => ({ ...pb, is_package: true }));
+      const packageBookings = (packageBookingsRes.data?.items || packageBookingsRes.data || []).map(pb => ({ ...pb, is_package: true }));
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -229,6 +235,25 @@ export default function FoodOrders() {
 
   const handleItemChange = (index, field, value) => {
     const updated = [...selectedItems];
+
+    if (field === "food_item_id" && value) {
+      // Check if this item already exists in another row
+      const existingIndex = updated.findIndex((item, i) => i !== index && String(item.food_item_id) === String(value));
+
+      if (existingIndex !== -1) {
+        // Merge with existing item
+        // Default to adding 1 or add the current quantity if user somehow set it before selecting item
+        updated[existingIndex].quantity += parseInt(updated[index].quantity) || 1;
+
+        // Remove the current duplicate row
+        updated.splice(index, 1);
+
+        setSelectedItems(updated);
+        calculateAmount(updated);
+        return;
+      }
+    }
+
     updated[index][field] = field === "quantity" ? parseInt(value) : value;
     setSelectedItems(updated);
     calculateAmount(updated);
@@ -542,7 +567,7 @@ export default function FoodOrders() {
                 </div>
                 <div className="font-semibold text-lg mb-2">₹{order.amount}</div>
                 <ul className="list-disc ml-5 text-sm mb-2">
-                  {order.items.map((item, i) => (
+                  {(order.items || []).map((item, i) => (
                     <li key={i}>
                       {item.food_item_name} × {item.quantity}
                     </li>

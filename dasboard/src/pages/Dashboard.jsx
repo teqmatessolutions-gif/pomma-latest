@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useMemo, useState, useCallback, memo } from "react";
-import { formatCurrency } from '../utils/currency';
+import { formatCurrency, formatCompactNumber } from '../utils/currency';
 import API from "../services/api";
 import DashboardLayout from "../layout/DashboardLayout";
 import {
@@ -40,7 +40,10 @@ const Dashboard = () => {
       // Reduced limits for better performance (pagination handles the rest)
       const results = await Promise.allSettled([
         API.get("/bookings?limit=20").catch(err => ({ error: err, data: { bookings: [] } })),
-        API.get("/rooms?limit=20").catch(err => ({ error: err, data: [] })),
+        API.get("/rooms?limit=20").then(res => {
+          const roomsData = res.data.items || res.data || [];
+          return { data: roomsData };
+        }).catch(err => ({ error: err, data: [] })),
         API.get("/expenses?limit=20").catch(err => ({ error: err, data: [] })),
         API.get("/food-orders?limit=20").catch(err => ({ error: err, data: [] })),
         API.get("/services/assigned?limit=20").catch(err => ({ error: err, data: [] })),
@@ -189,6 +192,10 @@ const Dashboard = () => {
   // ... (rest of the useMemo and helper functions)
   const safeDate = useCallback((d) => (d ? new Date(d) : null), []);
   const fmtCurrency = useCallback((n, decimals = 0) => formatCurrency(Number(n || 0), true, decimals), []);
+  const fmtCompact = useCallback((n) => {
+    const val = Number(n || 0);
+    return val > 999 ? formatCompactNumber(val, true) : formatCurrency(val, true, 0);
+  }, []);
   const roomCounts = useMemo(() => {
     const total = allRooms.length; // Use allRooms for total count
     // Room statuses are: "Available", "Occupied", "Maintenance"
@@ -404,10 +411,10 @@ const Dashboard = () => {
 
         {/* KPI Cards */}
         <section className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 sm:gap-4">
-          <KPICard label="Total Revenue" value={fmtCurrency(revenue.total)} sub="All time" />
-          <KPICard label="Today Revenue" value={fmtCurrency(revenue.today)} sub="Today" />
-          <KPICard label="This Month Revenue" value={fmtCurrency(revenue.month)} sub="Month" />
-          <KPICard label="Total Expenses" value={fmtCurrency(expenseAgg.total)} sub="All time" />
+          <KPICard label="Total Revenue" value={fmtCompact(revenue.total)} sub="All time" />
+          <KPICard label="Today Revenue" value={fmtCompact(revenue.today)} sub="Today" />
+          <KPICard label="This Month Revenue" value={fmtCompact(revenue.month)} sub="Month" />
+          <KPICard label="Total Expenses" value={fmtCompact(expenseAgg.total)} sub="All time" />
           <KPICard label="Bookings (Active)" value={`${bookingCounts.active}`} sub={`Checked in: ${bookingCounts.checkedIn}`} />
           <KPICard label="Total Packages" value={packages.length} sub="All time" />
           <KPICard label="Rooms" value={`${roomCounts.occupied}/${roomCounts.total}`} sub="Occupied / Total" />

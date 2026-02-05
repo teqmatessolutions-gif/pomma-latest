@@ -28,10 +28,23 @@ const formatDateTimeIST = (dateString) => {
 
 // --- Helper Components ---
 
+import { formatCompactNumber } from "../utils/currency";
+
 const KpiCard = ({ title, value, icon, prefix = "", suffix = "", loading }) => {
   if (loading) {
     return <div className="bg-gray-200 h-24 rounded-2xl animate-pulse"></div>;
   }
+
+  // Use compact formatting for numbers > 999 to save space (e.g. 1500 -> 1.5k)
+  // We skip CountUp for these to ensure the suffix (L, Cr) is handled correctly
+  const shouldUseCompact = typeof value === 'number' && value > 999;
+  const displayValue = shouldUseCompact
+    ? formatCompactNumber(value, !!prefix) // If prefix exists (like ₹), pass true to showSymbol
+    : value;
+
+  // If using compact, we manually attach suffix if it's separate text (like " Available")
+  // If not compact, we use CountUp standard behavior
+
   return (
     <motion.div
       className="bg-white rounded-2xl shadow-lg p-5 flex items-center gap-4 hover:shadow-xl transition duration-300 transform hover:-translate-y-1"
@@ -42,7 +55,13 @@ const KpiCard = ({ title, value, icon, prefix = "", suffix = "", loading }) => {
       {icon}
       <div>
         <p className="text-gray-500 text-sm font-medium">{title}</p>
-        <CountUp end={value} prefix={prefix} suffix={suffix} duration={1.5} className="text-3xl font-bold text-gray-800" />
+        {shouldUseCompact ? (
+          <span className="text-3xl font-bold text-gray-800" title={typeof value === 'number' ? value.toLocaleString('en-IN') : value}>
+            {displayValue}{suffix}
+          </span>
+        ) : (
+          <CountUp end={value} prefix={prefix} suffix={suffix} duration={1.5} className="text-3xl font-bold text-gray-800" />
+        )}
       </div>
     </motion.div>
   );
@@ -201,7 +220,8 @@ export default function ReportsDashboard() {
 
         // Build room map for food orders display if only room_id is present
         const map = {};
-        (roomsRes.data || []).forEach(r => { map[r.id] = r.number; });
+        const roomsList = roomsRes.data?.items || (Array.isArray(roomsRes.data) ? roomsRes.data : []);
+        roomsList.forEach(r => { map[r.id] = r.number; });
         setRoomMap(map);
 
         // Use a single state update to prevent blinking

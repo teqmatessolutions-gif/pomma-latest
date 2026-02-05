@@ -765,6 +765,8 @@ const BackgroundAnimation = ({ theme }) => {
  */
 const formatUrl = (url) => {
     if (!url || typeof url !== 'string') return '#'; // Return a safe, non-navigating link if URL is missing
+    // Guard against placeholder images or filenames being treated as domains
+    if (url.includes('placehold_thumb') || url.startsWith('blob:')) return '#';
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
     return `https://${url}`;
 };
@@ -1321,7 +1323,7 @@ export default function App() {
 
             try {
                 // Essential data for layout
-                const roomsData = await safeFetch("/rooms/test", []);
+                const roomsData = await safeFetch("/rooms?limit=1000", []);
                 const bookingsData = await safeFetch("/bookings?limit=2000&skip=0", { bookings: [] });
                 const packageBookingsData = await safeFetch("/packages/bookingsall?limit=2000&skip=0", []);
                 const resortInfoData = await safeFetch("/frontend/resort-info/", []);
@@ -1353,12 +1355,12 @@ export default function App() {
                     safeFetch("/frontend/nearby-attraction-banners/", []),
                 ]);
 
-                setAllRooms(roomsData);
+                setAllRooms(roomsData.items || (Array.isArray(roomsData) ? roomsData : []));
                 // Don't set rooms here - only show after dates are selected
-                setBookings(bookingsData.bookings || []);
-                setPackageBookings(packageBookingsData || []);
+                setBookings(bookingsData.bookings || bookingsData.items || []);
+                setPackageBookings(Array.isArray(packageBookingsData) ? packageBookingsData : (packageBookingsData.items || []));
                 setServices(servicesData || []);
-                setFoodItems(foodItemsData);
+                setFoodItems(foodItemsData.items || foodItemsData || []);
                 setFoodCategories(foodCategoriesData || []);
                 setPackages(packagesData);
                 setResortInfo(resortInfoData.length > 0 ? resortInfoData[0] : null);
@@ -1632,7 +1634,7 @@ export default function App() {
 
         allRooms.forEach(room => {
             // Check conflicts with regular bookings
-            const hasRegularConflict = bookings.some(booking => {
+            const hasRegularConflict = Array.isArray(bookings) && bookings.some(booking => {
                 const normalizedStatus = booking.status?.toLowerCase().replace(/_/g, '-');
                 // Only check for "booked" or "checked-in" status
                 if (normalizedStatus !== "booked" && normalizedStatus !== "checked-in") return false;
@@ -1650,7 +1652,7 @@ export default function App() {
             });
 
             // Check conflicts with package bookings
-            const hasPackageConflict = packageBookings.some(packageBooking => {
+            const hasPackageConflict = Array.isArray(packageBookings) && packageBookings.some(packageBooking => {
                 const normalizedStatus = packageBooking.status?.toLowerCase().replace(/_/g, '-');
                 // Only check for "booked" or "checked-in" status
                 if (normalizedStatus !== "booked" && normalizedStatus !== "checked-in") return false;
@@ -1720,60 +1722,15 @@ export default function App() {
         }
         // For whole_property, roomsToCheck remains allRooms (no filtering)
 
-        // Check availability for each room
-        const requestedCheckIn = new Date(packageBookingData.check_in);
-        const requestedCheckOut = new Date(packageBookingData.check_out);
-
+        // Check availability for each room using the centralized function
         roomsToCheck.forEach(room => {
-            // Check conflicts with regular bookings
-            const hasRegularConflict = bookings.some(booking => {
-                const normalizedStatus = booking.status?.toLowerCase().replace(/_/g, '-');
-                // Only check for "booked" or "checked-in" status
-                if (normalizedStatus !== "booked" && normalizedStatus !== "checked-in") return false;
-
-                const bookingCheckIn = new Date(booking.check_in);
-                const bookingCheckOut = new Date(booking.check_out);
-
-                // Check if this room is part of the booking
-                const isRoomInBooking = booking.rooms && booking.rooms.some(r => {
-                    // For regular bookings, r.id is the room.id directly
-                    const roomId = r.room?.id || r.id;
-                    return roomId === room.id;
-                });
-                if (!isRoomInBooking) return false;
-
-                // Check for date overlap
-                return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
-            });
-
-            // Check conflicts with package bookings
-            const hasPackageConflict = packageBookings.some(packageBooking => {
-                const normalizedStatus = packageBooking.status?.toLowerCase().replace(/_/g, '-');
-                // Only check for "booked" or "checked-in" status
-                if (normalizedStatus !== "booked" && normalizedStatus !== "checked-in") return false;
-
-                const bookingCheckIn = new Date(packageBooking.check_in);
-                const bookingCheckOut = new Date(packageBooking.check_out);
-
-                // Check if this room is part of the package booking
-                const isRoomInBooking = packageBooking.rooms && packageBooking.rooms.some(r => {
-                    // For package bookings, r.id is PackageBookingRoom.id, not room.id
-                    // We need to use r.room_id (direct field) or r.room.id (nested object)
-                    const roomId = r.room_id || r.room?.id;
-                    return roomId === room.id;
-                });
-                if (!isRoomInBooking) return false;
-
-                // Check for date overlap
-                return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
-            });
-
-            // Room is available if there are no conflicting bookings (regular or package) for the selected dates
-            availability[room.id] = !hasRegularConflict && !hasPackageConflict;
+            // Reuse the robust checkRoomAvailability function
+            // This ensures consistency between regular bookings and package bookings
+            availability[room.id] = checkRoomAvailability(room, packageBookingData.check_in, packageBookingData.check_out);
         });
 
         return availability;
-    }, [packageBookingData.check_in, packageBookingData.check_out, packageBookingData.package_id, allRooms, bookings, packageBookings, isPackageBookingFormOpen, packages]);
+    }, [packageBookingData.check_in, packageBookingData.check_out, packageBookingData.package_id, allRooms, isPackageBookingFormOpen, packages, checkRoomAvailability]);
 
     // Update state with debouncing to prevent excessive re-renders
     // Also auto-select all available rooms for whole_property packages
@@ -2079,6 +2036,29 @@ export default function App() {
                 setIsBookingLoading(false);
                 return;
             }
+
+            // --- AVAILABILITY VALIDATION ---
+            // Verify that all selected rooms are actually available for the selected dates
+            if (packageBookingData.check_in && packageBookingData.check_out) {
+                const unavailableRooms = [];
+                finalRoomIds.forEach(roomId => {
+                    // Find the room object
+                    const room = rooms.find(r => String(r.id) === String(roomId));
+                    if (room) {
+                        const isAvailable = checkRoomAvailability(room, packageBookingData.check_in, packageBookingData.check_out);
+                        if (!isAvailable) {
+                            unavailableRooms.push(`Room ${room.number}`);
+                        }
+                    }
+                });
+
+                if (unavailableRooms.length > 0) {
+                    showBannerMessage("error", `The following rooms are no longer available for the selected dates: ${unavailableRooms.join(', ')}. Please select different rooms or dates.`);
+                    setIsBookingLoading(false);
+                    return;
+                }
+            }
+            // ---------------------------------
 
             if (!packageBookingData.check_in || !packageBookingData.check_out) {
                 showBannerMessage("error", "Please select check-in and check-out dates.");
@@ -3733,7 +3713,8 @@ export default function App() {
                                                     .filter(room => {
                                                         // Match Dashboard: Strict Status Filter
                                                         const normalizedStatus = (room.status || '').toLowerCase().trim();
-                                                        const unavailableStatuses = ['disabled', 'coming soon', 'maintenance', 'occupied', 'checked-in'];
+                                                        // "Occupied" and "Checked-in" should NOT be filtered out for future bookings
+                                                        const unavailableStatuses = ['disabled', 'coming soon', 'maintenance'];
                                                         if (unavailableStatuses.includes(normalizedStatus)) return false;
 
                                                         // Date Availability Filter
@@ -3749,7 +3730,8 @@ export default function App() {
                                                         .filter(room => {
                                                             // Match Dashboard: Strict Status Filter
                                                             const normalizedStatus = (room.status || '').toLowerCase().trim();
-                                                            const unavailableStatuses = ['disabled', 'coming soon', 'maintenance', 'occupied', 'checked-in'];
+                                                            // "Occupied" and "Checked-in" should NOT be filtered out for future bookings
+                                                            const unavailableStatuses = ['disabled', 'coming soon', 'maintenance'];
                                                             if (unavailableStatuses.includes(normalizedStatus)) return false;
 
                                                             // Date Availability Filter
@@ -4160,10 +4142,10 @@ export default function App() {
                                         <input type="number" name="children" value={packageBookingData.children} onChange={handlePackageBookingChange} min="0" required className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors`} />
                                     </div>
                                 </div>
+                                {isWholePropertyBlocked && <p className="text-red-500 text-xs text-center mb-2">Sorry, the whole property cannot be booked as some rooms are already occupied or unavailable for the selected dates.</p>}
                                 <button type="submit" className={`w-full py-3 rounded-full ${theme.buttonBg} ${theme.buttonText} font-bold shadow-lg ${theme.buttonHover} transition-colors disabled:opacity-50 ${isWholePropertyBlocked ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={isBookingLoading || isWholePropertyBlocked}>
                                     {isWholePropertyBlocked ? 'Property Unavailable (Some rooms occupied)' : (isBookingLoading ? 'Booking...' : 'Confirm Booking')}
                                 </button>
-                                {isWholePropertyBlocked && <p className="text-red-500 text-xs mt-2 text-center">Sorry, the whole property cannot be booked as some rooms are already occupied or unavailable for the selected dates.</p>}
                                 {bookingMessage.text && (
                                     <div className={`mt-4 p-3 rounded-xl text-center ${bookingMessage.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
                                         {bookingMessage.text}

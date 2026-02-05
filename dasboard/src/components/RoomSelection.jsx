@@ -86,6 +86,7 @@ const RoomSelection = React.memo(({ rooms, selectedRoomNumbers, onRoomToggle }) 
                                 </div>
 
                                 <button
+                                    type="button"
                                     className={`
                     w-full py-2 rounded-lg font-bold text-xs tracking-wider uppercase transition-all duration-200
                     ${isSelected

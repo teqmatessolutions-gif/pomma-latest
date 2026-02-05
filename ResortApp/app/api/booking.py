@@ -822,6 +822,37 @@ async def check_in_booking(
             # Update check-in date to today
             booking.check_in = today
 
+        # ---------------------------------------------------------
+        # CRITICAL FIX: Prevent check-in if room is currently occupied
+        # ---------------------------------------------------------
+        # Check if rooms are currently occupied by other checked-in guests (regular bookings)
+        room_ids = [br.room_id for br in booking.booking_rooms]
+        
+        occupied_regular = db.query(Booking).join(BookingRoom).filter(
+            BookingRoom.room_id.in_(room_ids),
+            Booking.status.in_(['checked-in', 'checked_in']),
+            Booking.id != booking_id
+        ).first()
+        
+        if occupied_regular:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Cannot check-in. Room is currently occupied by another guest (Booking {occupied_regular.id}). Please check them out first."
+            )
+            
+        # Check if rooms are currently occupied by other checked-in guests (package bookings)
+        occupied_package = db.query(PackageBooking).join(PackageBookingRoom).filter(
+            PackageBookingRoom.room_id.in_(room_ids),
+            PackageBooking.status.in_(['checked-in', 'checked_in'])
+        ).first()
+        
+        if occupied_package:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Cannot check-in. Room is currently occupied by another package guest (Booking {occupied_package.id}). Please check them out first."
+            )
+        # ---------------------------------------------------------
+
         # Require at least one of each if strictly enforcing check-in requirements
         if not all_id_cards:
             raise HTTPException(status_code=400, detail="At least one ID card image is required.")

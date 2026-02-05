@@ -12,6 +12,7 @@ class FoodOrderItem(BaseModel):
 
 class ServiceItem(BaseModel):
     service_name: str
+    quantity: int = 1
     charges: float
 
     class Config:

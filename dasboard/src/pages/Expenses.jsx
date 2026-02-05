@@ -5,6 +5,7 @@ import { LineChart, Line, Tooltip, ResponsiveContainer } from "recharts";
 import CountUp from "react-countup";
 import { useInfiniteScroll } from "./useInfiniteScroll";
 import { getMediaBaseUrl } from "../utils/env";
+import { formatCompactNumber } from "../utils/currency";
 
 const Expenses = () => {
   const [expenses, setExpenses] = useState([]);
@@ -161,7 +162,15 @@ const Expenses = () => {
             <div className="flex flex-col items-center">
               <span className="text-gray-500">{kpi.label}</span>
               <span className="text-2xl font-bold" style={{ color: kpi.color }}>
-                <CountUp end={kpi.value} duration={1.5} separator="," />
+                {kpi.value > 999 ? (
+                  <span title={kpi.value.toLocaleString('en-IN')}>
+                    {/* Prefix with ₹ for amount-related KPIs if needed, though label implies it */}
+                    {kpi.label.includes("Amount") || kpi.label.includes("Expense") ? "₹" : ""}
+                    {formatCompactNumber(kpi.value)}
+                  </span>
+                ) : (
+                  <CountUp end={kpi.value} duration={1.5} separator="," prefix={kpi.label.includes("Amount") || kpi.label.includes("Expense") ? "₹" : ""} />
+                )}
               </span>
             </div>
 

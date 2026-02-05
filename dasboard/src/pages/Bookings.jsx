@@ -485,6 +485,13 @@ const Bookings = () => {
   const [phoneError, setPhoneError] = useState("");
   const today = new Date().toISOString().split("T")[0];
 
+  // Helper to ensure check-out date is at least 1 day after check-in
+  const getNextDay = useCallback((dateString) => {
+    const baseDate = dateString ? new Date(dateString) : new Date();
+    baseDate.setDate(baseDate.getDate() + 1);
+    return baseDate.toISOString().split('T')[0];
+  }, []);
+
   const [packages, setPackages] = useState([]);
   const [packageBookingForm, setPackageBookingForm] = useState({
     package_id: "",
@@ -651,7 +658,7 @@ const Bookings = () => {
         API.get("/packages?limit=20", authHeader()),
       ]);
 
-      const allRooms = roomsRes.data;
+      const allRooms = roomsRes.data.items || (Array.isArray(roomsRes.data) ? roomsRes.data : []);
 
       // Handle Regular Bookings
       const initialBookings = bookingsRes.data.bookings || [];
@@ -722,7 +729,7 @@ const Bookings = () => {
 
       if (formData.checkIn && formData.checkOut) {
         // ... existing logic will run against paginated 'combinedBookings' later
-        pass;
+        // pass
       } else {
         availableRooms = allRooms.filter((r) => r.status === "Available");
       }
@@ -770,7 +777,8 @@ const Bookings = () => {
       const availableRooms = allRooms.filter(room => {
         // First check strict status availability
         const normalizedStatus = (room.status || '').toLowerCase().trim();
-        const unavailableStatuses = ['disabled', 'coming soon', 'maintenance', 'occupied', 'checked-in'];
+        // "Occupied" and "Checked-in" should NOT be filtered out for future bookings
+        const unavailableStatuses = ['disabled', 'coming soon', 'maintenance'];
         if (unavailableStatuses.includes(normalizedStatus)) return false;
 
         // Check if room has any conflicting bookings
@@ -813,7 +821,8 @@ const Bookings = () => {
       let availableRooms = allRooms.filter(room => {
         // First check strict status availability
         const normalizedStatus = (room.status || '').toLowerCase().trim();
-        const unavailableStatuses = ['disabled', 'coming soon', 'maintenance', 'occupied', 'checked-in'];
+        // "Occupied" and "Checked-in" should NOT be filtered out for future bookings
+        const unavailableStatuses = ['disabled', 'coming soon', 'maintenance'];
         if (unavailableStatuses.includes(normalizedStatus)) return false;
 
         // Check if room has any conflicting bookings
@@ -972,13 +981,19 @@ const Bookings = () => {
   }, [bookings, extractRoomNumber]);
 
   const filteredRooms = useMemo(() => {
+    if (formData.roomTypes[0] === "All Rooms") {
+      return rooms;
+    }
     return rooms.filter((r) => r.type === formData.roomTypes[0]);
   }, [rooms, formData.roomTypes]);
 
   const selectedRoomDetails = useMemo(() => {
-    return formData.roomNumbers.map(roomNumber =>
-      rooms.find(r => r.number === roomNumber && r.type === formData.roomTypes[0])
-    ).filter(room => room !== null);
+    return formData.roomNumbers.map(roomNumber => {
+      if (formData.roomTypes[0] === "All Rooms") {
+        return rooms.find(r => r.number === roomNumber);
+      }
+      return rooms.find(r => r.number === roomNumber && r.type === formData.roomTypes[0]);
+    }).filter(room => room !== null);
   }, [rooms, formData.roomNumbers, formData.roomTypes]);
 
   const totalGuests = useMemo(() => {
@@ -1106,8 +1121,8 @@ const Bookings = () => {
       // Skip capacity validation for whole_property packages (they book entire property regardless of guest count)
       if (!isWholeProperty) {
         const selectedPackageRooms = finalRoomIds
-          .map(id => rooms.find(r => r.id === id))
-          .filter(room => room !== null);
+          .map(id => allRooms.find(r => r.id === id))
+          .filter(room => room);
 
         const packageCapacity = {
           adults: selectedPackageRooms.reduce((sum, room) => sum + (room.adults || 0), 0),
@@ -1194,12 +1209,13 @@ const Bookings = () => {
     const bookingId = generateBookingId(booking);
     const rooms = booking.rooms && booking.rooms.length > 0
       ? booking.rooms.map(r => {
-        if (booking.is_package) {
-          return r.room ? `Room ${r.room.number} (${r.room.type})` : '-';
-        } else {
-          return `Room ${r.number} (${r.type})`;
+        // Robust extraction: handle both nested (package API) and flat (details API) structures
+        const roomObj = r.room || r;
+        if (roomObj && roomObj.number) {
+          return `Room ${roomObj.number}${roomObj.type ? ` (${roomObj.type})` : ''}`;
         }
-      }).filter(Boolean).join(", ")
+        return '-';
+      }).filter(r => r !== '-').join(", ")
       : "N/A";
 
     const subject = encodeURIComponent(`Booking Confirmation - ${bookingId}`);
@@ -1231,12 +1247,13 @@ const Bookings = () => {
 
     const rooms = booking.rooms && booking.rooms.length > 0
       ? booking.rooms.map(r => {
-        if (booking.is_package) {
-          return r.room ? `Room ${r.room.number} (${r.room.type})` : '-';
-        } else {
-          return `Room ${r.number} (${r.type})`;
+        // Robust extraction: handle both nested (package API) and flat (details API) structures
+        const roomObj = r.room || r;
+        if (roomObj && roomObj.number) {
+          return `Room ${roomObj.number}${roomObj.type ? ` (${roomObj.type})` : ''}`;
         }
-      }).filter(Boolean).join(", ")
+        return '-';
+      }).filter(r => r !== '-').join(", ")
       : "N/A";
 
     const message = encodeURIComponent(
@@ -2009,16 +2026,20 @@ const Bookings = () => {
                       </td>
                       <td className="p-2 sm:p-4 text-xs sm:text-sm">
                         {b.rooms && b.rooms.length > 0 ? (
-                          b.rooms.map(room => {
-                            // Handle package bookings (nested room structure) vs regular bookings
-                            if (b.is_package) {
-                              // Package bookings: room has nested room object
-                              return room.room ? `${room.room.number}${room.room.type ? ` (${room.room.type})` : ''}` : '-';
-                            } else {
-                              // Regular bookings: room has number and type directly
-                              return `${room.number}${room.type ? ` (${room.type})` : ''}`;
+                          b.rooms.map((roomItem, idx) => {
+                            // Robust extraction: handle both nested (package API) and flat (details API) structures
+                            // This works regardless of 'is_package' flag or API source
+                            const roomObj = roomItem.room || roomItem;
+
+                            if (roomObj && roomObj.number) {
+                              return (
+                                <span key={idx} className="block">
+                                  {roomObj.number}{roomObj.type ? ` (${roomObj.type})` : ''}{idx < b.rooms.length - 1 ? ', ' : ''}
+                                </span>
+                              );
                             }
-                          }).filter(Boolean).join(", ") || '-'
+                            return null;
+                          })
                         ) : "-"}
                       </td>
                       <td className="p-2 sm:p-4 text-gray-800 text-xs hidden lg:table-cell">{b.check_in}</td>
@@ -2311,7 +2332,7 @@ const Bookings = () => {
               <label className="text-sm font-medium text-gray-700 mb-1">Check-out Date</label>
               <input
                 type="date" name="checkOut" value={formData.checkOut}
-                onChange={handleChange} min={formData.checkIn || today}
+                onChange={handleChange} min={getNextDay(formData.checkIn)}
                 className="w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500"
                 required
               />
@@ -2326,6 +2347,7 @@ const Bookings = () => {
                 required
               >
                 <option value="">Select Room Type</option>
+                <option value="All Rooms">All Rooms</option>
                 {roomTypes.map((type, idx) => (
                   <option key={idx} value={type}>{type}</option>
                 ))}
@@ -2447,7 +2469,7 @@ const Bookings = () => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <input type="date" name="check_in" value={packageBookingForm.check_in} min={today} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
-              <input type="date" name="check_out" value={packageBookingForm.check_out} min={packageBookingForm.check_in || today} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
+              <input type="date" name="check_out" value={packageBookingForm.check_out} min={getNextDay(packageBookingForm.check_in)} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <input type="number" name="adults" min={1} placeholder="Adults" value={packageBookingForm.adults} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />

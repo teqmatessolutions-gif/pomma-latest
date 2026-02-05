@@ -425,6 +425,32 @@ const FoodManagement = () => {
               <p className="text-center text-gray-500 mt-4 col-span-full">No food items match the current filters.</p>
             )}
           </div>
+          {/* Pagination Controls */}
+          {totalItems > itemsPerPage && (
+            <div className="flex justify-center items-center mt-8 space-x-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className={`px-4 py-2 rounded-lg ${currentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'} transition-colors duration-200`}
+                type="button"
+              >
+                Previous
+              </button>
+
+              <span className="text-gray-600 font-medium px-4">
+                Page {currentPage} of {Math.ceil(totalItems / itemsPerPage)}
+              </span>
+
+              <button
+                onClick={() => setCurrentPage(prev => (prev * itemsPerPage < totalItems ? prev + 1 : prev))}
+                disabled={currentPage * itemsPerPage >= totalItems}
+                className={`px-4 py-2 rounded-lg ${currentPage * itemsPerPage >= totalItems ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'} transition-colors duration-200`}
+                type="button"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
 
 
@@ -480,11 +506,9 @@ const FoodManagement = () => {
                   className="bg-gray-50 rounded-2xl shadow-md p-4 flex flex-col items-center hover:shadow-lg transition-all"
                   whileHover={{ y: -5 }}
                 >
-                  <img
-                    src={getImageUrl(cat.image ? `static/food_categories/${cat.image}` : "")}
-                    alt={cat.name}
-                    className="w-24 h-24 object-cover rounded-full mb-3 border-4 border-white shadow-lg"
-                  />
+                  <div className="w-full text-center mt-2">
+                    {/* Image removed as per request */}
+                  </div>
                   <p className="font-bold text-lg text-gray-800 mb-3">{cat.name}</p>
 
                   <div className="flex gap-3 mt-auto">
@@ -634,30 +658,7 @@ const FoodManagement = () => {
             >
               {editingItemId ? "Update Item" : "Create Item"}
             </button>
-            {/* Pagination Controls */}
-            {totalItems > itemsPerPage && (
-              <div className="flex justify-center items-center mt-8 space-x-2">
-                <button
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className={`px-4 py-2 rounded-lg ${currentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'} transition-colors duration-200`}
-                >
-                  Previous
-                </button>
 
-                <span className="text-gray-600 font-medium px-4">
-                  Page {currentPage} of {Math.ceil(totalItems / itemsPerPage)}
-                </span>
-
-                <button
-                  onClick={() => setCurrentPage(prev => (prev * itemsPerPage < totalItems ? prev + 1 : prev))}
-                  disabled={currentPage * itemsPerPage >= totalItems}
-                  className={`px-4 py-2 rounded-lg ${currentPage * itemsPerPage >= totalItems ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'} transition-colors duration-200`}
-                >
-                  Next
-                </button>
-              </div>
-            )}
           </div>
         </form>
       </Modal >

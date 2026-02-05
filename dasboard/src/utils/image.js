@@ -24,5 +24,11 @@ export const getImageUrl = (imageUrl, thumbnail = false) => {
 
     const baseUrl = getMediaBaseUrl();
     const normalized = path.startsWith('/') ? path : `/${path}`;
-    return `${baseUrl}${normalized}`;
+    try {
+        const urlObj = new URL(normalized, baseUrl);
+        return urlObj.href;
+    } catch (e) {
+        console.error("URL generation error:", e);
+        return `${baseUrl}${encodeURI(normalized)}`; // Fallback
+    }
 };

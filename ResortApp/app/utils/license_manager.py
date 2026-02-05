@@ -24,38 +24,87 @@ WARNING_THRESHOLD_DAYS = 10
 # We store ONLY the hash so the plain key is not visible in the code.
 MASTER_ACTIVATION_HASH = "9e1c4d9cd46bc37c2f8399f6d3f5b81bc0abe73224f393afbcdbb4e5dacad609"
 
+
 def get_license_status():
     """
     Checks the license state.
-    DISABLED FOR DEMO: Always returns ACTIVE.
     """
-    return {
-        "status": "ACTIVE",
-        "days_remaining": 365,
-        "expiry_date": "2025-12-31",
-        "message": "Demo Mode: License Active"
-    }
+    if not os.path.exists(LICENSE_FILE_PATH):
+        return {
+            "status": "MISSING_LICENSE",
+            "days_remaining": 0,
+            "expiry_date": None,
+            "message": "System not activated. Please contact support."
+        }
 
-    # ORIGINAL LOGIC DISABLED
-    # if not os.path.exists(LICENSE_FILE_PATH):
-    #     return {
-    #         "status": "MISSING_LICENSE",
-    # ...
+    try:
+        with open(LICENSE_FILE_PATH, 'r') as f:
+            data = json.load(f)
+        
+        expiry_str = data.get("expiry_date")
+        if not expiry_str:
+             return _invalid_license("Corrupt license file")
+
+        # Try parsing as datetime (ISO) first, fallback to date for backward compatibility
+        try:
+            expiry = datetime.fromisoformat(expiry_str)
+        except ValueError:
+            # Fallback for old YYYY-MM-DD format
+            expiry_date = datetime.strptime(expiry_str, "%Y-%m-%d").date()
+            expiry = datetime.combine(expiry_date, datetime.min.time()) + timedelta(days=1) # End of that day basically
+
+        now = datetime.now()
+        remaining = expiry - now
+        days_remaining = remaining.days
+        seconds_remaining = remaining.total_seconds()
+
+        if seconds_remaining < 0:
+            return {
+                "status": "EXPIRED",
+                "days_remaining": 0,
+                "expiry_date": expiry_str,
+                "message": "License expired. Please renew."
+            }
+        
+        # Warning threshold (e.g., 10 days)
+        status = "ACTIVE"
+        msg = "License Active"
+        
+        # Display minutes if less than a day
+        if days_remaining < 1:
+             minutes_left = int(seconds_remaining / 60)
+             msg = f"License expires in {minutes_left} minutes"
+             if minutes_left < 60:
+                 status = "WARNING"
+        elif days_remaining <= WARNING_THRESHOLD_DAYS:
+             status = "WARNING"
+             msg = f"License expires in {days_remaining} days"
+
+        return {
+            "status": status,
+            "days_remaining": days_remaining,
+            "expiry_date": expiry_str,
+            "message": msg
+        }
+    except Exception as e:
+        logger.error(f"License check error: {e}")
+        return _invalid_license(f"License error: {str(e)}")
 
 def activate_license(key):
     """
-    Activates or renews the license for 90 days.
-    Input: Plain text key (entered by user)
-    Comparison: Hashed input vs Stored Hash
+    Activates or renews the license.
+    FOR TESTING: Sets expiry to 10 minutes from now.
     """
     input_hash = hashlib.sha256(key.encode()).hexdigest()
     
     if input_hash != MASTER_ACTIVATION_HASH:
         return False, "Invalid activation key"
     
-    # Set/extend expiry
-    new_expiry = datetime.now().date() + timedelta(days=ACTIVATION_PERIOD_DAYS)
-    new_expiry_str = new_expiry.strftime("%Y-%m-%d")
+    # FOR TESTING: Set expiry to 10 minutes from now
+    new_expiry = datetime.now() + timedelta(minutes=10)
+    # new_expiry = datetime.now().date() + timedelta(days=ACTIVATION_PERIOD_DAYS) # Original logic
+    
+    new_expiry_str = new_expiry.isoformat()
     
     payload = {
         "expiry_date": new_expiry_str,
@@ -66,7 +115,7 @@ def activate_license(key):
     try:
         with open(LICENSE_FILE_PATH, 'w') as f:
             json.dump(payload, f, indent=4)
-        return True, f"Activation successful. Valid until {new_expiry_str}"
+        return True, f"Activation successful. Valid until {new_expiry.strftime('%Y-%m-%d %H:%M:%S')}"
     except Exception as e:
         return False, f"Failed to write license file: {str(e)}"
 

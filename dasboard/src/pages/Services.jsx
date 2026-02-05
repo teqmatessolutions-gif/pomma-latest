@@ -81,7 +81,8 @@ const Services = () => {
         setTotalAssigned(aRes.data.length);
       }
       setHasMore(false); // Using explicit pagination controls instead of load more
-      setAllRooms(rRes.data);
+      const roomsData = rRes.data?.items || (Array.isArray(rRes.data) ? rRes.data : []);
+      setAllRooms(roomsData);
       // Handle both paginated and non-paginated employee responses
       if (eRes.data?.items) {
         setEmployees(Array.isArray(eRes.data.items) ? eRes.data.items : []);
@@ -91,7 +92,7 @@ const Services = () => {
 
       // Combine regular and package bookings
       const regularBookings = bRes.data?.bookings || [];
-      const packageBookings = (pbRes.data || []).map(pb => ({ ...pb, is_package: true }));
+      const packageBookings = (pbRes.data?.items || pbRes.data || []).map(pb => ({ ...pb, is_package: true }));
       setBookings([...regularBookings, ...packageBookings]);
 
       // Filter rooms to only show checked-in rooms
@@ -182,7 +183,7 @@ const Services = () => {
       });
 
       // Also check room status directly as a fallback (in case booking status is not set correctly)
-      rRes.data.forEach(room => {
+      roomsData.forEach(room => {
         const roomStatusNormalized = normalizeStatus(room.status);
         if (roomStatusNormalized === 'checkedin') {
           checkedInRoomIds.add(room.id);
@@ -193,7 +194,7 @@ const Services = () => {
       console.log(`Total checked-in room IDs: ${checkedInRoomIds.size}`, Array.from(checkedInRoomIds));
 
       // Filter rooms to only show checked-in rooms
-      const checkedInRooms = rRes.data.filter(room => checkedInRoomIds.has(room.id));
+      const checkedInRooms = roomsData.filter(room => checkedInRoomIds.has(room.id));
       console.log(`Filtered checked-in rooms: ${checkedInRooms.length}`, checkedInRooms.map(r => `${r.number} (status: ${r.status})`));
       setRooms(checkedInRooms);
     } catch (error) {

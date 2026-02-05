@@ -645,8 +645,37 @@ def _calculate_bill_for_single_room(db: Session, room_number: str):
     charges.food_charges = sum(item.quantity * item.food_item.price for item in unbilled_food_order_items if item.food_item)
     charges.service_charges = sum(ass.service.charges for ass in unbilled_services)
     
-    charges.food_items = [{"item_name": item.food_item.name, "quantity": item.quantity, "amount": item.quantity * item.food_item.price} for item in unbilled_food_order_items if item.food_item]
-    charges.service_items = [{"service_name": ass.service.name, "charges": ass.service.charges} for ass in unbilled_services]
+    # Aggregate food items
+    food_aggregation = {}
+    for item in unbilled_food_order_items:
+        if not item.food_item: continue
+        name = item.food_item.name
+        if name in food_aggregation:
+            food_aggregation[name]['quantity'] += item.quantity
+            food_aggregation[name]['amount'] += item.quantity * item.food_item.price
+        else:
+            food_aggregation[name] = {
+                "item_name": name,
+                "quantity": item.quantity,
+                "amount": item.quantity * item.food_item.price
+            }
+    charges.food_items = list(food_aggregation.values())
+
+    # Aggregate service items
+    service_aggregation = {}
+    for ass in unbilled_services:
+        if not ass.service: continue
+        name = ass.service.name
+        if name in service_aggregation:
+            service_aggregation[name]['charges'] += ass.service.charges
+            service_aggregation[name]['quantity'] += 1
+        else:
+            service_aggregation[name] = {
+                "service_name": name,
+                "quantity": 1,
+                "charges": ass.service.charges
+            }
+    charges.service_items = list(service_aggregation.values())
     
     # Calculate GST
     # Room charges: 5% GST if <= 7500, 18% GST if > 7500
@@ -828,8 +857,37 @@ def _calculate_bill_for_entire_booking(db: Session, room_number: str):
     charges.service_charges = sum(ass.service.charges for ass in unbilled_services)
 
     # Populate detailed item lists for the bill summary
-    charges.food_items = [{"item_name": item.food_item.name, "quantity": item.quantity, "amount": item.quantity * item.food_item.price} for item in unbilled_food_order_items if item.food_item]
-    charges.service_items = [{"service_name": ass.service.name, "charges": ass.service.charges} for ass in unbilled_services]
+    # Aggregate food items
+    food_aggregation = {}
+    for item in unbilled_food_order_items:
+        if not item.food_item: continue
+        name = item.food_item.name
+        if name in food_aggregation:
+            food_aggregation[name]['quantity'] += item.quantity
+            food_aggregation[name]['amount'] += item.quantity * item.food_item.price
+        else:
+            food_aggregation[name] = {
+                "item_name": name,
+                "quantity": item.quantity,
+                "amount": item.quantity * item.food_item.price
+            }
+    charges.food_items = list(food_aggregation.values())
+
+    # Aggregate service items
+    service_aggregation = {}
+    for ass in unbilled_services:
+        if not ass.service: continue
+        name = ass.service.name
+        if name in service_aggregation:
+            service_aggregation[name]['charges'] += ass.service.charges
+            service_aggregation[name]['quantity'] += 1
+        else:
+            service_aggregation[name] = {
+                "service_name": name,
+                "quantity": 1,
+                "charges": ass.service.charges
+            }
+    charges.service_items = list(service_aggregation.values())
 
     # Calculate GST
     # Room charges: 5% GST if <= 7500, 18% GST if > 7500

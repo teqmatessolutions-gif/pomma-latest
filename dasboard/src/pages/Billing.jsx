@@ -268,15 +268,17 @@ const CheckoutDetailModal = React.memo(({ checkout, onClose }) => {
             )}
 
             {/* SERVICE CHARGES SECTION */}
-            {details.services && details.services.length > 0 && (
+            {details.charges?.service_items && details.charges.service_items.length > 0 && (
               <div className="border-t pt-4">
                 <h3 className="text-lg font-semibold mb-3 text-indigo-700">Services</h3>
                 <div className="space-y-2">
-                  {details.services.map((service, idx) => (
+                  {details.charges.service_items.map((service, idx) => (
                     <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
                       <div>
-                        <p className="font-medium">{service.service_name}</p>
-                        <p className="text-xs text-gray-500">Room: {service.room_number} | {new Date(service.created_at).toLocaleString()}</p>
+                        <p className="font-medium">
+                          {service.service_name}
+                          {service.quantity > 1 && <span className="text-sm text-gray-600"> (x{service.quantity})</span>}
+                        </p>
                       </div>
                       <span className="font-semibold">{formatCurrency(service.charges)}</span>
                     </div>
@@ -691,8 +693,8 @@ const Billing = () => {
       setInvoiceId(checkoutId);
       await new Promise(resolve => setTimeout(resolve, 150));
 
-      // Generate PDF blob immediately
-      const pdfBlob = await generatePDF('blob');
+      // Generate PDF blob immediately with the new checkout ID
+      const pdfBlob = await generatePDF('blob', checkoutId);
       if (pdfBlob) {
         const formData = new FormData();
         // The filename on server is generated, but we pass a name here for the form
@@ -754,71 +756,191 @@ const Billing = () => {
     showBannerMessage("success", "Bill cancelled. You can select another room.");
   };
 
-  const generatePDF = async (action = 'print') => {
+  const generatePDF = async (action = 'print', specificInvoiceId = null) => {
     if (!billData) return;
 
-    // Use the actual bill-details container
-    const input = document.getElementById('bill-details');
-    if (!input) {
-      console.error("Statement element not found");
-      showBannerMessage("error", "Could not find bill details to generate PDF.");
-      return;
-    }
-
     try {
-      // Create canvas from the HTML element
-      const canvas = await html2canvas(input, {
-        scale: 2, // Higher scale for better resolution
-        useCORS: true, // Allow loading cross-origin images (like logo)
-        logging: false,
-        backgroundColor: '#ffffff' // Ensure white background
+      const doc = new jsPDF();
+
+      // --- HEADER ---
+      doc.setFontSize(22);
+      doc.setTextColor(40, 40, 40);
+      doc.setFont("helvetica", "bold");
+      const resortName = resortInfo?.name || 'Pomma Resort';
+      doc.text(resortName, 105, 20, { align: "center" });
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      const address = resortInfo?.address || resortInfo?.property_location || 'Munnar, Kerala';
+      const email = resortInfo?.support_email || resortInfo?.email || 'contact@pommaholidays.com';
+      doc.text(address, 105, 26, { align: "center" });
+      doc.text(email, 105, 31, { align: "center" });
+
+      if (resortInfo?.gst_no) {
+        doc.setFont("helvetica", "bold");
+        doc.text(`GST No: ${resortInfo.gst_no}`, 105, 36, { align: "center" });
+      }
+
+      doc.line(10, 40, 200, 40); // Horizontal line
+
+      // --- INVOICE DETAILS ---
+      const detailsBody = [
+        ['Invoice No', specificInvoiceId || invoiceId || 'Pending'],
+        ['Guest Name', billData.guest_name],
+        ['Rooms', `${billData.room_numbers.join(', ')} (${billData.room_numbers.length})`],
+        ['Check-in', new Date(billData.check_in).toLocaleDateString()],
+        ['Check-out', new Date(billData.check_out).toLocaleDateString()],
+        ['Stay Duration', `${billData.stay_nights} nights`],
+      ];
+      if (billData.number_of_guests) detailsBody.push(['Guests', billData.number_of_guests]);
+
+      doc.autoTable({
+        startY: 45,
+        body: detailsBody,
+        theme: 'plain',
+        styles: { fontSize: 10, cellPadding: 1.5, overflow: 'linebreak' },
+        columnStyles: { 0: { fontStyle: 'bold', width: 40 } }
       });
 
-      const imgData = canvas.toDataURL('image/png');
+      let finalY = doc.lastAutoTable.finalY + 10;
 
-      // Calculate dimensions to fit A4 page
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-      });
+      //Helper to add title
+      const addSectionTitle = (text, y) => {
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(79, 70, 229); // Indigo
+        doc.text(text, 14, y);
+        return y + 4;
+      };
 
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
+      // --- 1. ROOM CHARGES ---
+      if (billData.charges.room_charges > 0 || billData.charges.package_charges > 0) {
+        finalY = addSectionTitle("Room Charges", finalY);
 
-      // Calculate the height of the image when scaled to fit the PDF width
-      const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-      // If the image fits on one page, add it directly
-      if (imgHeight <= pdfHeight) {
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight);
-      } else {
-        // Image is taller than one page - split across multiple pages
-        let heightLeft = imgHeight;
-        let position = 0;
-
-        // Add first page
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-        heightLeft -= pdfHeight;
-
-        // Add additional pages as needed
-        while (heightLeft > 0) {
-          position = heightLeft - imgHeight; // Negative value to shift image up
-          pdf.addPage();
-          pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-          heightLeft -= pdfHeight;
+        const roomBody = [];
+        if (billData.charges.room_charges > 0) {
+          roomBody.push([`Room Rent (${billData.stay_nights} nights)`, formatCurrency(billData.charges.room_charges)]);
         }
+        if (billData.charges.package_charges > 0) {
+          roomBody.push([`Package Charges (${billData.stay_nights} nights)`, formatCurrency(billData.charges.package_charges, false)]);
+        }
+        // GST
+        const roomGST = (billData.charges.room_cgst || 0) + (billData.charges.package_cgst || 0) + (billData.charges.room_sgst || 0) + (billData.charges.package_sgst || 0);
+        if (roomGST > 0) {
+          roomBody.push(['Tax (CGST + SGST)', formatCurrency(roomGST, false)]);
+        }
+        // Section Total
+        const roomTotal = (billData.charges.room_charges || 0) + (billData.charges.package_charges || 0) + roomGST;
+        roomBody.push([{ content: 'Section Total', styles: { fontStyle: 'bold' } }, { content: formatCurrency(roomTotal, false), styles: { fontStyle: 'bold' } }]);
+
+        doc.autoTable({
+          startY: finalY,
+          head: [['Description', 'Amount']],
+          body: roomBody,
+          theme: 'striped',
+          headStyles: { fillColor: [79, 70, 229] },
+          styles: { fontSize: 10 }
+        });
+        finalY = doc.lastAutoTable.finalY + 10;
       }
 
-      if (action === 'blob') {
-        return pdf.output('blob');
-      } else if (action === 'download') {
-        pdf.save(`Invoice_${billData.guest_name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
-      } else { // Default to print
-        pdf.autoPrint();
-        window.open(pdf.output('bloburl'), '_blank');
+      // --- 2. FOOD CHARGES ---
+      if (billData.charges.food_items.length > 0) {
+        finalY = addSectionTitle("Food & Beverage", finalY);
+
+        const foodBody = billData.charges.food_items.map(item => [
+          `${item.item_name} (x${item.quantity})`,
+          formatCurrency(item.amount, false)
+        ]);
+
+        // Subtotal
+        foodBody.push([{ content: 'Subtotal', styles: { fontStyle: 'italic' } }, { content: formatCurrency(billData.charges.food_charges, false), styles: { fontStyle: 'italic' } }]);
+
+        // Taxes
+        const foodGST = (billData.charges.food_cgst || 0) + (billData.charges.food_sgst || 0);
+        if (foodGST > 0) {
+          foodBody.push(['Tax (CGST + SGST)', formatCurrency(foodGST, false)]);
+        }
+
+        // Section Total
+        const foodTotal = (billData.charges.food_charges || 0) + (billData.charges.food_gst || 0);
+        foodBody.push([{ content: 'Section Total', styles: { fontStyle: 'bold' } }, { content: formatCurrency(foodTotal, false), styles: { fontStyle: 'bold' } }]);
+
+        doc.autoTable({
+          startY: finalY,
+          head: [['Item', 'Amount']],
+          body: foodBody,
+          theme: 'striped',
+          headStyles: { fillColor: [79, 70, 229] },
+          styles: { fontSize: 10 }
+        });
+        finalY = doc.lastAutoTable.finalY + 10;
       }
+
+      // --- 3. SERVICE CHARGES ---
+      if (billData.charges.service_items.length > 0) {
+        finalY = addSectionTitle("Services", finalY);
+
+        const serviceBody = billData.charges.service_items.map(item => [
+          `${item.service_name}${item.quantity > 1 ? ` (x${item.quantity})` : ''}`,
+          formatCurrency(item.charges, false)
+        ]);
+
+        // Subtotal
+        serviceBody.push([{ content: 'Subtotal', styles: { fontStyle: 'italic' } }, { content: formatCurrency(billData.charges.service_charges, false), styles: { fontStyle: 'italic' } }]);
+
+        // Taxes
+        const serviceGST = (billData.charges.service_cgst || 0) + (billData.charges.service_sgst || 0);
+        if (serviceGST > 0) {
+          serviceBody.push(['Tax (CGST + SGST)', formatCurrency(serviceGST, false)]);
+        }
+
+        // Section Total
+        const serviceTotal = (billData.charges.service_charges || 0) + (billData.charges.service_gst || 0);
+        serviceBody.push([{ content: 'Section Total', styles: { fontStyle: 'bold' } }, { content: formatCurrency(serviceTotal, false), styles: { fontStyle: 'bold' } }]);
+
+        doc.autoTable({
+          startY: finalY,
+          head: [['Service', 'Amount']],
+          body: serviceBody,
+          theme: 'striped',
+          headStyles: { fillColor: [79, 70, 229] },
+          styles: { fontSize: 10 }
+        });
+        finalY = doc.lastAutoTable.finalY + 10;
+      }
+
+      // --- SUMMARY ---
+      // Check if we need a new page for summary
+      if (finalY > 230) {
+        doc.addPage();
+        finalY = 20;
+      }
+
+      const grandTotal = Math.max(0, billData.charges.total_due + (billData.charges.total_gst || 0) - discount);
+      doc.autoTable({
+        startY: finalY,
+        body: [
+          ['Total Charges (Excl. Tax)', formatCurrency(billData.charges.total_due, false)],
+          ['Total Tax (CGST + SGST)', `+${formatCurrency(billData.charges.total_gst || 0, false)}`],
+          discount > 0 ? ['Discount', `-${formatCurrency(parseFloat(discount), false)}`] : null,
+          ['Grand Total', { content: formatCurrency(grandTotal, false), styles: { fontSize: 14, fontStyle: 'bold', textColor: [79, 70, 229] } }]
+        ].filter(Boolean),
+        theme: 'plain',
+        styles: { fontSize: 12, cellPadding: 2, halign: 'right' },
+        columnStyles: { 0: { fontStyle: 'bold' } }
+      });
+
+      // --- OUTPUT ---
+      if (action === 'blob') {
+        return doc.output('blob');
+      } else if (action === 'download') {
+        doc.save(`Invoice_${billData.guest_name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+      } else { // Default to print
+        doc.autoPrint();
+        window.open(doc.output('bloburl'), '_blank');
+      }
+
     } catch (err) {
       console.error("Error generating PDF:", err);
       showBannerMessage("error", "Failed to generate PDF invoice.");
@@ -877,7 +999,7 @@ const Billing = () => {
     if (billData.charges.service_items.length > 0) {
       text += `${bold('SERVICES')}\n`;
       billData.charges.service_items.forEach(item => {
-        text += `- ${item.service_name}: ${formatCurrency(item.charges)}\n`;
+        text += `- ${item.service_name}${item.quantity > 1 ? ` (x${item.quantity})` : ''}: ${formatCurrency(item.charges)}\n`;
       });
       text += `Subtotal: ${formatCurrency(billData.charges.service_charges)}\n`;
       if (billData.charges.service_gst > 0) {
@@ -1193,7 +1315,7 @@ const Billing = () => {
                       <ul className="space-y-1 text-sm text-gray-800">
                         {billData.charges.service_items.map((item, i) => (
                           <li key={i} className="flex justify-between">
-                            <span>{item.service_name}</span>
+                            <span>{item.service_name}{item.quantity > 1 && ` (x${item.quantity})`}</span>
                             <span>{formatCurrency(item.charges)}</span>
                           </li>
                         ))}

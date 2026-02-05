@@ -52,3 +52,24 @@ def generate_thumbnails_for_dirs(directories):
             logger.error(f"Error scanning directory {directory}: {dir_error}")
 
     logger.info(f"Thumbnail check complete. Generated {count} new thumbnails.")
+
+def generate_thumbnail(filepath):
+    """
+    Generates a thumbnail for a single image file.
+    """
+    try:
+        base_name, _ = os.path.splitext(os.path.basename(filepath))
+        directory = os.path.dirname(filepath)
+        thumb_filename = f"{base_name}_thumb.jpg"
+        thumb_path = os.path.join(directory, thumb_filename)
+
+        with Image.open(filepath) as img:
+            img.thumbnail((200, 200), Image.Resampling.BICUBIC)
+            if img.mode in ("RGBA", "P"):
+                img = img.convert("RGB")
+            img.save(thumb_path, "JPEG", quality=60)
+            logger.info(f"Created thumb: {thumb_filename}")
+            return thumb_path
+    except Exception as e:
+        logger.error(f"Error creating thumbnail for {filepath}: {e}")
+        raise

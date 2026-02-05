@@ -200,7 +200,7 @@ const Packages = () => {
         api.get(`/packages/bookingsall?skip=${bookingSkip}&limit=${bookingsLimit}`),
         api.get("/bookings?limit=20") // Fetch regular bookings
       ]);
-      const allRoomsData = roomRes.data || [];
+      const allRoomsData = roomRes.data?.items || roomRes.data || [];
       setPackages(packageRes.data || []);
       setAllRooms(allRoomsData);
       setRooms(allRoomsData.filter(r => r.status === "Available")); // Initial available rooms

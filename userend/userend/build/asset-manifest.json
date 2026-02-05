@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/pomma/static/css/main.402f225f.css",
-    "main.js": "/pomma/static/js/main.fb0b14fb.js",
+    "main.js": "/pomma/static/js/main.e0022c07.js",
     "static/media/logo.png": "/pomma/static/media/logo.29e80df92cc4eafda613.png",
     "index.html": "/pomma/index.html",
     "main.402f225f.css.map": "/pomma/static/css/main.402f225f.css.map",
-    "main.fb0b14fb.js.map": "/pomma/static/js/main.fb0b14fb.js.map"
+    "main.e0022c07.js.map": "/pomma/static/js/main.e0022c07.js.map"
   },
   "entrypoints": [
     "static/css/main.402f225f.css",
-    "static/js/main.fb0b14fb.js"
+    "static/js/main.e0022c07.js"
   ]
 }

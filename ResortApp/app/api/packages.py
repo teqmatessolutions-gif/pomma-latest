@@ -851,6 +851,41 @@ def check_in_package_booking(
         # Update check-in date to today
         booking.check_in = today
 
+    # ---------------------------------------------------------
+    # CRITICAL FIX: Prevent check-in if room is currently occupied
+    # ---------------------------------------------------------
+    if booking.rooms:
+        room_ids = [br.room_id for br in booking.rooms]
+        
+        # Need to import these locally
+        from app.models.booking import Booking, BookingRoom
+        
+        # Check regular bookings that are currently checked in
+        occupied_regular = db.query(Booking).join(BookingRoom).filter(
+            BookingRoom.room_id.in_(room_ids),
+            Booking.status.in_(['checked-in', 'checked_in'])
+        ).first()
+        
+        if occupied_regular:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Cannot check-in. Room is currently occupied by another guest (Booking {occupied_regular.id}). Please check them out first."
+            )
+            
+        # Check package bookings that are currently checked in
+        occupied_package = db.query(PackageBooking).join(PackageBookingRoom).filter(
+            PackageBookingRoom.room_id.in_(room_ids),
+            PackageBooking.status.in_(['checked-in', 'checked_in']),
+            PackageBooking.id != booking_id
+        ).first()
+        
+        if occupied_package:
+             raise HTTPException(
+                status_code=400, 
+                detail=f"Cannot check-in. Room is currently occupied by another package guest (Booking {occupied_package.id}). Please check them out first."
+            )
+    # ---------------------------------------------------------
+
     if normalized_status != "booked" and not recoverable_checked_out:
         raise HTTPException(
             status_code=400,

@@ -27,7 +27,13 @@ const BookingModal = ({ onClose, roomNumber, bookings, filter, setFilter, checki
   // Apply filters to bookings
   const filteredBookings = bookings.filter(booking => {
     // Status filter
-    const statusMatch = filter === "all" || booking.status === filter;
+    let statusMatch = true;
+    if (filter !== "all") {
+      // Handle case-insensitive and slight variation comparisons
+      const bStatus = (booking.status || "").toLowerCase().trim();
+      const fStatus = filter.toLowerCase().trim();
+      statusMatch = bStatus === fStatus;
+    }
 
     // Check-in date filter
     const checkinMatch = !checkinFilter || booking.check_in === checkinFilter;
@@ -94,7 +100,7 @@ const BookingModal = ({ onClose, roomNumber, bookings, filter, setFilter, checki
                   <th className="border border-gray-300 px-2 sm:px-4 py-2 text-left text-xs sm:text-sm font-semibold hidden sm:table-cell">Guest</th>
                   <th className="border border-gray-300 px-2 sm:px-4 py-2 text-left text-xs sm:text-sm font-semibold hidden lg:table-cell">Check-in</th>
                   <th className="border border-gray-300 px-2 sm:px-4 py-2 text-left text-xs sm:text-sm font-semibold">Check-out</th>
-                  <th className="border border-gray-300 px-2 sm:px-4 py-2 text-left text-xs sm:text-sm font-semibold hidden md:table-cell">Guests</th>
+                  <th className="border border-gray-300 px-2 sm:px-4 py-2 text-left text-xs sm:text-sm font-semibold hidden md:table-cell">Type</th>
                   <th className="border border-gray-300 px-2 sm:px-4 py-2 text-left text-xs sm:text-sm font-semibold">Status</th>
                   <th className="border border-gray-300 px-2 sm:px-4 py-2 text-left text-xs sm:text-sm font-semibold hidden lg:table-cell">Mobile</th>
                   <th className="border border-gray-300 px-2 sm:px-4 py-2 text-left text-xs sm:text-sm font-semibold hidden lg:table-cell">Email</th>
@@ -103,15 +109,24 @@ const BookingModal = ({ onClose, roomNumber, bookings, filter, setFilter, checki
               <tbody>
                 {filteredBookings.map((booking, index) => (
                   <tr key={booking.id || index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="border border-gray-300 px-2 sm:px-4 py-2 text-xs sm:text-sm">{booking.id}</td>
-                    <td className="border border-gray-300 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium hidden sm:table-cell">{booking.guest_name}</td>
+                    <td className="border border-gray-300 px-2 sm:px-4 py-2 text-xs sm:text-sm font-mono">{booking.display_id || booking.id}</td>
+                    <td className="border border-gray-300 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium hidden sm:table-cell">
+                      {booking.guest_name}
+                      {booking.booking_type === 'package' && <div className="text-[10px] text-indigo-600 font-semibold mt-0.5">{booking.package_name || 'Pkg Booking'}</div>}
+                    </td>
                     <td className="border border-gray-300 px-2 sm:px-4 py-2 text-xs sm:text-sm hidden lg:table-cell">{booking.check_in}</td>
                     <td className="border border-gray-300 px-2 sm:px-4 py-2 text-xs sm:text-sm">{booking.check_out}</td>
-                    <td className="border border-gray-300 px-2 sm:px-4 py-2 text-xs sm:text-sm hidden md:table-cell">{booking.adults}A, {booking.children}C</td>
+                    <td className="border border-gray-300 px-2 sm:px-4 py-2 text-xs sm:text-sm hidden md:table-cell">
+                      {booking.booking_type === 'package' ? (
+                        <span className="bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold">Package</span>
+                      ) : (
+                        <span className="bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold">Room</span>
+                      )}
+                    </td>
                     <td className="border border-gray-300 px-2 sm:px-4 py-2 text-xs sm:text-sm">
-                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${booking.status === 'booked' ? 'bg-blue-100 text-blue-800' :
-                        booking.status === 'checked-in' ? 'bg-green-100 text-green-800' :
-                          booking.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${(booking.status || '').toLowerCase() === 'booked' ? 'bg-blue-100 text-blue-800' :
+                        (booking.status || '').toLowerCase() === 'checked-in' ? 'bg-green-100 text-green-800' :
+                          (booking.status || '').toLowerCase() === 'cancelled' ? 'bg-red-100 text-red-800' :
                             'bg-gray-100 text-gray-800'
                         }`}>
                         {booking.status || 'Pending'}
@@ -251,11 +266,12 @@ const Rooms = () => {
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [filter, setFilter] = useState({ type: "all", status: "all" });
-  const [bookingFilter, setBookingFilter] = useState("booked"); // Filter for booking modal
+  const [bookingFilter, setBookingFilter] = useState("all"); // Filter for booking modal
   const [bookingCheckinFilter, setBookingCheckinFilter] = useState(""); // Check-in date filter
   const [bookingCheckoutFilter, setBookingCheckoutFilter] = useState(""); // Check-out date filter
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [totalRoomsCount, setTotalRoomsCount] = useState(0);
 
   // Function to show banner message
   const showBannerMessage = (type, text) => {
@@ -275,8 +291,11 @@ const Rooms = () => {
       const res = await API.get("/rooms?skip=0&limit=20");
       // Handle paginated response
       const roomData = res.data?.items || (Array.isArray(res.data) ? res.data : []);
+      const total = res.data?.total || roomData.length;
 
       setRooms(roomData || []);
+      setTotalRoomsCount(total);
+
       setHasMore(roomData.length === 20);
       setPage(1);
     } catch (error) {
@@ -304,21 +323,15 @@ const Rooms = () => {
     }
   };
 
-  const fetchBookings = async (roomNumber) => {
+  const fetchBookings = async (roomId, roomNumber) => {
     try {
-      // Get all bookings and filter by room number
-      const response = await API.get("/bookings?limit=20");
-      const allBookings = response.data.bookings || [];
-
-      // Filter bookings that include this room (all statuses)
-      const roomBookings = allBookings.filter(booking => {
-        const hasRoom = booking.rooms && booking.rooms.some(room => room.number === roomNumber);
-        return hasRoom;
-      });
+      // Get all bookings (regular + package) for this room from the dedicated endpoint using ID
+      const response = await API.get(`/rooms/${roomId}/bookings`);
+      const roomBookings = response.data || [];
 
       setBookings(roomBookings);
       setSelectedRoomNumber(roomNumber);
-      setBookingFilter("booked"); // Reset to default filter
+      setBookingFilter("all"); // Reset to default filter (all)
       setBookingCheckinFilter(""); // Reset check-in filter
       setBookingCheckoutFilter(""); // Reset check-out filter
       setShowBookingModal(true);
@@ -548,7 +561,7 @@ const Rooms = () => {
   };
 
   // Calculate KPIs
-  const totalRooms = rooms.length;
+  const totalRooms = totalRoomsCount;
   const availableRooms = rooms.filter(r => r.status === 'Available').length;
   const occupiedRooms = rooms.filter(r => ['Booked', 'Occupied', 'Checked-in'].includes(r.status)).length;
   const maintenanceRooms = rooms.filter(r => r.status === 'Maintenance').length;
@@ -1007,7 +1020,7 @@ const Rooms = () => {
                       {room.status === 'Disabled' ? 'Enable' : 'Disable'}
                     </button>
                   </div>
-                  <button onClick={() => fetchBookings(room.number)} className="w-full bg-blue-100 text-blue-700 text-sm font-semibold py-2 rounded-lg hover:bg-blue-200 transition">View Bookings</button>
+                  <button onClick={() => fetchBookings(room.id, room.number)} className="w-full bg-blue-100 text-blue-700 text-sm font-semibold py-2 rounded-lg hover:bg-blue-200 transition">View Bookings</button>
                   {room.status !== "Booked" && (
                     <select
                       value={room.status}

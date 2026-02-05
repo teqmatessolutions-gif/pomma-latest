@@ -41,3 +41,26 @@ class RoomOut(RoomBase):
     model_config = {
         "from_attributes": True  # enables from_orm in Pydantic v2
     }
+
+class RoomPaginatedResponse(BaseModel):
+    total: int
+    items: List[RoomOut]
+
+class RoomBookingHistoryItem(BaseModel):
+    id: int
+    display_id: str  # e.g., "BK-000001" or "PK-000001"
+    booking_type: str  # "room" or "package"
+    guest_name: str
+    guest_email: str | None
+    guest_mobile: str | None
+    check_in: str  # formated date string
+    check_out: str # formated date string
+    status: str
+    adults: int
+    children: int
+    total_amount: float | None = 0.0
+    package_name: str | None = None  # Only for package bookings
+
+    model_config = {
+        "from_attributes": True
+    }

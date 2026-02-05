@@ -6,6 +6,7 @@ from app.schemas.food_item import FoodItemCreate
 from app.models.user import User
 import os, shutil, uuid
 from app.utils.auth import get_db, get_current_user
+from app.utils.thumbnail_generator import generate_thumbnail
 
 router = APIRouter(prefix="/food-items", tags=["FoodItem"])
 UPLOAD_DIR = "uploads/food_items"
@@ -33,6 +34,13 @@ async def create_item(
             path = os.path.join(UPLOAD_DIR, filename)
             with open(path, "wb") as buffer:
                 shutil.copyfileobj(image.file, buffer)
+            
+            # Generate thumbnail
+            try:
+                generate_thumbnail(path)
+            except Exception as e:
+                print(f"Error generating thumbnail for {filename}: {e}")
+
             # Store with leading slash for proper URL construction
             web_path = f"/{UPLOAD_DIR}/{filename}".replace("\\", "/")
             image_paths.append(web_path)
@@ -80,6 +88,13 @@ async def update_item(
             path = os.path.join(UPLOAD_DIR, filename)
             with open(path, "wb") as buffer:
                 shutil.copyfileobj(image.file, buffer)
+            
+            # Generate thumbnail
+            try:
+                generate_thumbnail(path)
+            except Exception as e:
+                print(f"Error generating thumbnail for {filename}: {e}")
+
             web_path = f"/{UPLOAD_DIR}/{filename}".replace("\\", "/")
             image_paths.append(web_path)
 
