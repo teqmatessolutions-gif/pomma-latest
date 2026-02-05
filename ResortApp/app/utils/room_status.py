@@ -11,8 +11,8 @@ def update_room_statuses(db: Session):
     Only shows current day status - not future bookings.
     With improved error handling and retry logic.
     """
-    max_retries = 3
-    retry_delay = 1
+    max_retries = 1
+    retry_delay = 0.1
     
     for attempt in range(max_retries):
         try:
