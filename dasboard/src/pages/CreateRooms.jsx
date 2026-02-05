@@ -358,13 +358,12 @@ const Rooms = () => {
     }
   };
 
-  const handleChange = (e) => {
+  const handleChange = async (e) => {
     const { name, value, files, type, checked } = e.target;
     if (name === "images") { // Changed from image to images
       if (files) {
         const newFiles = Array.from(files);
         const validFiles = [];
-        const newPreviews = [];
 
         newFiles.forEach(file => {
           // Check size and type
@@ -378,8 +377,16 @@ const Rooms = () => {
             return;
           }
           validFiles.push(file);
-          newPreviews.push(URL.createObjectURL(file));
         });
+
+        // Generate Base64 previews asynchronously
+        const newPreviews = await Promise.all(validFiles.map(file => {
+          return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.readAsDataURL(file);
+          });
+        }));
 
         setForm(prev => ({ ...prev, images: [...prev.images, ...validFiles] }));
         setPreviewImages(prev => [...prev, ...newPreviews]);

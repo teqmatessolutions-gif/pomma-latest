@@ -213,11 +213,17 @@ const Services = () => {
   // const loadMoreAssigned = async () => {} // Removed in favor of direct page access
 
   // Handle image selection
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const files = Array.from(e.target.files);
     setSelectedImages(files);
-    // Create preview URLs
-    const previews = files.map(file => URL.createObjectURL(file));
+    // Create preview URLs using Base64
+    const previews = await Promise.all(files.map(file => {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.readAsDataURL(file);
+      });
+    }));
     setImagePreviews(previews);
   };
 

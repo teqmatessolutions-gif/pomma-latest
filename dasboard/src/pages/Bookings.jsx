@@ -257,16 +257,26 @@ const CheckInModal = ({ booking, onSave, onClose, feedback, isSubmitting }) => {
     const files = Array.from(e.target.files);
     if (!files || files.length === 0) return;
 
-    // Create previews
-    const newPreviews = files.map(file => URL.createObjectURL(file));
+    // Create previews using FileReader (Base64) to avoid CSP blob: issues
+    const generatePreviews = async () => {
+      const newPreviews = await Promise.all(files.map(file => {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.readAsDataURL(file);
+        });
+      }));
 
-    if (type === 'id') {
-      setIdCardImages(prev => [...prev, ...files]);
-      setIdCardPreviews(prev => [...prev, ...newPreviews]);
-    } else {
-      setGuestPhotos(prev => [...prev, ...files]);
-      setGuestPhotoPreviews(prev => [...prev, ...newPreviews]);
-    }
+      if (type === 'id') {
+        setIdCardImages(prev => [...prev, ...files]);
+        setIdCardPreviews(prev => [...prev, ...newPreviews]);
+      } else {
+        setGuestPhotos(prev => [...prev, ...files]);
+        setGuestPhotoPreviews(prev => [...prev, ...newPreviews]);
+      }
+    };
+
+    generatePreviews();
 
     // Reset input value to allow selecting the same file again if needed
     e.target.value = '';

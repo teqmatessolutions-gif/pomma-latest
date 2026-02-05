@@ -63,10 +63,16 @@ const FoodItems = () => {
     }
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const newFiles = Array.from(e.target.files);
     setImages((prevImages) => [...prevImages, ...newFiles]);
-    const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
+    const newPreviews = await Promise.all(newFiles.map(file => {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.readAsDataURL(file);
+      });
+    }));
     setImagePreviews((prev) => [...prev, ...newPreviews]);
   };
 

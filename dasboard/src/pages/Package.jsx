@@ -47,14 +47,18 @@ const CheckInModal = ({ booking, onSave, onClose, isSubmitting }) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const previewUrl = URL.createObjectURL(file);
-    if (type === 'id') {
-      setIdCardImage(file);
-      setIdCardPreview(previewUrl);
-    } else {
-      setGuestPhoto(file);
-      setGuestPhotoPreview(previewUrl);
-    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const previewUrl = e.target.result;
+      if (type === 'id') {
+        setIdCardImage(file);
+        setIdCardPreview(previewUrl);
+      } else {
+        setGuestPhoto(file);
+        setGuestPhotoPreview(previewUrl);
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSave = () => {
@@ -329,10 +333,15 @@ const Packages = () => {
       }
     }
   };
-  const handleCreateImageChange = e => {
+  const handleCreateImageChange = async e => {
     const files = Array.from(e.target.files);
     setSelectedFiles(prev => [...prev, ...files]);
-    setImagePreviews(prev => [...prev, ...files.map(f => URL.createObjectURL(f))]);
+    const newPreviews = await Promise.all(files.map(f => new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.readAsDataURL(f);
+    })));
+    setImagePreviews(prev => [...prev, ...newPreviews]);
   };
   const handleRemoveImage = (index) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
@@ -436,10 +445,15 @@ const Packages = () => {
     }
   };
 
-  const handleEditImageChange = e => {
+  const handleEditImageChange = async e => {
     const files = Array.from(e.target.files);
     setEditSelectedFiles(prev => [...prev, ...files]);
-    setEditNewImagePreviews(prev => [...prev, ...files.map(f => URL.createObjectURL(f))]);
+    const newPreviews = await Promise.all(files.map(f => new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.readAsDataURL(f);
+    })));
+    setEditNewImagePreviews(prev => [...prev, ...newPreviews]);
   };
 
   const handleRemoveExistingImage = (id) => {

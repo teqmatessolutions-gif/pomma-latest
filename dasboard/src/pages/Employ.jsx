@@ -74,7 +74,10 @@ const Employee = () => {
     if (name === "image") {
       const file = files[0];
       setForm({ ...form, image: file });
-      setPreviewImage(URL.createObjectURL(file));
+      // Use FileReader for Base64 preview
+      const reader = new FileReader();
+      reader.onload = (e) => setPreviewImage(e.target.result);
+      reader.readAsDataURL(file);
     } else {
       setForm({ ...form, [name]: value });
     }

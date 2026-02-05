@@ -244,7 +244,10 @@ const Expenses = () => {
               const file = e.target.files[0];
               if (file) {
                 setForm({ ...form, bill_image: file });
-                setImagePreview(URL.createObjectURL(file));
+                // Use FileReader for Base64 preview
+                const reader = new FileReader();
+                reader.onload = (e) => setImagePreview(e.target.result);
+                reader.readAsDataURL(file);
               }
             }}
             className="border p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 w-full"

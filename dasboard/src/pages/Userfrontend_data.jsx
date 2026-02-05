@@ -166,7 +166,11 @@ const FormModal = ({ isOpen, onClose, onSubmit, fields, initialData, title, isMu
         const { name, value, type, checked, files } = e.target;
         if (type === 'file' && files.length > 0) {
             setSelectedFile(files[0]);
-            setImagePreview(URL.createObjectURL(files[0]));
+            // Use FileReader for Base64 preview instead of blob:
+            const reader = new FileReader();
+            reader.onload = (e) => setImagePreview(e.target.result);
+            reader.readAsDataURL(files[0]);
+
             setFormState({ ...formState, [name]: files[0] });
             setError(null); // Clear error on file selection
         } else if (type === 'checkbox') {
