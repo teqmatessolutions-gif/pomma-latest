@@ -31,7 +31,7 @@ export const getMediaBaseUrl = () => {
 
   // For Pomma deployment in production
   if (typeof window !== "undefined" && isPommaDeployment()) {
-    return `${window.location.origin}/pomma`;
+    return `${window.location.origin}`;
   }
 
   // Default for development
