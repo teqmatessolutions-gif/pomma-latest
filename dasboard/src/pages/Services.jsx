@@ -475,7 +475,7 @@ const Services = () => {
                     <tr key={s.id} className={`${idx % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-gray-100 transition-colors`}>
                       <td className="py-3 px-4">
                         {s.images && s.images.length > 0 ? (
-                          <img src={getImageUrl(s.images[0].image_url, true)} alt={s.name} className="w-16 h-16 object-cover rounded border" />
+                          <img src={getImageUrl(s.images[0].image_url, false)} alt={s.name} className="w-16 h-16 object-cover rounded border" />
                         ) : (
                           <div className="w-16 h-16 bg-gray-200 rounded border flex items-center justify-center text-xs text-gray-400">No Image</div>
                         )}

@@ -6,7 +6,7 @@ import { FaStar, FaTrashAlt, FaPencilAlt, FaPlus, FaTimes, FaMapMarkerAlt } from
 import { AnimatePresence, motion } from "framer-motion";
 
 // Get the correct base URL based on environment
-const getImageUrl = (imagePath) => {
+const getImageUrl = (imagePath, thumbnail = false) => {
     if (!imagePath) {
         console.warn('getImageUrl: imagePath is empty or null');
         return '';
@@ -18,13 +18,11 @@ const getImageUrl = (imagePath) => {
     }
 
     // Check if we're in a pomma deployment (pommaadmin)
-    // IMPORTANT: Must check localhost FIRST - even if path is /pommaadmin,
-    // localhost development should use port 8010, not /pomma
     const isPommaDeployment = () => {
         if (typeof window === "undefined") {
             return false;
         }
-        // In localhost, NOT a Pomma deployment (even if path has /pommaadmin)
+        // In localhost, NOT a Pomma deployment
         const hostname = window.location.hostname;
         const isLocalhost = hostname === "localhost" ||
             hostname === "127.0.0.1" ||
@@ -42,7 +40,6 @@ const getImageUrl = (imagePath) => {
     if (process.env.REACT_APP_MEDIA_BASE_URL) {
         baseUrl = process.env.REACT_APP_MEDIA_BASE_URL;
     } else if (typeof window !== "undefined") {
-        // Check localhost first (port 8010), even if running in /pommaadmin mode
         const hostname = window.location.hostname;
         const isLocalhost = hostname === "localhost" ||
             hostname === "127.0.0.1" ||
@@ -51,7 +48,7 @@ const getImageUrl = (imagePath) => {
         if (isLocalhost) {
             baseUrl = 'http://localhost:8000';
         } else if (isPommaDeployment()) {
-            baseUrl = `${window.location.origin}/pomma`;
+            baseUrl = window.location.origin;
         } else {
             baseUrl = process.env.NODE_ENV === 'production'
                 ? 'https://www.teqmates.com'
@@ -81,23 +78,16 @@ const getImageUrl = (imagePath) => {
     }
 
     // Handle old paths that might be incorrect
-    // If path doesn't start with /static/ or /uploads/, but contains 'static' or 'uploads', fix it
     if (!path.startsWith('/static/') && !path.startsWith('/uploads/')) {
         if (path.includes('static/uploads/')) {
-            // Path like /static/uploads/file.jpg (correct)
             // Already good
         } else if (path.includes('/uploads/')) {
-            // Path like /uploads/file.jpg, convert to /static/uploads/file.jpg
             path = path.replace(/^\/uploads\//, '/static/uploads/');
         } else if (path.includes('uploads/')) {
-            // Path like static/uploads/file.jpg (missing leading /)
             path = `/static/${path}`;
         } else {
-            // Try to add /static/ prefix if it looks like an upload path
-            // Check if it ends with common image extensions
             const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
             if (imageExtensions.some(ext => path.toLowerCase().endsWith(ext))) {
-                // If it's not already under static or uploads, assume it should be in static/uploads
                 if (!path.includes('static') && !path.includes('uploads')) {
                     const fileName = path.split('/').pop();
                     path = `/static/uploads/${fileName}`;
@@ -106,8 +96,18 @@ const getImageUrl = (imagePath) => {
         }
     }
 
+    // Add thumbnail logic
+    if (thumbnail) {
+        if (path.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+            // Remove extension and append _thumb.jpg
+            const lastDotIndex = path.lastIndexOf('.');
+            const basePath = path.substring(0, lastDotIndex);
+            path = `${basePath}_thumb.jpg`;
+        }
+    }
+
     const fullUrl = `${baseUrl}${path}`;
-    console.log(`getImageUrl: "${imagePath}" -> "${fullUrl}"`);
+    // console.log(`getImageUrl: "${imagePath}" -> "${fullUrl}"`);
     return fullUrl;
 };
 
@@ -152,7 +152,7 @@ const FormModal = ({ isOpen, onClose, onSubmit, fields, initialData, title, isMu
         if (initialData) {
             setFormState(initialData);
             if (initialData.image_url) {
-                setImagePreview(getImageUrl(initialData.image_url));
+                setImagePreview(getImageUrl(initialData.image_url, true));
             }
         } else {
             setFormState({});
@@ -511,7 +511,7 @@ export default function ResortCMS() {
                     <ManagementSection title="Header Banners" onAdd={() => openModal(sectionConfigs.banners)} isLoading={isLoading}>
                         {resortData.banners.length > 0 ? resortData.banners.map(item => (
                             <div key={item.id} className="bg-gray-50 border rounded-lg p-4 space-y-3">
-                                <img src={getImageUrl(item.image_url)} alt={item.title} className="w-full h-32 object-cover rounded-md shadow-sm" />
+                                <img src={getImageUrl(item.image_url, true)} alt={item.title} className="w-full h-32 object-cover rounded-md shadow-sm" />
                                 <h3 className="font-bold text-gray-800">{item.title}</h3>
                                 <p className="text-xs text-gray-600">{item.subtitle}</p>
                                 <p className="text-xs font-semibold">{item.is_active ? "🟢 Active" : "🔴 Inactive"}</p>
@@ -528,7 +528,7 @@ export default function ResortCMS() {
                             <div key={item.id} className="bg-gray-50 border rounded-lg p-4 space-y-3">
                                 {item.image_url ? (
                                     <img
-                                        src={getImageUrl(item.image_url)}
+                                        src={getImageUrl(item.image_url, true)}
                                         alt={item.caption || 'Gallery image'}
                                         className="w-full h-32 object-cover rounded-md shadow-sm"
                                         onError={(e) => {
@@ -596,7 +596,7 @@ export default function ResortCMS() {
                             <div key={item.id} className="bg-gray-50 border rounded-lg p-4 space-y-3">
                                 {item.image_url ? (
                                     <img
-                                        src={getImageUrl(item.image_url)}
+                                        src={getImageUrl(item.image_url, true)}
                                         alt={item.title || 'Signature experience'}
                                         className="w-full h-32 object-cover rounded-md shadow-sm"
                                         onError={(e) => {
@@ -625,7 +625,7 @@ export default function ResortCMS() {
                             <div key={item.id} className="bg-gray-50 border rounded-lg p-4 space-y-3">
                                 {item.image_url ? (
                                     <img
-                                        src={getImageUrl(item.image_url)}
+                                        src={getImageUrl(item.image_url, true)}
                                         alt={item.title || 'Plan wedding'}
                                         className="w-full h-32 object-cover rounded-md shadow-sm"
                                         onError={(e) => {
@@ -654,7 +654,7 @@ export default function ResortCMS() {
                             <div key={item.id} className="bg-gray-50 border rounded-lg p-4 space-y-3">
                                 {item.image_url ? (
                                     <img
-                                        src={getImageUrl(item.image_url)}
+                                        src={getImageUrl(item.image_url, true)}
                                         alt={item.title || 'Nearby attraction banner'}
                                         className="w-full h-32 object-cover rounded-md shadow-sm"
                                         onError={(e) => {
@@ -683,7 +683,7 @@ export default function ResortCMS() {
                             <div key={item.id} className="bg-gray-50 border rounded-lg p-4 space-y-3">
                                 {item.image_url ? (
                                     <img
-                                        src={getImageUrl(item.image_url)}
+                                        src={getImageUrl(item.image_url, true)}
                                         alt={item.title || 'Nearby attraction'}
                                         className="w-full h-32 object-cover rounded-md shadow-sm"
                                         onError={(e) => {

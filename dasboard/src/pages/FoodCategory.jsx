@@ -396,7 +396,7 @@ const FoodManagement = () => {
               >
                 <div className="relative">
                   <img
-                    src={item.images?.[0] ? getImageUrl(item.images[0].image_url, true) : 'https://placehold.co/400x300/e2e8f0/a0aec0?text=No+Image'}
+                    src={item.images?.[0] ? getImageUrl(item.images[0].image_url, false) : 'https://placehold.co/400x300/e2e8f0/a0aec0?text=No+Image'}
                     alt={item.name}
                     className="h-48 w-full object-cover rounded-t-2xl"
                   />

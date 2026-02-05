@@ -858,7 +858,7 @@ const Packages = () => {
               <motion.div key={pkg.id} whileHover={{ y: -5 }} className="bg-gray-50 rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-all duration-300 flex flex-col">
                 {pkg.images && pkg.images.length > 0 ? (
                   <div className="relative">
-                    <img className="h-48 w-full object-cover cursor-pointer" src={getImageUrl(pkg.images[0].image_url, true)} alt={pkg.title} onClick={() => setSelectedPackageImages(pkg)} />
+                    <img className="h-48 w-full object-cover cursor-pointer" src={getImageUrl(pkg.images[0].image_url, false)} alt={pkg.title} onClick={() => setSelectedPackageImages(pkg)} />
                     {pkg.images.length > 1 && (
                       <div className="absolute top-2 right-2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm font-semibold">
                         +{pkg.images.length - 1} more

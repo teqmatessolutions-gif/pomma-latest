@@ -100,7 +100,7 @@ const FoodItems = () => {
     setExistingImages(item.images || []);
 
     // Generate previews: Existing images + New Files (none initially)
-    const existingPreviews = item.images?.map((img) => getImageUrl(img.image_url, true)) || [];
+    const existingPreviews = item.images?.map((img) => getImageUrl(img.image_url, false)) || [];
     setImagePreviews(existingPreviews);
 
     setImages([]); // Clear new file uploads
@@ -270,7 +270,7 @@ const FoodItems = () => {
                   {item.images?.map((img, idx) => (
                     <img
                       key={idx}
-                      src={getImageUrl(img.image_url, true)}
+                      src={getImageUrl(img.image_url, false)}
                       alt={`Food ${idx}`}
                       className="w-[60px] h-[60px] object-cover border rounded-xl shadow-sm hover:scale-110 transition"
                     />

@@ -968,7 +968,7 @@ const Rooms = () => {
             <motion.div key={room.id} className="bg-gray-50 rounded-2xl shadow-md overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 flex flex-col" whileHover={{ y: -5 }}>
               <div className="relative">
                 <img
-                  src={getImageUrl(room.image_url, true)}
+                  src={getImageUrl(room.image_url, false)}
                   alt={`Room ${room.number}`}
                   className="h-48 w-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
                   onClick={() => setSelectedRoomForGallery(room)}
