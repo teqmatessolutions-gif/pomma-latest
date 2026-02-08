@@ -3,9 +3,12 @@ import sys
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.models.room import Room, RoomImage
+from app.models.frontend import (
+    HeaderBanner, Gallery, SignatureExperience, PlanWedding, 
+    NearbyAttraction, NearbyAttractionBanner
+)
 
 # Setup database connection
-# Assuming to run this from the root of the project on server
 sys.path.append(os.getcwd())
 
 try:
@@ -13,8 +16,6 @@ try:
     print("Successfully imported SessionLocal from app.database")
 except ImportError:
     print("Could not import SessionLocal. Using default connection string.")
-    # You might need to adjust this connection string for your production server
-    # often read from .env
     from dotenv import load_dotenv
     load_dotenv()
     
@@ -44,59 +45,80 @@ def check_file(path, base_dirs=["", "ResortApp", "static"]):
             
     return False, clean_path
 
+def get_thumb_path(path):
+    if not path: return None
+    clean_path = path.replace("\\", "/").strip()
+    if clean_path.lower().endswith(('.jpg', '.jpeg', '.png', '.webp')):
+        parts = clean_path.rsplit('.', 1)
+        return f"{parts[0]}_thumb.jpg"
+    return None
+
 def audit_images():
-    print("Starting Server Image Audit...")
+    print("Starting Server Image Audit (Rooms & CMS)...")
     print(f"Current Working Directory: {os.getcwd()}")
     
     db = SessionLocal()
     try:
+        # --- ROOMS ---
         rooms = db.query(Room).all()
-        print(f"Found {len(rooms)} rooms in database.")
-        
-        missing_count = 0
-        total_images = 0
-        
+        print(f"\n--- ROOMS ({len(rooms)}) ---")
         for room in rooms:
-            print(f"\nScanning Room #{room.number} (ID: {room.id}) - {room.type}")
-            
-            # 1. Check Primary Legacy Image
             if room.image_url:
-                exists, path = check_file(room.image_url)
-                status = "OK" if exists else "MISSING"
-                if not exists: missing_count += 1
-                print(f"  [Legacy] {status}: {room.image_url}")
-                if not exists: print(f"    -> Looked for: {path}")
-            else:
-                print("  [Legacy] None set")
+                exists, _ = check_file(room.image_url)
+                thumb_path = get_thumb_path(room.image_url)
+                thumb_exists, _ = check_file(thumb_path) if thumb_path else (False, None)
+                print(f"Room #{room.number} Legacy: {'[OK]' if exists else '[MISSING]'} | Thumb: {'[OK]' if thumb_exists else '[MISSING]'}")
 
-            # 2. Check Gallery Images
-            images = room.images # This might be lazy loaded, accessing it triggers query
-            if images:
-                print(f"  Found {len(images)} gallery images:")
-                for img in images:
-                    total_images += 1
-                    exists, path = check_file(img.image_url)
-                    status = "OK" if exists else "MISSING"
-                    if not exists: missing_count += 1
-                    print(f"    - [ID: {img.id}] {status}: {img.image_url}")
-                    if not exists: print(f"      -> Looked for: {path}")
-            else:
-                print("  No gallery images.")
+            if room.images:
+                for img in room.images:
+                    exists, _ = check_file(img.image_url)
+                    thumb_path = get_thumb_path(img.image_url)
+                    thumb_exists, _ = check_file(thumb_path) if thumb_path else (False, None)
+                    print(f"Room #{room.number} Gallery: {'[OK]' if exists else '[MISSING]'} | Thumb: {'[OK]' if thumb_exists else '[MISSING]'}")
 
-        print("\n" + "="*30)
-        print("AUDIT SUMMARY")
-        print("="*30)
-        print(f"Total Rooms: {len(rooms)}")
-        print(f"Total Images Checked: {total_images}")
-        print(f"Missing Files: {missing_count}")
-        
-        if missing_count > 0:
-            print("\nrecommendation: Re-upload the missing images via the admin panel.")
-        else:
-            print("\nAll files found! If images are still not showing, check:")
-            print("1. Browser Console for 403 Forbidden errors (Nginx permissions)")
-            print("2. Browser Console for 404 Not Found (URL construction issues)")
-            print("3. Nginx serving paths ('/uploads' alias)")
+        # --- CMS SECTIONS ---
+        cms_models = [
+            (HeaderBanner, "Header Banners"),
+            (Gallery, "Gallery"),
+            (SignatureExperience, "Signature Experiences"),
+            (PlanWedding, "Wedding Plans"),
+            (NearbyAttraction, "Nearby Attractions"),
+            (NearbyAttractionBanner, "Attraction Banners")
+        ]
+
+        print("\n--- CMS CONTENT ---")
+        for model, label in cms_models:
+            items = db.query(model).all()
+            print(f"\nChecking {label} ({len(items)} items)...")
+            count_ok = 0
+            count_missing = 0
+            count_thumb_missing = 0
+            
+            for item in items:
+                display_name = getattr(item, 'title', getattr(item, 'name', f"ID {item.id}"))
+                if not item.image_url:
+                    continue
+                    
+                exists, path = check_file(item.image_url)
+                thumb_path = get_thumb_path(item.image_url)
+                thumb_exists, _ = check_file(thumb_path) if thumb_path else (False, None)
+                
+                status_parts = []
+                if not exists:
+                    status_parts.append("FILE MISSING")
+                    count_missing += 1
+                else:
+                    count_ok += 1
+                    
+                if not thumb_exists:
+                    status_parts.append("THUMBNAIL MISSING")
+                    count_thumb_missing += 1
+                    
+                if status_parts:
+                    print(f"  [!] {display_name}: {', '.join(status_parts)}")
+                    print(f"      Path: {item.image_url}")
+                
+            print(f"  Summary: {count_ok} OK, {count_missing} Missing Files, {count_thumb_missing} Missing Thumbnails")
 
     except Exception as e:
         print(f"An error occurred: {e}")
