@@ -5,9 +5,9 @@ import io
 # Define directories to scan
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DIRS_TO_SCAN = [
-    {"path": os.path.join(BASE_DIR, "uploads", "cms"), "size": (200, 200)},
-    {"path": os.path.join(BASE_DIR, "uploads", "rooms"), "size": (400, 400)},
-    {"path": os.path.join(BASE_DIR, "uploads", "packages"), "size": (200, 200)},
+    {"path": os.path.join(BASE_DIR, "uploads", "cms"), "size": (800, 800)},
+    {"path": os.path.join(BASE_DIR, "uploads", "rooms"), "size": (800, 800)},
+    {"path": os.path.join(BASE_DIR, "uploads", "packages"), "size": (800, 800)},
 ]
 
 def process_directory(directory_info):
@@ -31,9 +31,10 @@ def process_directory(directory_info):
             thumb_filename = f"{os.path.splitext(filename)[0]}_thumb.jpg"
             thumb_path = os.path.join(path, thumb_filename)
             
-            if os.path.exists(thumb_path):
-                skipped += 1
-                continue
+            # FORCE REGENERATION: Commented out the skip check
+            # if os.path.exists(thumb_path):
+            #     skipped += 1
+            #     continue
                 
             try:
                 with Image.open(file_path) as img:
