@@ -3030,7 +3030,7 @@ export default function App() {
                                                                 {experience.title}
                                                             </h3>
                                                             {highlights.length > 0 && (
-                                                                <ul className="space-y-3 text-base text-white/90">
+                                                                <ul className="hidden md:block space-y-3 text-base text-white/90">
                                                                     {highlights.map((point, idx) => (
                                                                         <li key={idx} className="flex items-start gap-3">
                                                                             <span className="mt-1 inline-flex w-2.5 h-2.5 rounded-full bg-[#c99c4e]" />
