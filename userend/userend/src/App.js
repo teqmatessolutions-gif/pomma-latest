@@ -722,9 +722,9 @@ const BackgroundAnimation = ({ theme }) => {
                 }
                 
                 @keyframes slow-pan { 
-                    0% { transform: translate(0, 0) scale(1); }
-                    50% { transform: translate(-3%, 3%) scale(1.05); }
-                    100% { transform: translate(0, 0) scale(1); }
+                    0% { transform: translate(0, 0) scale(1.1); }
+                    50% { transform: translate(-2%, 2%) scale(1.15); }
+                    100% { transform: translate(0, 0) scale(1.1); }
                 }
                 @keyframes fadeInUp {
                     from { opacity: 0; transform: translateY(30px); }
@@ -2379,7 +2379,7 @@ export default function App() {
               .animate-bounce-dot > div { animation: bounce-dot 1.4s infinite ease-in-out both; }
             `}</style>
 
-            <div className={`relative ${theme.bgPrimary} ${theme.textPrimary} font-sans min-h-screen transition-colors duration-500`}>
+            <div className={`relative ${theme.bgPrimary} ${theme.textPrimary} font-sans min-h-screen transition-colors duration-500 overflow-x-hidden`}>
                 <BackgroundAnimation theme={theme} />
 
                 {/* Banner Message - High z-index to appear above all modals and overlays */}
@@ -2456,7 +2456,7 @@ export default function App() {
                                         src={getImageUrl(banner.image_url)}
                                         onError={(e) => { e.target.src = ITEM_PLACEHOLDER; console.error('Banner image failed to load:', banner.image_url); }}
                                         alt={banner.title}
-                                        className={`absolute inset-0 w-[110%] h-[110%] object-cover object-center transition-all duration-[10000ms] ease-in-out ${index === currentBannerIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-110'} animate-[slow-pan_20s_ease-in-out_infinite]`}
+                                        className={`absolute inset-0 w-full h-full object-cover object-center transition-all duration-[10000ms] ease-in-out ${index === currentBannerIndex ? 'opacity-100' : 'opacity-0'} animate-[slow-pan_20s_ease-in-out_infinite]`}
                                         style={{
                                             animationDelay: `${index * 2}s`,
                                             animationDirection: index % 2 === 0 ? 'alternate' : 'alternate-reverse'
@@ -3110,7 +3110,7 @@ export default function App() {
                                         <ProgressiveImage
                                             src={getImageUrl(wedding.image_url)}
                                             alt={wedding.title}
-                                            className={`absolute inset-0 w-[110%] h-[110%] object-cover object-center transition-all duration-[10000ms] ease-in-out ${index === currentWeddingIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-110'} animate-[slow-pan_20s_ease-in-out_infinite]`}
+                                            className={`absolute inset-0 w-full h-full object-cover object-center transition-all duration-[10000ms] ease-in-out ${index === currentWeddingIndex ? 'opacity-100' : 'opacity-0'} animate-[slow-pan_20s_ease-in-out_infinite]`}
                                             style={{
                                                 animationDelay: `${index * 2}s`,
                                                 animationDirection: index % 2 === 0 ? 'alternate' : 'alternate-reverse'
