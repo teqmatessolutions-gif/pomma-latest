@@ -24,7 +24,7 @@ export const getImageUrl = (imageUrl, thumbnail = false) => {
 
     // Handle thumbnail
     if (thumbnail) {
-        if (path.toLowerCase().match(/\.(jpg|jpeg|png)$/)) {
+        if (path.toLowerCase().match(/\.(jpg|jpeg|png|webp)$/)) {
             const parts = path.split('.');
             const ext = parts.pop();
             const base = parts.join('.');
