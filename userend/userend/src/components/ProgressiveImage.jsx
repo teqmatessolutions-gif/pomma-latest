@@ -4,13 +4,14 @@ import { Image as ImageIcon } from 'lucide-react';
 /* 
   ProgressiveImage Component
   --------------------------
-  1. Renders the main image immediately but hides it (opacity: 0).
-  2. Uses native onLoad/onError events from the DOM element.
-  3. Shows thumbnail/placeholder while main image renders.
-  4. Best for browser compatibility and caching.
+  SIMPLIFIED VERSION FOR STABILITY
+  1. Main Image is ALWAYS rendered with opacity-100 (Visible).
+  2. Thumbnail is rendered ABSOLUTE behind the main image.
+  3. No 'onLoad' state is required for visibility.
+  4. This guarantees the image shows up if the browser has it.
 */
 const ProgressiveImage = ({ src, alt, className = "", placeholderSrc = null, style = {} }) => {
-    const [status, setStatus] = useState('loading'); // 'loading', 'loaded', 'error'
+    const [isError, setIsError] = useState(false);
 
     // Derive thumbnail URL if not explicitly provided
     const thumbUrl = useMemo(() => {
@@ -22,25 +23,15 @@ const ProgressiveImage = ({ src, alt, className = "", placeholderSrc = null, sty
             const lastDotIndex = src.lastIndexOf('.');
             if (lastDotIndex === -1) return src;
             const basePath = src.substring(0, lastDotIndex);
-
-            // Allow both jpg and webp thumbnails based on what the backend likely generated
-            // For now, defaulting to .jpg as per previous working logic
+            // Default to _thumb.jpg
             return `${basePath}_thumb.jpg?v=hq`;
         } catch (e) {
             return src;
         }
     }, [src, placeholderSrc]);
 
-    const handleLoad = () => {
-        setStatus('loaded');
-    };
-
-    const handleError = (e) => {
-        // Only set error if we are not already loaded (prevents race conditions)
-        if (status !== 'loaded') {
-            console.warn("Image validation failed:", src);
-            setStatus('error');
-        }
+    const handleError = () => {
+        setIsError(true);
     };
 
     // If src is missing, show error placeholder immediately
@@ -52,36 +43,31 @@ const ProgressiveImage = ({ src, alt, className = "", placeholderSrc = null, sty
         );
     }
 
-    const isLoaded = status === 'loaded';
-    const isError = status === 'error';
-
     return (
         <div className={`relative overflow-hidden ${className}`} style={style}>
-            {/* Thumbnail - Visible only while loading */}
-            {thumbUrl && !isLoaded && !isError && (
+            {/* Thumbnail - Absolute, Background, Z-0 */}
+            {/* We keep it visible so if main image has transparency or hasn't painted, this shows. */}
+            {!isError && thumbUrl && (
                 <img
                     src={thumbUrl}
                     alt={alt || "Thumbnail"}
-                    className="absolute inset-0 w-full h-full object-cover blur-sm scale-110"
-                    style={{ transition: "opacity 0.5s ease-out" }}
+                    className="absolute inset-0 w-full h-full object-cover blur-sm scale-110 z-0"
                 />
             )}
 
-            {/* Main Image - Always in DOM to ensure browser prioritizes it */}
+            {/* Main Image - Relative, Z-10, ALWAYS VISIBLE */}
             {!isError && (
                 <img
                     src={src}
                     alt={alt}
-                    className={`w-full h-full object-cover transition-opacity duration-500 ease-in-out ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
-                    style={{ position: isLoaded ? 'relative' : 'absolute', top: 0, left: 0 }}
-                    onLoad={handleLoad}
+                    className="relative w-full h-full object-cover z-10"
                     onError={handleError}
                 />
             )}
 
-            {/* Error Placeholder - Only shows on actual error */}
+            {/* Error Placeholder */}
             {isError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800">
+                <div className="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 z-20">
                     <ImageIcon className="w-8 h-8 text-neutral-300 dark:text-neutral-600" />
                 </div>
             )}
