@@ -90,6 +90,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Cache control middleware for static files
+@app.middleware("http")
+async def add_cache_headers(request: Request, call_next):
+    """Add proper cache headers for static files to prevent 404 caching"""
+    response = await call_next(request)
+    
+    # Only add cache headers for uploads
+    if request.url.path.startswith("/uploads"):
+        # If it's a successful response (image exists)
+        if response.status_code == 200:
+            # Cache images for 1 hour
+            response.headers["Cache-Control"] = "public, max-age=3600"
+        elif response.status_code == 404:
+            # Don't cache 404s - allow immediate retry
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        
+        # Add security headers for all upload responses
+        response.headers["X-Content-Type-Options"] = "nosniff"
+    
+    return response
+
+
 # INTERNAL SECURITY LOCK (Added for Remote Control)
 @app.middleware("http")
 async def check_system_lock(request: Request, call_next):
