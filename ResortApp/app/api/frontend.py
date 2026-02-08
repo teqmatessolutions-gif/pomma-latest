@@ -508,6 +508,18 @@ async def create_signature_experience(
         if not os.path.exists(file_path):
             raise HTTPException(status_code=500, detail="File was not saved successfully")
 
+        # Generate and Save Thumbnail
+        try:
+            thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
+            thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+            with Image.open(file_path) as img:
+                img.thumbnail((200, 200), Image.Resampling.BICUBIC)
+                if img.mode in ("RGBA", "P"):
+                    img = img.convert("RGB")
+                img.save(thumb_path, "JPEG", quality=60)
+        except Exception as thumb_error:
+            print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
+
         # Create URL path (relative to static mount)
         normalized_path = file_path.replace('\\', '/')
         if normalized_path.startswith(BASE_DIR.replace('\\', '/')):
@@ -570,6 +582,18 @@ async def update_signature_experience(
             
             if not os.path.exists(file_path):
                 raise HTTPException(status_code=500, detail="File was not saved successfully")
+
+            # Generate and Save Thumbnail
+            try:
+                thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
+                thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                with Image.open(file_path) as img_pil:
+                    img_pil.thumbnail((200, 200), Image.Resampling.BICUBIC)
+                    if img_pil.mode in ("RGBA", "P"):
+                        img_pil = img_pil.convert("RGB")
+                    img_pil.save(thumb_path, "JPEG", quality=60)
+            except Exception as thumb_error:
+                print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
 
             # Create URL path (relative to static mount)
             normalized_path = file_path.replace('\\', '/')
@@ -649,6 +673,18 @@ async def create_plan_wedding(
         if not os.path.exists(file_path):
             raise HTTPException(status_code=500, detail="File was not saved successfully")
 
+        # Generate and Save Thumbnail
+        try:
+            thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
+            thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+            with Image.open(file_path) as img:
+                img.thumbnail((200, 200), Image.Resampling.BICUBIC)
+                if img.mode in ("RGBA", "P"):
+                    img = img.convert("RGB")
+                img.save(thumb_path, "JPEG", quality=60)
+        except Exception as thumb_error:
+            print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
+
         # Create URL path (relative to static mount)
         normalized_path = file_path.replace('\\', '/')
         if normalized_path.startswith(BASE_DIR.replace('\\', '/')):
@@ -711,6 +747,18 @@ async def update_plan_wedding(
             
             if not os.path.exists(file_path):
                 raise HTTPException(status_code=500, detail="File was not saved successfully")
+
+            # Generate and Save Thumbnail
+            try:
+                thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
+                thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                with Image.open(file_path) as img_pil:
+                    img_pil.thumbnail((200, 200), Image.Resampling.BICUBIC)
+                    if img_pil.mode in ("RGBA", "P"):
+                        img_pil = img_pil.convert("RGB")
+                    img_pil.save(thumb_path, "JPEG", quality=60)
+            except Exception as thumb_error:
+                print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
 
             # Create URL path (relative to static mount)
             normalized_path = file_path.replace('\\', '/')
@@ -820,6 +868,18 @@ async def create_nearby_attraction(
         if not os.path.exists(file_path):
             raise HTTPException(status_code=500, detail="File was not saved successfully")
 
+        # Generate and Save Thumbnail
+        try:
+            thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
+            thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+            with Image.open(file_path) as img:
+                img.thumbnail((200, 200), Image.Resampling.BICUBIC)
+                if img.mode in ("RGBA", "P"):
+                    img = img.convert("RGB")
+                img.save(thumb_path, "JPEG", quality=60)
+        except Exception as thumb_error:
+            print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
+
         # Create URL path (relative to static mount)
         normalized_path = file_path.replace('\\', '/')
         if normalized_path.startswith(BASE_DIR.replace('\\', '/')):
@@ -887,6 +947,18 @@ async def update_nearby_attraction(
             
             if not os.path.exists(file_path):
                 raise HTTPException(status_code=500, detail="File was not saved successfully")
+
+            # Generate and Save Thumbnail
+            try:
+                thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
+                thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                with Image.open(file_path) as img_pil:
+                    img_pil.thumbnail((200, 200), Image.Resampling.BICUBIC)
+                    if img_pil.mode in ("RGBA", "P"):
+                        img_pil = img_pil.convert("RGB")
+                    img_pil.save(thumb_path, "JPEG", quality=60)
+            except Exception as thumb_error:
+                print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
 
             # Create URL path (relative to static mount)
             normalized_path = file_path.replace('\\', '/')
@@ -976,6 +1048,18 @@ async def create_nearby_attraction_banner(
         if not os.path.exists(file_path):
             raise HTTPException(status_code=500, detail="File was not saved successfully")
 
+        # Generate and Save Thumbnail
+        try:
+            thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
+            thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+            with Image.open(file_path) as img:
+                img.thumbnail((200, 200), Image.Resampling.BICUBIC)
+                if img.mode in ("RGBA", "P"):
+                    img = img.convert("RGB")
+                img.save(thumb_path, "JPEG", quality=60)
+        except Exception as thumb_error:
+            print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
+
         normalized_path = file_path.replace('\\', '/')
         if normalized_path.startswith(BASE_DIR.replace('\\', '/')):
             image_url = normalized_path.replace(BASE_DIR.replace('\\', '/'), '').lstrip('/')
@@ -1039,6 +1123,18 @@ async def update_nearby_attraction_banner(
 
             if not os.path.exists(file_path):
                 raise HTTPException(status_code=500, detail="File was not saved successfully")
+
+            # Generate and Save Thumbnail
+            try:
+                thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
+                thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                with Image.open(file_path) as img_pil:
+                    img_pil.thumbnail((200, 200), Image.Resampling.BICUBIC)
+                    if img_pil.mode in ("RGBA", "P"):
+                        img_pil = img_pil.convert("RGB")
+                    img_pil.save(thumb_path, "JPEG", quality=60)
+            except Exception as thumb_error:
+                print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
 
             normalized_path = file_path.replace('\\', '/')
             if normalized_path.startswith(BASE_DIR.replace('\\', '/')):

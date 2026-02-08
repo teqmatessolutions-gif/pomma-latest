@@ -12,7 +12,8 @@ dirs_to_scan = [
     os.path.join("ResortApp", "static", "food_categories"),
     os.path.join("ResortApp", "uploads", "rooms"),
     os.path.join("ResortApp", "uploads", "services"),
-    os.path.join("ResortApp", "uploads", "packages")
+    os.path.join("ResortApp", "uploads", "packages"),
+    os.path.join("ResortApp", "uploads", "cms")
 ]
 
 print("Starting thumbnail regeneration...")

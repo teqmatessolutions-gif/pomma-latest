@@ -1131,8 +1131,23 @@ export default function App() {
         if (!imagePath) return ITEM_PLACEHOLDER;
         if (imagePath.startsWith('http')) return imagePath; // Already a full URL
         const baseUrl = getMediaBaseUrl();
-        // Ensure imagePath starts with / for proper URL construction
-        const path = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+
+        let path = imagePath;
+
+        // If path contains backslashes (Windows path), convert to forward slashes
+        path = path.replace(/\\/g, '/');
+
+        // Ensure path starts with /
+        if (!path.startsWith('/')) {
+            path = `/${path}`;
+        }
+
+        // Normalize legacy paths
+        // If it starts with /static/uploads/, change to /uploads/
+        if (path.startsWith('/static/uploads/')) {
+            path = path.replace('/static/uploads/', '/uploads/');
+        }
+
         return `${baseUrl}${path}`;
     };
 

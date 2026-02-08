@@ -12,6 +12,20 @@ export const getImageUrl = (imageUrl, thumbnail = false) => {
 
     let path = imageUrl;
 
+    // Normalize slashes
+    path = path.replace(/\\/g, '/');
+
+    // Ensure path starts with /
+    if (!path.startsWith('/')) {
+        path = `/${path}`;
+    }
+
+    // Normalize legacy paths
+    // If it starts with /static/uploads/, change to /uploads/
+    if (path.startsWith('/static/uploads/')) {
+        path = path.replace('/static/uploads/', '/uploads/');
+    }
+
     // If thumbnail requested and it's an image file
     if (thumbnail) {
         if (path.toLowerCase().match(/\.(jpg|jpeg|png)$/)) {

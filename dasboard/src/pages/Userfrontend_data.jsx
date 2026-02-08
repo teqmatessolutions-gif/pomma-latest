@@ -77,21 +77,27 @@ const getImageUrl = (imagePath, thumbnail = false) => {
         path = `/${path}`;
     }
 
-    // Handle old paths that might be incorrect
+    // Normalize legacy paths
+    // If it starts with /static/uploads/, change to /uploads/
+    if (path.startsWith('/static/uploads/')) {
+        path = path.replace('/static/uploads/', '/uploads/');
+    }
+
+    // Handle path prefixing
+    // We want to avoid adding /static/ to paths that already start with /uploads/
+    // because /uploads/ is mapped directly in Nginx to the root uploads directory.
     if (!path.startsWith('/static/') && !path.startsWith('/uploads/')) {
         if (path.includes('static/uploads/')) {
             // Already good
-        } else if (path.includes('/uploads/')) {
-            path = path.replace(/^\/uploads\//, '/static/uploads/');
         } else if (path.includes('uploads/')) {
-            path = `/static/${path}`;
+            // If it contains uploads but is not prefixed, prepend /
+            if (!path.startsWith('/')) path = `/${path}`;
         } else {
+            // Fallback for other image types that might need /static/prefix
             const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
             if (imageExtensions.some(ext => path.toLowerCase().endsWith(ext))) {
-                if (!path.includes('static') && !path.includes('uploads')) {
-                    const fileName = path.split('/').pop();
-                    path = `/static/uploads/${fileName}`;
-                }
+                const fileName = path.split('/').pop();
+                path = `/static/uploads/${fileName}`;
             }
         }
     }
