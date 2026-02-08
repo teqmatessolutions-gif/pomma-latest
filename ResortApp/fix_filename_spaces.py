@@ -10,6 +10,8 @@ from app.database import SessionLocal
 from app.models.Package import PackageImage
 from app.models.room import Room, RoomImage
 from app.models.frontend import NearbyAttraction
+from app.models.service import ServiceImage
+from app.models.food_item import FoodItemImage
 from sqlalchemy.orm import Session
 
 def rename_file_safe(old_path, new_path):
@@ -129,6 +131,26 @@ def main():
                 attraction_updated += 1
                 print(f"Attraction {attr.id}: {old_url} -> {attr.image_url}")
         
+        # 5. Fix ServiceImage records
+        service_images = db.query(ServiceImage).all()
+        svc_img_updated = 0
+        for img in service_images:
+            if img.image_url and ' ' in img.image_url:
+                old_url = img.image_url
+                img.image_url = fix_spaces_in_path(old_url)
+                svc_img_updated += 1
+                print(f"ServiceImage {img.id}: {old_url} -> {img.image_url}")
+        
+        # 6. Fix FoodItemImage records
+        food_images = db.query(FoodItemImage).all()
+        food_img_updated = 0
+        for img in food_images:
+            if img.image_url and ' ' in img.image_url:
+                old_url = img.image_url
+                img.image_url = fix_spaces_in_path(old_url)
+                food_img_updated += 1
+                print(f"FoodItemImage {img.id}: {old_url} -> {img.image_url}")
+        
         # Commit all changes
         db.commit()
         
@@ -138,6 +160,9 @@ def main():
         print(f"Room main images updated: {room_updated}")
         print(f"RoomImages updated: {room_img_updated}")
         print(f"Attractions updated: {attraction_updated}")
+        print(f"ServiceImages updated: {svc_img_updated}")
+        print(f"FoodItemImages updated: {food_img_updated}")
+        print(f"\nTotal DB records updated: {pkg_img_updated + room_updated + room_img_updated + attraction_updated + svc_img_updated + food_img_updated}")
         print("\n✓ All changes committed successfully!")
         
     except Exception as e:
