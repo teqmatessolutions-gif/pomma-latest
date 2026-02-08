@@ -1,19 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Image as ImageIcon } from 'lucide-react';
 
 /* 
   ProgressiveImage Component
   --------------------------
   1. Loads a small thumbnail first.
-  2. Loads the full resolution image in the background.
-  3. Swaps them once the full image is ready.
-  4. Handles errors by showing a fallback placeholder.
-  5. Uses useRef to check for cached images that might miss the onLoad event.
+  2. Uses a detached Image object to preload the full resolution image.
+  3. Sets state once the preloader confirms success or failure.
+  4. This avoids DOM-related race conditions on mobile devices.
 */
 const ProgressiveImage = ({ src, alt, className = "", placeholderSrc = null, style = {} }) => {
-    const [isLoaded, setIsLoaded] = useState(false);
-    const [isError, setIsError] = useState(false);
-    const imgRef = useRef(null);
+    const [loadingState, setLoadingState] = useState('loading'); // 'loading', 'loaded', 'error'
 
     // Derive thumbnail URL if not explicitly provided
     const thumbUrl = React.useMemo(() => {
@@ -25,42 +22,59 @@ const ProgressiveImage = ({ src, alt, className = "", placeholderSrc = null, sty
             const lastDotIndex = src.lastIndexOf('.');
             if (lastDotIndex === -1) return src;
             const basePath = src.substring(0, lastDotIndex);
+
+            // If main image is webp, try webp thumbnail first if logic allows, 
+            // but for now we stick to the backend generation logic which uses .jpg or .webp
+            // The python script generates _thumb.jpg even for webp inputs usually, 
+            // unless updated otherwise. Let's assume _thumb.jpg is the safe default for now 
+            // or match the extension if the backend does. 
+            // Previous logic forced .jpg. Let's keep it consistent with previous successful iterations
+            // but allow flexibility if needed.
             return `${basePath}_thumb.jpg?v=hq`;
         } catch (e) {
             return src;
         }
     }, [src, placeholderSrc]);
 
-    // Reset state when src changes
     useEffect(() => {
-        setIsLoaded(false);
-        setIsError(false);
-
-        // Safety check for cached images
-        // If the image is already loaded from cache, onLoad might not fire in some browsers
-        // so we check the `complete` property.
-        if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
-            setIsLoaded(true);
+        if (!src) {
+            setLoadingState('error');
+            return;
         }
-    }, [src]);
 
-    // Additional safety check on mount and update
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
-                setIsLoaded(true);
+        setLoadingState('loading');
+
+        // Create detached image for preloading
+        const img = new Image();
+        img.src = src;
+
+        const handleLoad = () => {
+            setLoadingState('loaded');
+        };
+
+        const handleError = () => {
+            // If manual load fails, we verify if the file actually exists by 
+            // letting the error state persist.
+            setLoadingState('error');
+        };
+
+        img.onload = handleLoad;
+        img.onerror = handleError;
+
+        // Check if already complete (cached)
+        if (img.complete) {
+            if (img.naturalWidth > 0) {
+                handleLoad();
+            } else {
+                handleError(); // Complete but broken
             }
-        }, 100);
-        return () => clearTimeout(timer);
+        }
+
+        return () => {
+            img.onload = null;
+            img.onerror = null;
+        };
     }, [src]);
-
-    const handleLoad = () => {
-        setIsLoaded(true);
-    };
-
-    const handleError = () => {
-        setIsError(true);
-    };
 
     if (!src) {
         return (
@@ -70,31 +84,32 @@ const ProgressiveImage = ({ src, alt, className = "", placeholderSrc = null, sty
         );
     }
 
+    const isLoaded = loadingState === 'loaded';
+    const isError = loadingState === 'error';
+
     return (
         <div className={`relative overflow-hidden ${className}`} style={style}>
-            {/* Thumbnail - Always show if full image not loaded */}
-            {thumbUrl && !isLoaded && !isError && (
+            {/* Thumbnail - Show while loading and NOT error */}
+            {thumbUrl && loadingState === 'loading' && (
                 <img
                     src={thumbUrl}
                     alt={alt || "Thumbnail"}
-                    className="absolute inset-0 w-full h-full object-cover"
+                    className="absolute inset-0 w-full h-full object-cover blur-sm scale-110"
                     style={{ transition: "opacity 0.5s ease-out" }}
                 />
             )}
 
-            {/* Full Image - Hidden until loaded via opacity */}
-            <img
-                ref={imgRef}
-                src={src}
-                alt={alt}
-                className={`w-full h-full object-cover transition-opacity duration-500 ease-in-out ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
-                style={{ position: isLoaded ? 'relative' : 'absolute', top: 0, left: 0 }}
-                onLoad={handleLoad}
-                onError={handleError}
-            />
+            {/* Full Image - Show when loaded */}
+            {isLoaded && (
+                <img
+                    src={src}
+                    alt={alt}
+                    className={`w-full h-full object-cover transition-opacity duration-500 ease-in-out opacity-100`}
+                />
+            )}
 
-            {/* Error Placeholder if both failed (simplified) */}
-            {isError && !isLoaded && (
+            {/* Error Placeholder */}
+            {isError && (
                 <div className="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800">
                     <ImageIcon className="w-8 h-8 text-neutral-300 dark:text-neutral-600" />
                 </div>
