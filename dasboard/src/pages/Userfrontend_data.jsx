@@ -7,6 +7,11 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import { getImageUrl } from "../utils/image";
 
+const ensureHttpUrl = (url) => {
+    if (!url) return "";
+    return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+};
+
 const API_URL = process.env.NODE_ENV === 'production' ? 'https://www.teqmates.com' : 'http://localhost:8000';
 
 // --- Reusable Components ---
