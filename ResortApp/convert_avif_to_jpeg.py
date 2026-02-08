@@ -32,6 +32,8 @@ def convert_avif_to_jpeg(avif_path):
             return True
         else:
             print(f"  ✗ Failed to convert: {avif_path}")
+            print(f"     ffmpeg stderr: {result.stderr[:200]}")
+            print(f"     Return code: {result.returncode}")
             return False
     except FileNotFoundError:
         print(f"  ✗ ffmpeg not found. Install with: sudo apt install ffmpeg")
