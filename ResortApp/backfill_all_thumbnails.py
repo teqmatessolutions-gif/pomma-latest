@@ -8,6 +8,8 @@ DIRS_TO_SCAN = [
     {"path": os.path.join(BASE_DIR, "uploads", "cms"), "size": (800, 800)},
     {"path": os.path.join(BASE_DIR, "uploads", "rooms"), "size": (800, 800)},
     {"path": os.path.join(BASE_DIR, "uploads", "packages"), "size": (800, 800)},
+    {"path": os.path.join(BASE_DIR, "uploads", "food_items"), "size": (800, 800)},
+    {"path": os.path.join(BASE_DIR, "uploads", "services"), "size": (800, 800)},
 ]
 
 def process_directory(directory_info):
