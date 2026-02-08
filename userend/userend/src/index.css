@@ -86,7 +86,7 @@ input[type="date"]:focus:hover {
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(15, 81, 50, 0.05);
+  background: transparent;
   border-radius: 10px;
 }
 

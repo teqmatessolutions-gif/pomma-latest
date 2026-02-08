@@ -602,13 +602,14 @@ const BackgroundAnimation = ({ theme }) => {
                     max-width: 100%;
                 }
                 
-                body {
+                html, body {
                     font-family: var(--font-body);
                     font-weight: 400;
                     letter-spacing: 0.01em;
                     background-color: var(--color-pomma-cream);
                     color: var(--color-pomma-forest-dark);
                     overflow-x: hidden;
+                    width: 100%;
                 }
                 
                 h1, h2, h3, h4, h5, h6 {

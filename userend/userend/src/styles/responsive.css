@@ -7,40 +7,48 @@
     padding-left: 1rem;
     padding-right: 1rem;
   }
-  
+
   /* Hide complex animations on mobile for better performance */
   .bubble,
   .animate-float,
   .animate-gradient {
     display: none !important;
   }
-  
+
   /* Improve touch targets */
-  button, 
+  button,
   .btn,
   input[type="button"],
   input[type="submit"] {
     min-height: 44px;
     min-width: 44px;
   }
-  
+
   /* Better text scaling */
-  h1 { font-size: 1.5rem; }
-  h2 { font-size: 1.25rem; }
-  h3 { font-size: 1.125rem; }
-  
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+
+  h3 {
+    font-size: 1.125rem;
+  }
+
   /* Improve table responsiveness */
   .table-responsive {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
-  
+
   /* Better spacing for mobile */
-  .space-y-4 > * + * {
+  .space-y-4>*+* {
     margin-top: 0.75rem;
   }
-  
-  .space-y-6 > * + * {
+
+  .space-y-6>*+* {
     margin-top: 1rem;
   }
 }
@@ -51,7 +59,7 @@
     padding-left: 1.5rem;
     padding-right: 1.5rem;
   }
-  
+
   /* Reduce animation complexity on tablets */
   .bubble {
     opacity: 0.5;
@@ -59,9 +67,11 @@
 }
 
 /* High DPI display optimizations */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+@media (-webkit-min-device-pixel-ratio: 2),
+(min-resolution: 192dpi) {
+
   /* Ensure crisp rendering on high DPI displays */
-  img, 
+  img,
   .icon,
   svg {
     image-rendering: -webkit-optimize-contrast;
@@ -74,11 +84,19 @@
   .container {
     max-width: 1600px;
   }
-  
+
   /* Scale up content for very large screens */
-  .text-sm { font-size: 1rem; }
-  .text-base { font-size: 1.125rem; }
-  .text-lg { font-size: 1.25rem; }
+  .text-sm {
+    font-size: 1rem;
+  }
+
+  .text-base {
+    font-size: 1.125rem;
+  }
+
+  .text-lg {
+    font-size: 1.25rem;
+  }
 }
 
 /* Print optimizations */
@@ -86,11 +104,11 @@
   .no-print {
     display: none !important;
   }
-  
+
   .print-break {
     page-break-before: always;
   }
-  
+
   * {
     background: white !important;
     color: black !important;
@@ -99,6 +117,7 @@
 
 /* Accessibility improvements */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -106,7 +125,7 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  
+
   .bubble,
   .animate-float,
   .animate-gradient {
@@ -116,11 +135,12 @@
 
 /* Dark mode optimizations */
 @media (prefers-color-scheme: dark) {
+
   /* Ensure proper contrast in dark mode */
   .text-gray-500 {
     color: #9ca3af !important;
   }
-  
+
   .text-gray-600 {
     color: #d1d5db !important;
   }
@@ -146,6 +166,7 @@ textarea:focus {
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }
@@ -158,12 +179,12 @@ textarea:focus {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: transparent;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: rgba(15, 81, 50, 0.2);
   border-radius: 4px;
 }
 
