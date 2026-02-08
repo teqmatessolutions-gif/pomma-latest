@@ -153,6 +153,18 @@ async def update_header_banner(
             if not os.path.exists(file_path):
                 raise HTTPException(status_code=500, detail="File was not saved successfully")
             
+            # Generate and Save Thumbnail
+            try:
+                thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
+                thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                with Image.open(file_path) as img:
+                    img.thumbnail((200, 200), Image.Resampling.BICUBIC)
+                    if img.mode in ("RGBA", "P"):
+                        img = img.convert("RGB")
+                    img.save(thumb_path, "JPEG", quality=60)
+            except Exception as thumb_error:
+                print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
+            
             # Create URL path (relative to static mount)
             normalized_path = file_path.replace('\\', '/')
             if normalized_path.startswith(BASE_DIR.replace('\\', '/')):

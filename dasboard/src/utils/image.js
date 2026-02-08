@@ -8,25 +8,21 @@ import { getMediaBaseUrl } from './env';
  */
 export const getImageUrl = (imageUrl, thumbnail = false) => {
     if (!imageUrl) return 'https://placehold.co/400x300/e2e8f0/a0aec0?text=No+Image';
-    if (imageUrl.startsWith('http')) return imageUrl; // Already a full URL
+    if (imageUrl.startsWith('http')) return imageUrl;
 
-    let path = imageUrl;
+    let path = imageUrl.replace(/\\/g, '/');
 
-    // Normalize slashes
-    path = path.replace(/\\/g, '/');
-
-    // Ensure path starts with /
-    if (!path.startsWith('/')) {
-        path = `/${path}`;
+    // Normalize: remove leading slash for consistency when joining with baseUrl
+    if (path.startsWith('/')) {
+        path = path.substring(1);
     }
 
     // Normalize legacy paths
-    // If it starts with /static/uploads/, change to /uploads/
-    if (path.startsWith('/static/uploads/')) {
-        path = path.replace('/static/uploads/', '/uploads/');
+    if (path.startsWith('static/uploads/')) {
+        path = path.replace('static/uploads/', 'uploads/');
     }
 
-    // If thumbnail requested and it's an image file
+    // Handle thumbnail
     if (thumbnail) {
         if (path.toLowerCase().match(/\.(jpg|jpeg|png)$/)) {
             const parts = path.split('.');
@@ -37,12 +33,7 @@ export const getImageUrl = (imageUrl, thumbnail = false) => {
     }
 
     const baseUrl = getMediaBaseUrl();
-    const normalized = path.startsWith('/') ? path : `/${path}`;
-    try {
-        const urlObj = new URL(normalized, baseUrl);
-        return urlObj.href;
-    } catch (e) {
-        console.error("URL generation error:", e);
-        return `${baseUrl}${encodeURI(normalized)}`; // Fallback
-    }
+    const baseUrlWithSlash = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
+
+    return `${baseUrlWithSlash}${encodeURI(path)}`;
 };

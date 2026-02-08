@@ -1148,7 +1148,7 @@ export default function App() {
             path = path.replace('/static/uploads/', '/uploads/');
         }
 
-        return `${baseUrl}${path}`;
+        return `${baseUrl}${encodeURI(path)}`;
     };
 
     const activeSignatureExperiences = useMemo(
@@ -2566,7 +2566,6 @@ export default function App() {
                                                             src={currentImage ? getImageUrl(currentImage.image_url) : ITEM_PLACEHOLDER}
                                                             alt={featuredPkg.title}
                                                             className="w-full h-full object-cover transition-transform duration-700 hover:scale-110 reveal"
-                                                            onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                                         />
                                                         {/* Status Badge (Top Right) */}
                                                         <div className={`absolute top-4 right-4 text-white font-extrabold text-lg px-4 py-2 rounded-xl shadow-lg border border-white/20 backdrop-blur-sm z-20 uppercase tracking-wider ${isUnavailable ? (isComingSoon ? 'bg-amber-500' : 'bg-red-500') : 'bg-[#0f5132]/90'}`}>
@@ -2653,7 +2652,6 @@ export default function App() {
                                                                 src={currentImage ? getImageUrl(currentImage.image_url) : ITEM_PLACEHOLDER}
                                                                 alt={pkg.title}
                                                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 reveal"
-                                                                onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                                             />
                                                             {/* Price badge - always visible */}
                                                             <div className="absolute bottom-3 left-3 bg-[#0f5132]/90 text-white font-extrabold text-lg px-3 py-1 rounded-lg shadow-md border border-white/20 backdrop-blur-sm">
@@ -2813,7 +2811,6 @@ export default function App() {
                                                         }
                                                         alt={room.type}
                                                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                                        onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                                     />
                                                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
@@ -3021,7 +3018,6 @@ export default function App() {
                                                             src={getImageUrl(experience.image_url)}
                                                             alt={experience.title}
                                                             className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1500ms] ease-out group-hover:scale-[1.12]"
-                                                            onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                                         />
                                                         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/60 to-transparent" />
                                                         <div className="absolute top-6 left-6 z-10">
@@ -3115,7 +3111,6 @@ export default function App() {
                                                 animationDelay: `${index * 2}s`,
                                                 animationDirection: index % 2 === 0 ? 'alternate' : 'alternate-reverse'
                                             }}
-                                            onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                         />
                                         {/* Gradient Overlay */}
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/30"></div>
@@ -3203,7 +3198,6 @@ export default function App() {
                                                             src={getImageUrl(service.images[0].image_url)}
                                                             alt={service.name}
                                                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                                            onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                                         />
                                                     ) : (
                                                         <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#0f5132]/15 via-[#1a7042]/15 to-[#c99c4e]/20">
@@ -3305,7 +3299,6 @@ export default function App() {
                                                                 src={getImageUrl(food.images?.[0]?.image_url)}
                                                                 alt={food.name}
                                                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                                                onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                                             />
                                                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                                                             <div className="absolute top-3 left-3 px-3 py-1 bg-black/40 text-white text-xs font-semibold rounded-full backdrop-blur-sm">
@@ -3376,7 +3369,6 @@ export default function App() {
                                                 src={getImageUrl(image.image_url)}
                                                 alt={image.caption || 'Gallery image'}
                                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                                onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                             />
 
                                             {/* Overlay on Hover */}
@@ -3411,7 +3403,6 @@ export default function App() {
                                             animationDelay: `${index * 2}s`,
                                             animationDirection: index % 2 === 0 ? 'alternate' : 'alternate-reverse'
                                         }}
-                                        onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/60 to-black/20" />
                                 </div>
@@ -3476,7 +3467,6 @@ export default function App() {
                                                         src={getImageUrl(attraction.image_url)}
                                                         alt={attraction.title}
                                                         className="w-full h-full object-cover transition-transform duration-700 hover:scale-105 absolute inset-0"
-                                                        onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                                     />
                                                 </div>
 
@@ -4069,11 +4059,10 @@ export default function App() {
                                                                             onClick={() => !isWholeProperty ? handlePackageRoomSelection(room.id) : null}
                                                                             className={`rounded-lg border-2 transition-all duration-200 overflow-hidden ${!isWholeProperty ? 'cursor-pointer' : 'cursor-default'} ${isSelected ? `${theme.buttonBg} ${theme.buttonText} border-transparent` : `${theme.bgCard} ${theme.textPrimary} ${theme.border} ${!isWholeProperty ? 'hover:border-[#c99c4e]' : ''}`}`}
                                                                         >
-                                                                            <img
+                                                                            <ProgressiveImage
                                                                                 src={getImageUrl(room.image_url)}
                                                                                 alt={room.type}
                                                                                 className="w-full h-20 object-cover"
-                                                                                onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                                                             />
                                                                             <div className="p-2 text-center">
                                                                                 <p className="font-semibold text-xs">Room {room.number}</p>
@@ -4204,11 +4193,10 @@ export default function App() {
                                                     >
                                                         {/* Image Container */}
                                                         <div className="relative h-48 overflow-hidden">
-                                                            <img
+                                                            <ProgressiveImage
                                                                 src={currentImage ? getImageUrl(currentImage.image_url) : ITEM_PLACEHOLDER}
                                                                 alt={pkg.title}
                                                                 className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
-                                                                onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                                             />
 
                                                             {/* Status Badge */}
@@ -4312,11 +4300,10 @@ export default function App() {
 
                             {/* Image Container */}
                             <div className="relative max-w-6xl w-full flex items-center justify-center h-[85vh]">
-                                <img
+                                <ProgressiveImage
                                     src={getImageUrl(galleryImages[selectedGalleryImageIndex].image_url)}
                                     alt={galleryImages[selectedGalleryImageIndex].caption || 'Gallery image'}
                                     className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-                                    onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                 />
 
                                 {/* Caption */}
@@ -4389,7 +4376,6 @@ export default function App() {
                                                 src={getImageUrl(selectedFoodForDetails.images[0].image_url)}
                                                 alt={selectedFoodForDetails.name}
                                                 className="w-full h-full object-cover"
-                                                onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                             />
 
                                             {/* Category Badge */}
@@ -4450,7 +4436,6 @@ export default function App() {
                                             src={getImageUrl(selectedExperienceForDetails.image_url)}
                                             alt={selectedExperienceForDetails.title}
                                             className="w-full h-full object-cover"
-                                            onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                         />
 
                                         {/* Experience Badge */}
@@ -4509,7 +4494,7 @@ export default function App() {
                                 {/* Image Section */}
                                 <div className="relative mb-6">
                                     <div className="relative h-96 rounded-2xl overflow-hidden">
-                                        <img
+                                        <ProgressiveImage
                                             src={
                                                 (() => {
                                                     const displayImages = getRoomDisplayImages(selectedRoomForDetails);
@@ -4524,7 +4509,6 @@ export default function App() {
                                             }
                                             alt={selectedRoomForDetails.type}
                                             className="w-full h-full object-cover"
-                                            onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                         />
 
                                         {/* Image Navigation Arrows */}
@@ -4719,7 +4703,6 @@ export default function App() {
                                                 src={getImageUrl(selectedServiceForDetails.images[serviceDetailsImageIndex].image_url)}
                                                 alt={selectedServiceForDetails.name}
                                                 className="w-full h-full object-cover"
-                                                onError={(e) => { e.target.src = ITEM_PLACEHOLDER; }}
                                             />
 
                                             {/* Image Navigation Arrows */}

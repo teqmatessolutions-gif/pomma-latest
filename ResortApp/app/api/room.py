@@ -243,7 +243,7 @@ def _get_rooms_impl(db: Session, skip: int = 0, limit: int = 20):
         
         # RoomImage is loaded via relationship
         total = db.query(Room).count()
-        rooms = db.query(Room).order_by(func.coalesce(Room.priority, 999999).asc()).offset(skip).limit(limit).all()
+        rooms = db.query(Room).options(joinedload(Room.images)).order_by(func.coalesce(Room.priority, 999999).asc()).offset(skip).limit(limit).all()
         return {"total": total, "items": rooms}
         
     except HTTPException: raise

@@ -7,114 +7,43 @@ import { AnimatePresence, motion } from "framer-motion";
 
 // Get the correct base URL based on environment
 const getImageUrl = (imagePath, thumbnail = false) => {
-    if (!imagePath) {
-        console.warn('getImageUrl: imagePath is empty or null');
-        return '';
-    }
+    if (!imagePath) return '';
+    if (imagePath.startsWith('http')) return imagePath;
 
-    // Already a full URL
-    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-        return imagePath;
-    }
-
-    // Check if we're in a pomma deployment (pommaadmin)
-    const isPommaDeployment = () => {
-        if (typeof window === "undefined") {
-            return false;
-        }
-        // In localhost, NOT a Pomma deployment
-        const hostname = window.location.hostname;
-        const isLocalhost = hostname === "localhost" ||
-            hostname === "127.0.0.1" ||
-            hostname.startsWith("192.168.");
-        if (isLocalhost) {
-            return false;
-        }
-        // Only for production deployments
-        const path = window.location.pathname || "";
-        return path.startsWith("/pommaholidays") || path.startsWith("/pommaadmin");
-    };
-
-    // Get base URL - check localhost FIRST
-    let baseUrl;
-    if (process.env.REACT_APP_MEDIA_BASE_URL) {
-        baseUrl = process.env.REACT_APP_MEDIA_BASE_URL;
-    } else if (typeof window !== "undefined") {
-        const hostname = window.location.hostname;
-        const isLocalhost = hostname === "localhost" ||
-            hostname === "127.0.0.1" ||
-            hostname.startsWith("192.168.");
-
-        if (isLocalhost) {
-            baseUrl = 'http://localhost:8000';
-        } else if (isPommaDeployment()) {
-            baseUrl = window.location.origin;
-        } else {
-            baseUrl = process.env.NODE_ENV === 'production'
-                ? 'https://www.teqmates.com'
-                : 'http://localhost:8000';
-        }
-    } else {
-        baseUrl = process.env.NODE_ENV === 'production'
-            ? 'https://www.teqmates.com'
-            : 'http://localhost:8000';
-    }
-
-    // Normalize the path
     let path = imagePath;
-
-    // Remove leading/trailing whitespace
-    path = path.trim();
-
-    // If path contains backslashes (Windows path), convert to forward slashes
     path = path.replace(/\\/g, '/');
 
-    // Remove double slashes (except after protocol)
-    path = path.replace(/([^:])\/\/+/g, '$1/');
-
-    // Ensure path starts with /
-    if (!path.startsWith('/')) {
-        path = `/${path}`;
+    // Ensure path doesn't start with / for appending to baseUrl
+    if (path.startsWith('/')) {
+        path = path.substring(1);
     }
 
     // Normalize legacy paths
-    // If it starts with /static/uploads/, change to /uploads/
-    if (path.startsWith('/static/uploads/')) {
-        path = path.replace('/static/uploads/', '/uploads/');
+    if (path.startsWith('static/uploads/')) {
+        path = path.replace('static/uploads/', 'uploads/');
     }
 
-    // Handle path prefixing
-    // We want to avoid adding /static/ to paths that already start with /uploads/
-    // because /uploads/ is mapped directly in Nginx to the root uploads directory.
-    if (!path.startsWith('/static/') && !path.startsWith('/uploads/')) {
-        if (path.includes('static/uploads/')) {
-            // Already good
-        } else if (path.includes('uploads/')) {
-            // If it contains uploads but is not prefixed, prepend /
-            if (!path.startsWith('/')) path = `/${path}`;
-        } else {
-            // Fallback for other image types that might need /static/prefix
-            const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
-            if (imageExtensions.some(ext => path.toLowerCase().endsWith(ext))) {
-                const fileName = path.split('/').pop();
-                path = `/static/uploads/${fileName}`;
-            }
-        }
-    }
-
-    // Add thumbnail logic
+    // Handle thumbnail
     if (thumbnail) {
         if (path.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-            // Remove extension and append _thumb.jpg
             const lastDotIndex = path.lastIndexOf('.');
             const basePath = path.substring(0, lastDotIndex);
             path = `${basePath}_thumb.jpg`;
         }
     }
 
-    const fullUrl = `${baseUrl}${path}`;
-    // console.log(`getImageUrl: "${imagePath}" -> "${fullUrl}"`);
-    return fullUrl;
+    const baseUrl = process.env.NODE_ENV === 'production'
+        ? (window.location.origin + (window.location.pathname.startsWith('/pomma') ? '/pommaadmin' : ''))
+        : 'http://localhost:8000';
+
+    // Simple fallback for baseUrl if window is not defined (SSR safety though dashboard is SPA)
+    const safeBaseUrl = typeof window !== "undefined" ?
+        (window.location.hostname === 'localhost' ? 'http://localhost:8000' : (window.location.origin + (window.location.pathname.startsWith('/pomma') ? '/pommaadmin' : '')))
+        : (process.env.REACT_APP_MEDIA_BASE_URL || 'https://www.teqmates.com');
+
+    // For better reliability, use the URL constructor or just append
+    // But we need to ensure the path is encoded
+    return `${safeBaseUrl.endsWith('/') ? safeBaseUrl : safeBaseUrl + '/'}${encodeURI(path)}`;
 };
 
 const ensureHttpUrl = (url) => {

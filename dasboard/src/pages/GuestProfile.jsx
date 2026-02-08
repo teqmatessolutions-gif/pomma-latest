@@ -87,15 +87,13 @@ const GuestProfile = () => {
 
     const getImageUrl = (path) => {
         if (!path) return null;
-        // Get the correct API base URL based on environment
         const apiBaseUrl = getApiBaseUrl();
+        const baseUrlWithSlash = apiBaseUrl.endsWith('/') ? apiBaseUrl : apiBaseUrl + '/';
 
-        // Package booking images start with 'id_pkg_' or 'guest_pkg_'
         if (path.startsWith('id_pkg_') || path.startsWith('guest_pkg_')) {
-            return `${apiBaseUrl}/packages/booking/checkin-image/${path}`;
+            return `${baseUrlWithSlash}packages/booking/checkin-image/${encodeURIComponent(path)}`;
         }
-        // Regular booking images start with 'id_' or 'guest_'
-        return `${apiBaseUrl}/bookings/checkin-image/${path}`;
+        return `${baseUrlWithSlash}bookings/checkin-image/${encodeURIComponent(path)}`;
     };
 
     return (

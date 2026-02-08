@@ -10,78 +10,67 @@ import { Image as ImageIcon } from 'lucide-react';
   4. Handles errors by showing a fallback placeholder.
 */
 const ProgressiveImage = ({ src, alt, className = "", placeholderSrc = null, style = {} }) => {
-    const [imgSrc, setImgSrc] = useState(placeholderSrc || src);
     const [isLoaded, setIsLoaded] = useState(false);
     const [isError, setIsError] = useState(false);
 
     // Derive thumbnail URL if not explicitly provided
-    // Assumption: thumbnail is same name + "_thumb.jpg"
     const thumbUrl = React.useMemo(() => {
         if (placeholderSrc) return placeholderSrc;
         if (!src) return null;
-        if (src.includes("_thumb")) return src; // Already a thumb
+        if (src.includes("_thumb")) return src;
 
-        // Replace extension or append _thumb
-        // Example: /path/to/image.jpg -> /path/to/image_thumb.jpg
         try {
             const lastDotIndex = src.lastIndexOf('.');
-            if (lastDotIndex === -1) return src; // No extension?
+            if (lastDotIndex === -1) return src;
             const basePath = src.substring(0, lastDotIndex);
-            // const ext = src.substring(lastDotIndex); // Keep extension? Force jpg?
-            // Our backend saves thumbs as .jpg regardless of original extension
             return `${basePath}_thumb.jpg`;
         } catch (e) {
             return src;
         }
     }, [src, placeholderSrc]);
 
+    // Reset state when src changes
     useEffect(() => {
-        if (!src) return;
-
-        // Reset state when src changes
-        setIsError(false);
         setIsLoaded(false);
-        setImgSrc(thumbUrl);
+        setIsError(false);
+    }, [src]);
 
-        // Load full image
-        const img = new Image();
-        img.src = src;
-        img.onload = () => {
-            setImgSrc(src);
-            setIsLoaded(true);
-        };
-        img.onerror = () => {
-            // If full image fails, we might still have the thumb or break
-            setIsError(true);
-            // Try fallback if provided, or just stay on thumb if available?
-            // Usually if full fails, we show error state.
-        };
-    }, [src, thumbUrl]);
-
-    if (isError && !thumbUrl) {
+    if (!src) {
         return (
-            <div className={`flex items-center justify-center bg-neutral-100 ${className}`} style={style}>
-                <ImageIcon className="w-8 h-8 text-neutral-300" />
+            <div className={`flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 ${className}`} style={style}>
+                <ImageIcon className="w-8 h-8 text-neutral-300 dark:text-neutral-600" />
             </div>
         );
     }
 
     return (
         <div className={`relative overflow-hidden ${className}`} style={style}>
-            {/* Thumbnail (Optimized Image - Clear) */}
+            {/* Thumbnail - Always show if full image not loaded */}
+            {thumbUrl && !isLoaded && (
+                <img
+                    src={thumbUrl}
+                    alt={alt || "Thumbnail"}
+                    className="absolute inset-0 w-full h-full object-cover filter blur-sm scale-110"
+                    style={{ transition: "opacity 0.5s ease-out" }}
+                />
+            )}
+
+            {/* Full Image - Hidden until loaded via opacity */}
             <img
-                src={thumbUrl}
+                src={src}
                 alt={alt}
-                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out ${isLoaded ? 'opacity-0' : 'opacity-100'}`}
-                onError={(e) => { e.target.style.opacity = 0; }}
+                className={`w-full h-full object-cover transition-opacity duration-500 ease-in-out ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+                style={{ position: isLoaded ? 'relative' : 'absolute', top: 0, left: 0 }}
+                onLoad={() => setIsLoaded(true)}
+                onError={() => setIsError(true)}
             />
 
-            {/* Full Image (Fade In) */}
-            <img
-                src={isLoaded ? src : thumbUrl} /* Keep thumb as src until loaded to prevent blank flash */
-                alt={alt}
-                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
-            />
+            {/* Error Placeholder if both failed (simplified) */}
+            {isError && !isLoaded && (
+                <div className="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800">
+                    <ImageIcon className="w-8 h-8 text-neutral-300 dark:text-neutral-600" />
+                </div>
+            )}
         </div>
     );
 };
