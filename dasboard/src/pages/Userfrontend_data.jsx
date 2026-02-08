@@ -5,51 +5,7 @@ import { toast } from "react-hot-toast";
 import { FaStar, FaTrashAlt, FaPencilAlt, FaPlus, FaTimes, FaMapMarkerAlt } from "react-icons/fa";
 import { AnimatePresence, motion } from "framer-motion";
 
-// Get the correct base URL based on environment
-const getImageUrl = (imagePath, thumbnail = false) => {
-    if (!imagePath) return '';
-    if (imagePath.startsWith('http')) return imagePath;
-
-    let path = imagePath;
-    path = path.replace(/\\/g, '/');
-
-    // Ensure path doesn't start with / for appending to baseUrl
-    if (path.startsWith('/')) {
-        path = path.substring(1);
-    }
-
-    // Normalize legacy paths
-    if (path.startsWith('static/uploads/')) {
-        path = path.replace('static/uploads/', 'uploads/');
-    }
-
-    // Handle thumbnail
-    if (thumbnail) {
-        if (path.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-            const lastDotIndex = path.lastIndexOf('.');
-            const basePath = path.substring(0, lastDotIndex);
-            path = `${basePath}_thumb.jpg`;
-        }
-    }
-
-    const baseUrl = process.env.NODE_ENV === 'production'
-        ? (window.location.origin + (window.location.pathname.startsWith('/pomma') ? '/pommaadmin' : ''))
-        : 'http://localhost:8000';
-
-    // Simple fallback for baseUrl if window is not defined (SSR safety though dashboard is SPA)
-    const safeBaseUrl = typeof window !== "undefined" ?
-        (window.location.hostname === 'localhost' ? 'http://localhost:8000' : (window.location.origin + (window.location.pathname.startsWith('/pomma') ? '/pommaadmin' : '')))
-        : (process.env.REACT_APP_MEDIA_BASE_URL || 'https://www.teqmates.com');
-
-    // For better reliability, use the URL constructor or just append
-    // But we need to ensure the path is encoded
-    return `${safeBaseUrl.endsWith('/') ? safeBaseUrl : safeBaseUrl + '/'}${encodeURI(path)}`;
-};
-
-const ensureHttpUrl = (url) => {
-    if (!url) return "";
-    return /^https?:\/\//i.test(url) ? url : `https://${url}`;
-};
+import { getImageUrl } from "../utils/image";
 
 const API_URL = process.env.NODE_ENV === 'production' ? 'https://www.teqmates.com' : 'http://localhost:8000';
 
