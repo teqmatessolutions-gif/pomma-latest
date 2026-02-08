@@ -1308,7 +1308,9 @@ export default function App() {
         const SHORT = 280;
 
         if (rowIndex === 1) {
-            const secondRowPattern = [TALL, SHORT, TALL, TALL, SHORT];
+            // User requested 2nd and 5th images in the last row to be a bit taller
+            // colIndex 1 = 2nd image, colIndex 4 = 5th image
+            const secondRowPattern = [TALL, 340, TALL, TALL, 340];
             return `${secondRowPattern[colIndex]}px`;
         }
 
