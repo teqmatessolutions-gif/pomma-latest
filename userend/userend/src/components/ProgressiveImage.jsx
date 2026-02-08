@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Image as ImageIcon } from 'lucide-react';
 
 /* 
   ProgressiveImage Component
   --------------------------
-  1. Loads a small thumbnail first.
-  2. Uses a detached Image object to preload the full resolution image.
-  3. Sets state once the preloader confirms success or failure.
-  4. This avoids DOM-related race conditions on mobile devices.
+  1. Renders the main image immediately but hides it (opacity: 0).
+  2. Uses native onLoad/onError events from the DOM element.
+  3. Shows thumbnail/placeholder while main image renders.
+  4. Best for browser compatibility and caching.
 */
 const ProgressiveImage = ({ src, alt, className = "", placeholderSrc = null, style = {} }) => {
-    const [loadingState, setLoadingState] = useState('loading'); // 'loading', 'loaded', 'error'
+    const [status, setStatus] = useState('loading'); // 'loading', 'loaded', 'error'
 
     // Derive thumbnail URL if not explicitly provided
-    const thumbUrl = React.useMemo(() => {
+    const thumbUrl = useMemo(() => {
         if (placeholderSrc) return placeholderSrc;
         if (!src) return null;
         if (src.includes("_thumb")) return src;
@@ -23,59 +23,27 @@ const ProgressiveImage = ({ src, alt, className = "", placeholderSrc = null, sty
             if (lastDotIndex === -1) return src;
             const basePath = src.substring(0, lastDotIndex);
 
-            // If main image is webp, try webp thumbnail first if logic allows, 
-            // but for now we stick to the backend generation logic which uses .jpg or .webp
-            // The python script generates _thumb.jpg even for webp inputs usually, 
-            // unless updated otherwise. Let's assume _thumb.jpg is the safe default for now 
-            // or match the extension if the backend does. 
-            // Previous logic forced .jpg. Let's keep it consistent with previous successful iterations
-            // but allow flexibility if needed.
+            // Allow both jpg and webp thumbnails based on what the backend likely generated
+            // For now, defaulting to .jpg as per previous working logic
             return `${basePath}_thumb.jpg?v=hq`;
         } catch (e) {
             return src;
         }
     }, [src, placeholderSrc]);
 
-    useEffect(() => {
-        if (!src) {
-            setLoadingState('error');
-            return;
+    const handleLoad = () => {
+        setStatus('loaded');
+    };
+
+    const handleError = (e) => {
+        // Only set error if we are not already loaded (prevents race conditions)
+        if (status !== 'loaded') {
+            console.warn("Image validation failed:", src);
+            setStatus('error');
         }
+    };
 
-        setLoadingState('loading');
-
-        // Create detached image for preloading
-        const img = new Image();
-        img.src = src;
-
-        const handleLoad = () => {
-            setLoadingState('loaded');
-        };
-
-        const handleError = () => {
-            // If manual load fails, we verify if the file actually exists by 
-            // letting the error state persist.
-            setLoadingState('error');
-        };
-
-        img.onload = handleLoad;
-        img.onerror = handleError;
-
-        // Check if already complete (cached)
-        if (img.complete) {
-            if (img.naturalWidth > 0) {
-                handleLoad();
-            } else {
-                handleError(); // Complete but broken
-            }
-        }
-
-        return () => {
-            img.onload = null;
-            img.onerror = null;
-        };
-    }, [src]);
-
+    // If src is missing, show error placeholder immediately
     if (!src) {
         return (
             <div className={`flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 ${className}`} style={style}>
@@ -84,13 +52,13 @@ const ProgressiveImage = ({ src, alt, className = "", placeholderSrc = null, sty
         );
     }
 
-    const isLoaded = loadingState === 'loaded';
-    const isError = loadingState === 'error';
+    const isLoaded = status === 'loaded';
+    const isError = status === 'error';
 
     return (
         <div className={`relative overflow-hidden ${className}`} style={style}>
-            {/* Thumbnail - Show while loading and NOT error */}
-            {thumbUrl && loadingState === 'loading' && (
+            {/* Thumbnail - Visible only while loading */}
+            {thumbUrl && !isLoaded && !isError && (
                 <img
                     src={thumbUrl}
                     alt={alt || "Thumbnail"}
@@ -99,16 +67,19 @@ const ProgressiveImage = ({ src, alt, className = "", placeholderSrc = null, sty
                 />
             )}
 
-            {/* Full Image - Show when loaded */}
-            {isLoaded && (
+            {/* Main Image - Always in DOM to ensure browser prioritizes it */}
+            {!isError && (
                 <img
                     src={src}
                     alt={alt}
-                    className={`w-full h-full object-cover transition-opacity duration-500 ease-in-out opacity-100`}
+                    className={`w-full h-full object-cover transition-opacity duration-500 ease-in-out ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+                    style={{ position: isLoaded ? 'relative' : 'absolute', top: 0, left: 0 }}
+                    onLoad={handleLoad}
+                    onError={handleError}
                 />
             )}
 
-            {/* Error Placeholder */}
+            {/* Error Placeholder - Only shows on actual error */}
             {isError && (
                 <div className="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800">
                     <ImageIcon className="w-8 h-8 text-neutral-300 dark:text-neutral-600" />
