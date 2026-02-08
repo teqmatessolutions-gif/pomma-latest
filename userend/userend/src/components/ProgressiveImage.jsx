@@ -23,7 +23,7 @@ const ProgressiveImage = ({ src, alt, className = "", placeholderSrc = null, sty
             const lastDotIndex = src.lastIndexOf('.');
             if (lastDotIndex === -1) return src;
             const basePath = src.substring(0, lastDotIndex);
-            return `${basePath}_thumb.jpg`;
+            return `${basePath}_thumb.jpg?v=hq`;
         } catch (e) {
             return src;
         }
@@ -50,7 +50,7 @@ const ProgressiveImage = ({ src, alt, className = "", placeholderSrc = null, sty
                 <img
                     src={thumbUrl}
                     alt={alt || "Thumbnail"}
-                    className="absolute inset-0 w-full h-full object-cover filter blur-sm scale-110"
+                    className="absolute inset-0 w-full h-full object-cover"
                     style={{ transition: "opacity 0.5s ease-out" }}
                 />
             )}
