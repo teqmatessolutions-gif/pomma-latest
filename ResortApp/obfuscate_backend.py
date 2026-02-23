@@ -12,19 +12,28 @@ def obfuscate():
     if os.path.exists('dist'):
         shutil.rmtree('dist')
     
-    # 2. Run PyArmor
-    # Trying direct command first, then 'python -m pyarmor' as fallback
-    success = False
-    for cmd in [['pyarmor', 'gen', 'app'], ['python3', '-m', 'pyarmor.cli', 'gen', 'app']]:
-        try:
-            print(f"尝试命令: {' '.join(cmd)}")
-            subprocess.run(cmd, check=True)
-            success = True
-            break
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            continue
+    try:
+        # 2. Run PyArmor
+        # Trying direct command first, then 'python -m pyarmor' as fallback
+        success = False
+        commands = [
+            ['pyarmor', 'gen', 'app'],
+            ['python3', '-m', 'pyarmor.cli', 'gen', 'app']
+        ]
+        
+        for cmd in commands:
+            try:
+                print(f"Executing: {' '.join(cmd)}")
+                subprocess.run(cmd, check=True)
+                success = True
+                break
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                continue
 
-    if success:
+        if not success:
+            print("❌ Error: PyArmor failed to run or was not found.")
+            return
+
         print("✅ Obfuscation complete. Protected code is in 'dist/app'")
         
         # 3. Copy other necessary files to dist
@@ -39,8 +48,6 @@ def obfuscate():
              
         print("✨ Ready for deployment from the 'dist' directory.")
         
-    except subprocess.CalledProcessError as e:
-        print(f"❌ Error during obfuscation: {e}")
     except Exception as e:
         print(f"❌ An unexpected error occurred: {e}")
 
