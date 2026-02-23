@@ -14,7 +14,12 @@ def compile_backend():
     # 1. Cleanup old build directories
     for folder in ["build", "build_dist", "dist"]:
         if os.path.exists(folder):
-            shutil.rmtree(folder)
+            try:
+                shutil.rmtree(folder)
+            except PermissionError:
+                print(f"❌ Permission denied while trying to delete '{folder}'.")
+                print(f"👉 Please run manually: sudo rm -rf {folder}")
+                return
     
     # 2. Identify files and construct Extension objects
     # We map 'app/models/booking.py' -> Extension('app.models.booking', ['app/models/booking.py'])
