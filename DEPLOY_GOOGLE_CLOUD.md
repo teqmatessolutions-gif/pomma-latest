@@ -19,8 +19,17 @@ SSH into your server and run these commands:
 # ── 1. Update system ─────────────────────────────────────────────────────────
 sudo apt update && sudo apt upgrade -y
 
-# ── 2. Install Python 3.11, pip, venv ────────────────────────────────────────
-sudo apt install -y python3.11 python3.11-venv python3-pip git
+# ── 2. Install Python, pip, venv ───────────────────────────────────────────
+# Most modern Ubuntu versions have Python 3.10+ by default.
+sudo apt install -y python3 python3-venv python3-pip git
+
+# Check your version
+python3 --version
+
+# NOTE: If you strictly need Python 3.11 and it was not found, run:
+# sudo add-apt-repository ppa:deadsnakes/ppa -y
+# sudo apt update
+# sudo apt install -y python3.11 python3.11-venv
 
 # ── 3. Install Node.js 20 (LTS) ──────────────────────────────────────────────
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
@@ -49,7 +58,8 @@ Or use **GitHub** (recommended):
 ```bash
 # On the VM
 cd /opt/pomma
-git clone https://github.com/YOUR_REPO/pomma-latest.git .
+# Clone the 'final' branch specifically
+git clone -b final https://github.com/teqmatessolutions-gif/pomma-latest.git .
 ```
 
 ---
@@ -63,29 +73,30 @@ cd /opt/pomma
 python3.11 -m venv venv
 source venv/bin/activate
 
-# Install dependencies including PyArmor
+# Install dependencies including Cython
 pip install -r ResortApp/requirements.txt
+sudo apt install -y build-essential python3-dev
 
-# 🔒 RUN OBFUSCATION
+# �️ RUN BINARY COMPILATION (Cython)
 cd ResortApp
-python3 obfuscate_backend.py
-# This creates a 'dist/' folder with scrambled, unreadable code
+python3 compile_backend.py
+# This converts .py files into unreadable binary modules (.so) in the 'dist/' folder
 ```
 
 ---
 
-## Part 4 — Create Systemd Service (Targeting Protected Code)
+## Part 4 — Create Systemd Service (Targeting Binary Code)
 
 ```bash
 sudo tee /etc/systemd/system/pomma.service << 'EOF'
 [Unit]
-Description=Pomma Holidays FastAPI Backend (Protected)
+Description=Pomma Holidays FastAPI Backend (Binary/Protected)
 After=network.target postgresql.service
 
 [Service]
 User=www-data
 Group=www-data
-# 🛡️ POINTING TO THE PROTECTED 'dist' DIRECTORY
+# 🛡️ POINTING TO THE DIST FOLDER WITH BINARIES
 WorkingDirectory=/opt/pomma/ResortApp/dist
 ExecStart=/opt/pomma/venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 2
 Restart=always
