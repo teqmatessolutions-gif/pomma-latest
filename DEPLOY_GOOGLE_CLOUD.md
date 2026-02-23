@@ -285,6 +285,7 @@ cd dasboard && npm run build:prod && sudo cp -r build/* /opt/pomma/dasboard-buil
 cd ../userend/userend && npm run build:prod && sudo cp -r build/* /opt/pomma/userend-build/
 
 # Restart backend if Python code changed
+sudo chown -R www-data:www-data /opt/pomma/ResortApp/dist
 sudo systemctl restart pomma
 
 # Reload nginx if config changed
