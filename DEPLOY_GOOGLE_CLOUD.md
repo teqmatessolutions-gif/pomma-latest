@@ -38,7 +38,18 @@ sudo apt install -y nodejs
 # ── 4. Install Nginx + Certbot ───────────────────────────────────────────────
 sudo apt install -y nginx certbot python3-certbot-nginx
 
-# ── 5. Create app directory ───────────────────────────────────────────────────
+# ── 5. Install PostgreSQL & Create Database ──────────────────────────
+sudo apt install -y postgresql postgresql-contrib
+
+# Start and enable PostgreSQL
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+
+# Create the database and set password (matching the app's default)
+sudo -u postgres psql -c "CREATE DATABASE pommadb;"
+sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'qwerty123';"
+
+# ── 6. Create app directory ───────────────────────────────────────────────────
 sudo mkdir -p /opt/pomma
 sudo chown $USER:$USER /opt/pomma
 ```
