@@ -13,10 +13,18 @@ def obfuscate():
         shutil.rmtree('dist')
     
     # 2. Run PyArmor
-    # Note: 'gen app' obfuscates the entire app directory
-    # 'dist' is the default output directory
-    try:
-        subprocess.run(['pyarmor', 'gen', 'app'], check=True)
+    # Trying direct command first, then 'python -m pyarmor' as fallback
+    success = False
+    for cmd in [['pyarmor', 'gen', 'app'], ['python3', '-m', 'pyarmor.cli', 'gen', 'app']]:
+        try:
+            print(f"尝试命令: {' '.join(cmd)}")
+            subprocess.run(cmd, check=True)
+            success = True
+            break
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            continue
+
+    if success:
         print("✅ Obfuscation complete. Protected code is in 'dist/app'")
         
         # 3. Copy other necessary files to dist
