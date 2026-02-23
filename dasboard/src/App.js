@@ -27,26 +27,26 @@ const UserHistory = lazy(() => import("./pages/UserHistory.jsx"));
 const EmployeeManagement = lazy(() => import("./pages/EmployeeManagement.jsx"));
 
 const getRouterBasename = () => {
-  // During build/SSR, use the PUBLIC_URL or default to /pommaadmin for production
+  // During build/SSR, use the PUBLIC_URL or default to /admin for production
   if (typeof window === "undefined") {
-    return process.env.PUBLIC_URL || "/pommaadmin";
+    return process.env.PUBLIC_URL || "/admin";
   }
 
   // Always check the actual path first
   const path = window.location.pathname || "";
 
-  // If path includes /pommaadmin, use it (production)
-  if (path.startsWith("/pommaadmin")) {
-    return "/pommaadmin";
-  }
-
-  // If path includes /admin, use it (old production path if still used)
+  // Primary production path (pommaholidays.com/admin)
   if (path.startsWith("/admin")) {
     return "/admin";
   }
 
-  // Default to /pommaadmin for production builds if not running on root
-  return "/pommaadmin";
+  // Legacy path fallback
+  if (path.startsWith("/pommaadmin")) {
+    return "/pommaadmin";
+  }
+
+  // Default to /admin for production builds
+  return "/admin";
 };
 
 function App() {

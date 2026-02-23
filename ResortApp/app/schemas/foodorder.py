@@ -9,7 +9,7 @@ class FoodOrderItemCreate(BaseModel):
 class FoodOrderCreate(BaseModel):
     room_id: int
     amount: float
-    assigned_employee_id: int
+    assigned_employee_id: Optional[int] = None
     items: List[FoodOrderItemCreate]
     billing_status: Optional[str] = "unbilled" 
 
@@ -29,7 +29,7 @@ class FoodOrderOut(BaseModel):
     room_id: int
     amount: float
     status: str
-    assigned_employee_id: int
+    assigned_employee_id: Optional[int] = None
     billing_status: str
     created_at: Optional[datetime] = None
     items: List[FoodOrderItemOut]

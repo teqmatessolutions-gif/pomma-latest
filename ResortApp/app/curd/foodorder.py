@@ -70,7 +70,7 @@ def create_food_order(db: Session, order_data: FoodOrderCreate):
     order = FoodOrder(
         room_id=order_data.room_id,
         amount=order_data.amount,
-        assigned_employee_id=order_data.assigned_employee_id,
+        assigned_employee_id=order_data.assigned_employee_id if order_data.assigned_employee_id and order_data.assigned_employee_id > 0 else None,
         status="pending",
         billing_status="unbilled",
         booking_id=active_booking_id,

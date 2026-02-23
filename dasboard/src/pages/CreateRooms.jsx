@@ -240,6 +240,71 @@ const ImageModal = ({ room, onClose }) => {
   );
 };
 
+// QR Code Modal
+const QRCodeModal = ({ room, onClose }) => {
+  // Determine base URL (assuming user app is on port 3002 if local, or same domain/subdomain in prod)
+  // For development (localhost), we assume dashboard is 3000 and user app is 3002.
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const baseUrl = isLocal
+    ? `${window.location.protocol}//${window.location.hostname}:3002/pomma`
+    : `${window.location.origin}/pomma`; // Adjust this logic if production URLs differ significantly
+
+  const roomUrl = `${baseUrl}/room/${room.id}`;
+  const qrImage = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(roomUrl)}`;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[70] p-4 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-center relative transform transition-all dark:bg-gray-800" onClick={e => e.stopPropagation()}>
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <div className="mb-4 mt-2">
+          <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3">
+            <i className="fas fa-qrcode text-2xl"></i>
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white">Room {room.number} QR</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Scan to order food & services</p>
+        </div>
+
+        <div className="bg-white p-2 rounded-xl border-2 border-dashed border-gray-200 inline-block mb-4">
+          <img src={qrImage} alt={`QR Code for Room ${room.number}`} className="w-48 h-48 object-contain rounded-lg" />
+        </div>
+
+        <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg mb-6 text-left">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Target URL</p>
+          <p className="text-xs text-indigo-600 dark:text-indigo-400 break-all font-mono select-all cursor-text" onClick={e => e.target.select?.()}>
+            {roomUrl}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <a
+            href={qrImage}
+            download={`room-${room.number}-qr.png`}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2.5 px-4 rounded-xl font-semibold transition-colors text-sm"
+          >
+            <i className="fas fa-download"></i> Save Image
+          </a>
+          <button
+            onClick={() => window.open(roomUrl, '_blank')}
+            className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 px-4 rounded-xl font-semibold transition-colors text-sm"
+          >
+            <i className="fas fa-external-link-alt"></i> Test Link
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Rooms = () => {
   const [rooms, setRooms] = useState([]);
   const [form, setForm] = useState({
@@ -262,6 +327,7 @@ const Rooms = () => {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [selectedRoomNumber, setSelectedRoomNumber] = useState(null);
   const [selectedRoomForGallery, setSelectedRoomForGallery] = useState(null);
+  const [selectedRoomForQR, setSelectedRoomForQR] = useState(null); // State for QR Modal
   const [hasMore, setHasMore] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [page, setPage] = useState(1);
@@ -985,6 +1051,15 @@ const Rooms = () => {
                     ['Booked', 'Occupied', 'Checked-in'].includes(room.status) ? 'bg-red-500' :
                       'bg-yellow-500'
                   }`}>{room.status}</span>
+
+                {/* QR Code Trigger (Overlay) */}
+                <button
+                  onClick={(e) => { e.stopPropagation(); setSelectedRoomForQR(room); }}
+                  className="absolute bottom-2 right-2 bg-white/90 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg transition-all z-10"
+                  title="Generate QR Code"
+                >
+                  <i className="fas fa-qrcode text-lg"></i>
+                </button>
               </div>
               <div className="p-5 flex flex-col flex-grow">
                 <div className="flex justify-between items-start">
@@ -1081,6 +1156,14 @@ const Rooms = () => {
         <ImageModal
           room={selectedRoomForGallery}
           onClose={() => setSelectedRoomForGallery(null)}
+        />
+      )}
+
+      {/* QR Code Modal */}
+      {selectedRoomForQR && (
+        <QRCodeModal
+          room={selectedRoomForQR}
+          onClose={() => setSelectedRoomForQR(null)}
         />
       )}
     </DashboardLayout>

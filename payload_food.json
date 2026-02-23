@@ -1,0 +1,12 @@
+{
+    "room_id": 25,
+    "items": [
+        {
+            "food_item_id": 23,
+            "quantity": 2
+        }
+    ],
+    "amount": 0,
+    "assigned_employee_id": 0,
+    "billing_status": "unbilled"
+}

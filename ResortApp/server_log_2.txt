@@ -1,0 +1,1359 @@
+INFO:     Will watch for changes in these directories: ['D:\\resort_oc_10\\Resortwithlandingpage\\pomma-latest\\ResortApp']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [11868] using StatReload
+INFO:     Started server process [18368]
+INFO:     Waiting for application startup.
+INFO:app.utils.thumbnail_generator:Starting thumbnail generation check...
+INFO:app.utils.thumbnail_generator:Scanning directory: static/rooms
+INFO:app.utils.thumbnail_generator:Scanning directory: uploads/rooms
+ERROR:app.utils.thumbnail_generator:Error processing room_d5a784f63baa4bbba16f8385cbad7d06.jpg: cannot identify image file 'uploads/rooms\\room_d5a784f63baa4bbba16f8385cbad7d06.jpg'
+ERROR:app.utils.thumbnail_generator:Error processing room_ebda3b4b41ac4c8b9381177ca4371b06.jpg: cannot identify image file 'uploads/rooms\\room_ebda3b4b41ac4c8b9381177ca4371b06.jpg'
+ERROR:app.utils.thumbnail_generator:Error processing room_ee012342eb894f12b967182b160a9f06.jpg: cannot identify image file 'uploads/rooms\\room_ee012342eb894f12b967182b160a9f06.jpg'
+INFO:app.utils.thumbnail_generator:Scanning directory: uploads/packages
+INFO:app.utils.thumbnail_generator:Scanning directory: uploads/cms
+INFO:app.utils.thumbnail_generator:Scanning directory: uploads/services
+INFO:app.utils.thumbnail_generator:Scanning directory: uploads/food_items
+INFO:app.utils.thumbnail_generator:Scanning directory: static/food_categories
+INFO:app.utils.thumbnail_generator:Thumbnail check complete. Generated 0 new thumbnails.
+INFO:     Application startup complete.
+INFO:httpx:HTTP Request: GET https://gist.githubusercontent.com/placeholder_user/gist_id/raw/config.json "HTTP/1.1 404 Not Found"
+WARNING:health_monitor:Remote health check returned status: 404
+Warning: DATABASE_URL not found in environment. Using default: postgresql://postgres:qwerty123@localhost:5432/pommadb
+Upload directory set to: D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\uploads\cms
+[HEALTH_MONITOR] Checking lock file at: D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\lock.dat
+[HEALTH_MONITOR] File exists: False
+INFO:     127.0.0.1:50958 - "POST /api/food-orders/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64793 - "GET /uploads/rooms/room_e34b714fe56a40788f3214e2e30fa91e.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:54348 - "GET /api/rooms?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54348 - "GET /api/rooms?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61035 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61035 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54348 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54348 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61035 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61035 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61035 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54348 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54348 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61035 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54348 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61035 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54348 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61035 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54348 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61035 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54348 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61035 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54348 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61035 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61035 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54348 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61035 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54348 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51259 - "GET /uploads/banner_e4c3e1d76dfb4e2c89683055e77dccbf.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61035 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54348 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61035 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54348 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51071 - "GET /uploads/food_items/food_e40ad381e5d14c5bbc9f8efee65a3e1d_WhatsApp%20Image%202025-12-13%20at%2012.09.46.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60127 - "GET /uploads/services/svc_999aa14f9aac40548c978f76f8b31916_post.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:56265 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60127 - "GET /uploads/services/svc_a16c97f0be824ae9ae0cf4ec77dddff7_download.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51666 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56606 - "GET /uploads/services/svc_763f47068ad440a4aa2d9ee9af45dc46_post.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:60127 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60382 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56606 - "GET /uploads/services/svc_1070dba298df4ab2afc714d9500396db_woman-tourist-taking-photo-doi-luang-chiang-dao-mountains-chiang-mai-thailand.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:56606 - "GET /uploads/food_items/food_e40ad381e5d14c5bbc9f8efee65a3e1d_WhatsApp%20Image%202025-12-13%20at%2012.09.46_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55129 - "GET /uploads/food_items/food_1f90320aa27c4353be3690394206ff29_WhatsApp%20Image%202025-12-23%20at%2012.39.52_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54316 - "GET /uploads/food_items/food_1f90320aa27c4353be3690394206ff29_WhatsApp%20Image%202025-12-23%20at%2012.39.52.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58234 - "GET /uploads/food_items/food_e93597b0117f48d9a32dfabfb00ec82a_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52872 - "GET /uploads/food_items/food_e93597b0117f48d9a32dfabfb00ec82a_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64331 - "GET /uploads/food_items/food_25398015ac984ea0b735ec6422f775b7_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54334 - "GET /uploads/food_items/food_25398015ac984ea0b735ec6422f775b7_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63690 - "GET /uploads/food_items/food_a681217ae0254b18ac4262fa5efc48dc_images%20%282%29_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55323 - "GET /uploads/food_items/food_a681217ae0254b18ac4262fa5efc48dc_images%20%282%29.jpg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51792 - "GET /uploads/food_items/food_00c7d82e4cc24e70a3218957a1f1c910_images%20%281%29_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58659 - "GET /uploads/gallery_cd51c7ff1ce546c5b8fb700d4bd2fbd1_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63574 - "GET /uploads/food_items/food_00c7d82e4cc24e70a3218957a1f1c910_images%20%281%29.jpg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53371 - "GET /uploads/gallery_cd51c7ff1ce546c5b8fb700d4bd2fbd1.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58195 - "GET /uploads/nearby_banner_1765fe3074cb4d85be829e908a178fc0_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57076 - "GET /uploads/nearby_banner_1765fe3074cb4d85be829e908a178fc0.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55364 - "GET /uploads/cms/attraction_24c2eef68641439592748a1a82400651_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56602 - "GET /uploads/cms/attraction_24c2eef68641439592748a1a82400651.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65140 - "GET /uploads/rooms/room_7a26d180a12b409bbc28afb96b8a5147.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:64082 - "OPTIONS /api/food-orders/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54940 - "POST /api/food-orders/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61817 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62691 - "OPTIONS /api/services?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62691 - "OPTIONS /api/services/assigned?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61817 - "OPTIONS /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62691 - "OPTIONS /api/employees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61817 - "OPTIONS /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62691 - "OPTIONS /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61817 - "GET /api/services?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62691 - "GET /api/services/assigned?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61817 - "GET /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61817 - "GET /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61817 - "GET /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62691 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59382 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56670 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62691 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62691 - "OPTIONS /api/food-orders/?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61817 - "OPTIONS /api/food-items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50363 - "GET /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57137 - "GET /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51453 - "GET /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61817 - "GET /api/food-items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59345 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62691 - "GET /api/food-orders/?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64689 - "OPTIONS /api/food-orders/56 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64689 - "PUT /api/food-orders/56 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64689 - "GET /api/food-orders/?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64689 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65268 - "GET /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64689 - "GET /api/food-items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64689 - "GET /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65268 - "GET /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65268 - "OPTIONS /api/food-orders/55 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65268 - "PUT /api/food-orders/55 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61569 - "GET /api/food-items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56069 - "GET /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55981 - "GET /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64077 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65268 - "GET /api/food-orders/?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64689 - "GET /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64689 - "OPTIONS /api/food-orders/54 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64689 - "PUT /api/food-orders/54 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61569 - "GET /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56069 - "GET /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55981 - "GET /api/food-items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64689 - "GET /api/food-orders/?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65268 - "GET /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64077 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64077 - "OPTIONS /api/food-orders/53 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64077 - "PUT /api/food-orders/53 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55981 - "GET /api/food-items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56069 - "GET /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61569 - "GET /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64077 - "GET /api/food-orders/?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65268 - "GET /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64689 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64689 - "OPTIONS /api/food-orders/52 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64689 - "PUT /api/food-orders/52 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61569 - "GET /api/food-items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56069 - "GET /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55981 - "GET /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64077 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65268 - "GET /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64689 - "GET /api/food-orders/?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61396 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55637 - "GET /api/services/assigned?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50435 - "GET /api/services?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56562 - "GET /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61396 - "GET /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59673 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56273 - "GET /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51976 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62094 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56273 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59673 - "OPTIONS /api/rooms?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59673 - "GET /api/rooms?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59673 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56273 - "GET /api/services?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59673 - "GET /api/services/assigned?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59673 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56273 - "GET /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59673 - "GET /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56273 - "GET /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56937 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53521 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56273 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59673 - "GET /api/rooms?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59673 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59673 - "OPTIONS /api/rooms HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56273 - "OPTIONS /api/packages?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65278 - "OPTIONS /api/bookings?skip=0&limit=20&order_by=id&order=desc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59673 - "OPTIONS /api/packages/bookingsall?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56273 - "GET /api/bookings?skip=0&limit=20&order_by=id&order=desc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59673 - "GET /api/packages/bookingsall?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65278 - "GET /api/packages?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55660 - "GET /api/rooms HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56190 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56190 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55010 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55010 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56190 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55010 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56190 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55010 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56190 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55010 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56190 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55010 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56190 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55010 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56190 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55010 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56190 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55010 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56190 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55010 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56190 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55010 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56190 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55010 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56190 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55010 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56190 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55010 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55255 - "GET /uploads/banner_e4c3e1d76dfb4e2c89683055e77dccbf.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51670 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54133 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64874 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52171 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50560 - "GET /uploads/food_items/food_e40ad381e5d14c5bbc9f8efee65a3e1d_WhatsApp%20Image%202025-12-13%20at%2012.09.46_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50495 - "GET /uploads/food_items/food_e40ad381e5d14c5bbc9f8efee65a3e1d_WhatsApp%20Image%202025-12-13%20at%2012.09.46.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61440 - "GET /uploads/food_items/food_1f90320aa27c4353be3690394206ff29_WhatsApp%20Image%202025-12-23%20at%2012.39.52_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62960 - "GET /uploads/food_items/food_1f90320aa27c4353be3690394206ff29_WhatsApp%20Image%202025-12-23%20at%2012.39.52.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62025 - "GET /uploads/food_items/food_25398015ac984ea0b735ec6422f775b7_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63728 - "GET /uploads/food_items/food_e93597b0117f48d9a32dfabfb00ec82a_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63019 - "GET /uploads/food_items/food_25398015ac984ea0b735ec6422f775b7_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63584 - "GET /uploads/food_items/food_e93597b0117f48d9a32dfabfb00ec82a_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61909 - "GET /uploads/food_items/food_a681217ae0254b18ac4262fa5efc48dc_images%20%282%29_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61413 - "GET /uploads/food_items/food_a681217ae0254b18ac4262fa5efc48dc_images%20%282%29.jpg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62989 - "GET /uploads/food_items/food_00c7d82e4cc24e70a3218957a1f1c910_images%20%281%29_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56694 - "GET /uploads/food_items/food_00c7d82e4cc24e70a3218957a1f1c910_images%20%281%29.jpg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64399 - "GET /uploads/gallery_cd51c7ff1ce546c5b8fb700d4bd2fbd1_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54310 - "GET /uploads/gallery_cd51c7ff1ce546c5b8fb700d4bd2fbd1.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61401 - "GET /uploads/nearby_banner_1765fe3074cb4d85be829e908a178fc0_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57127 - "GET /uploads/nearby_banner_1765fe3074cb4d85be829e908a178fc0.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49635 - "GET /uploads/cms/attraction_24c2eef68641439592748a1a82400651_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61711 - "GET /uploads/cms/attraction_24c2eef68641439592748a1a82400651.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56455 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59258 - "GET /api/rooms?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53135 - "GET /api/rooms?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54476 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53135 - "GET /api/rooms?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54476 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54476 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53135 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54476 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53135 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54476 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53135 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54476 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54476 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53135 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54476 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53135 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54476 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53135 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53135 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54476 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53135 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54476 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54476 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53135 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54476 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53135 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54476 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53135 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54476 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53135 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54476 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54027 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53484 - "GET /uploads/banner_e4c3e1d76dfb4e2c89683055e77dccbf.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61957 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61813 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61683 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64844 - "GET /uploads/food_items/food_e40ad381e5d14c5bbc9f8efee65a3e1d_WhatsApp%20Image%202025-12-13%20at%2012.09.46_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53718 - "GET /uploads/food_items/food_e40ad381e5d14c5bbc9f8efee65a3e1d_WhatsApp%20Image%202025-12-13%20at%2012.09.46.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54466 - "GET /uploads/food_items/food_1f90320aa27c4353be3690394206ff29_WhatsApp%20Image%202025-12-23%20at%2012.39.52_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57725 - "GET /uploads/food_items/food_1f90320aa27c4353be3690394206ff29_WhatsApp%20Image%202025-12-23%20at%2012.39.52.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54100 - "GET /uploads/food_items/food_e93597b0117f48d9a32dfabfb00ec82a_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56892 - "GET /uploads/food_items/food_e93597b0117f48d9a32dfabfb00ec82a_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50728 - "GET /uploads/food_items/food_25398015ac984ea0b735ec6422f775b7_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50832 - "GET /uploads/food_items/food_25398015ac984ea0b735ec6422f775b7_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56855 - "GET /uploads/food_items/food_a681217ae0254b18ac4262fa5efc48dc_images%20%282%29_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62245 - "GET /uploads/food_items/food_a681217ae0254b18ac4262fa5efc48dc_images%20%282%29.jpg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63903 - "GET /uploads/food_items/food_00c7d82e4cc24e70a3218957a1f1c910_images%20%281%29_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54169 - "GET /uploads/food_items/food_00c7d82e4cc24e70a3218957a1f1c910_images%20%281%29.jpg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61633 - "GET /uploads/gallery_cd51c7ff1ce546c5b8fb700d4bd2fbd1_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63145 - "GET /uploads/gallery_cd51c7ff1ce546c5b8fb700d4bd2fbd1.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58575 - "GET /uploads/nearby_banner_1765fe3074cb4d85be829e908a178fc0_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58876 - "GET /uploads/nearby_banner_1765fe3074cb4d85be829e908a178fc0.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57625 - "GET /uploads/cms/attraction_24c2eef68641439592748a1a82400651_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53616 - "GET /uploads/cms/attraction_24c2eef68641439592748a1a82400651.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62459 - "OPTIONS /api/services/bookings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49586 - "POST /api/services/bookings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65511 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65511 - "GET /api/services?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60383 - "GET /api/services/assigned?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60383 - "GET /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65511 - "GET /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65511 - "GET /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60383 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57639 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52564 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55219 - "OPTIONS /api/services/assigned/62 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55219 - "PATCH /api/services/assigned/62 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55219 - "GET /api/services?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59771 - "GET /api/services/assigned?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56994 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55219 - "GET /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56902 - "GET /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59771 - "GET /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64483 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56051 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59771 - "OPTIONS /api/services/assigned/63 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59771 - "PATCH /api/services/assigned/63 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56902 - "GET /api/services/assigned?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59771 - "GET /api/services?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50154 - "GET /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51335 - "GET /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56994 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55219 - "GET /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65387 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50097 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55219 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55219 - "GET /api/bookings?skip=0&limit=20&order_by=id&order=desc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51335 - "GET /api/packages/bookingsall?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50154 - "GET /api/packages?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56994 - "GET /api/rooms HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61939 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62362 - "GET /api/rooms?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/rooms?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/rooms?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59660 - "GET /uploads/banner_e4c3e1d76dfb4e2c89683055e77dccbf.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52625 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52477 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52625 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60132 - "GET /uploads/food_items/food_e40ad381e5d14c5bbc9f8efee65a3e1d_WhatsApp%20Image%202025-12-13%20at%2012.09.46.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65115 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63995 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50704 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57193 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50694 - "GET /uploads/food_items/food_e40ad381e5d14c5bbc9f8efee65a3e1d_WhatsApp%20Image%202025-12-13%20at%2012.09.46_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52054 - "GET /uploads/food_items/food_1f90320aa27c4353be3690394206ff29_WhatsApp%20Image%202025-12-23%20at%2012.39.52.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65233 - "GET /uploads/food_items/food_e93597b0117f48d9a32dfabfb00ec82a_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51177 - "GET /uploads/food_items/food_1f90320aa27c4353be3690394206ff29_WhatsApp%20Image%202025-12-23%20at%2012.39.52_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60772 - "GET /uploads/food_items/food_e93597b0117f48d9a32dfabfb00ec82a_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54518 - "GET /uploads/food_items/food_25398015ac984ea0b735ec6422f775b7_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58740 - "GET /uploads/food_items/food_25398015ac984ea0b735ec6422f775b7_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62774 - "GET /uploads/food_items/food_a681217ae0254b18ac4262fa5efc48dc_images%20%282%29.jpg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51446 - "GET /uploads/food_items/food_a681217ae0254b18ac4262fa5efc48dc_images%20%282%29_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55256 - "GET /uploads/food_items/food_00c7d82e4cc24e70a3218957a1f1c910_images%20%281%29_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57252 - "GET /uploads/gallery_cd51c7ff1ce546c5b8fb700d4bd2fbd1_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59944 - "GET /uploads/food_items/food_00c7d82e4cc24e70a3218957a1f1c910_images%20%281%29.jpg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65140 - "GET /uploads/gallery_cd51c7ff1ce546c5b8fb700d4bd2fbd1.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63772 - "GET /uploads/cms/attraction_24c2eef68641439592748a1a82400651.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63595 - "GET /uploads/nearby_banner_1765fe3074cb4d85be829e908a178fc0_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62869 - "GET /uploads/nearby_banner_1765fe3074cb4d85be829e908a178fc0.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55873 - "GET /uploads/cms/attraction_24c2eef68641439592748a1a82400651_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53674 - "POST /api/food-orders/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64977 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54908 - "GET /api/food-items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64977 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64104 - "GET /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64977 - "GET /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54908 - "GET /api/food-orders/?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64104 - "GET /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52114 - "OPTIONS /api/food-orders/57 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52114 - "PUT /api/food-orders/57 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64710 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52114 - "GET /api/food-orders/?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54556 - "GET /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64710 - "GET /api/food-items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52114 - "GET /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54556 - "GET /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54556 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64710 - "GET /api/services/assigned?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52114 - "GET /api/services?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54556 - "GET /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57694 - "GET /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58874 - "GET /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49981 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57190 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64169 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52199 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55060 - "GET /api/rooms?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/rooms?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/rooms?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57463 - "GET /uploads/banner_e4c3e1d76dfb4e2c89683055e77dccbf.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65476 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50112 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55788 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64589 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60063 - "GET /uploads/food_items/food_e40ad381e5d14c5bbc9f8efee65a3e1d_WhatsApp%20Image%202025-12-13%20at%2012.09.46_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49288 - "GET /uploads/food_items/food_e40ad381e5d14c5bbc9f8efee65a3e1d_WhatsApp%20Image%202025-12-13%20at%2012.09.46.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58112 - "GET /uploads/food_items/food_1f90320aa27c4353be3690394206ff29_WhatsApp%20Image%202025-12-23%20at%2012.39.52_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55095 - "GET /uploads/food_items/food_1f90320aa27c4353be3690394206ff29_WhatsApp%20Image%202025-12-23%20at%2012.39.52.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61346 - "GET /uploads/food_items/food_e93597b0117f48d9a32dfabfb00ec82a_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57970 - "GET /uploads/food_items/food_e93597b0117f48d9a32dfabfb00ec82a_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52312 - "GET /uploads/food_items/food_25398015ac984ea0b735ec6422f775b7_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55816 - "GET /uploads/food_items/food_a681217ae0254b18ac4262fa5efc48dc_images%20%282%29_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57113 - "GET /uploads/food_items/food_25398015ac984ea0b735ec6422f775b7_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64707 - "GET /uploads/food_items/food_a681217ae0254b18ac4262fa5efc48dc_images%20%282%29.jpg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63768 - "GET /uploads/food_items/food_00c7d82e4cc24e70a3218957a1f1c910_images%20%281%29.jpg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62100 - "GET /uploads/food_items/food_00c7d82e4cc24e70a3218957a1f1c910_images%20%281%29_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54384 - "GET /uploads/gallery_cd51c7ff1ce546c5b8fb700d4bd2fbd1_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58665 - "GET /uploads/cms/attraction_24c2eef68641439592748a1a82400651_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60945 - "GET /uploads/nearby_banner_1765fe3074cb4d85be829e908a178fc0.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60210 - "GET /uploads/nearby_banner_1765fe3074cb4d85be829e908a178fc0_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61280 - "GET /uploads/cms/attraction_24c2eef68641439592748a1a82400651.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55859 - "GET /uploads/gallery_cd51c7ff1ce546c5b8fb700d4bd2fbd1.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59011 - "GET /api/rooms?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56176 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/rooms?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56176 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56176 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56176 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52271 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63688 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50246 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56557 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52271 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56176 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63688 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50246 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56557 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53581 - "GET /uploads/banner_e4c3e1d76dfb4e2c89683055e77dccbf.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56557 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52271 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56557 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56176 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50246 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63688 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52271 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56557 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56176 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59011 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50246 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53550 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63243 - "GET /uploads/food_items/food_e40ad381e5d14c5bbc9f8efee65a3e1d_WhatsApp%20Image%202025-12-13%20at%2012.09.46_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54324 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54818 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61721 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50339 - "GET /uploads/food_items/food_e40ad381e5d14c5bbc9f8efee65a3e1d_WhatsApp%20Image%202025-12-13%20at%2012.09.46.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63674 - "GET /uploads/food_items/food_1f90320aa27c4353be3690394206ff29_WhatsApp%20Image%202025-12-23%20at%2012.39.52_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49353 - "GET /uploads/food_items/food_25398015ac984ea0b735ec6422f775b7_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61470 - "GET /uploads/food_items/food_1f90320aa27c4353be3690394206ff29_WhatsApp%20Image%202025-12-23%20at%2012.39.52.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61918 - "GET /uploads/food_items/food_e93597b0117f48d9a32dfabfb00ec82a_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61278 - "GET /uploads/food_items/food_25398015ac984ea0b735ec6422f775b7_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61240 - "GET /uploads/food_items/food_e93597b0117f48d9a32dfabfb00ec82a_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65236 - "GET /uploads/food_items/food_a681217ae0254b18ac4262fa5efc48dc_images%20%282%29.jpg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62273 - "GET /uploads/food_items/food_a681217ae0254b18ac4262fa5efc48dc_images%20%282%29_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60564 - "GET /uploads/food_items/food_00c7d82e4cc24e70a3218957a1f1c910_images%20%281%29_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60863 - "GET /uploads/gallery_cd51c7ff1ce546c5b8fb700d4bd2fbd1_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56488 - "GET /uploads/food_items/food_00c7d82e4cc24e70a3218957a1f1c910_images%20%281%29.jpg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54101 - "GET /uploads/gallery_cd51c7ff1ce546c5b8fb700d4bd2fbd1.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60348 - "GET /uploads/nearby_banner_1765fe3074cb4d85be829e908a178fc0.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61480 - "GET /uploads/nearby_banner_1765fe3074cb4d85be829e908a178fc0_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58321 - "GET /uploads/cms/attraction_24c2eef68641439592748a1a82400651_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51099 - "GET /uploads/cms/attraction_24c2eef68641439592748a1a82400651.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51248 - "GET /api/rooms?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/rooms?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51248 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52038 - "GET /uploads/banner_e4c3e1d76dfb4e2c89683055e77dccbf.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52483 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55163 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62353 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57478 - "GET /uploads/food_items/food_e40ad381e5d14c5bbc9f8efee65a3e1d_WhatsApp%20Image%202025-12-13%20at%2012.09.46_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56736 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53926 - "GET /uploads/food_items/food_e40ad381e5d14c5bbc9f8efee65a3e1d_WhatsApp%20Image%202025-12-13%20at%2012.09.46.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59224 - "GET /uploads/food_items/food_1f90320aa27c4353be3690394206ff29_WhatsApp%20Image%202025-12-23%20at%2012.39.52_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57822 - "GET /uploads/food_items/food_1f90320aa27c4353be3690394206ff29_WhatsApp%20Image%202025-12-23%20at%2012.39.52.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61440 - "GET /uploads/food_items/food_e93597b0117f48d9a32dfabfb00ec82a_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59121 - "GET /uploads/food_items/food_e93597b0117f48d9a32dfabfb00ec82a_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54676 - "GET /uploads/food_items/food_25398015ac984ea0b735ec6422f775b7_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59876 - "GET /uploads/food_items/food_25398015ac984ea0b735ec6422f775b7_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57751 - "GET /uploads/food_items/food_a681217ae0254b18ac4262fa5efc48dc_images%20%282%29.jpg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55420 - "GET /uploads/food_items/food_00c7d82e4cc24e70a3218957a1f1c910_images%20%281%29_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50718 - "GET /uploads/food_items/food_a681217ae0254b18ac4262fa5efc48dc_images%20%282%29_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56269 - "GET /uploads/gallery_cd51c7ff1ce546c5b8fb700d4bd2fbd1_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60115 - "GET /uploads/food_items/food_00c7d82e4cc24e70a3218957a1f1c910_images%20%281%29.jpg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62942 - "GET /uploads/nearby_banner_1765fe3074cb4d85be829e908a178fc0.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62580 - "GET /uploads/nearby_banner_1765fe3074cb4d85be829e908a178fc0_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56434 - "GET /uploads/cms/attraction_24c2eef68641439592748a1a82400651_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61990 - "GET /uploads/gallery_cd51c7ff1ce546c5b8fb700d4bd2fbd1.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65328 - "GET /uploads/cms/attraction_24c2eef68641439592748a1a82400651.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52195 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55887 - "GET /api/food-items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52737 - "GET /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49660 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52195 - "GET /api/food-orders/?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55887 - "GET /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53822 - "GET /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63436 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63436 - "GET /api/services/assigned?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63436 - "GET /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63436 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63436 - "GET /api/services?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63436 - "GET /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63436 - "GET /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64730 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63687 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56315 - "GET /uploads/food_items/food_e93597b0117f48d9a32dfabfb00ec82a_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57701 - "GET /uploads/food_items/food_e40ad381e5d14c5bbc9f8efee65a3e1d_WhatsApp%20Image%202025-12-13%20at%2012.09.46.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60314 - "GET /uploads/food_items/food_1f90320aa27c4353be3690394206ff29_WhatsApp%20Image%202025-12-23%20at%2012.39.52.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60259 - "GET /uploads/food_items/food_25398015ac984ea0b735ec6422f775b7_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54626 - "GET /uploads/food_items/food_a681217ae0254b18ac4262fa5efc48dc_images%20%282%29.jpg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63947 - "GET /api/rooms?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58145 - "GET /uploads/food_items/food_00c7d82e4cc24e70a3218957a1f1c910_images%20%281%29.jpg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63384 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63947 - "GET /api/rooms?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63384 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63947 - "GET /api/rooms?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63384 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63947 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63384 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63947 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63384 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63947 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63947 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63384 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63947 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63947 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63384 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63947 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63384 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63384 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63384 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63947 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63384 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63947 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63384 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63947 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63384 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63947 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63947 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63384 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63384 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63947 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63384 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63384 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63947 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63384 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63947 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63947 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63947 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63384 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63947 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63384 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63384 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63947 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63947 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63384 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65451 - "GET /api/rooms?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49412 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65451 - "GET /api/rooms?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49412 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65451 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49412 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65451 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49412 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65451 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49412 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49412 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49412 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65451 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65451 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49412 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49412 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65451 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49412 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65451 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49412 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65451 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65451 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49412 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65451 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49412 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49412 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65451 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49412 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65451 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49412 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57531 - "GET /uploads/banner_e4c3e1d76dfb4e2c89683055e77dccbf.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60621 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54760 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58611 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55203 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62847 - "GET /uploads/food_items/food_e40ad381e5d14c5bbc9f8efee65a3e1d_WhatsApp%20Image%202025-12-13%20at%2012.09.46_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49834 - "GET /uploads/food_items/food_e40ad381e5d14c5bbc9f8efee65a3e1d_WhatsApp%20Image%202025-12-13%20at%2012.09.46.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55127 - "GET /uploads/food_items/food_1f90320aa27c4353be3690394206ff29_WhatsApp%20Image%202025-12-23%20at%2012.39.52.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59782 - "GET /uploads/food_items/food_1f90320aa27c4353be3690394206ff29_WhatsApp%20Image%202025-12-23%20at%2012.39.52_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62280 - "GET /uploads/food_items/food_e93597b0117f48d9a32dfabfb00ec82a_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51201 - "GET /uploads/food_items/food_e93597b0117f48d9a32dfabfb00ec82a_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57898 - "GET /uploads/food_items/food_25398015ac984ea0b735ec6422f775b7_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63606 - "GET /uploads/food_items/food_a681217ae0254b18ac4262fa5efc48dc_images%20%282%29_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60779 - "GET /uploads/food_items/food_25398015ac984ea0b735ec6422f775b7_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58115 - "GET /uploads/food_items/food_a681217ae0254b18ac4262fa5efc48dc_images%20%282%29.jpg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56978 - "GET /uploads/food_items/food_00c7d82e4cc24e70a3218957a1f1c910_images%20%281%29_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51299 - "GET /uploads/food_items/food_00c7d82e4cc24e70a3218957a1f1c910_images%20%281%29.jpg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64966 - "GET /uploads/gallery_cd51c7ff1ce546c5b8fb700d4bd2fbd1_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63410 - "GET /uploads/gallery_cd51c7ff1ce546c5b8fb700d4bd2fbd1.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59494 - "GET /uploads/nearby_banner_1765fe3074cb4d85be829e908a178fc0.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64124 - "GET /uploads/nearby_banner_1765fe3074cb4d85be829e908a178fc0_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52926 - "GET /uploads/cms/attraction_24c2eef68641439592748a1a82400651.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55624 - "GET /uploads/cms/attraction_24c2eef68641439592748a1a82400651_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63331 - "OPTIONS /api/services/bookings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62315 - "POST /api/services/bookings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60697 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60697 - "OPTIONS /api/food-orders/?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53681 - "OPTIONS /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60697 - "OPTIONS /api/employees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53681 - "OPTIONS /api/food-items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60697 - "OPTIONS /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53681 - "OPTIONS /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60697 - "GET /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53681 - "GET /api/food-orders/?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53681 - "GET /api/food-items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55343 - "GET /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62006 - "GET /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60697 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62537 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50998 - "OPTIONS /api/services?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62537 - "OPTIONS /api/services/assigned?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62537 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62537 - "GET /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50998 - "GET /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50998 - "GET /api/services?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62537 - "GET /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50998 - "GET /api/services/assigned?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60270 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59656 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53014 - "POST /api/services/bookings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52993 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56682 - "OPTIONS /api/rooms?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56682 - "GET /api/rooms?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56682 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52993 - "GET /api/services?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65474 - "GET /api/services/assigned?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56682 - "GET /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65474 - "GET /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52993 - "GET /api/employees HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56682 - "GET /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64612 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62367 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60171 - "GET /uploads/packages/pkg_b7d80fc2c663416797043d1ad0afbfa5_istockphoto-488481490-612x612_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:63366 - "GET /uploads/packages/pkg_b7d80fc2c663416797043d1ad0afbfa5_istockphoto-488481490-612x612.jpg HTTP/1.1" 304 Not Modified
+INFO:httpx:HTTP Request: GET https://gist.githubusercontent.com/placeholder_user/gist_id/raw/config.json "HTTP/1.1 404 Not Found"
+WARNING:health_monitor:Remote health check returned status: 404
+[HEALTH_MONITOR] Checking lock file at: D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\lock.dat
+[HEALTH_MONITOR] File exists: False
+INFO:     127.0.0.1:50302 - "GET /uploads/rooms/room_00299773e969409eaa902f8c306f6dfa_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:64326 - "GET /uploads/rooms/room_b30e8edd6f8e41ec9490019d0af29155_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:64326 - "GET /uploads/rooms/room_b30e8edd6f8e41ec9490019d0af29155.jpg HTTP/1.1" 304 Not Modified
+WARNING:  StatReload detected changes in 'app\utils\license_manager.py'. Reloading...
+ INFO:     127.0.0.1:51358 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57897 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57970 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60825 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50093 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55565 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for connections to close. (CTRL+C to force quit)
+INFO:     127.0.0.1:55565 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [18368]
+INFO:     Started server process [8052]
+INFO:     Waiting for application startup.
+INFO:app.utils.thumbnail_generator:Starting thumbnail generation check...
+INFO:app.utils.thumbnail_generator:Scanning directory: static/rooms
+INFO:app.utils.thumbnail_generator:Scanning directory: uploads/rooms
+ERROR:app.utils.thumbnail_generator:Error processing room_d5a784f63baa4bbba16f8385cbad7d06.jpg: cannot identify image file 'uploads/rooms\\room_d5a784f63baa4bbba16f8385cbad7d06.jpg'
+ERROR:app.utils.thumbnail_generator:Error processing room_ebda3b4b41ac4c8b9381177ca4371b06.jpg: cannot identify image file 'uploads/rooms\\room_ebda3b4b41ac4c8b9381177ca4371b06.jpg'
+ERROR:app.utils.thumbnail_generator:Error processing room_ee012342eb894f12b967182b160a9f06.jpg: cannot identify image file 'uploads/rooms\\room_ee012342eb894f12b967182b160a9f06.jpg'
+INFO:app.utils.thumbnail_generator:Scanning directory: uploads/packages
+INFO:app.utils.thumbnail_generator:Scanning directory: uploads/cms
+INFO:app.utils.thumbnail_generator:Scanning directory: uploads/services
+INFO:app.utils.thumbnail_generator:Scanning directory: uploads/food_items
+INFO:app.utils.thumbnail_generator:Scanning directory: static/food_categories
+INFO:app.utils.thumbnail_generator:Thumbnail check complete. Generated 0 new thumbnails.
+INFO:     Application startup complete.
+Warning: DATABASE_URL not found in environment. Using default: postgresql://postgres:qwerty123@localhost:5432/pommadb
+Upload directory set to: D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\uploads\cms
+[HEALTH_MONITOR] Checking lock file at: D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\lock.dat
+[HEALTH_MONITOR] File exists: False
+INFO:     127.0.0.1:58889 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60400 - "OPTIONS /api/dashboard/summary?period=all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64945 - "OPTIONS /api/dashboard/charts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60400 - "OPTIONS /api/bookings?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64945 - "OPTIONS /api/reports/package-bookings?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58889 - "OPTIONS /api/reports/food-orders?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60400 - "OPTIONS /api/reports/expenses?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64945 - "OPTIONS /api/employees?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58889 - "OPTIONS /api/rooms?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60400 - "OPTIONS /api/rooms HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64945 - "OPTIONS /api/packages?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58889 - "OPTIONS /api/bookings?skip=0&limit=20&order_by=id&order=desc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60400 - "OPTIONS /api/packages/bookingsall?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64945 - "OPTIONS /api/rooms?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58889 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET https://gist.githubusercontent.com/placeholder_user/gist_id/raw/config.json "HTTP/1.1 404 Not Found"
+WARNING:health_monitor:Remote health check returned status: 404
+INFO:     127.0.0.1:62884 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60872 - "GET /api/rooms?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52810 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58889 - "GET /api/bookings?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52810 - "GET /api/reports/expenses?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60400 - "GET /api/dashboard/summary?period=all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62884 - "GET /api/reports/package-bookings?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64945 - "GET /api/dashboard/charts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60872 - "GET /api/reports/food-orders?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60400 - "GET /api/rooms HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60872 - "OPTIONS /api/bill/checkouts?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60400 - "OPTIONS /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60872 - "OPTIONS /api/bill/active-rooms HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62884 - "GET /api/packages?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64945 - "GET /api/bookings?skip=0&limit=20&order_by=id&order=desc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52810 - "GET /api/rooms?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60400 - "OPTIONS /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62884 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60872 - "GET /api/packages/bookingsall?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60400 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64945 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58889 - "GET /api/employees?skip=0&limit=10 HTTP/1.1" 200 OK
+DEBUG Params: s=None, e=None, fd=None, td=None, fD=None, tD=None
+DEBUG: Found 0 records after filtering.
+INFO:     127.0.0.1:60872 - "GET /api/bill/checkouts?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52810 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64945 - "GET /api/bill/active-rooms HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60872 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60400 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58889 - "GET /api/rooms?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52810 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60872 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64945 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62884 - "GET /api/dashboard/charts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60400 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58889 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52810 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60872 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62884 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64945 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60400 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58889 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52810 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62884 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60872 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62884 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64945 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60872 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60400 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58889 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52810 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55868 - "GET /uploads/banner_e4c3e1d76dfb4e2c89683055e77dccbf.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62884 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51994 - "GET /uploads/cms/banner_886ab99b064f40f8b20c4c0cb4af931a.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:61884 - "GET /uploads/cms/banner_7eeb7f381d7546df9f64d5160524d059.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:60400 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60872 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52810 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58889 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64945 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64945 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58889 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60872 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62884 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60400 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52810 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64945 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62884 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60400 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60872 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58889 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61884 - "GET /uploads/packages/pkg_9c3dfac0d09c4bca91d2c9cfebceb8f8_backpacker-relaxing-hammock-with-view-sunset-mekong-river-laos_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:61884 - "GET /uploads/packages/pkg_9c3dfac0d09c4bca91d2c9cfebceb8f8_backpacker-relaxing-hammock-with-view-sunset-mekong-river-laos.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:61884 - "GET /uploads/packages/pkg_869e898ad4184b5680f26fd8cd9629b1_woman-taking-photo-morning-mist-phu-lang-ka-phayao-thailand_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:61884 - "GET /uploads/packages/pkg_869e898ad4184b5680f26fd8cd9629b1_woman-taking-photo-morning-mist-phu-lang-ka-phayao-thailand.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:61884 - "GET /uploads/cms/sigexp_86aa6617e80a445480f491373b20369d_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:61884 - "GET /uploads/cms/sigexp_86aa6617e80a445480f491373b20369d.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:61884 - "GET /uploads/cms/sigexp_8a3d4ef0e5974e0a9a20b471246e968a_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51994 - "GET /uploads/cms/sigexp_8a3d4ef0e5974e0a9a20b471246e968a.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51994 - "GET /uploads/cms/wedding_5ed03bfa7dc4482b8a69f9583c88e5d1_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:61884 - "GET /uploads/cms/wedding_1f0955f0770f4e8ebb64b2cdec4e0381_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51994 - "GET /uploads/cms/wedding_5ed03bfa7dc4482b8a69f9583c88e5d1.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:61884 - "GET /uploads/cms/wedding_1f0955f0770f4e8ebb64b2cdec4e0381.jpeg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:61884 - "GET /uploads/services/svc_999aa14f9aac40548c978f76f8b31916_post_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:61884 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51994 - "GET /uploads/services/svc_a16c97f0be824ae9ae0cf4ec77dddff7_download_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:55887 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51994 - "GET /uploads/services/svc_763f47068ad440a4aa2d9ee9af45dc46_post_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51994 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60694 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64685 - "GET /uploads/services/svc_1070dba298df4ab2afc714d9500396db_woman-tourist-taking-photo-doi-luang-chiang-dao-mountains-chiang-mai-thailand_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:64685 - "GET /uploads/food_items/food_e40ad381e5d14c5bbc9f8efee65a3e1d_WhatsApp%20Image%202025-12-13%20at%2012.09.46_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51851 - "GET /uploads/food_items/food_e40ad381e5d14c5bbc9f8efee65a3e1d_WhatsApp%20Image%202025-12-13%20at%2012.09.46.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51783 - "GET /uploads/food_items/food_213a7937207445f19e860fc31bb06edf_backpacker-relaxing-hammock-with-view-sunset-mekong-river-laos_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51783 - "GET /uploads/food_items/food_213a7937207445f19e860fc31bb06edf_backpacker-relaxing-hammock-with-view-sunset-mekong-river-laos.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51783 - "GET /uploads/food_items/food_18d1c740e23a450eaccdca32a754c439_luxury-chill-bedroom-hotel_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51783 - "GET /uploads/food_items/food_18d1c740e23a450eaccdca32a754c439_luxury-chill-bedroom-hotel.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51783 - "GET /uploads/food_items/food_b53bc1451b934257a55fce74ff91db4c_febrian-zakaria-gwV9eklemSg-unsplash_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51783 - "GET /uploads/food_items/food_b53bc1451b934257a55fce74ff91db4c_febrian-zakaria-gwV9eklemSg-unsplash.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51783 - "GET /uploads/food_items/food_c3227fccaae440af8443f727d002d395_starry-sky-town_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51783 - "GET /uploads/food_items/food_c3227fccaae440af8443f727d002d395_starry-sky-town.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51783 - "GET /uploads/food_items/food_7bc5ba08f51e403d81fe21b90d9a32d3_asim-z-kodappana-FuMYt72YAfg-unsplash_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51783 - "GET /uploads/food_items/food_7bc5ba08f51e403d81fe21b90d9a32d3_asim-z-kodappana-FuMYt72YAfg-unsplash.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51783 - "GET /uploads/food_items/food_f2d491c8740b4391bacbdada7b026b73_ikshana-productions--ozXla-J45Y-unsplash_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51783 - "GET /uploads/food_items/food_f2d491c8740b4391bacbdada7b026b73_ikshana-productions--ozXla-J45Y-unsplash.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51783 - "GET /uploads/food_items/food_4c6572abdc1b469aa195751009c137af_visualsofdana-T5pL6ciEn-I-unsplash_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:55722 - "GET /uploads/food_items/food_4c6572abdc1b469aa195751009c137af_visualsofdana-T5pL6ciEn-I-unsplash.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51783 - "GET /uploads/food_items/food_1f90320aa27c4353be3690394206ff29_WhatsApp%20Image%202025-12-23%20at%2012.39.52_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55722 - "GET /uploads/food_items/food_1f90320aa27c4353be3690394206ff29_WhatsApp%20Image%202025-12-23%20at%2012.39.52.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60170 - "GET /uploads/food_items/food_42f5c730f39c4b89af2a6f54e94a037e_ajmal-shams-G-ODdr13X6s-unsplash_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:60170 - "GET /uploads/food_items/food_42f5c730f39c4b89af2a6f54e94a037e_ajmal-shams-G-ODdr13X6s-unsplash.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:60170 - "GET /uploads/food_items/food_7a3ee70e9b0545698337885636790ddb_Variety-Rice-3-1280x718_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:49623 - "GET /uploads/food_items/food_5fb87d276ae049659a312074a7ea475a_Variety-Rice-3-1280x718_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:60170 - "GET /uploads/food_items/food_7a3ee70e9b0545698337885636790ddb_Variety-Rice-3-1280x718.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:60170 - "GET /uploads/food_items/food_5fb87d276ae049659a312074a7ea475a_Variety-Rice-3-1280x718.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:49623 - "GET /uploads/food_items/food_99ff8db2a1a7451895debe2cc03c398f_istockphoto-488481490-612x612_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:49623 - "GET /uploads/food_items/food_e93597b0117f48d9a32dfabfb00ec82a_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60170 - "GET /uploads/food_items/food_99ff8db2a1a7451895debe2cc03c398f_istockphoto-488481490-612x612.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:61589 - "GET /uploads/food_items/food_e93597b0117f48d9a32dfabfb00ec82a_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60170 - "GET /uploads/food_items/food_25398015ac984ea0b735ec6422f775b7_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59534 - "GET /uploads/food_items/food_25398015ac984ea0b735ec6422f775b7_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60199 - "GET /uploads/food_items/food_3eb280774b7f4ee78729f7858ad2a6be_istockphoto-488481490-612x612_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:52040 - "GET /uploads/food_items/food_a681217ae0254b18ac4262fa5efc48dc_images%20%282%29_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60199 - "GET /uploads/food_items/food_3eb280774b7f4ee78729f7858ad2a6be_istockphoto-488481490-612x612.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:64552 - "GET /uploads/food_items/food_a681217ae0254b18ac4262fa5efc48dc_images%20%282%29.jpg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60199 - "GET /uploads/food_items/food_f0f660144cb54371b4ab3e7d2f603913_backpacker-relaxing-hammock-with-view-sunset-mekong-river-laos_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:60199 - "GET /uploads/food_items/food_f0f660144cb54371b4ab3e7d2f603913_backpacker-relaxing-hammock-with-view-sunset-mekong-river-laos.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:60199 - "GET /uploads/food_items/food_1177e0df937f4fd189ca70da114a4997_pexels-ash-craig-122861-376464_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:60199 - "GET /uploads/food_items/food_1177e0df937f4fd189ca70da114a4997_pexels-ash-craig-122861-376464.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:60199 - "GET /uploads/food_items/food_00c7d82e4cc24e70a3218957a1f1c910_images%20%281%29_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51512 - "GET /uploads/food_items/food_00c7d82e4cc24e70a3218957a1f1c910_images%20%281%29.jpg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54430 - "GET /uploads/food_items/food_48417625c97943a0bd616191f40470e0_pomma-logo.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:63890 - "GET /uploads/food_items/food_48417625c97943a0bd616191f40470e0_pomma-logo_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:58397 - "GET /uploads/gallery_cd51c7ff1ce546c5b8fb700d4bd2fbd1_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63890 - "GET /uploads/gallery_cd51c7ff1ce546c5b8fb700d4bd2fbd1.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54430 - "GET /uploads/cms/gallery_d584a7c912034a498a3a8eef2e214334_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:59300 - "GET /uploads/cms/gallery_d584a7c912034a498a3a8eef2e214334.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:54430 - "GET /uploads/nearby_banner_1765fe3074cb4d85be829e908a178fc0_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59300 - "GET /uploads/nearby_banner_1765fe3074cb4d85be829e908a178fc0.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57216 - "GET /uploads/cms/nearby_banner_7dc3811aabf84461b9e02c8a16fb5b22_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:57216 - "GET /uploads/cms/nearby_banner_7dc3811aabf84461b9e02c8a16fb5b22.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:57216 - "GET /uploads/cms/nearby_banner_7febb1045f934619a62ffa2ff9e081ad_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:57216 - "GET /uploads/cms/nearby_banner_7febb1045f934619a62ffa2ff9e081ad.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:57216 - "GET /uploads/cms/attraction_72f948ff1daa4841ac67b53adfa71a5b_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:57216 - "GET /uploads/cms/attraction_72f948ff1daa4841ac67b53adfa71a5b.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:57216 - "GET /uploads/cms/attraction_5292c098d5c04418a7d0a41fd1cffcbe_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:57216 - "GET /uploads/cms/attraction_5292c098d5c04418a7d0a41fd1cffcbe.jpeg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:57216 - "GET /uploads/cms/attraction_40f6b6299aab4e52a64f26c1e150035b_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:57216 - "GET /uploads/cms/attraction_40f6b6299aab4e52a64f26c1e150035b.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:57216 - "GET /uploads/cms/attraction_24c2eef68641439592748a1a82400651_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58201 - "GET /uploads/cms/attraction_24c2eef68641439592748a1a82400651.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58889 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61532 - "GET /uploads/rooms/room_e34b714fe56a40788f3214e2e30fa91e_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:64945 - "GET /api/packages/bookingsall?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62884 - "GET /api/bookings?skip=0&limit=20&order_by=id&order=desc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52435 - "GET /uploads/rooms/room_00299773e969409eaa902f8c306f6dfa.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:60400 - "GET /api/packages?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61532 - "GET /uploads/rooms/room_7a26d180a12b409bbc28afb96b8a5147_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:60872 - "GET /api/rooms HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52435 - "GET /uploads/packages/pkg_135f7cb036fa435a8bd195d0d2cb341d_The_Oberoi%2C_New_Delhi_-_Restaurant_Dhilli_-_dessert_-_Sultans_of_Dhilli_1.webp HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:61532 - "GET /uploads/packages/pkg_135f7cb036fa435a8bd195d0d2cb341d_The_Oberoi%2C_New_Delhi_-_Restaurant_Dhilli_-_dessert_-_Sultans_of_Dhilli_1_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:60872 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60400 - "GET /api/rooms?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63677 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63677 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+Login successful: admin@orchid.com
+INFO:     127.0.0.1:53184 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53184 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63677 - "OPTIONS /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53184 - "OPTIONS /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63677 - "OPTIONS /api/expenses?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53184 - "OPTIONS /api/food-orders?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63677 - "OPTIONS /api/services/assigned?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53184 - "OPTIONS /api/bill/checkouts?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53184 - "OPTIONS /api/packages?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63677 - "GET /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63677 - "OPTIONS /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63677 - "GET /api/expenses?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53184 - "GET /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53184 - "GET /api/services/assigned?limit=20 HTTP/1.1" 200 OK
+DEBUG Params: s=None, e=None, fd=None, td=None, fD=None, tD=None
+INFO:     127.0.0.1:63677 - "GET /api/food-orders?limit=20 HTTP/1.1" 200 OK
+DEBUG: Found 0 records after filtering.
+INFO:     127.0.0.1:64341 - "GET /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60574 - "GET /api/bill/checkouts?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57249 - "GET /api/packages?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57775 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57775 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57775 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57775 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57775 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57775 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57775 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57775 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57775 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57775 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57775 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57775 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57775 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57775 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58636 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58636 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57775 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58636 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55342 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57775 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58636 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64999 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49692 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55342 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57775 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64999 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60133 - "GET /api/rooms?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58636 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53932 - "GET /uploads/banner_e4c3e1d76dfb4e2c89683055e77dccbf.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49692 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57184 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64348 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49692 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64865 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54559 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57804 - "GET /uploads/food_items/food_e40ad381e5d14c5bbc9f8efee65a3e1d_WhatsApp%20Image%202025-12-13%20at%2012.09.46_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60313 - "GET /uploads/food_items/food_e40ad381e5d14c5bbc9f8efee65a3e1d_WhatsApp%20Image%202025-12-13%20at%2012.09.46.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57361 - "GET /uploads/food_items/food_1f90320aa27c4353be3690394206ff29_WhatsApp%20Image%202025-12-23%20at%2012.39.52_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58800 - "GET /uploads/food_items/food_1f90320aa27c4353be3690394206ff29_WhatsApp%20Image%202025-12-23%20at%2012.39.52.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49692 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62899 - "GET /uploads/food_items/food_e93597b0117f48d9a32dfabfb00ec82a_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57362 - "GET /uploads/food_items/food_e93597b0117f48d9a32dfabfb00ec82a_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54959 - "GET /uploads/food_items/food_25398015ac984ea0b735ec6422f775b7_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49692 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56695 - "GET /uploads/food_items/food_25398015ac984ea0b735ec6422f775b7_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55348 - "GET /uploads/food_items/food_a681217ae0254b18ac4262fa5efc48dc_images%20%282%29_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49692 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57775 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55342 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64999 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58636 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60133 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57775 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64999 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58636 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55342 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49692 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60130 - "GET /uploads/food_items/food_a681217ae0254b18ac4262fa5efc48dc_images%20%282%29.jpg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54059 - "GET /uploads/food_items/food_00c7d82e4cc24e70a3218957a1f1c910_images%20%281%29_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59466 - "GET /uploads/food_items/food_00c7d82e4cc24e70a3218957a1f1c910_images%20%281%29.jpg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54140 - "GET /uploads/gallery_cd51c7ff1ce546c5b8fb700d4bd2fbd1_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54840 - "GET /uploads/gallery_cd51c7ff1ce546c5b8fb700d4bd2fbd1.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60983 - "GET /uploads/nearby_banner_1765fe3074cb4d85be829e908a178fc0_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62340 - "GET /uploads/nearby_banner_1765fe3074cb4d85be829e908a178fc0.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60783 - "GET /uploads/cms/attraction_24c2eef68641439592748a1a82400651_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53751 - "GET /uploads/cms/attraction_24c2eef68641439592748a1a82400651.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57256 - "GET /api/health/license-status HTTP/1.1" 200 OK
+DEBUG Params: s=None, e=None, fd=None, td=None, fD=None, tD=None
+DEBUG: Found 0 records after filtering.
+INFO:     127.0.0.1:50731 - "GET /api/bill/checkouts?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53865 - "GET /api/expenses?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52599 - "GET /api/bookings?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63138 - "GET /api/packages?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63944 - "GET /api/rooms?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57256 - "GET /api/food-orders?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53865 - "GET /api/packages/bookingsall?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50731 - "GET /api/services/assigned?limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50731 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63138 - "GET /api/reports/package-bookings?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50731 - "GET /api/reports/expenses?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63944 - "GET /api/bookings?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53865 - "GET /api/dashboard/summary?period=all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52599 - "GET /api/reports/food-orders?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63138 - "GET /api/employees?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57256 - "GET /api/dashboard/charts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50731 - "GET /api/rooms?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49636 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61291 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65103 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52841 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62160 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63682 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57936 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61968 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62797 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60828 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57860 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52046 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61390 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54836 - "GET /health/license-status HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50738 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53350 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51619 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54185 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59290 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56866 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "OPTIONS /api/health/activate HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "POST /api/health/activate HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51058 - "GET /api/reports/expenses?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64514 - "GET /api/reports/package-bookings?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64137 - "GET /api/bookings?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50060 - "GET /api/dashboard/summary?period=all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55119 - "GET /api/reports/food-orders?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57328 - "GET /api/dashboard/charts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51058 - "GET /api/employees?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64514 - "GET /api/rooms?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64341 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57644 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62464 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59755 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61015 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63624 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60197 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64116 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62053 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51230 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51277 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54244 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62475 - "POST /api/health/activate HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62475 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62475 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62475 - "OPTIONS /api/dashboard/summary?period=all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59183 - "OPTIONS /api/dashboard/charts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62475 - "OPTIONS /api/bookings?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59183 - "OPTIONS /api/reports/package-bookings?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62475 - "OPTIONS /api/reports/food-orders?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59183 - "OPTIONS /api/reports/expenses?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62475 - "GET /api/dashboard/summary?period=all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62475 - "OPTIONS /api/employees?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62475 - "OPTIONS /api/rooms?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59183 - "GET /api/dashboard/charts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62475 - "GET /api/bookings?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59183 - "GET /api/reports/package-bookings?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53033 - "GET /api/reports/expenses?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57818 - "GET /api/employees?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52355 - "GET /api/reports/food-orders?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57146 - "GET /api/rooms?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64248 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62155 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55811 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54033 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65065 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57080 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51146 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54972 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57700 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53028 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57390 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58288 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61111 - "POST /api/health/activate HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61111 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61111 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61111 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61111 - "GET /api/dashboard/summary?period=all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61111 - "GET /api/bookings?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63202 - "GET /api/dashboard/charts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61111 - "GET /api/reports/package-bookings?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61111 - "GET /api/reports/expenses?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63202 - "GET /api/reports/food-orders?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61111 - "GET /api/employees?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63202 - "GET /api/rooms?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63205 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60328 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58835 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61917 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50335 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55160 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49400 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53891 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60959 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57734 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60768 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50600 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50600 - "POST /api/health/activate HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50600 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50600 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50600 - "GET /api/dashboard/summary?period=all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50600 - "GET /api/dashboard/charts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50600 - "GET /api/bookings?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50600 - "GET /api/reports/package-bookings?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51869 - "GET /api/reports/expenses?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50600 - "GET /api/reports/food-orders?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51125 - "GET /api/employees?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54391 - "GET /api/rooms?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60521 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54340 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60331 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58126 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50302 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56343 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50401 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55664 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET https://gist.githubusercontent.com/placeholder_user/gist_id/raw/config.json "HTTP/1.1 404 Not Found"
+WARNING:health_monitor:Remote health check returned status: 404
+ERROR:health_monitor:Health monitor connection failed: [Errno 11001] getaddrinfo failed
+[HEALTH_MONITOR] Checking lock file at: D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\lock.dat
+[HEALTH_MONITOR] File exists: False
+[HEALTH_MONITOR] Checking lock file at: D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\lock.dat
+[HEALTH_MONITOR] File exists: False
+INFO:     127.0.0.1:63294 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59881 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57104 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51019 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65462 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54765 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50395 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61086 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63343 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64595 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50649 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56072 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61872 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51283 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54249 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50165 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50165 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50165 - "OPTIONS /api/health/activate HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50165 - "POST /api/health/activate HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50165 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50165 - "GET /api/health/license-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50165 - "OPTIONS /api/dashboard/summary?period=all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52186 - "OPTIONS /api/dashboard/charts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50165 - "OPTIONS /api/bookings?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52186 - "OPTIONS /api/reports/package-bookings?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50165 - "OPTIONS /api/reports/food-orders?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52186 - "OPTIONS /api/reports/expenses?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50165 - "OPTIONS /api/employees?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52186 - "OPTIONS /api/rooms?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49250 - "GET /api/reports/package-bookings?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59623 - "GET /api/reports/expenses?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55077 - "GET /api/bookings?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53214 - "GET /api/reports/food-orders?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50165 - "GET /api/dashboard/summary?period=all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52186 - "GET /api/dashboard/charts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49250 - "GET /api/employees?skip=0&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59623 - "GET /api/rooms?skip=0&limit=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59623 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59623 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49250 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59623 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49250 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49250 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53214 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50165 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55077 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59623 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52186 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49250 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50165 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53214 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59623 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55077 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52186 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49250 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55077 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50165 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53214 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52186 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59623 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53000 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58829 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53670 - "GET /uploads/services/svc_a16c97f0be824ae9ae0cf4ec77dddff7_download.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:65291 - "GET /uploads/services/svc_999aa14f9aac40548c978f76f8b31916_post.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:50165 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55077 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49250 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64878 - "GET /uploads/services/svc_1070dba298df4ab2afc714d9500396db_woman-tourist-taking-photo-doi-luang-chiang-dao-mountains-chiang-mai-thailand.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:59218 - "GET /uploads/services/svc_763f47068ad440a4aa2d9ee9af45dc46_post.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:53214 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52186 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53670 - "GET /uploads/banner_e4c3e1d76dfb4e2c89683055e77dccbf.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65291 - "GET /uploads/cms/banner_886ab99b064f40f8b20c4c0cb4af931a.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:64878 - "GET /uploads/cms/banner_7eeb7f381d7546df9f64d5160524d059.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:59218 - "GET /uploads/packages/pkg_b7d80fc2c663416797043d1ad0afbfa5_istockphoto-488481490-612x612_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:64878 - "GET /uploads/packages/pkg_b7d80fc2c663416797043d1ad0afbfa5_istockphoto-488481490-612x612.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:65291 - "GET /uploads/packages/pkg_9c3dfac0d09c4bca91d2c9cfebceb8f8_backpacker-relaxing-hammock-with-view-sunset-mekong-river-laos_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:64878 - "GET /uploads/packages/pkg_869e898ad4184b5680f26fd8cd9629b1_woman-taking-photo-morning-mist-phu-lang-ka-phayao-thailand_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:65291 - "GET /uploads/packages/pkg_9c3dfac0d09c4bca91d2c9cfebceb8f8_backpacker-relaxing-hammock-with-view-sunset-mekong-river-laos.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:64878 - "GET /uploads/packages/pkg_869e898ad4184b5680f26fd8cd9629b1_woman-taking-photo-morning-mist-phu-lang-ka-phayao-thailand.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:52186 - "GET /api/rooms?limit=1000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64878 - "GET /uploads/cms/sigexp_86aa6617e80a445480f491373b20369d_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:64878 - "GET /uploads/cms/sigexp_86aa6617e80a445480f491373b20369d.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:64878 - "GET /uploads/cms/sigexp_8a3d4ef0e5974e0a9a20b471246e968a_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:64878 - "GET /uploads/cms/sigexp_8a3d4ef0e5974e0a9a20b471246e968a.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:65291 - "GET /uploads/cms/wedding_5ed03bfa7dc4482b8a69f9583c88e5d1_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:64878 - "GET /uploads/cms/wedding_1f0955f0770f4e8ebb64b2cdec4e0381_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:52186 - "GET /api/bookings?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65291 - "GET /uploads/cms/wedding_5ed03bfa7dc4482b8a69f9583c88e5d1.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:59218 - "GET /uploads/services/svc_999aa14f9aac40548c978f76f8b31916_post_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:52186 - "GET /api/packages/bookingsall?limit=2000&skip=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59218 - "GET /uploads/services/svc_f506060524994099b7c157f8be1c63e8_WhatsApp%20Image%202025-11-09%20at%2010.58.14_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58851 - "GET /uploads/services/svc_a16c97f0be824ae9ae0cf4ec77dddff7_download_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:64878 - "GET /uploads/cms/wedding_1f0955f0770f4e8ebb64b2cdec4e0381.jpeg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:52186 - "GET /api/frontend/resort-info/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65291 - "GET /uploads/services/svc_763f47068ad440a4aa2d9ee9af45dc46_post_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:58851 - "GET /uploads/services/svc_e1e6b0735f86487ab3af94f5c0b189e0_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51306 - "GET /uploads/services/svc_1070dba298df4ab2afc714d9500396db_woman-tourist-taking-photo-doi-luang-chiang-dao-mountains-chiang-mai-thailand_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:65291 - "GET /uploads/food_items/food_e40ad381e5d14c5bbc9f8efee65a3e1d_WhatsApp%20Image%202025-12-13%20at%2012.09.46_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64878 - "GET /uploads/food_items/food_e40ad381e5d14c5bbc9f8efee65a3e1d_WhatsApp%20Image%202025-12-13%20at%2012.09.46.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50165 - "GET /api/frontend/reviews/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51306 - "GET /uploads/food_items/food_213a7937207445f19e860fc31bb06edf_backpacker-relaxing-hammock-with-view-sunset-mekong-river-laos_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:59623 - "GET /api/frontend/header-banner/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52186 - "GET /api/food-items/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55077 - "GET /api/frontend/gallery/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53214 - "GET /api/food-categories/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49250 - "GET /api/packages/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50165 - "GET /api/services/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55077 - "GET /api/frontend/nearby-attractions/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52186 - "GET /api/frontend/plan-weddings/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59623 - "GET /api/frontend/signature-experiences/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53214 - "GET /api/frontend/nearby-attraction-banners/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51306 - "GET /uploads/food_items/food_213a7937207445f19e860fc31bb06edf_backpacker-relaxing-hammock-with-view-sunset-mekong-river-laos.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51306 - "GET /uploads/food_items/food_18d1c740e23a450eaccdca32a754c439_luxury-chill-bedroom-hotel_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51306 - "GET /uploads/food_items/food_18d1c740e23a450eaccdca32a754c439_luxury-chill-bedroom-hotel.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51306 - "GET /uploads/food_items/food_b53bc1451b934257a55fce74ff91db4c_febrian-zakaria-gwV9eklemSg-unsplash_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51306 - "GET /uploads/food_items/food_b53bc1451b934257a55fce74ff91db4c_febrian-zakaria-gwV9eklemSg-unsplash.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51306 - "GET /uploads/food_items/food_c3227fccaae440af8443f727d002d395_starry-sky-town_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:54031 - "GET /uploads/food_items/food_c3227fccaae440af8443f727d002d395_starry-sky-town.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51306 - "GET /uploads/food_items/food_7bc5ba08f51e403d81fe21b90d9a32d3_asim-z-kodappana-FuMYt72YAfg-unsplash_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:54031 - "GET /uploads/food_items/food_7bc5ba08f51e403d81fe21b90d9a32d3_asim-z-kodappana-FuMYt72YAfg-unsplash.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51306 - "GET /uploads/food_items/food_f2d491c8740b4391bacbdada7b026b73_ikshana-productions--ozXla-J45Y-unsplash_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:54031 - "GET /uploads/food_items/food_f2d491c8740b4391bacbdada7b026b73_ikshana-productions--ozXla-J45Y-unsplash.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:54031 - "GET /uploads/food_items/food_4c6572abdc1b469aa195751009c137af_visualsofdana-T5pL6ciEn-I-unsplash_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51306 - "GET /uploads/food_items/food_1f90320aa27c4353be3690394206ff29_WhatsApp%20Image%202025-12-23%20at%2012.39.52_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52883 - "GET /uploads/food_items/food_1f90320aa27c4353be3690394206ff29_WhatsApp%20Image%202025-12-23%20at%2012.39.52.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54031 - "GET /uploads/food_items/food_4c6572abdc1b469aa195751009c137af_visualsofdana-T5pL6ciEn-I-unsplash.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:62378 - "GET /uploads/food_items/food_42f5c730f39c4b89af2a6f54e94a037e_ajmal-shams-G-ODdr13X6s-unsplash_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:62378 - "GET /uploads/food_items/food_42f5c730f39c4b89af2a6f54e94a037e_ajmal-shams-G-ODdr13X6s-unsplash.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:62378 - "GET /uploads/food_items/food_7a3ee70e9b0545698337885636790ddb_Variety-Rice-3-1280x718_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:62378 - "GET /uploads/food_items/food_5fb87d276ae049659a312074a7ea475a_Variety-Rice-3-1280x718_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:54031 - "GET /uploads/food_items/food_7a3ee70e9b0545698337885636790ddb_Variety-Rice-3-1280x718.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:62378 - "GET /uploads/food_items/food_5fb87d276ae049659a312074a7ea475a_Variety-Rice-3-1280x718.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:62378 - "GET /uploads/food_items/food_99ff8db2a1a7451895debe2cc03c398f_istockphoto-488481490-612x612_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:62378 - "GET /uploads/food_items/food_e93597b0117f48d9a32dfabfb00ec82a_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50198 - "GET /uploads/food_items/food_e93597b0117f48d9a32dfabfb00ec82a_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53643 - "GET /uploads/food_items/food_25398015ac984ea0b735ec6422f775b7_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54031 - "GET /uploads/food_items/food_99ff8db2a1a7451895debe2cc03c398f_istockphoto-488481490-612x612.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:54031 - "GET /uploads/food_items/food_25398015ac984ea0b735ec6422f775b7_The%20Oberoi%2C%20New%20Delhi%20-%20Restaurant%20Dhilli%20-%20dessert%20-%20Sultans%20of%20Dhilli%201.webp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62144 - "GET /uploads/food_items/food_3eb280774b7f4ee78729f7858ad2a6be_istockphoto-488481490-612x612_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:56520 - "GET /uploads/food_items/food_a681217ae0254b18ac4262fa5efc48dc_images%20%282%29_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62144 - "GET /uploads/food_items/food_a681217ae0254b18ac4262fa5efc48dc_images%20%282%29.jpg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58461 - "GET /uploads/food_items/food_3eb280774b7f4ee78729f7858ad2a6be_istockphoto-488481490-612x612.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:61391 - "GET /uploads/food_items/food_1177e0df937f4fd189ca70da114a4997_pexels-ash-craig-122861-376464_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:63811 - "GET /uploads/food_items/food_f0f660144cb54371b4ab3e7d2f603913_backpacker-relaxing-hammock-with-view-sunset-mekong-river-laos.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:58461 - "GET /uploads/food_items/food_f0f660144cb54371b4ab3e7d2f603913_backpacker-relaxing-hammock-with-view-sunset-mekong-river-laos_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:58288 - "GET /uploads/food_items/food_1177e0df937f4fd189ca70da114a4997_pexels-ash-craig-122861-376464.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:61391 - "GET /uploads/food_items/food_00c7d82e4cc24e70a3218957a1f1c910_images%20%281%29_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58288 - "GET /uploads/food_items/food_00c7d82e4cc24e70a3218957a1f1c910_images%20%281%29.jpg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58461 - "GET /uploads/food_items/food_48417625c97943a0bd616191f40470e0_pomma-logo.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:63811 - "GET /uploads/food_items/food_48417625c97943a0bd616191f40470e0_pomma-logo_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:58461 - "GET /uploads/gallery_cd51c7ff1ce546c5b8fb700d4bd2fbd1_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63811 - "GET /uploads/gallery_cd51c7ff1ce546c5b8fb700d4bd2fbd1.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59389 - "GET /uploads/cms/gallery_d584a7c912034a498a3a8eef2e214334_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:49165 - "GET /uploads/cms/gallery_d584a7c912034a498a3a8eef2e214334.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:59389 - "GET /uploads/nearby_banner_1765fe3074cb4d85be829e908a178fc0_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49165 - "GET /uploads/nearby_banner_1765fe3074cb4d85be829e908a178fc0.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63059 - "GET /uploads/cms/nearby_banner_7dc3811aabf84461b9e02c8a16fb5b22_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:63059 - "GET /uploads/cms/nearby_banner_7febb1045f934619a62ffa2ff9e081ad_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:50060 - "GET /uploads/cms/nearby_banner_7dc3811aabf84461b9e02c8a16fb5b22.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:63059 - "GET /uploads/cms/nearby_banner_7febb1045f934619a62ffa2ff9e081ad.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:50060 - "GET /uploads/cms/attraction_72f948ff1daa4841ac67b53adfa71a5b_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51127 - "GET /uploads/cms/attraction_5292c098d5c04418a7d0a41fd1cffcbe_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:56527 - "GET /uploads/cms/attraction_72f948ff1daa4841ac67b53adfa71a5b.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51127 - "GET /uploads/cms/attraction_40f6b6299aab4e52a64f26c1e150035b_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:63059 - "GET /uploads/cms/attraction_24c2eef68641439592748a1a82400651_thumb.jpg?v=hq HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56527 - "GET /uploads/cms/attraction_5292c098d5c04418a7d0a41fd1cffcbe.jpeg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51127 - "GET /uploads/cms/attraction_24c2eef68641439592748a1a82400651.jpeg HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50060 - "GET /uploads/cms/attraction_40f6b6299aab4e52a64f26c1e150035b.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:56527 - "GET /uploads/rooms/room_e34b714fe56a40788f3214e2e30fa91e_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:56527 - "GET /uploads/rooms/room_e34b714fe56a40788f3214e2e30fa91e.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:56527 - "GET /uploads/rooms/room_00299773e969409eaa902f8c306f6dfa.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:50060 - "GET /uploads/rooms/room_00299773e969409eaa902f8c306f6dfa_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:56527 - "GET /uploads/rooms/room_7a26d180a12b409bbc28afb96b8a5147_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:56527 - "GET /uploads/rooms/room_7a26d180a12b409bbc28afb96b8a5147.jpg HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:56527 - "GET /uploads/packages/pkg_135f7cb036fa435a8bd195d0d2cb341d_The_Oberoi%2C_New_Delhi_-_Restaurant_Dhilli_-_dessert_-_Sultans_of_Dhilli_1_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:50060 - "GET /uploads/packages/pkg_135f7cb036fa435a8bd195d0d2cb341d_The_Oberoi%2C_New_Delhi_-_Restaurant_Dhilli_-_dessert_-_Sultans_of_Dhilli_1.webp HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:56527 - "GET /uploads/rooms/room_b30e8edd6f8e41ec9490019d0af29155_thumb.jpg?v=hq HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:49582 - "GET /uploads/rooms/room_b30e8edd6f8e41ec9490019d0af29155.jpg HTTP/1.1" 304 Not Modified

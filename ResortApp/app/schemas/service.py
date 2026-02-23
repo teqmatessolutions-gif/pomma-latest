@@ -57,8 +57,8 @@ class ServiceStatus(str, Enum):
 
 class AssignedServiceBase(BaseModel):
     service_id: int
-    employee_id: int
-    room_id: int
+    employee_id: Optional[int] = None
+    room_id: Optional[int] = None
 
 class AssignedServiceCreate(AssignedServiceBase):
     status: Optional[ServiceStatus] = ServiceStatus.pending
@@ -69,8 +69,8 @@ class AssignedServiceUpdate(BaseModel):
 class AssignedServiceOut(BaseModel):
     id: int
     service: ServiceOut
-    employee: EmployeeOut
-    room: RoomOut
+    employee: Optional[EmployeeOut] = None
+    room: Optional[RoomOut] = None
     assigned_at: datetime
     status: ServiceStatus
 

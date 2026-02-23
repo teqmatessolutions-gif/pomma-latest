@@ -138,4 +138,9 @@ def delete_assigned_service(assigned_id: int, db: Session = Depends(get_db), cur
     success = service_crud.delete_assigned_service(db, assigned_id)
     if not success:
         raise HTTPException(status_code=404, detail="Assigned service not found")
-    return {"detail": "Deleted successfully"}
+@router.post("/bookings", response_model=service_schema.AssignedServiceOut)
+def create_service_booking(payload: service_schema.AssignedServiceCreate, db: Session = Depends(get_db)):
+    """Create a new service booking (publicly accessible for QR guests)"""
+    # For guest bookings, we might need to adjust the payload schema if it differs from admin assignment
+    # reusing the logic but ensuring no auth required
+    return service_crud.create_assigned_service(db, payload)

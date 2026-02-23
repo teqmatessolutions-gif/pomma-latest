@@ -53,7 +53,8 @@ if (document.readyState === 'loading') {
   makeDateInputsClickable();
 }
 
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import RoomLanding from "./components/RoomLanding";
 
 // ... existing code ...
 
@@ -61,7 +62,10 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <BrowserRouter basename="/pomma">
-      <App />
+      <Routes>
+        <Route path="/" element={<App />} />
+        <Route path="/room/:id" element={<RoomLanding />} />
+      </Routes>
     </BrowserRouter>
   </React.StrictMode>
 );

@@ -73,9 +73,13 @@ def get_license_status():
         # Display minutes if less than a day
         if days_remaining < 1:
              minutes_left = int(seconds_remaining / 60)
-             msg = f"License expires in {minutes_left} minutes"
-             if minutes_left < 60:
+             seconds_left = int(seconds_remaining % 60)
+             if seconds_remaining <= 60:  # Less than 1 minute → URGENT warning
+                 status = "EXPIRING_SOON"
+                 msg = f"License expires in {int(seconds_remaining)} seconds!"
+             elif minutes_left < 60:
                  status = "WARNING"
+                 msg = f"License expires in {minutes_left} minutes {seconds_left} seconds"
         elif days_remaining <= WARNING_THRESHOLD_DAYS:
              status = "WARNING"
              msg = f"License expires in {days_remaining} days"
@@ -100,9 +104,11 @@ def activate_license(key):
     if input_hash != MASTER_ACTIVATION_HASH:
         return False, "Invalid activation key"
     
-    # FOR TESTING: Set expiry to 10 minutes from now
-    new_expiry = datetime.now() + timedelta(minutes=10)
-    # new_expiry = datetime.now().date() + timedelta(days=ACTIVATION_PERIOD_DAYS) # Original logic
+    # FOR TESTING: Set expiry to 2 minutes from now.
+    # Next test: change minutes=2 to minutes=5 to test the 5-minute scenario.
+    new_expiry = datetime.now() + timedelta(minutes=2)
+    # PRODUCTION: Uncomment below and comment above:
+    # new_expiry = datetime.now() + timedelta(days=ACTIVATION_PERIOD_DAYS)
     
     new_expiry_str = new_expiry.isoformat()
     

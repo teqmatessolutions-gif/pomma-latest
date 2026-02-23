@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback, memo } from "react";
 import localLogo from "./assets/logo.png";
 // Lucide React is used for elegant icons
-import { BedDouble, Coffee, ConciergeBell, Package, ChevronRight, ChevronLeft, ChevronDown, Image as ImageIcon, Star, Quote, ChevronUp, MessageSquare, Send, X, Facebook, Instagram, Linkedin, Twitter, Moon, Sun, Droplet } from 'lucide-react';
+import { BedDouble, Coffee, ConciergeBell, Package, ChevronRight, ChevronLeft, ChevronDown, Image as ImageIcon, Star, Quote, ChevronUp, MessageSquare, Send, X, Facebook, Instagram, Linkedin, Twitter, Moon, Sun, Droplet, Check } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 import { countryCodes } from "./utils/countryCodes";
@@ -1056,6 +1056,35 @@ export default function App() {
         }, 5000);
     };
 
+    // QR Code Room Detection
+    useEffect(() => {
+        const queryParams = new URLSearchParams(window.location.search);
+        const roomIdParam = queryParams.get('room_id');
+        const actionParam = queryParams.get('action'); // New action param
+
+        if (roomIdParam) {
+            const parsedRoomId = parseInt(roomIdParam);
+            if (!isNaN(parsedRoomId)) {
+                setScannedRoomId(parsedRoomId);
+                // Pre-fill forms
+                setFoodOrderData(prev => ({ ...prev, room_id: parsedRoomId }));
+                setServiceBookingData(prev => ({ ...prev, room_id: parsedRoomId }));
+
+                // Handle automated actions from RoomLanding
+                if (actionParam === 'food') {
+                    setIsFoodOrderFormOpen(true);
+                } else if (actionParam === 'service') {
+                    setIsServiceBookingFormOpen(true);
+                }
+
+                // Show welcome banner after a short delay to ensure app is ready
+                setTimeout(() => {
+                    showBannerMessage("success", `Welcome! You are connected to Room #${parsedRoomId}.`);
+                }, 1000);
+            }
+        }
+    }, []);
+
     // Booking Modals State
     const [isRoomBookingFormOpen, setIsRoomBookingFormOpen] = useState(false);
     const [isPackageBookingFormOpen, setIsPackageBookingFormOpen] = useState(false);
@@ -1103,6 +1132,8 @@ export default function App() {
         room_id: null,
         items: {},
     });
+
+    const [scannedRoomId, setScannedRoomId] = useState(null); // State for QR scanned room
 
     const [bookingMessage, setBookingMessage] = useState({ type: null, text: "" });
     const [isBookingLoading, setIsBookingLoading] = useState(false);
@@ -2170,6 +2201,12 @@ export default function App() {
         setIsBookingLoading(true);
         setBookingMessage({ type: null, text: "" });
 
+        if (!serviceBookingData.service_id) {
+            showBannerMessage("error", "Please select a service.");
+            setIsBookingLoading(false);
+            return;
+        }
+
         try {
             const API_BASE_URL = getApiBaseUrl();
             const response = await fetch(`${API_BASE_URL}/services/bookings`, {
@@ -2180,7 +2217,11 @@ export default function App() {
 
             if (response.ok) {
                 showBannerMessage("success", "Service booking successful! Our staff will be with you shortly.");
-                setServiceBookingData({ service_id: null, guest_name: "", guest_mobile: "", guest_email: "", room_id: null });
+                if (scannedRoomId) {
+                    setServiceBookingData(prev => ({ ...prev, service_id: null })); // Keep room_id
+                } else {
+                    setServiceBookingData({ service_id: null, room_id: null });
+                }
                 // Close the booking form after successful booking
                 setTimeout(() => {
                     setIsServiceBookingFormOpen(false);
@@ -2230,7 +2271,11 @@ export default function App() {
 
             if (response.ok) {
                 showBannerMessage("success", "Food order placed successfully! Your meal will be delivered shortly.");
-                setFoodOrderData({ room_id: null, items: {} });
+                if (scannedRoomId) {
+                    setFoodOrderData(prev => ({ ...prev, items: {} })); // Keep room_id
+                } else {
+                    setFoodOrderData({ room_id: null, items: {} });
+                }
                 // Close the booking form after successful order
                 setTimeout(() => {
                     setIsFoodOrderFormOpen(false);
@@ -4894,24 +4939,62 @@ export default function App() {
                             </div>
                             <form onSubmit={handleServiceBookingSubmit} className="p-4 space-y-4">
                                 <div className="space-y-2">
-                                    <label className={`block text-sm font-medium ${theme.textSecondary}`}>Service ID</label>
-                                    <input type="number" name="service_id" value={serviceBookingData.service_id || ''} readOnly className={`w-full p-3 rounded-xl ${theme.placeholderBg} ${theme.placeholderText} focus:outline-none`} />
+                                    <label className={`block text-sm font-medium ${theme.textSecondary}`}>Select Service</label>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
+                                        {services.map((service) => (
+                                            <div
+                                                key={service.id}
+                                                onClick={() => setServiceBookingData((prev) => ({ ...prev, service_id: service.id }))}
+                                                className={`relative cursor-pointer p-3 rounded-xl border-2 transition-all flex flex-col items-center text-center gap-2 ${serviceBookingData.service_id === service.id
+                                                    ? `${theme.border} bg-amber-50 ring-2 ring-amber-500`
+                                                    : "border-gray-200 hover:border-amber-300"
+                                                    }`}
+                                            >
+                                                {service.images && service.images.length > 0 ? (
+                                                    <div className="w-12 h-12 rounded-full overflow-hidden shadow-sm aspect-square">
+                                                        <img
+                                                            src={getImageUrl(service.images[0].image_url)}
+                                                            alt={service.name}
+                                                            className="w-full h-full object-cover"
+                                                            onError={(e) => { e.target.onerror = null; e.target.src = ITEM_PLACEHOLDER; }}
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center aspect-square ${theme.bgSecondary}`}>
+                                                        <ConciergeBell className={`w-6 h-6 ${theme.textSecondary}`} />
+                                                    </div>
+                                                )}
+
+                                                <div className="w-full">
+                                                    <h4 className={`font-bold text-xs ${theme.textPrimary} line-clamp-2 leading-tight`}>{service.name}</h4>
+                                                    <p className={`text-xs ${theme.textAccent} font-semibold mt-1`}>{formatCurrency(service.charges)}</p>
+                                                </div>
+
+                                                {serviceBookingData.service_id === service.id && (
+                                                    <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-0.5 shadow-sm">
+                                                        <Check size={10} strokeWidth={3} />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {!serviceBookingData.service_id && (
+                                        <p className="text-xs text-red-500 mt-1">* Please select a service</p>
+                                    )}
                                 </div>
-                                <div className="space-y-2">
-                                    <label className={`block text-sm font-medium ${theme.textSecondary}`}>Full Name</label>
-                                    <input type="text" name="guest_name" value={serviceBookingData.guest_name} onChange={handleServiceBookingChange} placeholder="Enter your full name" required className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors`} />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className={`block text-sm font-medium ${theme.textSecondary}`}>Email Address</label>
-                                    <input type="email" name="guest_email" value={serviceBookingData.guest_email} onChange={handleServiceBookingChange} placeholder="user@example.com" required className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors`} />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className={`block text-sm font-medium ${theme.textSecondary}`}>Phone Number</label>
-                                    <input type="tel" name="guest_mobile" value={serviceBookingData.guest_mobile} onChange={handleServiceBookingChange} placeholder="Enter your mobile number" required className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors`} />
-                                </div>
+
                                 <div className="space-y-2">
                                     <label className={`block text-sm font-medium ${theme.textSecondary}`}>Room ID (Optional)</label>
-                                    <input type="number" name="room_id" value={serviceBookingData.room_id || ''} onChange={handleServiceBookingChange} placeholder="Enter your room ID if assigned" className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors`} />
+                                    <input
+                                        type="number"
+                                        name="room_id"
+                                        value={serviceBookingData.room_id || ''}
+                                        onChange={handleServiceBookingChange}
+                                        placeholder="Enter your room ID if assigned"
+                                        readOnly={!!scannedRoomId}
+                                        className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors ${scannedRoomId ? 'bg-gray-100 cursor-not-allowed opacity-80' : ''}`}
+                                    />
+                                    {scannedRoomId && <p className="text-xs text-green-600 font-medium">✓ Room Automatically Detected</p>}
                                 </div>
                                 <button type="submit" className={`w-full py-3 rounded-full ${theme.buttonBg} ${theme.buttonText} font-bold shadow-lg ${theme.buttonHover} transition-colors disabled:opacity-50`} disabled={isBookingLoading}>
                                     {isBookingLoading ? 'Booking...' : 'Confirm Booking'}
@@ -4937,7 +5020,17 @@ export default function App() {
                             <form onSubmit={handleFoodOrderSubmit} className="p-4 space-y-4">
                                 <div className="space-y-2">
                                     <label className={`block text-sm font-medium ${theme.textSecondary}`}>Room ID</label>
-                                    <input type="number" name="room_id" value={foodOrderData.room_id || ''} onChange={(e) => setFoodOrderData(prev => ({ ...prev, room_id: parseInt(e.target.value) || '' }))} placeholder="Enter your room ID" required className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors`} />
+                                    <input
+                                        type="number"
+                                        name="room_id"
+                                        value={foodOrderData.room_id || ''}
+                                        onChange={(e) => !scannedRoomId && setFoodOrderData(prev => ({ ...prev, room_id: parseInt(e.target.value) || '' }))}
+                                        placeholder="Enter your room ID"
+                                        required
+                                        readOnly={!!scannedRoomId}
+                                        className={`w-full p-3 rounded-xl ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors ${scannedRoomId ? 'bg-gray-100 cursor-not-allowed opacity-80' : ''}`}
+                                    />
+                                    {scannedRoomId && <p className="text-xs text-green-600 font-medium">✓ Room Automatically Detected</p>}
                                 </div>
                                 <h4 className={`text-md font-semibold ${theme.textPrimary}`}>Select Items:</h4>
                                 <div className="space-y-4 max-h-60 overflow-y-auto">

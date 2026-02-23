@@ -1,0 +1,353 @@
+INFO:     Will watch for changes in these directories: ['D:\\resort_oc_10\\Resortwithlandingpage\\pomma-latest\\ResortApp']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [10676] using StatReload
+INFO:     Started server process [9980]
+INFO:     Waiting for application startup.
+INFO:app.utils.thumbnail_generator:Starting thumbnail generation check...
+INFO:app.utils.thumbnail_generator:Scanning directory: static/rooms
+INFO:app.utils.thumbnail_generator:Scanning directory: uploads/rooms
+ERROR:app.utils.thumbnail_generator:Error processing room_d5a784f63baa4bbba16f8385cbad7d06.jpg: cannot identify image file 'uploads/rooms\\room_d5a784f63baa4bbba16f8385cbad7d06.jpg'
+ERROR:app.utils.thumbnail_generator:Error processing room_ebda3b4b41ac4c8b9381177ca4371b06.jpg: cannot identify image file 'uploads/rooms\\room_ebda3b4b41ac4c8b9381177ca4371b06.jpg'
+ERROR:app.utils.thumbnail_generator:Error processing room_ee012342eb894f12b967182b160a9f06.jpg: cannot identify image file 'uploads/rooms\\room_ee012342eb894f12b967182b160a9f06.jpg'
+INFO:app.utils.thumbnail_generator:Scanning directory: uploads/packages
+INFO:app.utils.thumbnail_generator:Scanning directory: uploads/cms
+INFO:app.utils.thumbnail_generator:Scanning directory: uploads/services
+INFO:app.utils.thumbnail_generator:Scanning directory: uploads/food_items
+INFO:app.utils.thumbnail_generator:Scanning directory: static/food_categories
+INFO:app.utils.thumbnail_generator:Thumbnail check complete. Generated 0 new thumbnails.
+INFO:     Application startup complete.
+INFO:httpx:HTTP Request: GET https://gist.githubusercontent.com/placeholder_user/gist_id/raw/config.json "HTTP/1.1 404 Not Found"
+WARNING:health_monitor:Remote health check returned status: 404
+Warning: DATABASE_URL not found in environment. Using default: postgresql://postgres:qwerty123@localhost:5432/pommadb
+Upload directory set to: D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\uploads\cms
+[HEALTH_MONITOR] Checking lock file at: D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\lock.dat
+[HEALTH_MONITOR] File exists: False
+INFO:     127.0.0.1:55925 - "POST /api/food-orders/ HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+  + Exception Group Traceback (most recent call last):
+  |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\_utils.py", line 79, in collapse_excgroups
+  |     yield
+  |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\base.py", line 183, in __call__
+  |     async with anyio.create_task_group() as task_group:
+  |                ~~~~~~~~~~~~~~~~~~~~~~~^^
+  |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 772, in __aexit__
+  |     raise BaseExceptionGroup(
+  |         "unhandled errors in a TaskGroup", self._exceptions
+  |     ) from None
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\uvicorn\protocols\http\h11_impl.py", line 403, in run_asgi
+    |     result = await app(  # type: ignore[func-returns-value]
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |         self.scope, self.receive, self.send
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     )
+    |     ^
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    |     return await self.app(scope, receive, send)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\fastapi\applications.py", line 1054, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\applications.py", line 113, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    |     raise exc
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\base.py", line 182, in __call__
+    |     with recv_stream, send_stream, collapse_excgroups():
+    |                                    ~~~~~~~~~~~~~~~~~~^^
+    |   File "C:\Users\dayon\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    |     self.gen.throw(value)
+    |     ~~~~~~~~~~~~~~^^^^^^^
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\_utils.py", line 85, in collapse_excgroups
+    |     raise exc
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\base.py", line 184, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\app\main.py", line 101, in check_system_health
+    |     return await call_next(request)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\base.py", line 159, in call_next
+    |     raise app_exc
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\cors.py", line 85, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\routing.py", line 716, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\routing.py", line 736, in app
+    |     await route.handle(scope, receive, send)
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\routing.py", line 290, in handle
+    |     await self.app(scope, receive, send)
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\routing.py", line 78, in app
+    |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\routing.py", line 75, in app
+    |     response = await f(request)
+    |                ^^^^^^^^^^^^^^^^
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\fastapi\routing.py", line 328, in app
+    |     content = await serialize_response(
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     ...<9 lines>...
+    |     )
+    |     ^
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\fastapi\routing.py", line 177, in serialize_response
+    |     raise ResponseValidationError(
+    |         errors=_normalize_errors(errors), body=response_content
+    |     )
+    | fastapi.exceptions.ResponseValidationError: 1 validation errors:
+    |   {'type': 'int_type', 'loc': ('response', 'assigned_employee_id'), 'msg': 'Input should be a valid integer', 'input': None}
+    | 
+    +------------------------------------
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\uvicorn\protocols\http\h11_impl.py", line 403, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\fastapi\applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\base.py", line 182, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\dayon\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\base.py", line 184, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\app\main.py", line 101, in check_system_health
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\base.py", line 159, in call_next
+    raise app_exc
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\routing.py", line 78, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\fastapi\routing.py", line 328, in app
+    content = await serialize_response(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\fastapi\routing.py", line 177, in serialize_response
+    raise ResponseValidationError(
+        errors=_normalize_errors(errors), body=response_content
+    )
+fastapi.exceptions.ResponseValidationError: 1 validation errors:
+  {'type': 'int_type', 'loc': ('response', 'assigned_employee_id'), 'msg': 'Input should be a valid integer', 'input': None}
+
+WARNING:  StatReload detected changes in 'app\schemas\foodorder.py'. Reloading...
+ INFO:     127.0.0.1:53819 - "POST /api/food-orders/ HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+  + Exception Group Traceback (most recent call last):
+  |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\_utils.py", line 79, in collapse_excgroups
+  |     yield
+  |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\base.py", line 183, in __call__
+  |     async with anyio.create_task_group() as task_group:
+  |                ~~~~~~~~~~~~~~~~~~~~~~~^^
+  |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 772, in __aexit__
+  |     raise BaseExceptionGroup(
+  |         "unhandled errors in a TaskGroup", self._exceptions
+  |     ) from None
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\uvicorn\protocols\http\h11_impl.py", line 403, in run_asgi
+    |     result = await app(  # type: ignore[func-returns-value]
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |         self.scope, self.receive, self.send
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     )
+    |     ^
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    |     return await self.app(scope, receive, send)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\fastapi\applications.py", line 1054, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\applications.py", line 113, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    |     raise exc
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\base.py", line 182, in __call__
+    |     with recv_stream, send_stream, collapse_excgroups():
+    |                                    ~~~~~~~~~~~~~~~~~~^^
+    |   File "C:\Users\dayon\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    |     self.gen.throw(value)
+    |     ~~~~~~~~~~~~~~^^^^^^^
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\_utils.py", line 85, in collapse_excgroups
+    |     raise exc
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\base.py", line 184, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\app\main.py", line 101, in check_system_health
+    |     return await call_next(request)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\base.py", line 159, in call_next
+    |     raise app_exc
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\cors.py", line 85, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\routing.py", line 716, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\routing.py", line 736, in app
+    |     await route.handle(scope, receive, send)
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\routing.py", line 290, in handle
+    |     await self.app(scope, receive, send)
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\routing.py", line 78, in app
+    |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\routing.py", line 75, in app
+    |     response = await f(request)
+    |                ^^^^^^^^^^^^^^^^
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\fastapi\routing.py", line 328, in app
+    |     content = await serialize_response(
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     ...<9 lines>...
+    |     )
+    |     ^
+    |   File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\fastapi\routing.py", line 177, in serialize_response
+    |     raise ResponseValidationError(
+    |         errors=_normalize_errors(errors), body=response_content
+    |     )
+    | fastapi.exceptions.ResponseValidationError: 1 validation errors:
+    |   {'type': 'int_type', 'loc': ('response', 'assigned_employee_id'), 'msg': 'Input should be a valid integer', 'input': None}
+    | 
+    +------------------------------------
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\uvicorn\protocols\http\h11_impl.py", line 403, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\fastapi\applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\base.py", line 182, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\dayon\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\base.py", line 184, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\app\main.py", line 101, in check_system_health
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\base.py", line 159, in call_next
+    raise app_exc
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\routing.py", line 78, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\starlette\routing.py", line 75, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\fastapi\routing.py", line 328, in app
+    content = await serialize_response(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "D:\resort_oc_10\Resortwithlandingpage\pomma-latest\ResortApp\venv\Lib\site-packages\fastapi\routing.py", line 177, in serialize_response
+    raise ResponseValidationError(
+        errors=_normalize_errors(errors), body=response_content
+    )
+fastapi.exceptions.ResponseValidationError: 1 validation errors:
+  {'type': 'int_type', 'loc': ('response', 'assigned_employee_id'), 'msg': 'Input should be a valid integer', 'input': None}
+

@@ -13,12 +13,24 @@ def _create_order_impl(order: FoodOrderCreate, db: Session, current_user: User):
     return crud.create_food_order(db, order)
 
 @router.post("", response_model=FoodOrderOut)
-def create_order(order: FoodOrderCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    return _create_order_impl(order, db, current_user)
+def create_order(order: FoodOrderCreate, db: Session = Depends(get_db)):
+    """Create a new food order (publicly accessible for QR guests)"""
+    return crud.create_food_order(db, order)
 
 @router.post("/", response_model=FoodOrderOut)  # Handle trailing slash
-def create_order_slash(order: FoodOrderCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    return _create_order_impl(order, db, current_user)
+def create_order_slash(order: FoodOrderCreate, db: Session = Depends(get_db)):
+    """Create a new food order (publicly accessible for QR guests)"""
+    return crud.create_food_order(db, order)
+
+@router.options("/") 
+def options_order_slash():
+    """Explicitly handle OPTIONS for preflight"""
+    return {}
+
+@router.options("")
+def options_order():
+    """Explicitly handle OPTIONS for preflight"""
+    return {}
 
 def _get_orders_impl(db: Session, skip: int = 0, limit: int = 20, from_date: Optional[str] = None, to_date: Optional[str] = None, fromDate: Optional[str] = None, toDate: Optional[str] = None):
     """Helper function for get_orders"""
