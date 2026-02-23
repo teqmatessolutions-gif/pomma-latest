@@ -17,6 +17,7 @@ from app.models.user import User
 from app.models.foodorder import FoodOrder, FoodOrderItem
 from app.models.service import AssignedService, Service, ServiceStatus
 from app.models.checkout import Checkout
+import app.schemas.checkout as schemas
 from app.schemas.checkout import BillSummary, BillBreakdown, CheckoutFull, CheckoutSuccess, CheckoutRequest
 
 router = APIRouter(prefix="/bill", tags=["checkout"])
@@ -103,8 +104,8 @@ def get_all_checkouts(
             # Handle ISO string (e.g. from frontend date picker sometimes)
             elif "T" in final_start:
                 # Basic ISO parsing
-                query = query.filter(Checkout.checkout_date >= dt_start)
-                print(f"DEBUG: Applied Start Filter (ISO): >= {dt_start}")
+                query = query.filter(Checkout.checkout_date >= final_start)
+                print(f"DEBUG: Applied Start Filter (ISO): >= {final_start}")
             else:
                 # Fallback string
                 query = query.filter(Checkout.checkout_date >= final_start)
@@ -116,8 +117,8 @@ def get_all_checkouts(
                 query = query.filter(Checkout.checkout_date <= dt_end)
                 print(f"DEBUG: Applied End Filter (DT): <= {dt_end}")
             elif "T" in final_end:
-                query = query.filter(Checkout.checkout_date <= dt_end)
-                print(f"DEBUG: Applied End Filter (ISO): <= {dt_end}")
+                query = query.filter(Checkout.checkout_date <= final_end)
+                print(f"DEBUG: Applied End Filter (ISO): <= {final_end}")
             else:
                 query = query.filter(Checkout.checkout_date <= final_end)
 
