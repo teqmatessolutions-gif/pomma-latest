@@ -1,7 +1,9 @@
-# 🚀 Deploy to Google Cloud VM — pommaholidays.com
+# 🚀 Deploy to Google Cloud VM — pommaholidays.com (PROTECTED VERSION)
 
 ## What This Script Does
 - Installs all server dependencies (Python, Node, Nginx, Certbot)
+- **Obfuscates backend code** with PyArmor for source protection
+- **Disables source maps** for React builds to prevent reverse-engineering
 - Sets up the FastAPI backend as a `systemd` service
 - Builds and deploys both React apps
 - Configures Nginx with SSL for pommaholidays.com
@@ -52,7 +54,7 @@ git clone https://github.com/YOUR_REPO/pomma-latest.git .
 
 ---
 
-## Part 3 — Backend Setup
+## Part 3 — Backend Setup & Obfuscation
 
 ```bash
 cd /opt/pomma
@@ -61,44 +63,31 @@ cd /opt/pomma
 python3.11 -m venv venv
 source venv/bin/activate
 
-# Install dependencies
+# Install dependencies including PyArmor
 pip install -r ResortApp/requirements.txt
 
-# Create .env file (edit with your actual DB credentials)
-cat > /opt/pomma/ResortApp/.env << 'EOF'
-DATABASE_URL=postgresql://YOUR_DB_USER:YOUR_DB_PASS@localhost:5432/pomma_db
-SECRET_KEY=your-secret-key-here-change-this
-ROOT_PATH=
-EOF
-
-# Install PostgreSQL
-sudo apt install -y postgresql postgresql-contrib
-
-# Create database
-sudo -u postgres psql -c "CREATE USER pomma_user WITH PASSWORD 'your_password';"
-sudo -u postgres psql -c "CREATE DATABASE pomma_db OWNER pomma_user;"
-
-# Run database migrations
-cd /opt/pomma/ResortApp
-source /opt/pomma/venv/bin/activate
-alembic upgrade head
+# 🔒 RUN OBFUSCATION
+cd ResortApp
+python3 obfuscate_backend.py
+# This creates a 'dist/' folder with scrambled, unreadable code
 ```
 
 ---
 
-## Part 4 — Create Systemd Service for FastAPI
+## Part 4 — Create Systemd Service (Targeting Protected Code)
 
 ```bash
 sudo tee /etc/systemd/system/pomma.service << 'EOF'
 [Unit]
-Description=Pomma Holidays FastAPI Backend
+Description=Pomma Holidays FastAPI Backend (Protected)
 After=network.target postgresql.service
 
 [Service]
 User=www-data
 Group=www-data
-WorkingDirectory=/opt/pomma/ResortApp
-ExecStart=/opt/pomma/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 2
+# 🛡️ POINTING TO THE PROTECTED 'dist' DIRECTORY
+WorkingDirectory=/opt/pomma/ResortApp/dist
+ExecStart=/opt/pomma/venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 2
 Restart=always
 RestartSec=5
 StandardOutput=syslog
@@ -110,21 +99,19 @@ WantedBy=multi-user.target
 EOF
 
 # Fix permissions
-sudo chown -R www-data:www-data /opt/pomma/ResortApp
+sudo chown -R www-data:www-data /opt/pomma/ResortApp/dist
 
 # Enable and start service
 sudo systemctl daemon-reload
 sudo systemctl enable pomma
 sudo systemctl start pomma
-
-# Verify it's running
-sudo systemctl status pomma
-curl http://127.0.0.1:8000/api/health
 ```
 
 ---
 
-## Part 5 — Build React Apps
+## Part 5 — Build React Apps (Source Maps Disabled)
+
+Both apps now have `GENERATE_SOURCEMAP=false` in `.env.production`.
 
 ```bash
 # ── Build Dashboard (/admin) ──────────────────────────────────────────────────
