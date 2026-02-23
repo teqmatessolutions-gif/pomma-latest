@@ -78,8 +78,9 @@ from app.utils.health_monitor import get_system_status
 
 @app.middleware("http")
 async def check_system_health(request: Request, call_next):
-    # Bypass check for static files to allow Lock Screen to load resources if needed
-    if request.url.path.startswith("/static") or request.url.path.startswith("/uploads"):
+    # Bypass check for static files and health/activation endpoints to allow unlocking
+    path = request.url.path
+    if path.startswith("/static") or path.startswith("/uploads") or "/api/health/" in path:
          return await call_next(request)
 
     # DIRECT LOCK CHECK (Bypassing health_monitor module to guarantee execution)
