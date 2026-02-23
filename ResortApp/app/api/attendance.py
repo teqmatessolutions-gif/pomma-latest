@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Annotated
 from datetime import date, time, datetime, timedelta
 from pydantic import BaseModel
 
@@ -67,7 +67,7 @@ class ClockOutCreate(BaseModel):
 # --- API Endpoints ---
 
 @router.post("/mark", response_model=AttendanceRecord)
-def mark_attendance(record: AttendanceCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def mark_attendance(record: AttendanceCreate, db: Annotated[Session, Depends(get_db)] = None, current_user: Annotated[User, Depends(get_current_user)] = None):
     db_record = Attendance(**record.model_dump())
     db.add(db_record)
     db.commit()
@@ -75,7 +75,7 @@ def mark_attendance(record: AttendanceCreate, db: Session = Depends(get_db), cur
     return db_record
 
 @router.post("/log-work", response_model=WorkingLogRecord)
-def log_working_hours(log: WorkingLogCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def log_working_hours(log: WorkingLogCreate, db: Annotated[Session, Depends(get_db)] = None, current_user: Annotated[User, Depends(get_current_user)] = None):
     db_log = WorkingLog(**log.model_dump())
     db.add(db_log)
     db.commit()
@@ -83,7 +83,7 @@ def log_working_hours(log: WorkingLogCreate, db: Session = Depends(get_db), curr
     return db_log
 
 @router.post("/clock-in", response_model=WorkingLogRecord)
-def clock_in(clock_in_data: ClockInCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def clock_in(clock_in_data: ClockInCreate, db: Annotated[Session, Depends(get_db)] = None, current_user: Annotated[User, Depends(get_current_user)] = None):
     now = datetime.now()
     # Check if there's an open clock-in for this employee today
     open_log = db.query(WorkingLog).filter(
@@ -107,7 +107,7 @@ def clock_in(clock_in_data: ClockInCreate, db: Session = Depends(get_db), curren
     return new_log
 
 @router.post("/clock-out", response_model=WorkingLogRecord)
-def clock_out(clock_out_data: ClockOutCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def clock_out(clock_out_data: ClockOutCreate, db: Annotated[Session, Depends(get_db)] = None, current_user: Annotated[User, Depends(get_current_user)] = None):
     now = datetime.now()
     
     # Find the last open clock-in for this employee
@@ -130,11 +130,11 @@ def clock_out(clock_out_data: ClockOutCreate, db: Session = Depends(get_db), cur
     return log_to_close
 
 @router.get("/{employee_id}", response_model=List[AttendanceRecord])
-def get_attendance_for_employee(employee_id: int, db: Session = Depends(get_db)):
+def get_attendance_for_employee(employee_id: int, db: Annotated[Session, Depends(get_db)] = None):
     return db.query(Attendance).filter(Attendance.employee_id == employee_id).order_by(Attendance.date.desc()).all()
 
 @router.get("/work-logs/{employee_id}", response_model=List[WorkingLogRecord])
-def get_work_logs_for_employee(employee_id: int, db: Session = Depends(get_db)):
+def get_work_logs_for_employee(employee_id: int, db: Annotated[Session, Depends(get_db)] = None):
     work_logs = db.query(WorkingLog).filter(WorkingLog.employee_id == employee_id).order_by(WorkingLog.date.desc(), WorkingLog.check_in_time.desc()).all()
     
     results = []
@@ -169,7 +169,7 @@ def get_work_logs_for_employee(employee_id: int, db: Session = Depends(get_db)):
     return results
 
 @router.get("/monthly-report/{employee_id}", response_model=MonthlyReport)
-def get_monthly_report(employee_id: int, year: int, month: int, db: Session = Depends(get_db)):
+def get_monthly_report(employee_id: int, year: int, month: int, db: Annotated[Session, Depends(get_db)] = None):
     employee = db.query(Employee).filter(Employee.id == employee_id).first()
     if not employee:
         raise HTTPException(status_code=404, detail="Employee not found")

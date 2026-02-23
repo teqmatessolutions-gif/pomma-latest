@@ -35,7 +35,11 @@ def compile_backend():
     try:
         setup(
             ext_modules = cythonize(extensions, 
-                                   compiler_directives={'language_level': "3"}),
+                                   compiler_directives={
+                                       'language_level': "3",
+                                       'binding': True,
+                                       'embedsignature': True
+                                   }),
             script_args = ['build_ext', '--inplace']
         )
         
