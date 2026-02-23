@@ -1,4 +1,4 @@
-# 🚀 Deploy to Google Cloud VM — pommaholidays.com (PROTECTED VERSION)
+# 🚀 Deploy to Google Cloud VM — IP or Domain (PROTECTED VERSION)
 
 ## What This Script Does
 - Installs all server dependencies (Python, Node, Nginx, Certbot)
@@ -149,6 +149,66 @@ sudo cp -r build/* /opt/pomma/userend-build/
 ## Part 6 — Configure Nginx
 
 ```bash
+# Test config
+sudo nginx -t
+```
+
+---
+
+## Part 7 — Configure Nginx (Choose OPTION A or B)
+
+### OPTION A: Testing via Server IP (No Domain Yet)
+Use this if you just want to test using the numeric IP from Google Cloud.
+
+```bash
+sudo tee /etc/nginx/sites-available/pommaholidays << 'NGINX'
+server {
+    listen 80;
+    server_name _; # Listen to all requests (IP address)
+
+    # API — FastAPI backend
+    location /api/ {
+        proxy_pass http://127.0.0.1:8000/api/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        client_max_body_size 50M;
+    }
+
+    # Uploads & Static
+    location /uploads/ { alias /opt/pomma/ResortApp/uploads/; }
+    location /static/ { alias /opt/pomma/ResortApp/static/; }
+
+    # Dashboard (/admin)
+    location /admin {
+        alias /opt/pomma/dasboard-build/;
+        index index.html;
+        try_files $uri $uri/ /admin/index.html;
+    }
+
+    # User-facing app (/)
+    location / {
+        root /opt/pomma/userend-build/;
+        index index.html;
+        try_files $uri $uri/ /index.html;
+    }
+}
+NGINX
+
+# Restart Nginx
+sudo nginx -t
+sudo systemctl restart nginx
+```
+
+### OPTION B: Production with Domain & SSL
+Use this once your domain is pointing to the IP.
+
+```bash
+# 1. Get SSL certificate
+sudo certbot --nginx -d pommaholidays.com -d www.pommaholidays.com
+
+# 2. Apply FULL SSL config
 sudo tee /etc/nginx/sites-available/pommaholidays << 'NGINX'
 server {
     listen 80;
@@ -162,43 +222,15 @@ server {
 
     ssl_certificate /etc/letsencrypt/live/pommaholidays.com/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/pommaholidays.com/privkey.pem;
-    ssl_protocols TLSv1.2 TLSv1.3;
 
-    # API — FastAPI backend
-    location /api/ {
-        proxy_pass http://127.0.0.1:8000/api/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        client_max_body_size 50M;
-        proxy_read_timeout 300;
-    }
-
-    # Uploads from backend
-    location /uploads/ {
-        alias /opt/pomma/ResortApp/uploads/;
-        expires 30d;
-        add_header Cache-Control "public";
-        try_files $uri =404;
-    }
-
-    # Static files from backend
-    location /static/ {
-        alias /opt/pomma/ResortApp/static/;
-        expires 30d;
-        add_header Cache-Control "public";
-        try_files $uri =404;
-    }
-
-    # Admin Dashboard (React — /admin)
+    location /api/ { proxy_pass http://127.0.0.1:8000/api/; proxy_set_header Host $host; }
+    location /uploads/ { alias /opt/pomma/ResortApp/uploads/; }
+    location /static/ { alias /opt/pomma/ResortApp/static/; }
     location /admin {
         alias /opt/pomma/dasboard-build/;
         index index.html;
         try_files $uri $uri/ /admin/index.html;
     }
-
-    # User-facing app (React — root /)
     location / {
         root /opt/pomma/userend-build/;
         index index.html;
@@ -207,31 +239,8 @@ server {
 }
 NGINX
 
-# Enable site
-sudo ln -s /etc/nginx/sites-available/pommaholidays /etc/nginx/sites-enabled/
-sudo rm -f /etc/nginx/sites-enabled/default
-
-# Test config
 sudo nginx -t
-```
-
----
-
-## Part 7 — Get SSL Certificate (Free via Let's Encrypt)
-
-> ⚠️ Your domain's DNS A record must point to the VM's IP BEFORE doing this.
-
-```bash
-# Point your domain first:
-# pommaholidays.com  →  A  →  YOUR_VM_IP
-# www.pommaholidays.com  →  A  →  YOUR_VM_IP
-
-# Then get SSL certificate
-sudo certbot --nginx -d pommaholidays.com -d www.pommaholidays.com
-
-# Reload Nginx
 sudo systemctl restart nginx
-sudo systemctl enable nginx
 ```
 
 ---

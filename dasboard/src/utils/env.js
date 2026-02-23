@@ -20,9 +20,10 @@ export const isPommaDeployment = () => {
   }
   const hostname = window.location.hostname;
   const path = window.location.pathname || "";
-  // pommaholidays.com domain OR legacy paths
+  // pommaholidays.com domain OR numeric IP address (testing)
   return hostname === "pommaholidays.com" ||
     hostname === "www.pommaholidays.com" ||
+    /^\d+\.\d+\.\d+\.\d+$/.test(hostname) ||
     path.startsWith("/admin") ||
     path.startsWith("/pommaadmin") ||
     path.startsWith("/pommaholidays");

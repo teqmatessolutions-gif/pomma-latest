@@ -19,11 +19,12 @@ export const isPommaDeployment = () => {
     return false;
   }
   const hostname = window.location.hostname;
-  // pommaholidays.com is the primary production domain
+  // pommaholidays.com domain OR numeric IP address (testing)
   return hostname === "pommaholidays.com" ||
     hostname === "www.pommaholidays.com" ||
     hostname === "teqmates.com" ||
-    hostname === "www.teqmates.com";
+    hostname === "www.teqmates.com" ||
+    /^\d+\.\d+\.\d+\.\d+$/.test(hostname);
 };
 
 export const getMediaBaseUrl = () => {
