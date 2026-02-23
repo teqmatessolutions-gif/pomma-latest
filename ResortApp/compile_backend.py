@@ -1,9 +1,8 @@
 import os
 import sys
 import shutil
-from distutils.core import setup
+from setuptools import setup, Extension
 from Cython.Build import cythonize
-from Cython.Distutils import build_ext
 
 def compile_backend():
     """
