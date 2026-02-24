@@ -67,9 +67,9 @@ class UserHistoryOut(BaseModel):
 
 @router.get("/guest-profile", response_model=GuestProfileOut)
 def get_guest_profile(
-    guest_email: Optional[str] = Query(None, description="Guest's email address"),
-    guest_mobile: Optional[str] = Query(None, description="Guest's mobile number"),
-    guest_name: Optional[str] = Query(None, description="Guest's name (case-insensitive search)"),
+    guest_email: Annotated[Any, Query(None, description="Guest's email address")] = None,
+    guest_mobile: Annotated[Any, Query(None, description="Guest's mobile number")] = None,
+    guest_name: Annotated[Any, Query(None, description="Guest's name (case-insensitive search)")] = None,
     db: Annotated[Any, Depends(get_db)] = None
 ):
     """Generates a complete profile for a guest, including all bookings, orders, and services."""
@@ -79,8 +79,8 @@ def get_guest_profile(
 
 @router.get("/food-orders")
 def get_food_orders(
-    from_date: Optional[date] = Query(None, description="Start date for filtering (YYYY-MM-DD)"),
-    to_date: Optional[date] = Query(None, description="End date for filtering (YYYY-MM-DD)"),
+    from_date: Annotated[Any, Query(None, description="Start date for filtering (YYYY-MM-DD)")] = None,
+    to_date: Annotated[Any, Query(None, description="End date for filtering (YYYY-MM-DD)")] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     skip: int = 0,
     limit: int = 20
@@ -154,8 +154,8 @@ def get_food_orders(
 @router.get("/user-history", response_model=UserHistoryOut)
 def get_user_history(
     user_id: int,
-    from_date: Optional[date] = Query(None),
-    to_date: Optional[date] = Query(None),
+    from_date: Annotated[Any, Query(None)] = None,
+    to_date: Annotated[Any, Query(None)] = None,
     db: Annotated[Any, Depends(get_db)] = None
 ):
     """
@@ -244,10 +244,10 @@ def get_user_history(
 
 @router.get("/service-charges")
 def get_service_charges(
-    from_date: Optional[str] = Query(None),
-    to_date: Optional[str] = Query(None),
-    fromDate: Optional[str] = Query(None),
-    toDate: Optional[str] = Query(None),
+    from_date: Annotated[Any, Query(None)] = None,
+    to_date: Annotated[Any, Query(None)] = None,
+    fromDate: Annotated[Any, Query(None)] = None,
+    toDate: Annotated[Any, Query(None)] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     skip: int = 0,
     limit: int = 20
@@ -297,8 +297,8 @@ def get_service_charges(
 
 @router.get("/room-charges")
 def get_room_charges(
-    from_date: Optional[date] = Query(None),
-    to_date: Optional[date] = Query(None),
+    from_date: Annotated[Any, Query(None)] = None,
+    to_date: Annotated[Any, Query(None)] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     skip: int = 0,
     limit: int = 20
@@ -329,8 +329,8 @@ def get_room_charges(
 
 @router.get("/rent-records")
 def get_rent_records(
-    from_date: Optional[date] = Query(None),
-    to_date: Optional[date] = Query(None),
+    from_date: Annotated[Any, Query(None)] = None,
+    to_date: Annotated[Any, Query(None)] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     skip: int = 0,
     limit: int = 20
@@ -362,8 +362,8 @@ def get_rent_records(
 
 @router.get("/expenses")
 def get_all_expenses(
-    from_date: Optional[date] = Query(None),
-    to_date: Optional[date] = Query(None),
+    from_date: Annotated[Any, Query(None)] = None,
+    to_date: Annotated[Any, Query(None)] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     skip: int = 0,
     limit: int = 20
@@ -390,8 +390,8 @@ def get_all_expenses(
 
 @router.get("/room-bookings", response_model=List[booking_schema.BookingOut])
 def get_all_room_bookings(
-    from_date: Optional[date] = Query(None),
-    to_date: Optional[date] = Query(None),
+    from_date: Annotated[Any, Query(None)] = None,
+    to_date: Annotated[Any, Query(None)] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     skip: int = 0,
     limit: int = 20
@@ -427,8 +427,8 @@ def get_all_room_bookings(
 
 @router.get("/package-bookings", response_model=List[package_schema.PackageBookingOut])
 def get_all_package_bookings(
-    from_date: Optional[date] = Query(None),
-    to_date: Optional[date] = Query(None),
+    from_date: Annotated[Any, Query(None)] = None,
+    to_date: Annotated[Any, Query(None)] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     skip: int = 0,
     limit: int = 20
@@ -446,10 +446,10 @@ def get_all_package_bookings(
 
 @router.get("/employees")
 def get_all_employees(
-    from_date: Optional[str] = Query(None),
-    to_date: Optional[str] = Query(None),
-    fromDate: Optional[str] = Query(None),
-    toDate: Optional[str] = Query(None),
+    from_date: Annotated[Any, Query(None)] = None,
+    to_date: Annotated[Any, Query(None)] = None,
+    fromDate: Annotated[Any, Query(None)] = None,
+    toDate: Annotated[Any, Query(None)] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     skip: int = 0,
     limit: int = 20
@@ -488,10 +488,10 @@ def get_all_employees(
 
 @router.get("/checkin-by-employee", response_model=List[CheckinByEmployeeOut])
 def get_checkin_by_employee_report(
-    from_date: Optional[str] = Query(None),
-    to_date: Optional[str] = Query(None),
-    fromDate: Optional[str] = Query(None),
-    toDate: Optional[str] = Query(None),
+    from_date: Annotated[Any, Query(None)] = None,
+    to_date: Annotated[Any, Query(None)] = None,
+    fromDate: Annotated[Any, Query(None)] = None,
+    toDate: Annotated[Any, Query(None)] = None,
     db: Annotated[Any, Depends(get_db)] = None
 ):
     """
