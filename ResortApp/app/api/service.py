@@ -22,34 +22,56 @@ async def create_service(
     name: Annotated[Any, Form()] = None,
     description: Annotated[Any, Form()] = None,
     charges: Annotated[Any, Form()] = None,
-    images: Annotated[Any, File()] = [],
+    images: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
-    image_urls = []
-    for img in images:
-        # Generate unique filename
-        filename = f"svc_{uuid.uuid4().hex}_{img.filename}"
-        file_path = os.path.join(UPLOAD_DIR, filename)
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(img.file, buffer)
+    try:
+        image_urls = []
         
-        # Generate and Save Thumbnail
-        try:
-            thumb_filename = f"{os.path.splitext(filename)[0]}_thumb.jpg"
-            thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
-            with Image.open(file_path) as img_pil:
-                img_pil.thumbnail((200, 200), Image.Resampling.BICUBIC)
-                if img_pil.mode in ("RGBA", "P"):
-                    img_pil = img_pil.convert("RGB")
-                img_pil.save(thumb_path, "JPEG", quality=60)
-        except Exception as thumb_error:
-            print(f"Warning: Failed to generate thumbnail for {filename}: {thumb_error}")
-        # Store with leading slash for proper URL construction
-        normalized_path = file_path.replace('\\', '/')
-        image_urls.append(f"/{normalized_path}")
-    
-    return service_crud.create_service(db, name, description, charges, image_urls)
+        # Handle images (ensure it's a list)
+        if images is not None:
+            # If a single file is uploaded, convert to list
+            if not isinstance(images, list):
+                images = [images]
+            
+            for img in images:
+                if not img or not img.filename:
+                    continue
+                # Generate unique filename
+                filename = f"svc_{uuid.uuid4().hex}_{img.filename}"
+                file_path = os.path.join(UPLOAD_DIR, filename)
+                with open(file_path, "wb") as buffer:
+                    shutil.copyfileobj(img.file, buffer)
+                
+                # Generate and Save Thumbnail
+                try:
+                    thumb_filename = f"{os.path.splitext(filename)[0]}_thumb.jpg"
+                    thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                    with Image.open(file_path) as img_pil:
+                        img_pil.thumbnail((200, 200), Image.Resampling.BICUBIC)
+                        if img_pil.mode in ("RGBA", "P"):
+                            img_pil = img_pil.convert("RGB")
+                        img_pil.save(thumb_path, "JPEG", quality=60)
+                except Exception as thumb_error:
+                    print(f"Warning: Failed to generate thumbnail for {filename}: {thumb_error}")
+                # Store with leading slash for proper URL construction
+                normalized_path = file_path.replace('\\', '/')
+                image_urls.append(f"/{normalized_path}")
+        
+        # Ensure charges is a float
+        charges_val = 0.0
+        if charges:
+            try:
+                charges_val = float(charges)
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid charges amount")
+
+        return service_crud.create_service(db, name, description, charges_val, image_urls)
+    except Exception as e:
+        import traceback
+        print(f"ERROR creating service: {str(e)}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Failed to create service: {str(e)}")
 
 def _list_services_impl(db: Session, skip: int = 0, limit: int = 20):
     """Helper function for list_services"""
@@ -69,37 +91,58 @@ async def update_service(
     name: Annotated[Any, Form()] = None,
     description: Annotated[Any, Form()] = None,
     charges: Annotated[Any, Form()] = None,
-    images: Annotated[Any, File()] = [],
+    images: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
-    image_urls = []
-    for img in images:
-        # Generate unique filename
-        filename = f"svc_{uuid.uuid4().hex}_{img.filename}"
-        file_path = os.path.join(UPLOAD_DIR, filename)
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(img.file, buffer)
+    try:
+        image_urls = []
+        if images is not None:
+             # Ensure images is a list
+            if not isinstance(images, list):
+                images = [images]
+                
+            for img in images:
+                if not img or not img.filename:
+                    continue
+                # Generate unique filename
+                filename = f"svc_{uuid.uuid4().hex}_{img.filename}"
+                file_path = os.path.join(UPLOAD_DIR, filename)
+                with open(file_path, "wb") as buffer:
+                    shutil.copyfileobj(img.file, buffer)
+                
+                # Generate and Save Thumbnail
+                try:
+                    thumb_filename = f"{os.path.splitext(filename)[0]}_thumb.jpg"
+                    thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                    with Image.open(file_path) as img_pil:
+                        img_pil.thumbnail((200, 200), Image.Resampling.LANCZOS)
+                        if img_pil.mode in ("RGBA", "P"):
+                            img_pil = img_pil.convert("RGB")
+                        img_pil.save(thumb_path, "JPEG", quality=60, optimize=True)
+                except Exception as thumb_error:
+                    print(f"Warning: Failed to generate thumbnail for {filename}: {thumb_error}")
+                # Store with leading slash for proper URL construction
+                normalized_path = file_path.replace('\\', '/')
+                image_urls.append(f"/{normalized_path}")
         
-        # Generate and Save Thumbnail
-        try:
-            thumb_filename = f"{os.path.splitext(filename)[0]}_thumb.jpg"
-            thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
-            with Image.open(file_path) as img_pil:
-                img_pil.thumbnail((200, 200), Image.Resampling.LANCZOS)
-                if img_pil.mode in ("RGBA", "P"):
-                    img_pil = img_pil.convert("RGB")
-                img_pil.save(thumb_path, "JPEG", quality=60, optimize=True)
-        except Exception as thumb_error:
-            print(f"Warning: Failed to generate thumbnail for {filename}: {thumb_error}")
-        # Store with leading slash for proper URL construction
-        normalized_path = file_path.replace('\\', '/')
-        image_urls.append(f"/{normalized_path}")
-    
-    updated = service_crud.update_service(db, service_id, name, description, charges, image_urls)
-    if not updated:
-        raise HTTPException(status_code=404, detail="Service not found")
-    return updated
+        # Ensure charges is a float
+        charges_val = None
+        if charges:
+            try:
+                charges_val = float(charges)
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid charges amount")
+        
+        updated = service_crud.update_service(db, service_id, name, description, charges_val, image_urls)
+        if not updated:
+            raise HTTPException(status_code=404, detail="Service not found")
+        return updated
+    except HTTPException: raise
+    except Exception as e:
+        import traceback
+        print(f"ERROR updating service: {str(e)}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Failed to update service: {str(e)}")
 
 @router.delete("/{service_id}")
 def delete_service(service_id: int, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
