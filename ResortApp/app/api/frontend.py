@@ -48,56 +48,43 @@ async def create_header_banner(
 ):
     try:
         # Convert is_active string to boolean
-        is_active_bool = is_active.lower() in ("true", "1", "yes", "on")
+        is_active_bool = str(is_active).lower() in ("true", "1", "yes", "on")
         
-        # Ensure upload directory exists
-        os.makedirs(UPLOAD_DIR, exist_ok=True)
-        
-        # Check if directory is writable
-        if not os.access(UPLOAD_DIR, os.W_OK):
-            raise HTTPException(status_code=500, detail=f"Upload directory is not writable: {UPLOAD_DIR}")
-        
-        # Generate unique filename to avoid conflicts
-        if not image.filename:
-            raise HTTPException(status_code=400, detail="No filename provided for image")
-        
-        file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
-        unique_filename = f"banner_{uuid.uuid4().hex}.{file_ext}"
-        file_path = os.path.join(UPLOAD_DIR, unique_filename)
-        
-        # Save file
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(image.file, buffer)
-        
-        # Verify file was saved
-        if not os.path.exists(file_path):
-            raise HTTPException(status_code=500, detail="File was not saved successfully")
+        image_url = None
+        if image is not None:
+             # Ensure image is not a list (if it is, take first)
+            if isinstance(image, list):
+                image = image[0] if image else None
+            
+            if image and getattr(image, 'filename', None):
+                # Generate unique filename
+                file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
+                unique_filename = f"banner_{uuid.uuid4().hex}.{file_ext}"
+                file_path = os.path.join(UPLOAD_DIR, unique_filename)
+                
+                # Save file
+                try:
+                    contents = await image.read()
+                    with open(file_path, "wb") as buffer:
+                        buffer.write(contents)
+                except Exception as file_err:
+                    print(f"Error saving header banner image: {file_err}")
+                    raise HTTPException(status_code=500, detail="Failed to save image file")
+                
+                # Generate and Save Thumbnail
+                try:
+                    thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
+                    thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                    with Image.open(io.BytesIO(contents)) as img_pil:
+                        img_pil.thumbnail((200, 200), Image.Resampling.BICUBIC)
+                        if img_pil.mode in ("RGBA", "P"):
+                            img_pil = img_pil.convert("RGB")
+                        img_pil.save(thumb_path, "JPEG", quality=60)
+                except Exception as thumb_error:
+                    print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
 
-        # Generate and Save Thumbnail
-        try:
-            thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
-            thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
-            with Image.open(file_path) as img:
-                img.thumbnail((200, 200), Image.Resampling.BICUBIC)
-                if img.mode in ("RGBA", "P"):
-                    img = img.convert("RGB")
-                img.save(thumb_path, "JPEG", quality=60)
-        except Exception as thumb_error:
-            print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
-
-        # Create URL path (relative to static mount)
-        # static/uploads/banner_xxx.jpg -> /static/uploads/banner_xxx.jpg
-        normalized_path = file_path.replace('\\', '/')
-        # Extract relative path from BASE_DIR
-        if normalized_path.startswith(BASE_DIR.replace('\\', '/')):
-            image_url = normalized_path.replace(BASE_DIR.replace('\\', '/'), '').lstrip('/')
-        else:
-            image_url = normalized_path.lstrip('/')
-        
-        if not image_url.startswith('uploads/'):
-            image_url = f"uploads/cms/{unique_filename}"
-        
-        image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
+                # Create URL path
+                image_url = f"/uploads/cms/{unique_filename}"
         
         obj = schemas.HeaderBannerCreate(
             title=title,
@@ -106,12 +93,10 @@ async def create_header_banner(
             image_url=image_url
         )
         return crud.create(db, models.HeaderBanner, obj)
-    except HTTPException:
-        raise
+    except HTTPException: raise
     except Exception as e:
         import traceback
-        error_detail = f"Failed to create header banner: {str(e)}\n{traceback.format_exc()}"
-        print(f"ERROR: {error_detail}")  # Log to console for debugging
+        print(f"ERROR: Failed to create header banner: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Failed to create header banner: {str(e)}")
 
 
@@ -128,66 +113,49 @@ async def update_header_banner(
 ):
     try:
         # Convert is_active string to boolean
-        is_active_bool = is_active.lower() in ("true", "1", "yes", "on")
+        if is_active is not None:
+             is_active_bool = str(is_active).lower() in ("true", "1", "yes", "on")
+        else:
+             is_active_bool = True
         
         image_url = None
-        if image:
-            # Ensure upload directory exists
-            os.makedirs(UPLOAD_DIR, exist_ok=True)
-            
-            # Check if directory is writable
-            if not os.access(UPLOAD_DIR, os.W_OK):
-                raise HTTPException(status_code=500, detail=f"Upload directory is not writable: {UPLOAD_DIR}")
-            
-            # Generate unique filename to avoid conflicts
-            if not image.filename:
-                raise HTTPException(status_code=400, detail="No filename provided for image")
-            
-            file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
-            unique_filename = f"banner_{uuid.uuid4().hex}.{file_ext}"
-            file_path = os.path.join(UPLOAD_DIR, unique_filename)
-            
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(image.file, buffer)
-            
-            # Verify file was saved
-            if not os.path.exists(file_path):
-                raise HTTPException(status_code=500, detail="File was not saved successfully")
-            
-            # Generate and Save Thumbnail
-            try:
-                thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
-                thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
-                with Image.open(file_path) as img:
-                    img.thumbnail((200, 200), Image.Resampling.BICUBIC)
-                    if img.mode in ("RGBA", "P"):
-                        img = img.convert("RGB")
-                    img.save(thumb_path, "JPEG", quality=60)
-            except Exception as thumb_error:
-                print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
-            
-            # Create URL path (relative to static mount)
-            normalized_path = file_path.replace('\\', '/')
-            if normalized_path.startswith(BASE_DIR.replace('\\', '/')):
-                image_url = normalized_path.replace(BASE_DIR.replace('\\', '/'), '').lstrip('/')
-            else:
-                image_url = normalized_path.lstrip('/')
-            
-            if not image_url.startswith('uploads/'):
-                image_url = f"uploads/cms/{unique_filename}"
-            
-            image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
+        if image is not None:
+            # Handle possible list
+            if isinstance(image, list):
+                image = image[0] if image else None
+                
+            if image and getattr(image, 'filename', None):
+                file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
+                unique_filename = f"banner_{uuid.uuid4().hex}.{file_ext}"
+                file_path = os.path.join(UPLOAD_DIR, unique_filename)
+                
+                try:
+                    contents = await image.read()
+                    with open(file_path, "wb") as buffer:
+                        buffer.write(contents)
+                except Exception as file_err:
+                    print(f"Error saving updated banner image: {file_err}")
+                    raise HTTPException(status_code=500, detail="Failed to save image file")
+                
+                # Generate and Save Thumbnail
+                try:
+                    thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
+                    thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                    with Image.open(io.BytesIO(contents)) as img_pil:
+                        img_pil.thumbnail((200, 200), Image.Resampling.BICUBIC)
+                        if img_pil.mode in ("RGBA", "P"):
+                            img_pil = img_pil.convert("RGB")
+                        img_pil.save(thumb_path, "JPEG", quality=60)
+                except Exception as thumb_error:
+                    print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
+                
+                image_url = f"/uploads/cms/{unique_filename}"
 
         # If no new image provided, keep existing image_url
         if image_url is None:
             existing = crud.get_one(db, models.HeaderBanner, item_id)
             if existing:
                 image_url = existing.image_url
-                print(f"DEBUG: Keeping existing image_url: {image_url}")
-            else:
-                 print(f"DEBUG: Item {item_id} not found")
-
-        print(f"DEBUG: Updating HeaderBanner {item_id} with title='{title}', subtitle='{subtitle}', image_url='{image_url}'")
 
         obj = schemas.HeaderBannerUpdate(
             title=title,
@@ -195,11 +163,11 @@ async def update_header_banner(
             is_active=is_active_bool,
             image_url=image_url
         )
-        print(f"DEBUG: Update Object Dict: {obj.dict(exclude_unset=True)}")
         return crud.update(db, models.HeaderBanner, item_id, obj)
+    except HTTPException: raise
     except Exception as e:
         import traceback
-        print(f"ERROR Failed to update header banner: {str(e)}\n{traceback.format_exc()}")
+        print(f"ERROR: Failed to update header banner: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Failed to update header banner: {str(e)}")
 
 
@@ -256,65 +224,56 @@ def list_gallery_no_slash(
 @router.post("/gallery/", response_model=schemas.Gallery)
 async def create_gallery(
     caption: Annotated[Any, Form()] = None,
-    is_active: Annotated[Any, Form()] = True,
+    is_active: Annotated[Any, Form()] = "true",
     image: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     try:
-        os.makedirs(UPLOAD_DIR, exist_ok=True)
-        if not os.access(UPLOAD_DIR, os.W_OK):
-            raise HTTPException(status_code=500, detail=f"Upload directory is not writable: {UPLOAD_DIR}")
-        if not image.filename:
-            raise HTTPException(status_code=400, detail="No filename provided for image")
+        is_active_bool = str(is_active).lower() in ("true", "1", "yes", "on")
         
-        # Generate unique filename to avoid conflicts
-        file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
-        unique_filename = f"gallery_{uuid.uuid4().hex}.{file_ext}"
-        file_path = os.path.join(UPLOAD_DIR, unique_filename)
-        
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(image.file, buffer)
-        
-        if not os.path.exists(file_path):
-            raise HTTPException(status_code=500, detail="File was not saved successfully")
+        image_url = None
+        if image is not None:
+            if isinstance(image, list):
+                image = image[0] if image else None
+                
+            if image and getattr(image, 'filename', None):
+                file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
+                unique_filename = f"gallery_{uuid.uuid4().hex}.{file_ext}"
+                file_path = os.path.join(UPLOAD_DIR, unique_filename)
+                
+                try:
+                    contents = await image.read()
+                    with open(file_path, "wb") as buffer:
+                        buffer.write(contents)
+                except Exception as file_err:
+                    print(f"Error saving gallery image: {file_err}")
+                    raise HTTPException(status_code=500, detail="Failed to save image file")
+                
+                # Generate and Save Thumbnail
+                try:
+                    thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
+                    thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                    with Image.open(io.BytesIO(contents)) as img_pil:
+                        img_pil.thumbnail((200, 200), Image.Resampling.LANCZOS)
+                        if img_pil.mode in ("RGBA", "P"):
+                            img_pil = img_pil.convert("RGB")
+                        img_pil.save(thumb_path, "JPEG", quality=60, optimize=True)
+                except Exception as thumb_error:
+                    print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
 
-        # Generate and Save Thumbnail
-        try:
-            thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
-            thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
-            with Image.open(file_path) as img:
-                img.thumbnail((200, 200), Image.Resampling.LANCZOS)
-                if img.mode in ("RGBA", "P"):
-                    img = img.convert("RGB")
-                img.save(thumb_path, "JPEG", quality=60, optimize=True)
-        except Exception as thumb_error:
-            print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
-
-        # Create URL path (relative to static mount)
-        normalized_path = file_path.replace('\\', '/')
-        if normalized_path.startswith(BASE_DIR.replace('\\', '/')):
-            image_url = normalized_path.replace(BASE_DIR.replace('\\', '/'), '').lstrip('/')
-        else:
-            image_url = normalized_path.lstrip('/')
-        
-        if not image_url.startswith('uploads/'):
-            image_url = f"uploads/cms/{unique_filename}"
-        
-        image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
+                image_url = f"/uploads/cms/{unique_filename}"
         
         obj = schemas.GalleryCreate(
             caption=caption,
-            is_active=is_active,
+            is_active=is_active_bool,
             image_url=image_url
         )
         return crud.create(db, models.Gallery, obj)
-    except HTTPException:
-        raise
+    except HTTPException: raise
     except Exception as e:
         import traceback
-        error_detail = f"Failed to create gallery image: {str(e)}\n{traceback.format_exc()}"
-        print(f"ERROR: {error_detail}")
+        print(f"ERROR: Failed to create gallery image: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Failed to create gallery image: {str(e)}")
 
 
@@ -322,55 +281,45 @@ async def create_gallery(
 async def update_gallery(
     item_id: int,
     caption: Annotated[Any, Form()] = None,
-    is_active: Annotated[Any, Form()] = True,
+    is_active: Annotated[Any, Form()] = "true",
     image: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     try:
+        is_active_bool = str(is_active).lower() in ("true", "1", "yes", "on")
+        
         image_url = None
-        if image:
-            os.makedirs(UPLOAD_DIR, exist_ok=True)
-            if not os.access(UPLOAD_DIR, os.W_OK):
-                raise HTTPException(status_code=500, detail=f"Upload directory is not writable: {UPLOAD_DIR}")
-            if not image.filename:
-                raise HTTPException(status_code=400, detail="No filename provided for image")
-            
-            # Generate unique filename to avoid conflicts
-            file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
-            unique_filename = f"gallery_{uuid.uuid4().hex}.{file_ext}"
-            file_path = os.path.join(UPLOAD_DIR, unique_filename)
-            
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(image.file, buffer)
-            
-            if not os.path.exists(file_path):
-                raise HTTPException(status_code=500, detail="File was not saved successfully")
+        if image is not None:
+            if isinstance(image, list):
+                image = image[0] if image else None
+                
+            if image and getattr(image, 'filename', None):
+                file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
+                unique_filename = f"gallery_{uuid.uuid4().hex}.{file_ext}"
+                file_path = os.path.join(UPLOAD_DIR, unique_filename)
+                
+                try:
+                    contents = await image.read()
+                    with open(file_path, "wb") as buffer:
+                        buffer.write(contents)
+                except Exception as file_err:
+                    print(f"Error saving updated gallery image: {file_err}")
+                    raise HTTPException(status_code=500, detail="Failed to save image file")
+                
+                # Generate and Save Thumbnail
+                try:
+                    thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
+                    thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                    with Image.open(io.BytesIO(contents)) as img_pil:
+                        img_pil.thumbnail((200, 200), Image.Resampling.LANCZOS)
+                        if img_pil.mode in ("RGBA", "P"):
+                            img_pil = img_pil.convert("RGB")
+                        img_pil.save(thumb_path, "JPEG", quality=60, optimize=True)
+                except Exception as thumb_error:
+                    print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
 
-            # Generate and Save Thumbnail
-            try:
-                thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
-                thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
-                with Image.open(file_path) as img:
-                    img.thumbnail((200, 200), Image.Resampling.LANCZOS)
-                    if img.mode in ("RGBA", "P"):
-                        img = img.convert("RGB")
-                    img.save(thumb_path, "JPEG", quality=60, optimize=True)
-            except Exception as thumb_error:
-                print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
-                raise HTTPException(status_code=500, detail="File was not saved successfully")
-
-            # Create URL path (relative to static mount)
-            normalized_path = file_path.replace('\\', '/')
-            if normalized_path.startswith(BASE_DIR.replace('\\', '/')):
-                image_url = normalized_path.replace(BASE_DIR.replace('\\', '/'), '').lstrip('/')
-            else:
-                image_url = normalized_path.lstrip('/')
-            
-            if not image_url.startswith('uploads/'):
-                image_url = f"uploads/cms/{unique_filename}"
-            
-            image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
+                image_url = f"/uploads/cms/{unique_filename}"
 
         # If no new image provided, keep existing image_url
         if image_url is None:
@@ -380,18 +329,15 @@ async def update_gallery(
 
         obj = schemas.GalleryCreate(
             caption=caption,
-            is_active=is_active,
+            is_active=is_active_bool,
             image_url=image_url
         )
         return crud.update(db, models.Gallery, item_id, obj)
-    except HTTPException:
-        raise
+    except HTTPException: raise
     except Exception as e:
         import traceback
-        error_detail = f"Failed to update gallery image: {str(e)}\n{traceback.format_exc()}"
-        print(f"ERROR: {error_detail}")
+        print(f"ERROR: Failed to update gallery image: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Failed to update gallery image: {str(e)}")
-
 
 @router.delete("/gallery/{item_id}")
 def delete_gallery(item_id: int, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
@@ -498,66 +444,56 @@ def list_signature_experiences_no_slash(
 async def create_signature_experience(
     title: Annotated[Any, Form()] = None,
     description: Annotated[Any, Form()] = None,
-    is_active: Annotated[Any, Form()] = True,
+    is_active: Annotated[Any, Form()] = "true",
     image: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     try:
-        os.makedirs(UPLOAD_DIR, exist_ok=True)
-        if not os.access(UPLOAD_DIR, os.W_OK):
-            raise HTTPException(status_code=500, detail=f"Upload directory is not writable: {UPLOAD_DIR}")
-        if not image.filename:
-            raise HTTPException(status_code=400, detail="No filename provided for image")
-        
-        # Generate unique filename to avoid conflicts
-        file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
-        unique_filename = f"sigexp_{uuid.uuid4().hex}.{file_ext}"
-        file_path = os.path.join(UPLOAD_DIR, unique_filename)
-        
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(image.file, buffer)
-        
-        if not os.path.exists(file_path):
-            raise HTTPException(status_code=500, detail="File was not saved successfully")
+        is_active_bool = str(is_active).lower() in ("true", "1", "yes", "on")
+        image_url = None
+        if image is not None:
+            if isinstance(image, list):
+                image = image[0] if image else None
+                
+            if image and getattr(image, 'filename', None):
+                file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
+                unique_filename = f"sigexp_{uuid.uuid4().hex}.{file_ext}"
+                file_path = os.path.join(UPLOAD_DIR, unique_filename)
+                
+                try:
+                    contents = await image.read()
+                    with open(file_path, "wb") as buffer:
+                        buffer.write(contents)
+                except Exception as file_err:
+                    print(f"Error saving signature experience image: {file_err}")
+                    raise HTTPException(status_code=500, detail="Failed to save image file")
+                
+                # Generate and Save Thumbnail
+                try:
+                    thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
+                    thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                    with Image.open(io.BytesIO(contents)) as img_pil:
+                        img_pil.thumbnail((200, 200), Image.Resampling.BICUBIC)
+                        if img_pil.mode in ("RGBA", "P"):
+                            img_pil = img_pil.convert("RGB")
+                        img_pil.save(thumb_path, "JPEG", quality=60)
+                except Exception as thumb_error:
+                    print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
 
-        # Generate and Save Thumbnail
-        try:
-            thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
-            thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
-            with Image.open(file_path) as img:
-                img.thumbnail((200, 200), Image.Resampling.BICUBIC)
-                if img.mode in ("RGBA", "P"):
-                    img = img.convert("RGB")
-                img.save(thumb_path, "JPEG", quality=60)
-        except Exception as thumb_error:
-            print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
+                image_url = f"/uploads/cms/{unique_filename}"
 
-        # Create URL path (relative to static mount)
-        normalized_path = file_path.replace('\\', '/')
-        if normalized_path.startswith(BASE_DIR.replace('\\', '/')):
-            image_url = normalized_path.replace(BASE_DIR.replace('\\', '/'), '').lstrip('/')
-        else:
-            image_url = normalized_path.lstrip('/')
-        
-        if not image_url.startswith('uploads/'):
-            image_url = f"uploads/cms/{unique_filename}"
-        
-        image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
-        
         obj = schemas.SignatureExperienceCreate(
             title=title,
             description=description,
-            is_active=is_active,
+            is_active=is_active_bool,
             image_url=image_url
         )
         return crud.create(db, models.SignatureExperience, obj)
-    except HTTPException:
-        raise
+    except HTTPException: raise
     except Exception as e:
         import traceback
-        error_detail = f"Failed to create signature experience: {str(e)}\n{traceback.format_exc()}"
-        print(f"ERROR: {error_detail}")
+        print(f"ERROR: Failed to create signature experience: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Failed to create signature experience: {str(e)}")
 
 
@@ -566,74 +502,63 @@ async def update_signature_experience(
     item_id: int,
     title: Annotated[Any, Form()] = None,
     description: Annotated[Any, Form()] = None,
-    is_active: Annotated[Any, Form()] = True,
+    is_active: Annotated[Any, Form()] = "true",
     image: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     try:
+        is_active_bool = str(is_active).lower() in ("true", "1", "yes", "on")
         update_data = {
             "title": title,
             "description": description,
-            "is_active": is_active,
+            "is_active": is_active_bool,
         }
         
-        if image:
-            os.makedirs(UPLOAD_DIR, exist_ok=True)
-            if not os.access(UPLOAD_DIR, os.W_OK):
-                raise HTTPException(status_code=500, detail=f"Upload directory is not writable: {UPLOAD_DIR}")
-            if not image.filename:
-                raise HTTPException(status_code=400, detail="No filename provided for image")
-            
-            # Generate unique filename to avoid conflicts
-            file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
-            unique_filename = f"sigexp_{uuid.uuid4().hex}.{file_ext}"
-            file_path = os.path.join(UPLOAD_DIR, unique_filename)
-            
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(image.file, buffer)
-            
-            if not os.path.exists(file_path):
-                raise HTTPException(status_code=500, detail="File was not saved successfully")
+        if image is not None:
+            if isinstance(image, list):
+                image = image[0] if image else None
+                
+            if image and getattr(image, 'filename', None):
+                file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
+                unique_filename = f"sigexp_{uuid.uuid4().hex}.{file_ext}"
+                file_path = os.path.join(UPLOAD_DIR, unique_filename)
+                
+                try:
+                    contents = await image.read()
+                    with open(file_path, "wb") as buffer:
+                        buffer.write(contents)
+                except Exception as file_err:
+                    print(f"Error saving updated signature experience image: {file_err}")
+                    raise HTTPException(status_code=500, detail="Failed to save image file")
+                
+                # Generate and Save Thumbnail
+                try:
+                    thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
+                    thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                    with Image.open(io.BytesIO(contents)) as img_pil:
+                        img_pil.thumbnail((200, 200), Image.Resampling.BICUBIC)
+                        if img_pil.mode in ("RGBA", "P"):
+                            img_pil = img_pil.convert("RGB")
+                        img_pil.save(thumb_path, "JPEG", quality=60)
+                except Exception as thumb_error:
+                    print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
 
-            # Generate and Save Thumbnail
-            try:
-                thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
-                thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
-                with Image.open(file_path) as img_pil:
-                    img_pil.thumbnail((200, 200), Image.Resampling.BICUBIC)
-                    if img_pil.mode in ("RGBA", "P"):
-                        img_pil = img_pil.convert("RGB")
-                    img_pil.save(thumb_path, "JPEG", quality=60)
-            except Exception as thumb_error:
-                print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
+                image_url = f"/uploads/cms/{unique_filename}"
+                update_data["image_url"] = image_url
 
-            # Create URL path (relative to static mount)
-            normalized_path = file_path.replace('\\', '/')
-            if normalized_path.startswith(BASE_DIR.replace('\\', '/')):
-                image_url = normalized_path.replace(BASE_DIR.replace('\\', '/'), '').lstrip('/')
-            else:
-                image_url = normalized_path.lstrip('/')
-            
-            if not image_url.startswith('uploads/'):
-                image_url = f"uploads/cms/{unique_filename}"
-            
-            image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
-            update_data["image_url"] = image_url
-        else:
-            # If no new image provided, keep existing image_url
+        # If no new image provided, keep existing image_url
+        if "image_url" not in update_data:
             existing = crud.get_one(db, models.SignatureExperience, item_id)
             if existing:
                 update_data["image_url"] = existing.image_url
 
         obj = schemas.SignatureExperienceUpdate(**update_data)
         return crud.update(db, models.SignatureExperience, item_id, obj)
-    except HTTPException:
-        raise
+    except HTTPException: raise
     except Exception as e:
         import traceback
-        error_detail = f"Failed to update signature experience: {str(e)}\n{traceback.format_exc()}"
-        print(f"ERROR: {error_detail}")
+        print(f"ERROR: Failed to update signature experience: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Failed to update signature experience: {str(e)}")
 
 
@@ -663,66 +588,56 @@ def list_plan_weddings_no_slash(
 async def create_plan_wedding(
     title: Annotated[Any, Form()] = None,
     description: Annotated[Any, Form()] = None,
-    is_active: Annotated[Any, Form()] = True,
+    is_active: Annotated[Any, Form()] = "true",
     image: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     try:
-        os.makedirs(UPLOAD_DIR, exist_ok=True)
-        if not os.access(UPLOAD_DIR, os.W_OK):
-            raise HTTPException(status_code=500, detail=f"Upload directory is not writable: {UPLOAD_DIR}")
-        if not image.filename:
-            raise HTTPException(status_code=400, detail="No filename provided for image")
-        
-        # Generate unique filename to avoid conflicts
-        file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
-        unique_filename = f"wedding_{uuid.uuid4().hex}.{file_ext}"
-        file_path = os.path.join(UPLOAD_DIR, unique_filename)
-        
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(image.file, buffer)
-        
-        if not os.path.exists(file_path):
-            raise HTTPException(status_code=500, detail="File was not saved successfully")
+        is_active_bool = str(is_active).lower() in ("true", "1", "yes", "on")
+        image_url = None
+        if image is not None:
+            if isinstance(image, list):
+                image = image[0] if image else None
+                
+            if image and getattr(image, 'filename', None):
+                file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
+                unique_filename = f"wedding_{uuid.uuid4().hex}.{file_ext}"
+                file_path = os.path.join(UPLOAD_DIR, unique_filename)
+                
+                try:
+                    contents = await image.read()
+                    with open(file_path, "wb") as buffer:
+                        buffer.write(contents)
+                except Exception as file_err:
+                    print(f"Error saving wedding plan image: {file_err}")
+                    raise HTTPException(status_code=500, detail="Failed to save image file")
+                
+                # Generate and Save Thumbnail
+                try:
+                    thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
+                    thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                    with Image.open(io.BytesIO(contents)) as img_pil:
+                        img_pil.thumbnail((200, 200), Image.Resampling.BICUBIC)
+                        if img_pil.mode in ("RGBA", "P"):
+                            img_pil = img_pil.convert("RGB")
+                        img_pil.save(thumb_path, "JPEG", quality=60)
+                except Exception as thumb_error:
+                    print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
 
-        # Generate and Save Thumbnail
-        try:
-            thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
-            thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
-            with Image.open(file_path) as img:
-                img.thumbnail((200, 200), Image.Resampling.BICUBIC)
-                if img.mode in ("RGBA", "P"):
-                    img = img.convert("RGB")
-                img.save(thumb_path, "JPEG", quality=60)
-        except Exception as thumb_error:
-            print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
+                image_url = f"/uploads/cms/{unique_filename}"
 
-        # Create URL path (relative to static mount)
-        normalized_path = file_path.replace('\\', '/')
-        if normalized_path.startswith(BASE_DIR.replace('\\', '/')):
-            image_url = normalized_path.replace(BASE_DIR.replace('\\', '/'), '').lstrip('/')
-        else:
-            image_url = normalized_path.lstrip('/')
-        
-        if not image_url.startswith('uploads/'):
-            image_url = f"uploads/cms/{unique_filename}"
-        
-        image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
-        
         obj = schemas.PlanWeddingCreate(
             title=title,
             description=description,
-            is_active=is_active,
+            is_active=is_active_bool,
             image_url=image_url
         )
         return crud.create(db, models.PlanWedding, obj)
-    except HTTPException:
-        raise
+    except HTTPException: raise
     except Exception as e:
         import traceback
-        error_detail = f"Failed to create plan wedding: {str(e)}\n{traceback.format_exc()}"
-        print(f"ERROR: {error_detail}")
+        print(f"ERROR: Failed to create plan wedding: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Failed to create plan wedding: {str(e)}")
 
 
@@ -731,60 +646,50 @@ async def update_plan_wedding(
     item_id: int,
     title: Annotated[Any, Form()] = None,
     description: Annotated[Any, Form()] = None,
-    is_active: Annotated[Any, Form()] = True,
+    is_active: Annotated[Any, Form()] = "true",
     image: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     try:
+        is_active_bool = str(is_active).lower() in ("true", "1", "yes", "on")
         update_data = {
             "title": title,
             "description": description,
-            "is_active": is_active,
+            "is_active": is_active_bool,
         }
         
-        if image:
-            os.makedirs(UPLOAD_DIR, exist_ok=True)
-            if not os.access(UPLOAD_DIR, os.W_OK):
-                raise HTTPException(status_code=500, detail=f"Upload directory is not writable: {UPLOAD_DIR}")
-            if not image.filename:
-                raise HTTPException(status_code=400, detail="No filename provided for image")
-            
-            # Generate unique filename to avoid conflicts
-            file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
-            unique_filename = f"wedding_{uuid.uuid4().hex}.{file_ext}"
-            file_path = os.path.join(UPLOAD_DIR, unique_filename)
-            
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(image.file, buffer)
-            
-            if not os.path.exists(file_path):
-                raise HTTPException(status_code=500, detail="File was not saved successfully")
+        if image is not None:
+            if isinstance(image, list):
+                image = image[0] if image else None
+                
+            if image and getattr(image, 'filename', None):
+                file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
+                unique_filename = f"wedding_{uuid.uuid4().hex}.{file_ext}"
+                file_path = os.path.join(UPLOAD_DIR, unique_filename)
+                
+                try:
+                    contents = await image.read()
+                    with open(file_path, "wb") as buffer:
+                        buffer.write(contents)
+                except Exception as file_err:
+                    print(f"Error saving updated wedding plan image: {file_err}")
+                    raise HTTPException(status_code=500, detail="Failed to save image file")
+                
+                # Generate and Save Thumbnail
+                try:
+                    thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
+                    thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                    with Image.open(io.BytesIO(contents)) as img_pil:
+                        img_pil.thumbnail((200, 200), Image.Resampling.BICUBIC)
+                        if img_pil.mode in ("RGBA", "P"):
+                            img_pil = img_pil.convert("RGB")
+                        img_pil.save(thumb_path, "JPEG", quality=60)
+                except Exception as thumb_error:
+                    print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
 
-            # Generate and Save Thumbnail
-            try:
-                thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
-                thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
-                with Image.open(file_path) as img_pil:
-                    img_pil.thumbnail((200, 200), Image.Resampling.BICUBIC)
-                    if img_pil.mode in ("RGBA", "P"):
-                        img_pil = img_pil.convert("RGB")
-                    img_pil.save(thumb_path, "JPEG", quality=60)
-            except Exception as thumb_error:
-                print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
-
-            # Create URL path (relative to static mount)
-            normalized_path = file_path.replace('\\', '/')
-            if normalized_path.startswith(BASE_DIR.replace('\\', '/')):
-                image_url = normalized_path.replace(BASE_DIR.replace('\\', '/'), '').lstrip('/')
-            else:
-                image_url = normalized_path.lstrip('/')
-            
-            if not image_url.startswith('uploads/'):
-                image_url = f"uploads/cms/{unique_filename}"
-            
-            image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
-            update_data["image_url"] = image_url
+                image_url = f"/uploads/cms/{unique_filename}"
+                update_data["image_url"] = image_url
         else:
             # If no new image provided, keep existing image_url
             existing = crud.get_one(db, models.PlanWedding, item_id)
@@ -793,11 +698,11 @@ async def update_plan_wedding(
 
         obj = schemas.PlanWeddingUpdate(**update_data)
         return crud.update(db, models.PlanWedding, item_id, obj)
-    except HTTPException:
-        raise
+    except HTTPException: raise
     except Exception as e:
         import traceback
-        error_detail = f"Failed to update plan wedding: {str(e)}\n{traceback.format_exc()}"
+        print(f"ERROR: Failed to update plan wedding: {str(e)}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Failed to update plan wedding: {str(e)}")
         print(f"ERROR: {error_detail}")
         raise HTTPException(status_code=500, detail=f"Failed to update plan wedding: {str(e)}")
 
@@ -858,67 +763,58 @@ async def create_nearby_attraction(
     title: Annotated[Any, Form()] = None,
     description: Annotated[Any, Form()] = None,
     map_link: Annotated[Any, Form()] = None,
-    is_active: Annotated[Any, Form()] = True,
+    is_active: Annotated[Any, Form()] = "true",
     image: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     try:
-        os.makedirs(UPLOAD_DIR, exist_ok=True)
-        if not os.access(UPLOAD_DIR, os.W_OK):
-            raise HTTPException(status_code=500, detail=f"Upload directory is not writable: {UPLOAD_DIR}")
-        if not image.filename:
-            raise HTTPException(status_code=400, detail="No filename provided for image")
-        
-        # Generate unique filename to avoid conflicts
-        file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
-        unique_filename = f"attraction_{uuid.uuid4().hex}.{file_ext}"
-        file_path = os.path.join(UPLOAD_DIR, unique_filename)
-        
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(image.file, buffer)
-        
-        if not os.path.exists(file_path):
-            raise HTTPException(status_code=500, detail="File was not saved successfully")
+        is_active_bool = str(is_active).lower() in ("true", "1", "yes", "on")
+        image_url = None
+        if image is not None:
+             # Ensure image is not a list
+            if isinstance(image, list):
+                image = image[0] if image else None
+            
+            if image and getattr(image, 'filename', None):
+                file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
+                unique_filename = f"attraction_{uuid.uuid4().hex}.{file_ext}"
+                file_path = os.path.join(UPLOAD_DIR, unique_filename)
+                
+                try:
+                    contents = await image.read()
+                    with open(file_path, "wb") as buffer:
+                        buffer.write(contents)
+                except Exception as file_err:
+                    print(f"Error saving attraction image: {file_err}")
+                    raise HTTPException(status_code=500, detail="Failed to save image file")
+                
+                # Generate and Save Thumbnail
+                try:
+                    thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
+                    thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                    with Image.open(io.BytesIO(contents)) as img_pil:
+                        img_pil.thumbnail((200, 200), Image.Resampling.BICUBIC)
+                        if img_pil.mode in ("RGBA", "P"):
+                            img_pil = img_pil.convert("RGB")
+                        img_pil.save(thumb_path, "JPEG", quality=60)
+                except Exception as thumb_error:
+                    print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
 
-        # Generate and Save Thumbnail
-        try:
-            thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
-            thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
-            with Image.open(file_path) as img:
-                img.thumbnail((200, 200), Image.Resampling.BICUBIC)
-                if img.mode in ("RGBA", "P"):
-                    img = img.convert("RGB")
-                img.save(thumb_path, "JPEG", quality=60)
-        except Exception as thumb_error:
-            print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
-
-        # Create URL path (relative to static mount)
-        normalized_path = file_path.replace('\\', '/')
-        if normalized_path.startswith(BASE_DIR.replace('\\', '/')):
-            image_url = normalized_path.replace(BASE_DIR.replace('\\', '/'), '').lstrip('/')
-        else:
-            image_url = normalized_path.lstrip('/')
-        
-        if not image_url.startswith('uploads/'):
-            image_url = f"uploads/cms/{unique_filename}"
-        
-        image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
+                image_url = f"/uploads/cms/{unique_filename}"
         
         obj = schemas.NearbyAttractionCreate(
             title=title,
             description=description,
-            is_active=is_active,
+            is_active=is_active_bool,
             image_url=image_url,
             map_link=map_link.strip() if map_link else None,
         )
         return crud.create(db, models.NearbyAttraction, obj)
-    except HTTPException:
-        raise
+    except HTTPException: raise
     except Exception as e:
         import traceback
-        error_detail = f"Failed to create nearby attraction: {str(e)}\n{traceback.format_exc()}"
-        print(f"ERROR: {error_detail}")
+        print(f"ERROR: Failed to create nearby attraction: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Failed to create nearby attraction: {str(e)}")
 
 
@@ -928,77 +824,65 @@ async def update_nearby_attraction(
     title: Annotated[Any, Form()] = None,
     description: Annotated[Any, Form()] = None,
     map_link: Annotated[Any, Form()] = None,
-    is_active: Annotated[Any, Form()] = True,
+    is_active: Annotated[Any, Form()] = "true",
     image: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     try:
+        is_active_bool = str(is_active).lower() in ("true", "1", "yes", "on")
         update_data = {
             "title": title,
             "description": description,
-            "is_active": is_active,
+            "is_active": is_active_bool,
         }
         if map_link is not None:
-            cleaned = map_link.strip()
-            update_data["map_link"] = cleaned or None
+            update_data["map_link"] = map_link.strip() or None
         
-        if image:
-            os.makedirs(UPLOAD_DIR, exist_ok=True)
-            if not os.access(UPLOAD_DIR, os.W_OK):
-                raise HTTPException(status_code=500, detail=f"Upload directory is not writable: {UPLOAD_DIR}")
-            if not image.filename:
-                raise HTTPException(status_code=400, detail="No filename provided for image")
-            
-            # Generate unique filename to avoid conflicts
-            file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
-            unique_filename = f"attraction_{uuid.uuid4().hex}.{file_ext}"
-            file_path = os.path.join(UPLOAD_DIR, unique_filename)
-            
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(image.file, buffer)
-            
-            if not os.path.exists(file_path):
-                raise HTTPException(status_code=500, detail="File was not saved successfully")
+        if image is not None:
+            if isinstance(image, list):
+                image = image[0] if image else None
+                
+            if image and getattr(image, 'filename', None):
+                file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
+                unique_filename = f"attraction_{uuid.uuid4().hex}.{file_ext}"
+                file_path = os.path.join(UPLOAD_DIR, unique_filename)
+                
+                try:
+                    contents = await image.read()
+                    with open(file_path, "wb") as buffer:
+                        buffer.write(contents)
+                except Exception as file_err:
+                    print(f"Error saving updated attraction image: {file_err}")
+                    raise HTTPException(status_code=500, detail="Failed to save image file")
+                
+                # Generate and Save Thumbnail
+                try:
+                    thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
+                    thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                    with Image.open(io.BytesIO(contents)) as img_pil:
+                        img_pil.thumbnail((200, 200), Image.Resampling.BICUBIC)
+                        if img_pil.mode in ("RGBA", "P"):
+                            img_pil = img_pil.convert("RGB")
+                        img_pil.save(thumb_path, "JPEG", quality=60)
+                except Exception as thumb_error:
+                    print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
 
-            # Generate and Save Thumbnail
-            try:
-                thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
-                thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
-                with Image.open(file_path) as img_pil:
-                    img_pil.thumbnail((200, 200), Image.Resampling.BICUBIC)
-                    if img_pil.mode in ("RGBA", "P"):
-                        img_pil = img_pil.convert("RGB")
-                    img_pil.save(thumb_path, "JPEG", quality=60)
-            except Exception as thumb_error:
-                print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
+                image_url = f"/uploads/cms/{unique_filename}"
+                update_data["image_url"] = image_url
 
-            # Create URL path (relative to static mount)
-            normalized_path = file_path.replace('\\', '/')
-            if normalized_path.startswith(BASE_DIR.replace('\\', '/')):
-                image_url = normalized_path.replace(BASE_DIR.replace('\\', '/'), '').lstrip('/')
-            else:
-                image_url = normalized_path.lstrip('/')
-            
-            if not image_url.startswith('uploads/'):
-                image_url = f"uploads/cms/{unique_filename}"
-            
-            image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
-            update_data["image_url"] = image_url
-        else:
-            # If no new image provided, keep existing image_url
+        # If no new image provided, keep existing image_url
+        if "image_url" not in update_data:
             existing = crud.get_one(db, models.NearbyAttraction, item_id)
             if existing:
                 update_data["image_url"] = existing.image_url
 
         obj = schemas.NearbyAttractionUpdate(**update_data)
         return crud.update(db, models.NearbyAttraction, item_id, obj)
-    except HTTPException:
-        raise
+    except HTTPException: raise
     except Exception as e:
         import traceback
-        error_detail = f"Failed to update nearby attraction: {str(e)}\n{traceback.format_exc()}"
-        print(f"ERROR: {error_detail}")
+        print(f"ERROR: Failed to update nearby attraction: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Failed to update nearby attraction: {str(e)}")
 
 
@@ -1039,66 +923,60 @@ async def create_nearby_attraction_banner(
     title: Annotated[Any, Form()] = None,
     subtitle: Annotated[Any, Form()] = None,
     map_link: Annotated[Any, Form()] = None,
-    is_active: Annotated[Any, Form()] = True,
+    is_active: Annotated[Any, Form()] = "true",
     image: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     try:
-        os.makedirs(UPLOAD_DIR, exist_ok=True)
-        if not os.access(UPLOAD_DIR, os.W_OK):
-            raise HTTPException(status_code=500, detail=f"Upload directory is not writable: {UPLOAD_DIR}")
-        if not image.filename:
-            raise HTTPException(status_code=400, detail="No filename provided for image")
+        is_active_bool = str(is_active).lower() in ("true", "1", "yes", "on")
+        image_url = None
+        if image is not None:
+             # Ensure image is not a list
+            if isinstance(image, list):
+                image = image[0] if image else None
+            
+            if image and getattr(image, 'filename', None):
+                file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
+                unique_filename = f"nearby_banner_{uuid.uuid4().hex}.{file_ext}"
+                file_path = os.path.join(UPLOAD_DIR, unique_filename)
+                
+                try:
+                    contents = await image.read()
+                    with open(file_path, "wb") as buffer:
+                        buffer.write(contents)
+                except Exception as file_err:
+                    print(f"Error saving nearby banner image: {file_err}")
+                    raise HTTPException(status_code=500, detail="Failed to save image file")
+                
+                # Generate and Save Thumbnail
+                try:
+                    thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
+                    thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                    with Image.open(io.BytesIO(contents)) as img_pil:
+                        img_pil.thumbnail((200, 200), Image.Resampling.BICUBIC)
+                        if img_pil.mode in ("RGBA", "P"):
+                            img_pil = img_pil.convert("RGB")
+                        img_pil.save(thumb_path, "JPEG", quality=60)
+                except Exception as thumb_error:
+                    print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
 
-        file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
-        unique_filename = f"nearby_banner_{uuid.uuid4().hex}.{file_ext}"
-        file_path = os.path.join(UPLOAD_DIR, unique_filename)
-
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(image.file, buffer)
-
-        if not os.path.exists(file_path):
-            raise HTTPException(status_code=500, detail="File was not saved successfully")
-
-        # Generate and Save Thumbnail
-        try:
-            thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
-            thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
-            with Image.open(file_path) as img:
-                img.thumbnail((200, 200), Image.Resampling.BICUBIC)
-                if img.mode in ("RGBA", "P"):
-                    img = img.convert("RGB")
-                img.save(thumb_path, "JPEG", quality=60)
-        except Exception as thumb_error:
-            print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
-
-        normalized_path = file_path.replace('\\', '/')
-        if normalized_path.startswith(BASE_DIR.replace('\\', '/')):
-            image_url = normalized_path.replace(BASE_DIR.replace('\\', '/'), '').lstrip('/')
-        else:
-            image_url = normalized_path.lstrip('/')
-
-        if not image_url.startswith('uploads/'):
-            image_url = f"uploads/cms/{unique_filename}"
-
-        image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
+                image_url = f"/uploads/cms/{unique_filename}"
 
         obj = schemas.NearbyAttractionBannerCreate(
             title=title,
             subtitle=subtitle,
             image_url=image_url,
-            is_active=is_active,
+            is_active=is_active_bool,
             map_link=map_link.strip() if map_link else None,
         )
         return crud.create(db, models.NearbyAttractionBanner, obj)
-    except HTTPException:
-        raise
+    except HTTPException: raise
     except Exception as e:
         import traceback
-        error_detail = f"Failed to create nearby attraction banner: {str(e)}\n{traceback.format_exc()}"
-        print(f"ERROR: {error_detail}")
+        print(f"ERROR: Failed to create nearby attraction banner: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Failed to create nearby attraction banner: {str(e)}")
+
 
 
 @router.put("/nearby-attraction-banners/{item_id}", response_model=schemas.NearbyAttractionBanner)
@@ -1107,73 +985,65 @@ async def update_nearby_attraction_banner(
     title: Annotated[Any, Form()] = None,
     subtitle: Annotated[Any, Form()] = None,
     map_link: Annotated[Any, Form()] = None,
-    is_active: Annotated[Any, Form()] = True,
+    is_active: Annotated[Any, Form()] = "true",
     image: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     try:
+        is_active_bool = str(is_active).lower() in ("true", "1", "yes", "on")
         update_data = {
             "title": title,
             "subtitle": subtitle,
-            "is_active": is_active,
+            "is_active": is_active_bool,
             "map_link": map_link.strip() if map_link else None,
         }
+ 
+        if image is not None:
+             # Ensure image is not a list
+            if isinstance(image, list):
+                image = image[0] if image else None
+                
+            if image and getattr(image, 'filename', None):
+                file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
+                unique_filename = f"nearby_banner_{uuid.uuid4().hex}.{file_ext}"
+                file_path = os.path.join(UPLOAD_DIR, unique_filename)
+                
+                try:
+                    contents = await image.read()
+                    with open(file_path, "wb") as buffer:
+                        buffer.write(contents)
+                except Exception as file_err:
+                    print(f"Error saving updated nearby banner image: {file_err}")
+                    raise HTTPException(status_code=500, detail="Failed to save image file")
+                
+                # Generate and Save Thumbnail
+                try:
+                    thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
+                    thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                    with Image.open(io.BytesIO(contents)) as img_pil:
+                        img_pil.thumbnail((200, 200), Image.Resampling.BICUBIC)
+                        if img_pil.mode in ("RGBA", "P"):
+                            img_pil = img_pil.convert("RGB")
+                        img_pil.save(thumb_path, "JPEG", quality=60)
+                except Exception as thumb_error:
+                    print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
 
-        if image:
-            os.makedirs(UPLOAD_DIR, exist_ok=True)
-            if not os.access(UPLOAD_DIR, os.W_OK):
-                raise HTTPException(status_code=500, detail=f"Upload directory is not writable: {UPLOAD_DIR}")
-            if not image.filename:
-                raise HTTPException(status_code=400, detail="No filename provided for image")
-
-            file_ext = image.filename.split('.')[-1] if '.' in image.filename else 'jpg'
-            unique_filename = f"nearby_banner_{uuid.uuid4().hex}.{file_ext}"
-            file_path = os.path.join(UPLOAD_DIR, unique_filename)
-
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(image.file, buffer)
-
-            if not os.path.exists(file_path):
-                raise HTTPException(status_code=500, detail="File was not saved successfully")
-
-            # Generate and Save Thumbnail
-            try:
-                thumb_filename = f"{os.path.splitext(unique_filename)[0]}_thumb.jpg"
-                thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
-                with Image.open(file_path) as img_pil:
-                    img_pil.thumbnail((200, 200), Image.Resampling.BICUBIC)
-                    if img_pil.mode in ("RGBA", "P"):
-                        img_pil = img_pil.convert("RGB")
-                    img_pil.save(thumb_path, "JPEG", quality=60)
-            except Exception as thumb_error:
-                print(f"Warning: Failed to generate thumbnail for {unique_filename}: {thumb_error}")
-
-            normalized_path = file_path.replace('\\', '/')
-            if normalized_path.startswith(BASE_DIR.replace('\\', '/')):
-                image_url = normalized_path.replace(BASE_DIR.replace('\\', '/'), '').lstrip('/')
-            else:
-                image_url = normalized_path.lstrip('/')
-
-            if not image_url.startswith('uploads/'):
-                image_url = f"uploads/cms/{unique_filename}"
-
-            image_url = f"/{image_url}" if not image_url.startswith('/') else image_url
-            update_data["image_url"] = image_url
+                image_url = f"/uploads/cms/{unique_filename}"
+                update_data["image_url"] = image_url
         else:
             existing = crud.get_one(db, models.NearbyAttractionBanner, item_id)
             if existing:
                 update_data["image_url"] = existing.image_url
-
+ 
         obj = schemas.NearbyAttractionBannerUpdate(**update_data)
         return crud.update(db, models.NearbyAttractionBanner, item_id, obj)
-    except HTTPException:
-        raise
+    except HTTPException: raise
     except Exception as e:
         import traceback
-        error_detail = f"Failed to update nearby attraction banner: {str(e)}\n{traceback.format_exc()}"
-        print(f"ERROR: {error_detail}")
+        print(f"ERROR: Failed to update nearby attraction banner: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Failed to update nearby attraction banner: {str(e)}")
+
 
 
 @router.delete("/nearby-attraction-banners/{item_id}")
