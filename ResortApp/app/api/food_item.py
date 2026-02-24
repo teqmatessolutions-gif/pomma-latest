@@ -17,12 +17,12 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.post("")
 async def create_item(
-    name: Annotated[Any, Form(...)] = None,
-    description: Annotated[Any, Form(...)] = None,
-    price: Annotated[Any, Form(...)] = None,
-    available: Annotated[Any, Form(...)] = None,
-    category_id: Annotated[Any, Form(...)] = None,
-    images: Annotated[Any, File(None)] = None,  # Make images optional
+    name: Annotated[Any, Form()] = None,
+    description: Annotated[Any, Form()] = None,
+    price: Annotated[Any, Form()] = None,
+    available: Annotated[Any, Form()] = None,
+    category_id: Annotated[Any, Form()] = None,
+    images: Annotated[Any, File()] = None,  # Make images optional
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
@@ -56,13 +56,13 @@ async def create_item(
 async def update_item(
     request: Request,
     item_id: int,
-    name: Annotated[Any, Form(...)] = None,
-    description: Annotated[Any, Form(...)] = None,
-    price: Annotated[Any, Form(...)] = None,
-    available: Annotated[Any, Form(...)] = None,
-    category_id: Annotated[Any, Form(...)] = None,
-    images: Annotated[Any, File(None)] = None,
-    keep_image_ids: Annotated[Any, Form("")] = None, # Comma-separated list of IDs to keep
+    name: Annotated[Any, Form()] = None,
+    description: Annotated[Any, Form()] = None,
+    price: Annotated[Any, Form()] = None,
+    available: Annotated[Any, Form()] = None,
+    category_id: Annotated[Any, Form()] = None,
+    images: Annotated[Any, File()] = None,
+    keep_image_ids: Annotated[Any, Form()] = ""
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):

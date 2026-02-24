@@ -18,12 +18,12 @@ UPLOAD_DIR = "uploads/expenses"
 
 @router.post("", response_model=ExpenseOut)
 async def create_expense(
-    category: Annotated[Any, Form(...)] = None,
-    amount: Annotated[Any, Form(...)] = None,
-    date: Annotated[Any, Form(...)] = None,
-    description: Annotated[Any, Form(None)] = None,
-    employee_id: Annotated[Any, Form(...)] = None,
-    image: Annotated[Any, File(None)] = None,
+    category: Annotated[Any, Form()] = None,
+    amount: Annotated[Any, Form()] = None,
+    date: Annotated[Any, Form()] = None,
+    description: Annotated[Any, Form()] = None,
+    employee_id: Annotated[Any, Form()] = None,
+    image: Annotated[Any, File()] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None,
     db: Annotated[Any, Depends(get_db)] = None,
 ):

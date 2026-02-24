@@ -19,10 +19,10 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 # Service CRUD
 @router.post("", response_model=service_schema.ServiceOut)
 async def create_service(
-    name: Annotated[Any, Form(...)] = None,
-    description: Annotated[Any, Form(...)] = None,
-    charges: Annotated[Any, Form(...)] = None,
-    images: Annotated[Any, File([])] = None,
+    name: Annotated[Any, Form()] = None,
+    description: Annotated[Any, Form()] = None,
+    charges: Annotated[Any, Form()] = None,
+    images: Annotated[Any, File()] = [],
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
@@ -66,10 +66,10 @@ def list_services_slash(db: Annotated[Any, Depends(get_db)] = None, skip: int = 
 @router.put("/{service_id}", response_model=service_schema.ServiceOut)
 async def update_service(
     service_id: int,
-    name: Annotated[Any, Form(None)] = None,
-    description: Annotated[Any, Form(None)] = None,
-    charges: Annotated[Any, Form(None)] = None,
-    images: Annotated[Any, File([])] = None,
+    name: Annotated[Any, Form()] = None,
+    description: Annotated[Any, Form()] = None,
+    charges: Annotated[Any, Form()] = None,
+    images: Annotated[Any, File()] = [],
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):

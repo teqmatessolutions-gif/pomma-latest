@@ -1235,7 +1235,7 @@ def process_booking_checkout(room_number: str, request: CheckoutRequest, db: Ann
 @router.post("/checkout/{checkout_id}/upload-pdf")
 def upload_checkout_pdf(
     checkout_id: int,
-    file: Annotated[Any, File(...)] = None,
+    file: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):

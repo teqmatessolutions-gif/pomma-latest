@@ -32,14 +32,14 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 @router.post("", response_model=Employee)
 def add_employee(
     db: Annotated[Any, Depends(get_db)] = None,
-    name: Annotated[Any, Form(...)] = None,
-    role: Annotated[Any, Form(...)] = None,
-    salary: Annotated[Any, Form(...)] = None,
-    join_date: Annotated[Any, Form(...)] = None,
-    email: Annotated[Any, Form(...)] = None,
-    phone: Annotated[Any, Form(None)] = None,
-    password: Annotated[Any, Form(...)] = None,
-    image: Annotated[Any, File(None)] = None,
+    name: Annotated[Any, Form()] = None,
+    role: Annotated[Any, Form()] = None,
+    salary: Annotated[Any, Form()] = None,
+    join_date: Annotated[Any, Form()] = None,
+    email: Annotated[Any, Form()] = None,
+    phone: Annotated[Any, Form()] = None,
+    password: Annotated[Any, Form()] = None,
+    image: Annotated[Any, File()] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None,
 ):
     image_url = None
@@ -168,15 +168,15 @@ def get_employee_status_overview(
 def update_employee(
     employee_id: int,
     db: Annotated[Any, Depends(get_db)] = None,
-    name: Annotated[Any, Form(None)] = None,
-    role: Annotated[Any, Form(None)] = None,
-    salary: Annotated[Any, Form(None)] = None,
-    join_date: Annotated[Any, Form(None)] = None,
-    email: Annotated[Any, Form(None)] = None,
-    phone: Annotated[Any, Form(None)] = None,
-    password: Annotated[Any, Form(None)] = None,
-    is_active: Annotated[Any, Form(None)] = None,
-    image: Annotated[Any, File(None)] = None,
+    name: Annotated[Any, Form()] = None,
+    role: Annotated[Any, Form()] = None,
+    salary: Annotated[Any, Form()] = None,
+    join_date: Annotated[Any, Form()] = None,
+    email: Annotated[Any, Form()] = None,
+    phone: Annotated[Any, Form()] = None,
+    password: Annotated[Any, Form()] = None,
+    is_active: Annotated[Any, Form()] = None,
+    image: Annotated[Any, File()] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None,
 ):
     """Update employee details. Admin can change password and is_active status."""

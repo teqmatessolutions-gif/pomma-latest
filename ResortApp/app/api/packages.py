@@ -28,14 +28,14 @@ os.makedirs(CHECKIN_UPLOAD_DIR, exist_ok=True)
 
 @router.post("", response_model=PackageOut)
 async def create_package_api(
-    title: Annotated[Any, Form(...)] = None,
-    description: Annotated[Any, Form(...)] = None,
-    price: Annotated[Any, Form(...)] = None,
-    booking_type: Annotated[Any, Form("room_type")] = None,  # "whole_property" or "room_type"
-    room_types: Annotated[Any, Form(None)] = None,  # Comma-separated list of room types
-    status: Annotated[Any, Form("Available")] = None, 
-    priority: Annotated[Any, Form(None)] = None,
-    images: Annotated[Any, File([])] = None,
+    title: Annotated[Any, Form()] = None,
+    description: Annotated[Any, Form()] = None,
+    price: Annotated[Any, Form()] = None,
+    booking_type: Annotated[Any, Form()] = "room_type"
+    room_types: Annotated[Any, Form()] = None,  # Comma-separated list of room types
+    status: Annotated[Any, Form()] = "Available",
+    priority: Annotated[Any, Form()] = None,
+    images: Annotated[Any, File()] = [],
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
@@ -131,15 +131,15 @@ async def create_package_api(
 @router.put("/{package_id}", response_model=PackageOut)
 async def update_package_api(
     package_id: int,
-    title: Annotated[Any, Form(...)] = None,
-    description: Annotated[Any, Form(...)] = None,
-    price: Annotated[Any, Form(...)] = None,
-    booking_type: Annotated[Any, Form("room_type")] = None,  # "whole_property" or "room_type"
-    room_types: Annotated[Any, Form(None)] = None,  # Comma-separated list of room types
-    status: Annotated[Any, Form("Available")] = None,
-    priority: Annotated[Any, Form(None)] = None,
-    keep_image_ids: Annotated[Any, Form("")] = None, # Comma-separated list of IDs to keep
-    images: Annotated[Any, File([])] = None,
+    title: Annotated[Any, Form()] = None,
+    description: Annotated[Any, Form()] = None,
+    price: Annotated[Any, Form()] = None,
+    booking_type: Annotated[Any, Form()] = "room_type"
+    room_types: Annotated[Any, Form()] = None,  # Comma-separated list of room types
+    status: Annotated[Any, Form()] = "Available",
+    priority: Annotated[Any, Form()] = None,
+    keep_image_ids: Annotated[Any, Form()] = ""
+    images: Annotated[Any, File()] = [],
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
@@ -778,8 +778,8 @@ def extend_package_booking_checkout(booking_id: Union[str, int], new_checkout: s
 @router.put("/booking/{booking_id}/check-in", response_model=PackageBookingOut)
 def check_in_package_booking(
     booking_id: Union[str, int],
-    id_card_images: Annotated[Any, File(default=[])] = None, # Changed to accept multiple files
-    guest_photos: Annotated[Any, File(default=[])] = None,   # Changed to accept multiple files
+    id_card_images: Annotated[Any, File()] = None, # Changed to accept multiple files
+    guest_photos: Annotated[Any, File()] = None,   # Changed to accept multiple files
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):

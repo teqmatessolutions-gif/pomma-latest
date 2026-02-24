@@ -39,10 +39,10 @@ def list_header_banner_no_slash(db: Annotated[Any, Depends(get_db)] = None, skip
 # ✅ Create header banner
 @router.post("/header-banner/", response_model=schemas.HeaderBanner)
 async def create_header_banner(
-    title: Annotated[Any, Form(...)] = None,
-    subtitle: Annotated[Any, Form(...)] = None,
-    is_active: Annotated[Any, Form("true")] = None,
-    image: Annotated[Any, File(...)] = None,
+    title: Annotated[Any, Form()] = None,
+    subtitle: Annotated[Any, Form()] = None,
+    is_active: Annotated[Any, Form()] = "true",
+    image: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
@@ -119,10 +119,10 @@ async def create_header_banner(
 @router.put("/header-banner/{item_id}", response_model=schemas.HeaderBanner)
 async def update_header_banner(
     item_id: int,
-    title: Annotated[Any, Form(...)] = None,
-    subtitle: Annotated[Any, Form(...)] = None,
-    is_active: Annotated[Any, Form("true")] = None,
-    image: Annotated[Any, File(None)] = None,
+    title: Annotated[Any, Form()] = None,
+    subtitle: Annotated[Any, Form()] = None,
+    is_active: Annotated[Any, Form()] = "true",
+    image: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
@@ -255,9 +255,9 @@ def list_gallery_no_slash(
 
 @router.post("/gallery/", response_model=schemas.Gallery)
 async def create_gallery(
-    caption: Annotated[Any, Form(...)] = None,
-    is_active: Annotated[Any, Form(True)] = None,
-    image: Annotated[Any, File(...)] = None,
+    caption: Annotated[Any, Form()] = None,
+    is_active: Annotated[Any, Form()] = True,
+    image: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
@@ -321,9 +321,9 @@ async def create_gallery(
 @router.put("/gallery/{item_id}", response_model=schemas.Gallery)
 async def update_gallery(
     item_id: int,
-    caption: Annotated[Any, Form(...)] = None,
-    is_active: Annotated[Any, Form(True)] = None,
-    image: Annotated[Any, File(None)] = None,
+    caption: Annotated[Any, Form()] = None,
+    is_active: Annotated[Any, Form()] = True,
+    image: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
@@ -496,10 +496,10 @@ def list_signature_experiences_no_slash(
 
 @router.post("/signature-experiences/", response_model=schemas.SignatureExperience)
 async def create_signature_experience(
-    title: Annotated[Any, Form(...)] = None,
-    description: Annotated[Any, Form(...)] = None,
-    is_active: Annotated[Any, Form(True)] = None,
-    image: Annotated[Any, File(...)] = None,
+    title: Annotated[Any, Form()] = None,
+    description: Annotated[Any, Form()] = None,
+    is_active: Annotated[Any, Form()] = True,
+    image: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
@@ -564,10 +564,10 @@ async def create_signature_experience(
 @router.put("/signature-experiences/{item_id}", response_model=schemas.SignatureExperience)
 async def update_signature_experience(
     item_id: int,
-    title: Annotated[Any, Form(...)] = None,
-    description: Annotated[Any, Form(...)] = None,
-    is_active: Annotated[Any, Form(True)] = None,
-    image: Annotated[Any, File(None)] = None,
+    title: Annotated[Any, Form()] = None,
+    description: Annotated[Any, Form()] = None,
+    is_active: Annotated[Any, Form()] = True,
+    image: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
@@ -661,10 +661,10 @@ def list_plan_weddings_no_slash(
 
 @router.post("/plan-weddings/", response_model=schemas.PlanWedding)
 async def create_plan_wedding(
-    title: Annotated[Any, Form(...)] = None,
-    description: Annotated[Any, Form(...)] = None,
-    is_active: Annotated[Any, Form(True)] = None,
-    image: Annotated[Any, File(...)] = None,
+    title: Annotated[Any, Form()] = None,
+    description: Annotated[Any, Form()] = None,
+    is_active: Annotated[Any, Form()] = True,
+    image: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
@@ -729,10 +729,10 @@ async def create_plan_wedding(
 @router.put("/plan-weddings/{item_id}", response_model=schemas.PlanWedding)
 async def update_plan_wedding(
     item_id: int,
-    title: Annotated[Any, Form(...)] = None,
-    description: Annotated[Any, Form(...)] = None,
-    is_active: Annotated[Any, Form(True)] = None,
-    image: Annotated[Any, File(None)] = None,
+    title: Annotated[Any, Form()] = None,
+    description: Annotated[Any, Form()] = None,
+    is_active: Annotated[Any, Form()] = True,
+    image: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
@@ -855,11 +855,11 @@ def list_nearby_attractions_no_slash(
 
 @router.post("/nearby-attractions/", response_model=schemas.NearbyAttraction)
 async def create_nearby_attraction(
-    title: Annotated[Any, Form(...)] = None,
-    description: Annotated[Any, Form(...)] = None,
-    map_link: Annotated[Any, Form(None)] = None,
-    is_active: Annotated[Any, Form(True)] = None,
-    image: Annotated[Any, File(...)] = None,
+    title: Annotated[Any, Form()] = None,
+    description: Annotated[Any, Form()] = None,
+    map_link: Annotated[Any, Form()] = None,
+    is_active: Annotated[Any, Form()] = True,
+    image: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
@@ -925,11 +925,11 @@ async def create_nearby_attraction(
 @router.put("/nearby-attractions/{item_id}", response_model=schemas.NearbyAttraction)
 async def update_nearby_attraction(
     item_id: int,
-    title: Annotated[Any, Form(...)] = None,
-    description: Annotated[Any, Form(...)] = None,
-    map_link: Annotated[Any, Form(None)] = None,
-    is_active: Annotated[Any, Form(True)] = None,
-    image: Annotated[Any, File(None)] = None,
+    title: Annotated[Any, Form()] = None,
+    description: Annotated[Any, Form()] = None,
+    map_link: Annotated[Any, Form()] = None,
+    is_active: Annotated[Any, Form()] = True,
+    image: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
@@ -1036,11 +1036,11 @@ def list_nearby_attraction_banner_singular(
 
 @router.post("/nearby-attraction-banners/", response_model=schemas.NearbyAttractionBanner)
 async def create_nearby_attraction_banner(
-    title: Annotated[Any, Form(...)] = None,
-    subtitle: Annotated[Any, Form(...)] = None,
-    map_link: Annotated[Any, Form(None)] = None,
-    is_active: Annotated[Any, Form(True)] = None,
-    image: Annotated[Any, File(...)] = None,
+    title: Annotated[Any, Form()] = None,
+    subtitle: Annotated[Any, Form()] = None,
+    map_link: Annotated[Any, Form()] = None,
+    is_active: Annotated[Any, Form()] = True,
+    image: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
@@ -1104,11 +1104,11 @@ async def create_nearby_attraction_banner(
 @router.put("/nearby-attraction-banners/{item_id}", response_model=schemas.NearbyAttractionBanner)
 async def update_nearby_attraction_banner(
     item_id: int,
-    title: Annotated[Any, Form(...)] = None,
-    subtitle: Annotated[Any, Form(...)] = None,
-    map_link: Annotated[Any, Form(None)] = None,
-    is_active: Annotated[Any, Form(True)] = None,
-    image: Annotated[Any, File(None)] = None,
+    title: Annotated[Any, Form()] = None,
+    subtitle: Annotated[Any, Form()] = None,
+    map_link: Annotated[Any, Form()] = None,
+    is_active: Annotated[Any, Form()] = True,
+    image: Annotated[Any, File()] = None,
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):

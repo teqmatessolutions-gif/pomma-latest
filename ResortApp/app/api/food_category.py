@@ -14,7 +14,7 @@ router = APIRouter(prefix="/food-categories", tags=["Food Categories"])
 
 
 @router.post("", response_model=FoodCategoryOut)
-def create_category(name: Annotated[Any, Form(...)] = None, image: Annotated[Any, File(None)] = None, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
+def create_category(name: Annotated[Any, Form()] = None, image: Annotated[Any, File()] = None, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     filename = None
     if image:
         filename = f"category_{uuid.uuid4().hex}_{image.filename}"
@@ -42,7 +42,7 @@ def read_all_slash(db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, li
     return _read_all_impl(db, skip, limit)
 
 @router.put("/{cat_id}", response_model=FoodCategoryOut)
-def update(cat_id: int, name: Annotated[Any, Form(...)] = None, image: Annotated[Any, File(None)] = None, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
+def update(cat_id: int, name: Annotated[Any, Form()] = None, image: Annotated[Any, File()] = None, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     """Update a food category"""
     category = db.query(FoodCategory).filter(FoodCategory.id == cat_id).first()
     if not category:
