@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from typing import Annotated, Any
 from sqlalchemy.orm import Session
 import os
 import shutil
@@ -26,24 +27,24 @@ print(f"Upload directory set to: {UPLOAD_DIR}")  # Debug log
 
 # ---------- Header & Banner ----------
 @router.get("/header-banner/", response_model=list[schemas.HeaderBanner])
-def list_header_banner(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+def list_header_banner(db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20):
     return crud.get_all(db, models.HeaderBanner, skip=skip, limit=limit)
 
 
 @router.get("/header-banner", response_model=list[schemas.HeaderBanner], include_in_schema=False)
-def list_header_banner_no_slash(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+def list_header_banner_no_slash(db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20):
     return list_header_banner(db=db, skip=skip, limit=limit)
 
 
 # ✅ Create header banner
 @router.post("/header-banner/", response_model=schemas.HeaderBanner)
 async def create_header_banner(
-    title: str = Form(...),
-    subtitle: str = Form(...),
-    is_active: str = Form("true"),
-    image: UploadFile = File(...),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    title: Annotated[Any, Form(...)] = None,
+    subtitle: Annotated[Any, Form(...)] = None,
+    is_active: Annotated[Any, Form("true")] = None,
+    image: Annotated[Any, File(...)] = None,
+    db: Annotated[Any, Depends(get_db)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     try:
         # Convert is_active string to boolean
@@ -118,12 +119,12 @@ async def create_header_banner(
 @router.put("/header-banner/{item_id}", response_model=schemas.HeaderBanner)
 async def update_header_banner(
     item_id: int,
-    title: str = Form(...),
-    subtitle: str = Form(...),
-    is_active: str = Form("true"),
-    image: UploadFile = File(None),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    title: Annotated[Any, Form(...)] = None,
+    subtitle: Annotated[Any, Form(...)] = None,
+    is_active: Annotated[Any, Form("true")] = None,
+    image: Annotated[Any, File(None)] = None,
+    db: Annotated[Any, Depends(get_db)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     try:
         # Convert is_active string to boolean
@@ -204,12 +205,12 @@ async def update_header_banner(
 
 # ✅ Delete header banner
 @router.delete("/header-banner/{item_id}")
-def delete_header_banner(item_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def delete_header_banner(item_id: int, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     return crud.delete(db, models.HeaderBanner, item_id)
 
 # ---------- Check Availability ----------
 @router.get("/check-availability/", response_model=list[schemas.CheckAvailability])
-def list_check_availability(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+def list_check_availability(db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20):
     return crud.get_all(db, models.CheckAvailability, skip=skip, limit=limit)
 
 
@@ -219,46 +220,46 @@ def list_check_availability(db: Session = Depends(get_db), skip: int = 0, limit:
     include_in_schema=False,
 )
 def list_check_availability_no_slash(
-    db: Session = Depends(get_db), skip: int = 0, limit: int = 20
+    db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20
 ):
     return list_check_availability(db=db, skip=skip, limit=limit)
 
 
 @router.post("/check-availability/", response_model=schemas.CheckAvailability)
-def create_check_availability(obj: schemas.CheckAvailabilityCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def create_check_availability(obj: schemas.CheckAvailabilityCreate, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     return crud.create(db, models.CheckAvailability, obj)
 
 
 @router.put("/check-availability/{item_id}", response_model=schemas.CheckAvailability)
-def update_check_availability(item_id: int, obj: schemas.CheckAvailabilityCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def update_check_availability(item_id: int, obj: schemas.CheckAvailabilityCreate, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     return crud.update(db, models.CheckAvailability, item_id, obj)
 
 
 @router.delete("/check-availability/{item_id}")
-def delete_check_availability(item_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def delete_check_availability(item_id: int, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     return crud.delete(db, models.CheckAvailability, item_id)
 
 
 # ---------- Gallery ----------
 @router.get("/gallery/", response_model=list[schemas.Gallery])
-def list_gallery(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+def list_gallery(db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20):
     return crud.get_all(db, models.Gallery, skip=skip, limit=limit)
 
 
 @router.get("/gallery", response_model=list[schemas.Gallery], include_in_schema=False)
 def list_gallery_no_slash(
-    db: Session = Depends(get_db), skip: int = 0, limit: int = 20
+    db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20
 ):
     return list_gallery(db=db, skip=skip, limit=limit)
 
 
 @router.post("/gallery/", response_model=schemas.Gallery)
 async def create_gallery(
-    caption: str = Form(...),
-    is_active: bool = Form(True),
-    image: UploadFile = File(...),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    caption: Annotated[Any, Form(...)] = None,
+    is_active: Annotated[Any, Form(True)] = None,
+    image: Annotated[Any, File(...)] = None,
+    db: Annotated[Any, Depends(get_db)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     try:
         os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -320,11 +321,11 @@ async def create_gallery(
 @router.put("/gallery/{item_id}", response_model=schemas.Gallery)
 async def update_gallery(
     item_id: int,
-    caption: str = Form(...),
-    is_active: bool = Form(True),
-    image: UploadFile = File(None),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    caption: Annotated[Any, Form(...)] = None,
+    is_active: Annotated[Any, Form(True)] = None,
+    image: Annotated[Any, File(None)] = None,
+    db: Annotated[Any, Depends(get_db)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     try:
         image_url = None
@@ -393,25 +394,25 @@ async def update_gallery(
 
 
 @router.delete("/gallery/{item_id}")
-def delete_gallery(item_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def delete_gallery(item_id: int, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     return crud.delete(db, models.Gallery, item_id)
 
 
 # ---------- Reviews ----------
 @router.get("/reviews/", response_model=list[schemas.Review])
-def list_reviews(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+def list_reviews(db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20):
     return crud.get_all(db, models.Review, skip=skip, limit=limit)
 
 
 @router.get("/reviews", response_model=list[schemas.Review], include_in_schema=False)
 def list_reviews_no_slash(
-    db: Session = Depends(get_db), skip: int = 0, limit: int = 20
+    db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20
 ):
     return list_reviews(db=db, skip=skip, limit=limit)
 
 
 @router.post("/reviews/", response_model=schemas.Review)
-def create_review(obj: schemas.ReviewCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def create_review(obj: schemas.ReviewCreate, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     try:
         # Ensure rating is an integer
         if isinstance(obj.rating, str):
@@ -422,7 +423,7 @@ def create_review(obj: schemas.ReviewCreate, db: Session = Depends(get_db), curr
 
 
 @router.put("/reviews/{item_id}", response_model=schemas.Review)
-def update_review(item_id: int, obj: schemas.ReviewCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def update_review(item_id: int, obj: schemas.ReviewCreate, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     try:
         # Ensure rating is an integer
         if isinstance(obj.rating, str):
@@ -433,13 +434,13 @@ def update_review(item_id: int, obj: schemas.ReviewCreate, db: Session = Depends
 
 
 @router.delete("/reviews/{item_id}")
-def delete_review(item_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def delete_review(item_id: int, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     return crud.delete(db, models.Review, item_id)
 
 
 # ---------- Resort Info ----------
 @router.get("/resort-info/", response_model=list[schemas.ResortInfo])
-def list_resort_info(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+def list_resort_info(db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20):
     return crud.get_all(db, models.ResortInfo, skip=skip, limit=limit)
 
 
@@ -447,7 +448,7 @@ def list_resort_info(db: Session = Depends(get_db), skip: int = 0, limit: int = 
     "/resort-info", response_model=list[schemas.ResortInfo], include_in_schema=False
 )
 def list_resort_info_no_slash(
-    db: Session = Depends(get_db), skip: int = 0, limit: int = 20
+    db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20
 ):
     return list_resort_info(db=db, skip=skip, limit=limit)
 
@@ -455,8 +456,8 @@ def list_resort_info_no_slash(
 @router.post("/resort-info/", response_model=schemas.ResortInfo)
 def create_resort_info(
     obj: schemas.ResortInfoCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    db: Annotated[Any, Depends(get_db)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     return crud.create(db, models.ResortInfo, obj)
 
@@ -465,20 +466,20 @@ def create_resort_info(
 def update_resort_info(
     item_id: int,
     obj: schemas.ResortInfoCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    db: Annotated[Any, Depends(get_db)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     return crud.update(db, models.ResortInfo, item_id, obj)
 
 
 @router.delete("/resort-info/{item_id}")
-def delete_resort_info(item_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def delete_resort_info(item_id: int, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     return crud.delete(db, models.ResortInfo, item_id)
 
 
 # ---------- Signature Experiences ----------
 @router.get("/signature-experiences/", response_model=list[schemas.SignatureExperience])
-def list_signature_experiences(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+def list_signature_experiences(db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20):
     return crud.get_all(db, models.SignatureExperience, skip=skip, limit=limit)
 
 
@@ -488,19 +489,19 @@ def list_signature_experiences(db: Session = Depends(get_db), skip: int = 0, lim
     include_in_schema=False,
 )
 def list_signature_experiences_no_slash(
-    db: Session = Depends(get_db), skip: int = 0, limit: int = 20
+    db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20
 ):
     return list_signature_experiences(db=db, skip=skip, limit=limit)
 
 
 @router.post("/signature-experiences/", response_model=schemas.SignatureExperience)
 async def create_signature_experience(
-    title: str = Form(...),
-    description: str = Form(...),
-    is_active: bool = Form(True),
-    image: UploadFile = File(...),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    title: Annotated[Any, Form(...)] = None,
+    description: Annotated[Any, Form(...)] = None,
+    is_active: Annotated[Any, Form(True)] = None,
+    image: Annotated[Any, File(...)] = None,
+    db: Annotated[Any, Depends(get_db)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     try:
         os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -563,12 +564,12 @@ async def create_signature_experience(
 @router.put("/signature-experiences/{item_id}", response_model=schemas.SignatureExperience)
 async def update_signature_experience(
     item_id: int,
-    title: str = Form(...),
-    description: str = Form(...),
-    is_active: bool = Form(True),
-    image: UploadFile = File(None),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    title: Annotated[Any, Form(...)] = None,
+    description: Annotated[Any, Form(...)] = None,
+    is_active: Annotated[Any, Form(True)] = None,
+    image: Annotated[Any, File(None)] = None,
+    db: Annotated[Any, Depends(get_db)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     try:
         update_data = {
@@ -637,13 +638,13 @@ async def update_signature_experience(
 
 
 @router.delete("/signature-experiences/{item_id}")
-def delete_signature_experience(item_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def delete_signature_experience(item_id: int, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     return crud.delete(db, models.SignatureExperience, item_id)
 
 
 # ---------- Plan Your Wedding ----------
 @router.get("/plan-weddings/", response_model=list[schemas.PlanWedding])
-def list_plan_weddings(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+def list_plan_weddings(db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20):
     return crud.get_all(db, models.PlanWedding, skip=skip, limit=limit)
 
 
@@ -653,19 +654,19 @@ def list_plan_weddings(db: Session = Depends(get_db), skip: int = 0, limit: int 
     include_in_schema=False,
 )
 def list_plan_weddings_no_slash(
-    db: Session = Depends(get_db), skip: int = 0, limit: int = 20
+    db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20
 ):
     return list_plan_weddings(db=db, skip=skip, limit=limit)
 
 
 @router.post("/plan-weddings/", response_model=schemas.PlanWedding)
 async def create_plan_wedding(
-    title: str = Form(...),
-    description: str = Form(...),
-    is_active: bool = Form(True),
-    image: UploadFile = File(...),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    title: Annotated[Any, Form(...)] = None,
+    description: Annotated[Any, Form(...)] = None,
+    is_active: Annotated[Any, Form(True)] = None,
+    image: Annotated[Any, File(...)] = None,
+    db: Annotated[Any, Depends(get_db)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     try:
         os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -728,12 +729,12 @@ async def create_plan_wedding(
 @router.put("/plan-weddings/{item_id}", response_model=schemas.PlanWedding)
 async def update_plan_wedding(
     item_id: int,
-    title: str = Form(...),
-    description: str = Form(...),
-    is_active: bool = Form(True),
-    image: UploadFile = File(None),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    title: Annotated[Any, Form(...)] = None,
+    description: Annotated[Any, Form(...)] = None,
+    is_active: Annotated[Any, Form(True)] = None,
+    image: Annotated[Any, File(None)] = None,
+    db: Annotated[Any, Depends(get_db)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     try:
         update_data = {
@@ -802,13 +803,13 @@ async def update_plan_wedding(
 
 
 @router.delete("/plan-weddings/{item_id}")
-def delete_plan_wedding(item_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def delete_plan_wedding(item_id: int, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     return crud.delete(db, models.PlanWedding, item_id)
 
 
 # ---------- Nearby Attractions ----------
 @router.get("/nearby-attractions/", response_model=list[schemas.NearbyAttraction])
-def list_nearby_attractions(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+def list_nearby_attractions(db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20):
     try:
         # Verify model is available
         if not hasattr(models, 'NearbyAttraction'):
@@ -847,20 +848,20 @@ def list_nearby_attractions(db: Session = Depends(get_db), skip: int = 0, limit:
     include_in_schema=False,
 )
 def list_nearby_attractions_no_slash(
-    db: Session = Depends(get_db), skip: int = 0, limit: int = 20
+    db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20
 ):
     return list_nearby_attractions(db=db, skip=skip, limit=limit)
 
 
 @router.post("/nearby-attractions/", response_model=schemas.NearbyAttraction)
 async def create_nearby_attraction(
-    title: str = Form(...),
-    description: str = Form(...),
-    map_link: str | None = Form(None),
-    is_active: bool = Form(True),
-    image: UploadFile = File(...),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    title: Annotated[Any, Form(...)] = None,
+    description: Annotated[Any, Form(...)] = None,
+    map_link: Annotated[Any, Form(None)] = None,
+    is_active: Annotated[Any, Form(True)] = None,
+    image: Annotated[Any, File(...)] = None,
+    db: Annotated[Any, Depends(get_db)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     try:
         os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -924,13 +925,13 @@ async def create_nearby_attraction(
 @router.put("/nearby-attractions/{item_id}", response_model=schemas.NearbyAttraction)
 async def update_nearby_attraction(
     item_id: int,
-    title: str = Form(...),
-    description: str = Form(...),
-    map_link: str | None = Form(None),
-    is_active: bool = Form(True),
-    image: UploadFile = File(None),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    title: Annotated[Any, Form(...)] = None,
+    description: Annotated[Any, Form(...)] = None,
+    map_link: Annotated[Any, Form(None)] = None,
+    is_active: Annotated[Any, Form(True)] = None,
+    image: Annotated[Any, File(None)] = None,
+    db: Annotated[Any, Depends(get_db)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     try:
         update_data = {
@@ -1002,12 +1003,12 @@ async def update_nearby_attraction(
 
 
 @router.delete("/nearby-attractions/{item_id}")
-def delete_nearby_attraction(item_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def delete_nearby_attraction(item_id: int, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     return crud.delete(db, models.NearbyAttraction, item_id)
 
 
 @router.get("/nearby-attraction-banners/", response_model=list[schemas.NearbyAttractionBanner])
-def list_nearby_attraction_banners(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+def list_nearby_attraction_banners(db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20):
     return crud.get_all(db, models.NearbyAttractionBanner, skip=skip, limit=limit)
 
 
@@ -1017,7 +1018,7 @@ def list_nearby_attraction_banners(db: Session = Depends(get_db), skip: int = 0,
     include_in_schema=False,
 )
 def list_nearby_attraction_banners_no_slash(
-    db: Session = Depends(get_db), skip: int = 0, limit: int = 20
+    db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20
 ):
     return list_nearby_attraction_banners(db=db, skip=skip, limit=limit)
 
@@ -1028,20 +1029,20 @@ def list_nearby_attraction_banners_no_slash(
     include_in_schema=False,
 )
 def list_nearby_attraction_banner_singular(
-    db: Session = Depends(get_db), skip: int = 0, limit: int = 20
+    db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20
 ):
     return list_nearby_attraction_banners(db=db, skip=skip, limit=limit)
 
 
 @router.post("/nearby-attraction-banners/", response_model=schemas.NearbyAttractionBanner)
 async def create_nearby_attraction_banner(
-    title: str = Form(...),
-    subtitle: str = Form(...),
-    map_link: str | None = Form(None),
-    is_active: bool = Form(True),
-    image: UploadFile = File(...),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    title: Annotated[Any, Form(...)] = None,
+    subtitle: Annotated[Any, Form(...)] = None,
+    map_link: Annotated[Any, Form(None)] = None,
+    is_active: Annotated[Any, Form(True)] = None,
+    image: Annotated[Any, File(...)] = None,
+    db: Annotated[Any, Depends(get_db)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     try:
         os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -1103,13 +1104,13 @@ async def create_nearby_attraction_banner(
 @router.put("/nearby-attraction-banners/{item_id}", response_model=schemas.NearbyAttractionBanner)
 async def update_nearby_attraction_banner(
     item_id: int,
-    title: str = Form(...),
-    subtitle: str = Form(...),
-    map_link: str | None = Form(None),
-    is_active: bool = Form(True),
-    image: UploadFile = File(None),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    title: Annotated[Any, Form(...)] = None,
+    subtitle: Annotated[Any, Form(...)] = None,
+    map_link: Annotated[Any, Form(None)] = None,
+    is_active: Annotated[Any, Form(True)] = None,
+    image: Annotated[Any, File(None)] = None,
+    db: Annotated[Any, Depends(get_db)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     try:
         update_data = {
@@ -1176,5 +1177,5 @@ async def update_nearby_attraction_banner(
 
 
 @router.delete("/nearby-attraction-banners/{item_id}")
-def delete_nearby_attraction_banner(item_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def delete_nearby_attraction_banner(item_id: int, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     return crud.delete(db, models.NearbyAttractionBanner, item_id)

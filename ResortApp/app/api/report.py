@@ -1,8 +1,7 @@
-# app/routers/reports.py
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Annotated
 from datetime import date, timedelta, datetime
 from app.utils.auth import get_db
 from app import models as models
@@ -71,7 +70,7 @@ def get_guest_profile(
     guest_email: Optional[str] = Query(None, description="Guest's email address"),
     guest_mobile: Optional[str] = Query(None, description="Guest's mobile number"),
     guest_name: Optional[str] = Query(None, description="Guest's name (case-insensitive search)"),
-    db: Session = Depends(get_db)
+    db: Annotated[Any, Depends(get_db)] = None
 ):
     """Generates a complete profile for a guest, including all bookings, orders, and services."""
     if not guest_email and not guest_mobile and not guest_name:
@@ -82,7 +81,7 @@ def get_guest_profile(
 def get_food_orders(
     from_date: Optional[date] = Query(None, description="Start date for filtering (YYYY-MM-DD)"),
     to_date: Optional[date] = Query(None, description="End date for filtering (YYYY-MM-DD)"),
-    db: Session = Depends(get_db),
+    db: Annotated[Any, Depends(get_db)] = None,
     skip: int = 0,
     limit: int = 20
 ):
@@ -157,7 +156,7 @@ def get_user_history(
     user_id: int,
     from_date: Optional[date] = Query(None),
     to_date: Optional[date] = Query(None),
-    db: Session = Depends(get_db)
+    db: Annotated[Any, Depends(get_db)] = None
 ):
     """
     Generates a complete history of activities for a specific user within a date range.
@@ -249,7 +248,7 @@ def get_service_charges(
     to_date: Optional[str] = Query(None),
     fromDate: Optional[str] = Query(None),
     toDate: Optional[str] = Query(None),
-    db: Session = Depends(get_db),
+    db: Annotated[Any, Depends(get_db)] = None,
     skip: int = 0,
     limit: int = 20
 ):
@@ -300,7 +299,7 @@ def get_service_charges(
 def get_room_charges(
     from_date: Optional[date] = Query(None),
     to_date: Optional[date] = Query(None),
-    db: Session = Depends(get_db),
+    db: Annotated[Any, Depends(get_db)] = None,
     skip: int = 0,
     limit: int = 20
 ):
@@ -332,7 +331,7 @@ def get_room_charges(
 def get_rent_records(
     from_date: Optional[date] = Query(None),
     to_date: Optional[date] = Query(None),
-    db: Session = Depends(get_db),
+    db: Annotated[Any, Depends(get_db)] = None,
     skip: int = 0,
     limit: int = 20
 ):
@@ -365,7 +364,7 @@ def get_rent_records(
 def get_all_expenses(
     from_date: Optional[date] = Query(None),
     to_date: Optional[date] = Query(None),
-    db: Session = Depends(get_db),
+    db: Annotated[Any, Depends(get_db)] = None,
     skip: int = 0,
     limit: int = 20
 ):
@@ -393,7 +392,7 @@ def get_all_expenses(
 def get_all_room_bookings(
     from_date: Optional[date] = Query(None),
     to_date: Optional[date] = Query(None),
-    db: Session = Depends(get_db),
+    db: Annotated[Any, Depends(get_db)] = None,
     skip: int = 0,
     limit: int = 20
 ):
@@ -430,7 +429,7 @@ def get_all_room_bookings(
 def get_all_package_bookings(
     from_date: Optional[date] = Query(None),
     to_date: Optional[date] = Query(None),
-    db: Session = Depends(get_db),
+    db: Annotated[Any, Depends(get_db)] = None,
     skip: int = 0,
     limit: int = 20
 ):
@@ -451,7 +450,7 @@ def get_all_employees(
     to_date: Optional[str] = Query(None),
     fromDate: Optional[str] = Query(None),
     toDate: Optional[str] = Query(None),
-    db: Session = Depends(get_db),
+    db: Annotated[Any, Depends(get_db)] = None,
     skip: int = 0,
     limit: int = 20
 ):
@@ -493,7 +492,7 @@ def get_checkin_by_employee_report(
     to_date: Optional[str] = Query(None),
     fromDate: Optional[str] = Query(None),
     toDate: Optional[str] = Query(None),
-    db: Session = Depends(get_db)
+    db: Annotated[Any, Depends(get_db)] = None
 ):
     """
     Generates a report of how many check-ins each employee has performed.
@@ -540,7 +539,7 @@ class GuestSuggestion(BaseModel):
 
 @router.get("/guest-suggestions", response_model=List[GuestSuggestion])
 def get_guest_suggestions(
-    db: Session = Depends(get_db),
+    db: Annotated[Any, Depends(get_db)] = None,
     skip: int = 0,
     limit: int = 20
 ):

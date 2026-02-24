@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Body, UploadFile, File
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_, and_, desc, cast, Date
-from typing import List, Optional
+from typing import List, Optional, Annotated, Any
 from datetime import date, datetime, time, timedelta
 import random
 import string
@@ -70,8 +70,8 @@ def calculate_charges_breakdown(checkout: Checkout) -> BillBreakdown:
 
 @router.get("/checkouts", response_model=List[CheckoutFull])
 def get_all_checkouts(
-    db: Session = Depends(get_db), 
-    current_user: User = Depends(get_current_user), 
+    db: Annotated[Any, Depends(get_db)] = None, 
+    current_user: Annotated[Any, Depends(get_current_user)] = None, 
     skip: int = 0, 
     limit: int = 20,
     start_date: Optional[str] = None,
@@ -141,7 +141,7 @@ def get_all_checkouts(
     return result
 
 @router.get("/checkouts/{checkout_id}/details")
-def get_checkout_details(checkout_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_checkout_details(checkout_id: int, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     """Get detailed checkout information including food orders and services."""
     checkout = db.query(Checkout).filter(Checkout.id == checkout_id).first()
     if not checkout:
@@ -427,7 +427,7 @@ def get_checkout_details(checkout_id: int, db: Session = Depends(get_db), curren
     }
 
 @router.get("/active-rooms", response_model=List[dict])
-def get_active_rooms(db: Session = Depends(get_db), current_user: User = Depends(get_current_user), skip: int = 0, limit: int = 20):
+def get_active_rooms(db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None, skip: int = 0, limit: int = 20):
     """
     Returns a list of active rooms available for checkout with two options:
     1. Individual rooms (for single room checkout)
@@ -944,7 +944,7 @@ def _calculate_bill_for_entire_booking(db: Session, room_number: str):
 
 
 @router.get("/{room_number}", response_model=BillSummary)
-def get_bill_for_booking(room_number: str, checkout_mode: str = "multiple", db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_bill_for_booking(room_number: str, checkout_mode: str = "multiple", db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     """
     Returns a bill summary for the booking associated with the given room number.
     If checkout_mode is 'single', calculates bill for that room only.
@@ -977,7 +977,7 @@ def get_bill_for_booking(room_number: str, checkout_mode: str = "multiple", db: 
 
 
 @router.post("/checkout/{room_number}", response_model=CheckoutSuccess)
-def process_booking_checkout(room_number: str, request: CheckoutRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def process_booking_checkout(room_number: str, request: CheckoutRequest, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     """
     Finalizes the checkout for a room or entire booking.
     If checkout_mode is 'single', only the specified room is checked out.
@@ -1235,9 +1235,9 @@ def process_booking_checkout(room_number: str, request: CheckoutRequest, db: Ses
 @router.post("/checkout/{checkout_id}/upload-pdf")
 def upload_checkout_pdf(
     checkout_id: int,
-    file: UploadFile = File(...),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    file: Annotated[Any, File(...)] = None,
+    db: Annotated[Any, Depends(get_db)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     """
     Uploads a PDF invoice for a specific checkout record.

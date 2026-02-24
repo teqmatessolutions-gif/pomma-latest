@@ -1,5 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
+from typing import Annotated, Any
 
 from app.curd import food_item
 from app.schemas.food_item import FoodItemCreate
@@ -16,14 +17,14 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.post("")
 async def create_item(
-    name: str = Form(...),
-    description: str = Form(...),
-    price: float = Form(...),
-    available: bool = Form(...),
-    category_id: int = Form(...),
-    images: list[UploadFile] = File(None),  # Make images optional
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    name: Annotated[Any, Form(...)] = None,
+    description: Annotated[Any, Form(...)] = None,
+    price: Annotated[Any, Form(...)] = None,
+    available: Annotated[Any, Form(...)] = None,
+    category_id: Annotated[Any, Form(...)] = None,
+    images: Annotated[Any, File(None)] = None,  # Make images optional
+    db: Annotated[Any, Depends(get_db)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     image_paths = []
     # Only process images if they are provided
@@ -55,15 +56,15 @@ async def create_item(
 async def update_item(
     request: Request,
     item_id: int,
-    name: str = Form(...),
-    description: str = Form(...),
-    price: float = Form(...),
-    available: bool = Form(...),
-    category_id: int = Form(...),
-    images: list[UploadFile] = File(None),
-    keep_image_ids: str = Form(""), # Comma-separated list of IDs to keep
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    name: Annotated[Any, Form(...)] = None,
+    description: Annotated[Any, Form(...)] = None,
+    price: Annotated[Any, Form(...)] = None,
+    available: Annotated[Any, Form(...)] = None,
+    category_id: Annotated[Any, Form(...)] = None,
+    images: Annotated[Any, File(None)] = None,
+    keep_image_ids: Annotated[Any, Form("")] = None, # Comma-separated list of IDs to keep
+    db: Annotated[Any, Depends(get_db)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     form_data = await request.form()
     print(f"DEBUG: Raw Form Keys received: {form_data.keys()}")
@@ -123,7 +124,7 @@ def _list_items_impl(db: Session, skip: int = 0, limit: int = 20):
         return []
 
 @router.get("", response_model=None)
-def list_items(db: Session = Depends(get_db), skip: int = 0, limit: int = 1000):
+def list_items(db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 1000):
     data = _list_items_impl(db, skip, limit)
     # Calculate page number
     page = (skip // limit) + 1 if limit > 0 else 1
@@ -135,8 +136,7 @@ def list_items(db: Session = Depends(get_db), skip: int = 0, limit: int = 1000):
     }
 
 @router.get("/")  # Handle trailing slash
-@router.get("/")
-def list_items_slash(db: Session = Depends(get_db), skip: int = 0, limit: int = 1000):
+def list_items_slash(db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 1000):
     data = _list_items_impl(db, skip, limit)
     page = (skip // limit) + 1 if limit > 0 else 1
     return {
@@ -147,9 +147,9 @@ def list_items_slash(db: Session = Depends(get_db), skip: int = 0, limit: int = 
     }
 
 @router.delete("/{item_id}")
-def delete_item(item_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def delete_item(item_id: int, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     return food_item.delete_food_item(db, item_id)
 
 @router.patch("/{item_id}/toggle-availability")
-def toggle_availability(item_id: int, available: bool, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def toggle_availability(item_id: int, available: bool, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     return food_item.update_food_item_availability(db, item_id, available)

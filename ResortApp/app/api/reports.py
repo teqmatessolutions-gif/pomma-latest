@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from typing import List, Optional
+from typing import List, Optional, Annotated, Any
 from datetime import date
 from pydantic import BaseModel
 
@@ -54,7 +54,7 @@ class FoodOrderOut(BaseModel):
 # --- Report Endpoints ---
 
 @router.get("/checkin-by-employee", response_model=List[CheckinByEmployeeOut])
-def get_checkin_by_employee_report(from_date: Optional[date] = None, to_date: Optional[date] = None, db: Session = Depends(get_db)):
+def get_checkin_by_employee_report(from_date: Optional[date] = None, to_date: Optional[date] = None, db: Annotated[Any, Depends(get_db)] = None):
     """
     Generates a report of how many check-ins each employee has performed.
     Filters by the booking's check-in date.
@@ -81,14 +81,14 @@ def get_checkin_by_employee_report(from_date: Optional[date] = None, to_date: Op
     return results
 
 @router.get("/expenses", response_model=List[ExpenseOut])
-def get_expenses_report(from_date: Optional[date] = None, to_date: Optional[date] = None, db: Session = Depends(get_db)):
+def get_expenses_report(from_date: Optional[date] = None, to_date: Optional[date] = None, db: Annotated[Any, Depends(get_db)] = None):
     query = db.query(Expense)
     if from_date: query = query.filter(Expense.expense_date >= from_date)
     if to_date: query = query.filter(Expense.expense_date <= to_date)
     return query.order_by(Expense.expense_date.desc()).all()
 
 @router.get("/room-bookings", response_model=List)
-def get_room_bookings_report(from_date: Optional[date] = None, to_date: Optional[date] = None, db: Session = Depends(get_db)):
+def get_room_bookings_report(from_date: Optional[date] = None, to_date: Optional[date] = None, db: Annotated[Any, Depends(get_db)] = None):
     query = db.query(Booking)
     if from_date: query = query.filter(Booking.check_in >= from_date)
     if to_date: query = query.filter(Booking.check_in <= to_date)
@@ -96,10 +96,10 @@ def get_room_bookings_report(from_date: Optional[date] = None, to_date: Optional
 
 # NOTE: Stubs for other report endpoints. You would implement these similarly.
 @router.get("/service-charges", response_model=List)
-def get_service_charges_report(db: Session = Depends(get_db)): return []
+def get_service_charges_report(db: Annotated[Any, Depends(get_db)] = None): return []
 @router.get("/food-orders", response_model=List)
-def get_food_orders_report(db: Session = Depends(get_db)): return []
+def get_food_orders_report(db: Annotated[Any, Depends(get_db)] = None): return []
 @router.get("/package-bookings", response_model=List)
-def get_package_bookings_report(db: Session = Depends(get_db)): return []
+def get_package_bookings_report(db: Annotated[Any, Depends(get_db)] = None): return []
 @router.get("/employees", response_model=List)
-def get_employees_report(db: Session = Depends(get_db)): return []
+def get_employees_report(db: Annotated[Any, Depends(get_db)] = None): return []

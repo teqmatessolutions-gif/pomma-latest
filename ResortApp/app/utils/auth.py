@@ -59,11 +59,11 @@ def get_db():
         db.close()
 
 
-from typing import Annotated
+from typing import Annotated, Any
 
 def get_current_user(
-    token: Annotated[str, Depends(oauth2_scheme)] = None, 
-    db: Annotated[Session, Depends(get_db)] = None
+    token: Annotated[Any, Depends(oauth2_scheme)] = None, 
+    db: Annotated[Any, Depends(get_db)] = None
 ):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

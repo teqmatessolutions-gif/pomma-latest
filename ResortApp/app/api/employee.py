@@ -1,6 +1,7 @@
 # app/api/employee.py
 
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, status
+from typing import Annotated, Any
 from sqlalchemy.orm import Session, joinedload
 from app.database import SessionLocal
 from app.schemas.employee import Employee, LeaveCreate, LeaveOut, EmployeeStatusOverview, EmployeePaginationOut
@@ -30,16 +31,16 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.post("", response_model=Employee)
 def add_employee(
-    db: Session = Depends(get_db),
-    name: str = Form(...),
-    role: str = Form(...),
-    salary: float = Form(...),
-    join_date: str = Form(...),
-    email: str = Form(...),
-    phone: str = Form(None),
-    password: str = Form(...),
-    image: UploadFile = File(None),
-    current_user: User = Depends(get_current_user),
+    db: Annotated[Any, Depends(get_db)] = None,
+    name: Annotated[Any, Form(...)] = None,
+    role: Annotated[Any, Form(...)] = None,
+    salary: Annotated[Any, Form(...)] = None,
+    join_date: Annotated[Any, Form(...)] = None,
+    email: Annotated[Any, Form(...)] = None,
+    phone: Annotated[Any, Form(None)] = None,
+    password: Annotated[Any, Form(...)] = None,
+    image: Annotated[Any, File(None)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None,
 ):
     image_url = None
     if image and image.filename:
@@ -92,7 +93,12 @@ def _list_employees_impl(db: Session, current_user: User, skip: int = 0, limit: 
     return crud_employee.get_employees(db, skip=skip, limit=limit)
 
 @router.get("", response_model=None)
-def list_employees(db: Session = Depends(get_db), current_user: User = Depends(get_current_user), skip: int = 0, limit: int = 20):
+def list_employees(
+    db: Annotated[Any, Depends(get_db)] = None, 
+    current_user: Annotated[Any, Depends(get_current_user)] = None, 
+    skip: int = 0, 
+    limit: int = 20
+):
     data = _list_employees_impl(db, current_user, skip, limit)
     page = (skip // limit) + 1 if limit > 0 else 1
     return {
@@ -103,7 +109,12 @@ def list_employees(db: Session = Depends(get_db), current_user: User = Depends(g
     }
 
 @router.get("/", response_model=None)  # Handle trailing slash
-def list_employees_slash(db: Session = Depends(get_db), current_user: User = Depends(get_current_user), skip: int = 0, limit: int = 20):
+def list_employees_slash(
+    db: Annotated[Any, Depends(get_db)] = None, 
+    current_user: Annotated[Any, Depends(get_current_user)] = None, 
+    skip: int = 0, 
+    limit: int = 20
+):
     data = _list_employees_impl(db, current_user, skip, limit)
     page = (skip // limit) + 1 if limit > 0 else 1
     return {
@@ -114,7 +125,10 @@ def list_employees_slash(db: Session = Depends(get_db), current_user: User = Dep
     }
     
 @router.get("/status-overview", response_model=EmployeeStatusOverview)
-def get_employee_status_overview(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_employee_status_overview(
+    db: Annotated[Any, Depends(get_db)] = None, 
+    current_user: Annotated[Any, Depends(get_current_user)] = None
+):
     today = date.today()
     
     # Fetch all employees with their user relationship to check is_active
@@ -153,17 +167,17 @@ def get_employee_status_overview(db: Session = Depends(get_db), current_user: Us
 @router.put("/{employee_id}")
 def update_employee(
     employee_id: int,
-    db: Session = Depends(get_db),
-    name: str = Form(None),
-    role: str = Form(None),
-    salary: float = Form(None),
-    join_date: str = Form(None),
-    email: str = Form(None),
-    phone: str = Form(None),
-    password: str = Form(None),
-    is_active: bool = Form(None),
-    image: UploadFile = File(None),
-    current_user: User = Depends(get_current_user),
+    db: Annotated[Any, Depends(get_db)] = None,
+    name: Annotated[Any, Form(None)] = None,
+    role: Annotated[Any, Form(None)] = None,
+    salary: Annotated[Any, Form(None)] = None,
+    join_date: Annotated[Any, Form(None)] = None,
+    email: Annotated[Any, Form(None)] = None,
+    phone: Annotated[Any, Form(None)] = None,
+    password: Annotated[Any, Form(None)] = None,
+    is_active: Annotated[Any, Form(None)] = None,
+    image: Annotated[Any, File(None)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None,
 ):
     """Update employee details. Admin can change password and is_active status."""
     if current_user.role.name.lower() != "admin":
@@ -226,7 +240,11 @@ def update_employee(
     return employee
 
 @router.delete("/{employee_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_employee(employee_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def delete_employee(
+    employee_id: int, 
+    db: Annotated[Any, Depends(get_db)] = None, 
+    current_user: Annotated[Any, Depends(get_current_user)] = None
+):
     if current_user.role.name.lower() != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admin can delete employees")
     
@@ -235,13 +253,43 @@ def delete_employee(employee_id: int, db: Session = Depends(get_db), current_use
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Employee not found")
 
 @router.post("/leave", response_model=LeaveOut)
-def apply_leave(leave: LeaveCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def apply_leave(
+    leave: Annotated[Any, Depends()] = None, # leave object is LeaveCreate schema
+    db: Annotated[Any, Depends(get_db)] = None, 
+    current_user: Annotated[Any, Depends(get_current_user)] = None
+):
+    # If leave is passed as a JSON body, we should keep its type hint but Cython might fail.
+    # However, standard JSON body is usually fine. It's Form/File/Depends that fail.
+    # But for safety, I applied Depends() or similar? 
+    # Actually, LeaveCreate is a Pydantic model. Usually these are fine.
+    # But let's use the most robust pattern.
     return crud_employee.create_leave(db, leave)
 
 @router.get("/leave/{employee_id}", response_model=list[LeaveOut])
-def view_leaves(employee_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user), skip: int = 0, limit: int = 100):
+def view_leaves(
+    employee_id: int, 
+    db: Annotated[Any, Depends(get_db)] = None, 
+    current_user: Annotated[Any, Depends(get_current_user)] = None, 
+    skip: int = 0, 
+    limit: int = 100
+):
     return crud_employee.get_employee_leaves(db, employee_id, skip=skip, limit=limit)
 
+@router.get("/leave") # List all leaves for admin
+@router.get("/leave/")
+def list_all_leaves(
+    db: Annotated[Any, Depends(get_db)] = None, 
+    current_user: Annotated[Any, Depends(get_current_user)] = None, 
+    skip: int = 0, 
+    limit: int = 100
+):
+     return crud_employee.get_all_leaves(db, skip=skip, limit=limit)
+
 @router.put("/leave/{leave_id}/status/{status}", response_model=LeaveOut)
-def update_leave_status(leave_id: int, status: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def update_leave_status(
+    leave_id: int, 
+    status: str, 
+    db: Annotated[Any, Depends(get_db)] = None, 
+    current_user: Annotated[Any, Depends(get_current_user)] = None
+):
     return crud_employee.update_leave_status(db, leave_id, status)

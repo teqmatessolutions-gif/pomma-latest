@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, Annotated, Any
 from app.curd import expenses as expense_crud
 from app.utils.auth import get_db, get_current_user
 from app.schemas.expenses import ExpenseOut, ExpensePaginationOut
@@ -18,14 +18,14 @@ UPLOAD_DIR = "uploads/expenses"
 
 @router.post("", response_model=ExpenseOut)
 async def create_expense(
-    category: str = Form(...),
-    amount: float = Form(...),
-    date: str = Form(...),
-    description: str = Form(None),
-    employee_id: int = Form(...),
-    image: UploadFile = File(None),
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    category: Annotated[Any, Form(...)] = None,
+    amount: Annotated[Any, Form(...)] = None,
+    date: Annotated[Any, Form(...)] = None,
+    description: Annotated[Any, Form(None)] = None,
+    employee_id: Annotated[Any, Form(...)] = None,
+    image: Annotated[Any, File(None)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None,
+    db: Annotated[Any, Depends(get_db)] = None,
 ):
     image_path = None
     if image:
@@ -61,7 +61,7 @@ async def create_expense(
 
 @router.get("", response_model=None)
 def get_expenses(
-    db: Session = Depends(get_db), 
+    db: Annotated[Any, Depends(get_db)] = None, 
     skip: int = 0, 
     limit: int = 20,
     from_date: Optional[str] = None,
@@ -124,7 +124,7 @@ def get_expense_image(filename: str):
     return FileResponse(filepath)
 
 @router.delete("/{expense_id}")
-def delete_expense(expense_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def delete_expense(expense_id: int, current_user: Annotated[Any, Depends(get_current_user)] = None, db: Annotated[Any, Depends(get_db)] = None):
     expense = expense_crud.get_expense_by_id(db, expense_id)
     if not expense:
         raise HTTPException(status_code=404, detail=f"Expense with ID {expense_id} not found")

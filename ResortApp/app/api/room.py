@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
-from typing import List, Optional
+from typing import List, Optional, Annotated, Any
 from PIL import Image
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import text, func
@@ -55,26 +55,26 @@ def save_image_file(image: UploadFile) -> str:
 # Test endpoint without authentication - handles images
 @router.post("/test", response_model=RoomOut)
 def create_room_test(
-    number: str = Form(...),
-    type: str = Form(...),
-    price: float = Form(...),
-    status: str = Form("Available"),
-    adults: int = Form(2),
-    children: int = Form(0),
-    images: List[UploadFile] = File(None), # Changed to list
-    air_conditioning: bool = Form(False),
-    wifi: bool = Form(False),
-    bathroom: bool = Form(False),
-    living_area: bool = Form(False),
-    terrace: bool = Form(False),
-    parking: bool = Form(False),
-    kitchen: bool = Form(False),
-    family_room: bool = Form(False),
-    bbq: bool = Form(False),
-    garden: bool = Form(False),
-    dining: bool = Form(False),
-    breakfast: bool = Form(False),
-    db: Session = Depends(get_db)
+    number: Annotated[Any, Form(...)] = None,
+    type: Annotated[Any, Form(...)] = None,
+    price: Annotated[Any, Form(...)] = None,
+    status: Annotated[Any, Form("Available")] = None,
+    adults: Annotated[Any, Form(2)] = None,
+    children: Annotated[Any, Form(0)] = None,
+    images: Annotated[Any, File(None)] = None, # Changed to list
+    air_conditioning: Annotated[Any, Form(False)] = None,
+    wifi: Annotated[Any, Form(False)] = None,
+    bathroom: Annotated[Any, Form(False)] = None,
+    living_area: Annotated[Any, Form(False)] = None,
+    terrace: Annotated[Any, Form(False)] = None,
+    parking: Annotated[Any, Form(False)] = None,
+    kitchen: Annotated[Any, Form(False)] = None,
+    family_room: Annotated[Any, Form(False)] = None,
+    bbq: Annotated[Any, Form(False)] = None,
+    garden: Annotated[Any, Form(False)] = None,
+    dining: Annotated[Any, Form(False)] = None,
+    breakfast: Annotated[Any, Form(False)] = None,
+    db: Annotated[Any, Depends(get_db)] = None
 ):
     try:
         # Create Room
@@ -133,39 +133,39 @@ def test_simple():
 
 # Test delete endpoint
 @router.delete("/test/{room_id}")
-def delete_room_test(room_id: int, db: Session = Depends(get_db)):
+def delete_room_test(room_id: int, db: Annotated[Any, Depends(get_db)] = None):
     # This is same as main delete
     return delete_room(room_id, db)
 
 # Test GET endpoint for fetching rooms
 @router.get("/test", response_model=RoomPaginatedResponse)
-def get_rooms_test(db: Session = Depends(get_db), skip: int = 0, limit: int = 100):
+def get_rooms_test(db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 100):
     return get_rooms(db, skip, limit)
 
 # ---------------- CREATE ----------------
 @router.post("", response_model=RoomOut)
 def create_room(
-    number: str = Form(...),
-    type: str = Form(...),
-    price: float = Form(...),
-    status: str = Form("Available"),
-    adults: int = Form(2),
-    children: int = Form(0),
-    priority: int = Form(None),
-    images: List[UploadFile] = File(None), # Changed to list
-    air_conditioning: bool = Form(False),
-    wifi: bool = Form(False),
-    bathroom: bool = Form(False),
-    living_area: bool = Form(False),
-    terrace: bool = Form(False),
-    parking: bool = Form(False),
-    kitchen: bool = Form(False),
-    family_room: bool = Form(False),
-    bbq: bool = Form(False),
-    garden: bool = Form(False),
-    dining: bool = Form(False),
-    breakfast: bool = Form(False),
-    db: Session = Depends(get_db)
+    number: Annotated[Any, Form(...)] = None,
+    type: Annotated[Any, Form(...)] = None,
+    price: Annotated[Any, Form(...)] = None,
+    status: Annotated[Any, Form("Available")] = None,
+    adults: Annotated[Any, Form(2)] = None,
+    children: Annotated[Any, Form(0)] = None,
+    priority: Annotated[Any, Form(None)] = None,
+    images: Annotated[Any, File(None)] = None, # Changed to list
+    air_conditioning: Annotated[Any, Form(False)] = None,
+    wifi: Annotated[Any, Form(False)] = None,
+    bathroom: Annotated[Any, Form(False)] = None,
+    living_area: Annotated[Any, Form(False)] = None,
+    terrace: Annotated[Any, Form(False)] = None,
+    parking: Annotated[Any, Form(False)] = None,
+    kitchen: Annotated[Any, Form(False)] = None,
+    family_room: Annotated[Any, Form(False)] = None,
+    bbq: Annotated[Any, Form(False)] = None,
+    garden: Annotated[Any, Form(False)] = None,
+    dining: Annotated[Any, Form(False)] = None,
+    breakfast: Annotated[Any, Form(False)] = None,
+    db: Annotated[Any, Depends(get_db)] = None
 ):
     try:
         db_room = Room(
@@ -219,7 +219,7 @@ def create_room(
 
 # ---------------- READ ----------------
 @router.post("/update-statuses")
-def update_room_statuses_endpoint(db: Session = Depends(get_db)):
+def update_room_statuses_endpoint(db: Annotated[Any, Depends(get_db)] = None):
     try:
         from app.utils.room_status import update_room_statuses
         update_room_statuses(db)
@@ -251,17 +251,17 @@ def _get_rooms_impl(db: Session, skip: int = 0, limit: int = 20):
         raise HTTPException(status_code=500, detail=f"Error fetching rooms: {str(e)}")
 
 @router.get("", response_model=RoomPaginatedResponse)
-def get_rooms(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+def get_rooms(db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20):
     return _get_rooms_impl(db, skip, limit)
 
 @router.get("/", response_model=RoomPaginatedResponse)
-def get_rooms_slash(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+def get_rooms_slash(db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20):
     return _get_rooms_impl(db, skip, limit)
 
 
 # ---------------- DELETE ----------------
 @router.delete("/{room_id}")
-def delete_room(room_id: int, db: Session = Depends(get_db)):
+def delete_room(room_id: int, db: Annotated[Any, Depends(get_db)] = None):
     db_room = db.query(Room).filter(Room.id == room_id).first()
     if db_room is None:
         raise HTTPException(status_code=404, detail="Room not found")
@@ -291,7 +291,7 @@ def delete_room(room_id: int, db: Session = Depends(get_db)):
     return {"message": "Room deleted successfully"}
 
 @router.delete("/images/{image_id}")
-def delete_room_image(image_id: int, db: Session = Depends(get_db)):
+def delete_room_image(image_id: int, db: Annotated[Any, Depends(get_db)] = None):
     db_image = db.query(RoomImage).filter(RoomImage.id == image_id).first()
     if not db_image:
         raise HTTPException(status_code=404, detail="Image not found")
@@ -326,7 +326,7 @@ def delete_room_image(image_id: int, db: Session = Depends(get_db)):
     return {"message": "Image deleted successfully"}
 
 @router.delete("/{room_id}/legacy-image")
-def delete_legacy_image(room_id: int, db: Session = Depends(get_db)):
+def delete_legacy_image(room_id: int, db: Annotated[Any, Depends(get_db)] = None):
     room = db.query(Room).filter(Room.id == room_id).first()
     if not room:
         raise HTTPException(status_code=404, detail="Room not found")
@@ -354,27 +354,27 @@ def delete_legacy_image(room_id: int, db: Session = Depends(get_db)):
 @router.put("/{room_id}", response_model=RoomOut)
 def update_room(
     room_id: int,
-    number: Optional[str] = Form(None),
-    type: Optional[str] = Form(None),
-    price: Optional[float] = Form(None),
-    status: Optional[str] = Form(None),
-    adults: Optional[int] = Form(None),
-    children: Optional[int] = Form(None),
-    priority: Optional[int] = Form(None),
-    images: List[UploadFile] = File(None), # Add new images
-    air_conditioning: Optional[bool] = Form(None),
-    wifi: Optional[bool] = Form(None),
-    bathroom: Optional[bool] = Form(None),
-    living_area: Optional[bool] = Form(None),
-    terrace: Optional[bool] = Form(None),
-    parking: Optional[bool] = Form(None),
-    kitchen: Optional[bool] = Form(None),
-    family_room: Optional[bool] = Form(None),
-    bbq: Optional[bool] = Form(None),
-    garden: Optional[bool] = Form(None),
-    dining: Optional[bool] = Form(None),
-    breakfast: Optional[bool] = Form(None),
-    db: Session = Depends(get_db)
+    number: Annotated[Any, Form(None)] = None,
+    type: Annotated[Any, Form(None)] = None,
+    price: Annotated[Any, Form(None)] = None,
+    status: Annotated[Any, Form(None)] = None,
+    adults: Annotated[Any, Form(None)] = None,
+    children: Annotated[Any, Form(None)] = None,
+    priority: Annotated[Any, Form(None)] = None,
+    images: Annotated[Any, File(None)] = None, # Add new images
+    air_conditioning: Annotated[Any, Form(None)] = None,
+    wifi: Annotated[Any, Form(None)] = None,
+    bathroom: Annotated[Any, Form(None)] = None,
+    living_area: Annotated[Any, Form(None)] = None,
+    terrace: Annotated[Any, Form(None)] = None,
+    parking: Annotated[Any, Form(None)] = None,
+    kitchen: Annotated[Any, Form(None)] = None,
+    family_room: Annotated[Any, Form(None)] = None,
+    bbq: Annotated[Any, Form(None)] = None,
+    garden: Annotated[Any, Form(None)] = None,
+    dining: Annotated[Any, Form(None)] = None,
+    breakfast: Annotated[Any, Form(None)] = None,
+    db: Annotated[Any, Depends(get_db)] = None
 ):
     db_room = db.query(Room).filter(Room.id == room_id).first()
     if not db_room:
@@ -424,7 +424,7 @@ def update_room(
 
 # ---------------- BOOKING HISTORY ----------------
 @router.get("/{room_id}/bookings", response_model=List[RoomBookingHistoryItem])
-def get_room_bookings(room_id: int, db: Session = Depends(get_db)):
+def get_room_bookings(room_id: int, db: Annotated[Any, Depends(get_db)] = None):
     """
     Get all bookings (regular and package) for a specific room.
     """

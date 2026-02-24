@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, BackgroundTasks
 from sqlalchemy.orm import Session, joinedload
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Annotated, Any
 import os
 from app.models.user import User
 from app.models.room import Room
@@ -28,16 +28,16 @@ os.makedirs(CHECKIN_UPLOAD_DIR, exist_ok=True)
 
 @router.post("", response_model=PackageOut)
 async def create_package_api(
-    title: str = Form(...),
-    description: str = Form(...),
-    price: float = Form(...),
-    booking_type: str = Form("room_type"),  # "whole_property" or "room_type"
-    room_types: str = Form(None),  # Comma-separated list of room types
-    status: str = Form("Available"), 
-    priority: int = Form(None),
-    images: List[UploadFile] = File([]),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    title: Annotated[Any, Form(...)] = None,
+    description: Annotated[Any, Form(...)] = None,
+    price: Annotated[Any, Form(...)] = None,
+    booking_type: Annotated[Any, Form("room_type")] = None,  # "whole_property" or "room_type"
+    room_types: Annotated[Any, Form(None)] = None,  # Comma-separated list of room types
+    status: Annotated[Any, Form("Available")] = None, 
+    priority: Annotated[Any, Form(None)] = None,
+    images: Annotated[Any, File([])] = None,
+    db: Annotated[Any, Depends(get_db)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     try:
         # Validate booking_type
@@ -131,17 +131,17 @@ async def create_package_api(
 @router.put("/{package_id}", response_model=PackageOut)
 async def update_package_api(
     package_id: int,
-    title: str = Form(...),
-    description: str = Form(...),
-    price: float = Form(...),
-    booking_type: str = Form("room_type"),  # "whole_property" or "room_type"
-    room_types: str = Form(None),  # Comma-separated list of room types
-    status: str = Form("Available"),
-    priority: int = Form(None),
-    keep_image_ids: str = Form(""), # Comma-separated list of IDs to keep
-    images: List[UploadFile] = File([]),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    title: Annotated[Any, Form(...)] = None,
+    description: Annotated[Any, Form(...)] = None,
+    price: Annotated[Any, Form(...)] = None,
+    booking_type: Annotated[Any, Form("room_type")] = None,  # "whole_property" or "room_type"
+    room_types: Annotated[Any, Form(None)] = None,  # Comma-separated list of room types
+    status: Annotated[Any, Form("Available")] = None,
+    priority: Annotated[Any, Form(None)] = None,
+    keep_image_ids: Annotated[Any, Form("")] = None, # Comma-separated list of IDs to keep
+    images: Annotated[Any, File([])] = None,
+    db: Annotated[Any, Depends(get_db)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     # Validate booking_type
     if booking_type not in ["whole_property", "room_type"]:
@@ -251,7 +251,7 @@ async def update_package_api(
 
 
 @router.delete("/{package_id}")
-def delete_package_api(package_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def delete_package_api(package_id: int, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     success = crud_package.delete_package(db, package_id)
     return {"deleted": success}
 
@@ -262,8 +262,8 @@ def delete_package_api(package_id: int, db: Session = Depends(get_db), current_u
 def book_package_api(
     booking: PackageBookingCreate,
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    db: Annotated[Any, Depends(get_db)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     result = crud_package.book_package(db, booking)
     
@@ -347,7 +347,7 @@ def book_package_api(
 def book_package_guest_api(
     booking: PackageBookingCreate,
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db)
+    db: Annotated[Any, Depends(get_db)] = None
 ):
     """
     Public endpoint for guests to book a package without authentication.
@@ -458,7 +458,7 @@ def book_package_guest_api(
 
 @router.get("/bookingsall", response_model=PackageBookingPaginationOut)
 def get_bookings(
-    db: Session = Depends(get_db), 
+    db: Annotated[Any, Depends(get_db)] = None, 
     skip: int = 0, 
     limit: int = 20,
     from_date: Optional[str] = None,
@@ -545,21 +545,21 @@ def _list_packages_impl(db: Session, skip: int = 0, limit: int = 20):
         return []
 
 @router.get("", response_model=List[PackageOut])
-def list_packages(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+def list_packages(db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20):
     return _list_packages_impl(db, skip, limit)
 
 @router.get("/", response_model=List[PackageOut])  # Handle trailing slash
-def list_packages_slash(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+def list_packages_slash(db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20):
     return _list_packages_impl(db, skip, limit)
 
 
 @router.get("/{package_id}", response_model=PackageOut)
-def get_package_api(package_id: int, db: Session = Depends(get_db)):
+def get_package_api(package_id: int, db: Annotated[Any, Depends(get_db)] = None):
     return crud_package.get_package(db, package_id)
 
 
 @router.delete("/booking/{booking_id}")
-def delete_package_booking_api(booking_id: Union[str, int], db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def delete_package_booking_api(booking_id: Union[str, int], db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     # Parse display ID (PK-000001) or accept numeric ID
     numeric_id, booking_type = parse_display_id(str(booking_id))
     if numeric_id is None:
@@ -575,7 +575,7 @@ def delete_package_booking_api(booking_id: Union[str, int], db: Session = Depend
 
 # ------------------- Cancel a package booking -------------------
 @router.put("/booking/{booking_id}/cancel", response_model=PackageBookingOut)
-def cancel_package_booking(booking_id: Union[str, int], db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def cancel_package_booking(booking_id: Union[str, int], db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     # Parse display ID (PK-000001) or accept numeric ID
     numeric_id, booking_type = parse_display_id(str(booking_id))
     if numeric_id is None:
@@ -599,7 +599,7 @@ def cancel_package_booking(booking_id: Union[str, int], db: Session = Depends(ge
     return booking
 
 @router.put("/booking/{booking_id}/extend", response_model=PackageBookingOut)
-def extend_package_booking_checkout(booking_id: Union[str, int], new_checkout: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def extend_package_booking_checkout(booking_id: Union[str, int], new_checkout: str, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     """
     Extend the checkout date for a package booking.
     Validates that the new checkout date is after the current checkout date
@@ -778,10 +778,10 @@ def extend_package_booking_checkout(booking_id: Union[str, int], new_checkout: s
 @router.put("/booking/{booking_id}/check-in", response_model=PackageBookingOut)
 def check_in_package_booking(
     booking_id: Union[str, int],
-    id_card_images: List[UploadFile] = File(default=[]), # Changed to accept multiple files
-    guest_photos: List[UploadFile] = File(default=[]),   # Changed to accept multiple files
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    id_card_images: Annotated[Any, File(default=[])] = None, # Changed to accept multiple files
+    guest_photos: Annotated[Any, File(default=[])] = None,   # Changed to accept multiple files
+    db: Annotated[Any, Depends(get_db)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     from datetime import date
     from app.models.Package import PackageCheckInDocument # Import valid model

@@ -1,6 +1,7 @@
 from ast import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from typing import Annotated, Any
 from app.database import SessionLocal
 from app.schemas.user import UserCreate, UserOut, AdminSetupRequest, RoleCreate, UserPaginationOut
 from app.curd import user as crud_user
@@ -19,17 +20,17 @@ def get_db():
     finally:
         db.close()
 @router.get("/me", response_model=UserOut)
-def read_current_user(current_user = Depends(get_current_user)):
+def read_current_user(current_user: Annotated[Any, Depends(get_current_user)] = None):
     return current_user
 @router.post("", response_model=UserOut)
-def register_user(user: UserCreate, db: Session = Depends(get_db)):
+def register_user(user: UserCreate, db: Annotated[Any, Depends(get_db)] = None):
     db_user = crud_user.get_user_by_email(db, email=user.email,)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     return crud_user.create_user(db=db, user=user)
 
 @router.post("/setup-admin", response_model=UserOut, summary="One-time Admin User Setup")
-def setup_initial_admin(setup_data: AdminSetupRequest, db: Session = Depends(get_db)):
+def setup_initial_admin(setup_data: AdminSetupRequest, db: Annotated[Any, Depends(get_db)] = None):
     """
     Creates the first admin user and the 'admin' role.
     This endpoint will only work if there are no users in the database.
@@ -70,9 +71,9 @@ def _get_users_impl(db: Session, current_user: User, skip: int = 0, limit: int =
     }
 
 @router.get("", response_model=UserPaginationOut)
-def get_users(db: Session = Depends(get_db), current_user: User = Depends(get_current_user), skip: int = 0, limit: int = 20):
+def get_users(db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None, skip: int = 0, limit: int = 20):
     return _get_users_impl(db, current_user, skip, limit)
 
 @router.get("/", response_model=UserPaginationOut)  # Handle trailing slash
-def get_users_slash(db: Session = Depends(get_db), current_user: User = Depends(get_current_user), skip: int = 0, limit: int = 20):
+def get_users_slash(db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None, skip: int = 0, limit: int = 20):
     return _get_users_impl(db, current_user, skip, limit)

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from typing import Annotated, Any
 from app.database import SessionLocal
 from app.schemas.user import RoleCreate, RoleOut
 from app.curd import role as crud_role
@@ -16,18 +17,18 @@ def get_db():
         db.close()
 
 @router.post("", response_model=RoleOut)
-def create_new_role(role: RoleCreate, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+def create_new_role(role: RoleCreate, db: Annotated[Any, Depends(get_db)] = None, user: Annotated[Any, Depends(get_current_user)] = None):
     if user.role.name.lower() != "admin":
         raise HTTPException(status_code=403, detail="Only admin can create roles")
     return crud_role.create_role(db, role)
 
 @router.get("", response_model=list[RoleOut])
-def list_roles(db: Session = Depends(get_db), skip: int = 0, limit: int = 20):
+def list_roles(db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20):
     roles = crud_role.get_roles(db, skip=skip, limit=limit)
     return roles
 
 @router.put("/{role_id}", response_model=RoleOut)
-def update_existing_role(role_id: int, role: RoleCreate, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+def update_existing_role(role_id: int, role: RoleCreate, db: Annotated[Any, Depends(get_db)] = None, user: Annotated[Any, Depends(get_current_user)] = None):
     if user.role.name.lower() != "admin":
         raise HTTPException(status_code=403, detail="Only admin can update roles")
     updated_role = crud_role.update_role(db, role_id, role)
@@ -36,7 +37,7 @@ def update_existing_role(role_id: int, role: RoleCreate, db: Session = Depends(g
     return updated_role
 
 @router.delete("/{role_id}")
-def delete_existing_role(role_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+def delete_existing_role(role_id: int, db: Annotated[Any, Depends(get_db)] = None, user: Annotated[Any, Depends(get_current_user)] = None):
     if user.role.name.lower() != "admin":
         raise HTTPException(status_code=403, detail="Only admin can delete roles")
     success = crud_role.delete_role(db, role_id)

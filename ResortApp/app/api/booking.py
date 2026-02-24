@@ -3,7 +3,7 @@ from datetime import date
 import traceback
 from sqlalchemy.orm import Session, joinedload, load_only
 from sqlalchemy import or_, and_
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Annotated, Any
 from app.utils.auth import get_db, get_current_user
 from app.utils.booking_id import parse_display_id
 from app.models.booking import Booking, BookingRoom, CheckInDocument
@@ -31,7 +31,7 @@ router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
 @router.get("", response_model=PaginatedBookingResponse)
 def get_bookings(
-    db: Session = Depends(get_db), 
+    db: Annotated[Any, Depends(get_db)] = None, 
     skip: int = 0, 
     limit: int = 20, 
     order_by: str = "id", 
@@ -127,7 +127,7 @@ def get_bookings(
 # This is a more reliable way to get full details for the modal view.
 # ----------------------------------------------------------------
 @router.get("/details/{booking_id}", response_model=BookingOut)
-def get_booking_details(booking_id: Union[str, int], is_package: bool, db: Session = Depends(get_db)):
+def get_booking_details(booking_id: Union[str, int], is_package: bool, db: Annotated[Any, Depends(get_db)] = None):
     # Parse display ID (BK-000001 or PK-000001) or accept numeric ID
     numeric_id, booking_type = parse_display_id(str(booking_id))
     if numeric_id is None:
@@ -299,7 +299,7 @@ def get_or_create_guest_user(db: Session, email: str, mobile: str, name: str):
 # POST a new booking
 # -------------------------------
 @router.post("", response_model=BookingOut) # Changed from "/" to ""
-def create_booking(booking: BookingCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def create_booking(booking: BookingCreate, background_tasks: BackgroundTasks, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     # Find or create guest user based on email and mobile
     guest_user_id = None
     # Normalize email and mobile - convert empty strings to None, handle None safely
@@ -504,7 +504,7 @@ def create_booking(booking: BookingCreate, background_tasks: BackgroundTasks, db
     return booking_out
 
 @router.post("/guest", response_model=BookingOut, summary="Create a booking as a guest")
-def create_guest_booking(booking: BookingCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+def create_guest_booking(booking: BookingCreate, background_tasks: BackgroundTasks, db: Annotated[Any, Depends(get_db)] = None):
     """
     Public endpoint for guests to create a booking without authentication.
     """
@@ -752,8 +752,8 @@ def create_guest_booking(booking: BookingCreate, background_tasks: BackgroundTas
 async def check_in_booking(
     booking_id: str,
     request: Request,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    db: Annotated[Any, Depends(get_db)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     print(f"DEBUG: Entered check_in_booking v3 (Manual Parse) for booking {booking_id}")
     
@@ -962,7 +962,7 @@ async def check_in_booking(
 # Cancel a booking
 # -------------------------------
 @router.put("/{booking_id}/cancel", response_model=BookingOut)
-def cancel_booking(booking_id: Union[str, int], db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def cancel_booking(booking_id: Union[str, int], db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     # Parse display ID (BK-000001) or accept numeric ID
     numeric_id, booking_type = parse_display_id(str(booking_id))
     if numeric_id is None:
@@ -986,7 +986,7 @@ def cancel_booking(booking_id: Union[str, int], db: Session = Depends(get_db), c
     return booking
     
 @router.put("/{booking_id}/extend", response_model=BookingOut)
-def extend_checkout(booking_id: Union[str, int], new_checkout: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def extend_checkout(booking_id: Union[str, int], new_checkout: str, db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     """
     Extend the checkout date for a booking.
     Validates that the new checkout date is after the current checkout date
@@ -1119,7 +1119,7 @@ def extend_checkout(booking_id: Union[str, int], new_checkout: str, db: Session 
 # GET booking by ID
 # -------------------------------
 @router.get("/{booking_id}", response_model=BookingOut)
-def get_booking(booking_id: Union[str, int], db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_booking(booking_id: Union[str, int], db: Annotated[Any, Depends(get_db)] = None, current_user: Annotated[Any, Depends(get_current_user)] = None):
     # Parse display ID (BK-000001) or accept numeric ID
     numeric_id, booking_type = parse_display_id(str(booking_id))
     if numeric_id is None:

@@ -1,18 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from datetime import timedelta
+from typing import Annotated, Any
 from app.database import SessionLocal
 from app.schemas.auth import LoginRequest, Token
 from app.utils import auth
 from app.curd import user as crud_user
-from fastapi import Depends
 from app.utils.auth import get_current_user
 
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/login", response_model=Token)
-def login(request: LoginRequest, db: Session = Depends(auth.get_db)):
+def login(request: LoginRequest, db: Annotated[Any, Depends(auth.get_db)] = None):
     try:
         # Check if user exists
         user = crud_user.get_user_by_email(db, request.email)
@@ -78,7 +78,7 @@ def login(request: LoginRequest, db: Session = Depends(auth.get_db)):
 
 
 @router.get("/admin-only")
-def admin_data(user=Depends(get_current_user)):
+def admin_data(user: Annotated[Any, Depends(get_current_user)] = None):
     if user.role.name != "admin":
         raise HTTPException(status_code=403, detail="Forbidden")
     return {"message": "Admin access granted"}
