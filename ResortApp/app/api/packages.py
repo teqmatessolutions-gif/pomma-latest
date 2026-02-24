@@ -53,43 +53,44 @@ async def create_package_api(
             room_types = None
         
         image_urls = []
-        if images is not None:
-            # Ensure images is a list
-            if not isinstance(images, list):
-                images = [images]
+        try:
+            if images is not None:
+                # Ensure images is a list
+                if not isinstance(images, list):
+                    images = [images]
             
-            for img in images:
-                if not img or not getattr(img, 'filename', None):
-                    continue
-                # Generate unique filename
-                original_filename = img.filename if img.filename else "image.jpg"
-                filename = f"pkg_{uuid.uuid4().hex}_{original_filename}"
-                file_path = os.path.join(UPLOAD_DIR, filename)
-                
-                # Write to disk
-                try:
-                    contents = await img.read()
-                    with open(file_path, "wb") as buffer:
-                        buffer.write(contents)
-                except Exception as file_err:
-                    print(f"Error saving file {filename}: {file_err}")
-                    continue
-                
-                # Store with leading slash
-                normalized_path = file_path.replace('\\', '/')
-                image_urls.append(f"/{normalized_path}")
+                for img in images:
+                    if not img or not getattr(img, 'filename', None):
+                        continue
+                    # Generate unique filename
+                    original_filename = img.filename if img.filename else "image.jpg"
+                    filename = f"pkg_{uuid.uuid4().hex}_{original_filename}"
+                    file_path = os.path.join(UPLOAD_DIR, filename)
+                    
+                    # Write to disk
+                    try:
+                        contents = await img.read()
+                        with open(file_path, "wb") as buffer:
+                            buffer.write(contents)
+                    except Exception as file_err:
+                        print(f"Error saving file {filename}: {file_err}")
+                        continue
+                    
+                    # Store with leading slash
+                    normalized_path = file_path.replace('\\', '/')
+                    image_urls.append(f"/{normalized_path}")
 
-                # Generate and Save Thumbnail
-                try:
-                    thumb_filename = f"{os.path.splitext(filename)[0]}_thumb.jpg"
-                    thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
-                    with Image.open(io.BytesIO(contents)) as img_pil:
-                        img_pil.thumbnail((200, 200), Image.Resampling.LANCZOS)
-                        if img_pil.mode in ("RGBA", "P"):
-                            img_pil = img_pil.convert("RGB")
-                        img_pil.save(thumb_path, "JPEG", quality=60, optimize=True)
-                except Exception as thumb_error:
-                    print(f"Warning: Failed to generate thumbnail for {filename}: {thumb_error}")
+                    # Generate and Save Thumbnail
+                    try:
+                        thumb_filename = f"{os.path.splitext(filename)[0]}_thumb.jpg"
+                        thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
+                        with Image.open(io.BytesIO(contents)) as img_pil:
+                            img_pil.thumbnail((200, 200), Image.Resampling.LANCZOS)
+                            if img_pil.mode in ("RGBA", "P"):
+                                img_pil = img_pil.convert("RGB")
+                            img_pil.save(thumb_path, "JPEG", quality=60, optimize=True)
+                    except Exception as thumb_error:
+                        print(f"Warning: Failed to generate thumbnail for {filename}: {thumb_error}")
 
         except Exception as img_error:
             import traceback
