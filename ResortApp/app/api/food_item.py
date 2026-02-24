@@ -16,7 +16,18 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 @router.post("")
+async def create_food_item(
+    name: Annotated[Any, Form()] = None,
+    description: Annotated[Any, Form()] = None,
+    price: Annotated[Any, Form()] = None,
+    available: Annotated[Any, Form()] = "true",
+    category_id: Annotated[Any, Form()] = None,
+    images: Annotated[Any, File()] = None,
+    db: Annotated[Any, Depends(get_db)] = None,
+    current_user: Annotated[Any, Depends(get_current_user)] = None
+):
     try:
+        available = str(available).lower() in ("true", "1", "yes", "on")
         image_paths = []
         # Only process images if they are provided
         if images is not None:
@@ -68,6 +79,17 @@ async def update_item(
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     try:
+        available_bool = None
+        if available is not None:
+            available_bool = str(available).lower() in ("true", "1", "yes", "on")
+        
+        price_val = None
+        if price is not None:
+            try:
+                price_val = float(price)
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid price amount")
+
         form_data = await request.form()
         print(f"DEBUG: Raw Form Keys received: {form_data.keys()}")
         
@@ -108,9 +130,13 @@ async def update_item(
                 web_path = f"/{UPLOAD_DIR}/{filename}".replace("\\", "/")
                 image_paths.append(web_path)
 
+        # Prepare data for update
         item_data = FoodItemCreate(
-            name=name, description=description, price=price,
-            available=available, category_id=category_id
+            name=name if name is not None else "",
+            description=description if description is not None else "",
+            price=price_val if price_val is not None else 0.0,
+            available=available_bool if available_bool is not None else True,
+            category_id=category_id if category_id is not None else 0
         )
         
         updated_item = food_item.update_food_item(db, item_id, item_data, image_paths, keep_ids_list)
