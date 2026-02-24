@@ -31,7 +31,7 @@ async def create_package_api(
     title: Annotated[Any, Form()] = None,
     description: Annotated[Any, Form()] = None,
     price: Annotated[Any, Form()] = None,
-    booking_type: Annotated[Any, Form()] = "room_type"
+    booking_type: Annotated[Any, Form()] = "room_type",
     room_types: Annotated[Any, Form()] = None,  # Comma-separated list of room types
     status: Annotated[Any, Form()] = "Available",
     priority: Annotated[Any, Form()] = None,
@@ -134,11 +134,11 @@ async def update_package_api(
     title: Annotated[Any, Form()] = None,
     description: Annotated[Any, Form()] = None,
     price: Annotated[Any, Form()] = None,
-    booking_type: Annotated[Any, Form()] = "room_type"
+    booking_type: Annotated[Any, Form()] = "room_type",
     room_types: Annotated[Any, Form()] = None,  # Comma-separated list of room types
     status: Annotated[Any, Form()] = "Available",
     priority: Annotated[Any, Form()] = None,
-    keep_image_ids: Annotated[Any, Form()] = ""
+    keep_image_ids: Annotated[Any, Form()] = "",
     images: Annotated[Any, File()] = [],
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None

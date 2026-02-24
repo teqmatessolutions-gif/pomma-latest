@@ -62,7 +62,7 @@ async def update_item(
     available: Annotated[Any, Form()] = None,
     category_id: Annotated[Any, Form()] = None,
     images: Annotated[Any, File()] = None,
-    keep_image_ids: Annotated[Any, Form()] = ""
+    keep_image_ids: Annotated[Any, Form()] = "",
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
