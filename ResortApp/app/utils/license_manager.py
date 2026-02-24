@@ -17,7 +17,7 @@ LICENSE_FILE_PATH = os.path.join(BASE_DIR, "license.json")
 logger = logging.getLogger("license_manager")
 
 ACTIVATION_PERIOD_DAYS = 90
-WARNING_THRESHOLD_DAYS = 10
+WARNING_THRESHOLD_DAYS = 5
 
 # SHA-256 HASH of the Master Key
 # Original Key: "TEQMATES-2024-ACTIVATE-NOW"
@@ -104,11 +104,10 @@ def activate_license(key):
     if input_hash != MASTER_ACTIVATION_HASH:
         return False, "Invalid activation key"
     
-    # FOR TESTING: Set expiry to 2 minutes from now.
-    # Next test: change minutes=2 to minutes=5 to test the 5-minute scenario.
-    new_expiry = datetime.now() + timedelta(minutes=2)
-    # PRODUCTION: Uncomment below and comment above:
-    # new_expiry = datetime.now() + timedelta(days=ACTIVATION_PERIOD_DAYS)
+    # PRODUCTION: Using 90-day cycle as requested
+    new_expiry = datetime.now() + timedelta(days=ACTIVATION_PERIOD_DAYS)
+    # FOR TESTING (Commented out):
+    # new_expiry = datetime.now() + timedelta(minutes=2)
     
     new_expiry_str = new_expiry.isoformat()
     
