@@ -104,8 +104,12 @@ def create_room_test(
         # Save images
         primary_image_set = False
         if images:
+            # Ensure images is a list
+            if not isinstance(images, list):
+                images = [images]
+            
             for img in images:
-                if not img.filename: continue
+                if not img or not getattr(img, 'filename', None): continue
                 image_url = save_image_file(img)
                 
                 # Set primary image if not set
@@ -122,7 +126,8 @@ def create_room_test(
         return db_room
     except Exception as e:
         db.rollback()
-        print(f"Error creating room: {e}")
+        import traceback
+        print(f"Error creating room (test): {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Error creating room: {str(e)}")
 
 
@@ -195,8 +200,12 @@ def create_room(
         # Save images
         primary_image_set = False
         if images:
+            # Ensure images is a list
+            if not isinstance(images, list):
+                images = [images]
+            
             for img in images:
-                if not img.filename: continue
+                if not img or not getattr(img, 'filename', None): continue
                 image_url = save_image_file(img)
                 
                 # Set primary image if not set
@@ -213,7 +222,8 @@ def create_room(
         return db_room
     except Exception as e:
         db.rollback()
-        print(f"Error creating room: {e}")
+        import traceback
+        print(f"Error creating room: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Error creating room: {str(e)}")
 
 
@@ -376,50 +386,60 @@ def update_room(
     breakfast: Annotated[Any, Form()] = None,
     db: Annotated[Any, Depends(get_db)] = None
 ):
-    db_room = db.query(Room).filter(Room.id == room_id).first()
-    if not db_room:
-        raise HTTPException(status_code=404, detail="Room not found")
+    try:
+        db_room = db.query(Room).filter(Room.id == room_id).first()
+        if not db_room:
+            raise HTTPException(status_code=404, detail="Room not found")
 
-    # Update basic fields if provided
-    if number is not None: db_room.number = number
-    if type is not None: db_room.type = type
-    if price is not None: db_room.price = price
-    if status is not None: db_room.status = status
-    if adults is not None: db_room.adults = adults
-    if children is not None: db_room.children = children
-    if priority is not None: db_room.priority = priority
-    
-    # Update feature fields
-    if air_conditioning is not None: db_room.air_conditioning = air_conditioning
-    if wifi is not None: db_room.wifi = wifi
-    if bathroom is not None: db_room.bathroom = bathroom
-    if living_area is not None: db_room.living_area = living_area
-    if terrace is not None: db_room.terrace = terrace
-    if parking is not None: db_room.parking = parking
-    if kitchen is not None: db_room.kitchen = kitchen
-    if family_room is not None: db_room.family_room = family_room
-    if bbq is not None: db_room.bbq = bbq
-    if garden is not None: db_room.garden = garden
-    if dining is not None: db_room.dining = dining
-    if breakfast is not None: db_room.breakfast = breakfast
+        # Update basic fields if provided
+        if number is not None: db_room.number = number
+        if type is not None: db_room.type = type
+        if price is not None: db_room.price = price
+        if status is not None: db_room.status = status
+        if adults is not None: db_room.adults = adults
+        if children is not None: db_room.children = children
+        if priority is not None: db_room.priority = priority
+        
+        # Update feature fields
+        if air_conditioning is not None: db_room.air_conditioning = air_conditioning
+        if wifi is not None: db_room.wifi = wifi
+        if bathroom is not None: db_room.bathroom = bathroom
+        if living_area is not None: db_room.living_area = living_area
+        if terrace is not None: db_room.terrace = terrace
+        if parking is not None: db_room.parking = parking
+        if kitchen is not None: db_room.kitchen = kitchen
+        if family_room is not None: db_room.family_room = family_room
+        if bbq is not None: db_room.bbq = bbq
+        if garden is not None: db_room.garden = garden
+        if dining is not None: db_room.dining = dining
+        if breakfast is not None: db_room.breakfast = breakfast
 
-    # Handle new image uploads
-    if images:
-        for img in images:
-             if img.filename:
-                image_url = save_image_file(img)
-                
-                # If room has no image, set this as primary
-                if not db_room.image_url:
-                    db_room.image_url = image_url
-                
-                # Add to gallery
-                room_image = RoomImage(room_id=db_room.id, image_url=image_url)
-                db.add(room_image)
+        # Handle new image uploads
+        if images:
+            # Ensure images is a list
+            if not isinstance(images, list):
+                images = [images]
+            
+            for img in images:
+                 if img and getattr(img, 'filename', None):
+                    image_url = save_image_file(img)
+                    
+                    # If room has no image, set this as primary
+                    if not db_room.image_url:
+                        db_room.image_url = image_url
+                    
+                    # Add to gallery
+                    room_image = RoomImage(room_id=db_room.id, image_url=image_url)
+                    db.add(room_image)
 
-    db.commit()
-    db.refresh(db_room)
-    return db_room
+        db.commit()
+        db.refresh(db_room)
+        return db_room
+    except Exception as e:
+        db.rollback()
+        import traceback
+        print(f"Error updating room: {str(e)}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error updating room: {str(e)}")
 
 
 # ---------------- BOOKING HISTORY ----------------

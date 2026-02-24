@@ -53,26 +53,29 @@ async def create_package_api(
             room_types = None
         
         image_urls = []
-        try:
+        if images is not None:
+            # Ensure images is a list
+            if not isinstance(images, list):
+                images = [images]
+            
             for img in images:
-                # Generate unique filename - handle case where filename might be None
+                if not img or not getattr(img, 'filename', None):
+                    continue
+                # Generate unique filename
                 original_filename = img.filename if img.filename else "image.jpg"
                 filename = f"pkg_{uuid.uuid4().hex}_{original_filename}"
                 file_path = os.path.join(UPLOAD_DIR, filename)
                 
-                # Use async file operations for better performance with large files
+                # Write to disk
                 try:
-                    # Read file content asynchronously
                     contents = await img.read()
-                    # Write to disk
                     with open(file_path, "wb") as buffer:
                         buffer.write(contents)
-                except (AttributeError, TypeError):
-                    # Fallback to synchronous if async methods not available
-                    with open(file_path, "wb") as buffer:
-                        shutil.copyfileobj(img.file, buffer)
+                except Exception as file_err:
+                    print(f"Error saving file {filename}: {file_err}")
+                    continue
                 
-                # Store with leading slash for proper URL construction
+                # Store with leading slash
                 normalized_path = file_path.replace('\\', '/')
                 image_urls.append(f"/{normalized_path}")
 
@@ -80,8 +83,6 @@ async def create_package_api(
                 try:
                     thumb_filename = f"{os.path.splitext(filename)[0]}_thumb.jpg"
                     thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
-                    
-                    # Use bytes for PIL to avoid seek/read issues with async UploadFile
                     with Image.open(io.BytesIO(contents)) as img_pil:
                         img_pil.thumbnail((200, 200), Image.Resampling.LANCZOS)
                         if img_pil.mode in ("RGBA", "P"):
@@ -170,9 +171,15 @@ async def update_package_api(
     package.priority = priority
     
     # Add new images if provided
-    if images:
+    if images is not None:
+        # Ensure images is a list
+        if not isinstance(images, list):
+            images = [images]
+            
         image_urls = []
         for img in images:
+            if not img or not getattr(img, 'filename', None):
+                continue
             # Generate unique filename
             filename = f"pkg_{uuid.uuid4().hex}_{img.filename}"
             file_path = os.path.join(UPLOAD_DIR, filename)
@@ -187,8 +194,6 @@ async def update_package_api(
                 thumb_filename = f"{os.path.splitext(filename)[0]}_thumb.jpg"
                 thumb_path = os.path.join(UPLOAD_DIR, thumb_filename)
                 
-                # Re-read file or use the buffer? The loop uses copyfileobj which consumes the file.
-                # We need to seek the file back or read distinct content.
                 img.file.seek(0) 
                 file_content = img.file.read()
                 
@@ -919,7 +924,11 @@ def check_in_package_booking(
 
     # Process ID Card Images
     first_id_card = None
-    if id_card_images:
+    if id_card_images is not None:
+        # Ensure it's a list
+        if not isinstance(id_card_images, list):
+            id_card_images = [id_card_images]
+            
         for file in id_card_images:
             saved_filename = save_document(file, "id_card")
             if saved_filename and not first_id_card:
@@ -927,7 +936,11 @@ def check_in_package_booking(
 
     # Process Guest Photos
     first_guest_photo = None
-    if guest_photos:
+    if guest_photos is not None:
+        # Ensure it's a list
+        if not isinstance(guest_photos, list):
+            guest_photos = [guest_photos]
+            
         for file in guest_photos:
             saved_filename = save_document(file, "guest_photo")
             if saved_filename and not first_guest_photo:
