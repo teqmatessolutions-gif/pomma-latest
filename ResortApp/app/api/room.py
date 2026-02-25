@@ -25,6 +25,14 @@ def get_db():
 UPLOAD_DIR = os.path.join("uploads", "rooms")
 os.makedirs(UPLOAD_DIR, exist_ok=True)  # Ensure directory exists at startup
 
+def str_to_bool(val) -> bool:
+    """Convert form string booleans ('true'/'false') to Python bool."""
+    if isinstance(val, bool):
+        return val
+    if isinstance(val, str):
+        return val.strip().lower() == 'true'
+    return bool(val)
+
 def save_image_file(image: UploadFile) -> str:
     """Helper to save uploaded image and return the relative URL"""
     try:
@@ -85,18 +93,18 @@ def create_room_test(
             status=status,
             adults=adults,
             children=children,
-            air_conditioning=air_conditioning,
-            wifi=wifi,
-            bathroom=bathroom,
-            living_area=living_area,
-            terrace=terrace,
-            parking=parking,
-            kitchen=kitchen,
-            family_room=family_room,
-            bbq=bbq,
-            garden=garden,
-            dining=dining,
-            breakfast=breakfast
+            air_conditioning=str_to_bool(air_conditioning),
+            wifi=str_to_bool(wifi),
+            bathroom=str_to_bool(bathroom),
+            living_area=str_to_bool(living_area),
+            terrace=str_to_bool(terrace),
+            parking=str_to_bool(parking),
+            kitchen=str_to_bool(kitchen),
+            family_room=str_to_bool(family_room),
+            bbq=str_to_bool(bbq),
+            garden=str_to_bool(garden),
+            dining=str_to_bool(dining),
+            breakfast=str_to_bool(breakfast)
         )
         db.add(db_room)
         db.flush() # flush to get ID
@@ -181,18 +189,18 @@ def create_room(
             adults=adults,
             children=children,
             priority=priority,
-            air_conditioning=air_conditioning,
-            wifi=wifi,
-            bathroom=bathroom,
-            living_area=living_area,
-            terrace=terrace,
-            parking=parking,
-            kitchen=kitchen,
-            family_room=family_room,
-            bbq=bbq,
-            garden=garden,
-            dining=dining,
-            breakfast=breakfast
+            air_conditioning=str_to_bool(air_conditioning),
+            wifi=str_to_bool(wifi),
+            bathroom=str_to_bool(bathroom),
+            living_area=str_to_bool(living_area),
+            terrace=str_to_bool(terrace),
+            parking=str_to_bool(parking),
+            kitchen=str_to_bool(kitchen),
+            family_room=str_to_bool(family_room),
+            bbq=str_to_bool(bbq),
+            garden=str_to_bool(garden),
+            dining=str_to_bool(dining),
+            breakfast=str_to_bool(breakfast)
         )
         db.add(db_room)
         db.flush() 
