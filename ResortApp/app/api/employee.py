@@ -27,7 +27,7 @@ def get_db():
 
 # Create upload directory if it doesn't exist
 UPLOAD_DIR = "uploads/employees"
-# os.makedirs(UPLOAD_DIR, exist_ok=True) -> Moved to main.py startup_event
+os.makedirs(UPLOAD_DIR, exist_ok=True)  # Ensure directory exists at startup
 
 @router.post("", response_model=Employee)
 def add_employee(

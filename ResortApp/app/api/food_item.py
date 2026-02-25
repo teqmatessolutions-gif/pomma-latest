@@ -11,7 +11,7 @@ from app.utils.thumbnail_generator import generate_thumbnail
 
 router = APIRouter(prefix="/food-items", tags=["FoodItem"])
 UPLOAD_DIR = "uploads/food_items"
-# os.makedirs(UPLOAD_DIR, exist_ok=True) -> Moved to main.py startup_event
+os.makedirs(UPLOAD_DIR, exist_ok=True)  # Ensure directory exists at startup
 
 
 

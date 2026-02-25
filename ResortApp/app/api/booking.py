@@ -19,7 +19,7 @@ import shutil
 import uuid
 
 UPLOAD_DIR = "uploads/checkin_proofs"
-# os.makedirs(UPLOAD_DIR, exist_ok=True) -> Moved to main.py startup_event
+os.makedirs(UPLOAD_DIR, exist_ok=True)  # Ensure directory exists at startup
 from app.schemas.booking import BookingOut, BookingRoomOut
 from pydantic import BaseModel
 

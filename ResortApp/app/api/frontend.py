@@ -17,7 +17,7 @@ router = APIRouter()
 
 # Determine upload directory
 UPLOAD_DIR = os.path.join("uploads", "cms")
-# os.makedirs(UPLOAD_DIR, exist_ok=True) -> Moved to main.py startup_event
+os.makedirs(UPLOAD_DIR, exist_ok=True)  # Ensure directory exists at startup
 
 # ---------- Header & Banner ----------
 @router.get("/header-banner/", response_model=list[schemas.HeaderBanner])

@@ -9,7 +9,7 @@ from app.models.user import User
 import os, shutil, uuid
 import uuid,os, shutil
 UPLOAD_DIR = "static/food_categories"
-# os.makedirs(UPLOAD_DIR, exist_ok=True) -> Moved to main.py startup_event
+os.makedirs(UPLOAD_DIR, exist_ok=True)  # Ensure directory exists at startup
 router = APIRouter(prefix="/food-categories", tags=["Food Categories"])
 
 
