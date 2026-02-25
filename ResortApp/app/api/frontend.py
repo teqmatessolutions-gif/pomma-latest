@@ -15,15 +15,9 @@ from app.utils.auth import get_db, get_current_user
 
 router = APIRouter()
 
-# Determine upload directory - use absolute path to avoid issues with working directory
-# Get the directory where main.py is located (ResortApp/)
-# frontend.py is at: ResortApp/app/api/frontend.py
-# So we need to go up 3 levels: app/api -> app -> ResortApp
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-UPLOAD_DIR = os.path.join(BASE_DIR, "uploads", "cms")
-# Ensure directory exists with proper permissions
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-print(f"Upload directory set to: {UPLOAD_DIR}")  # Debug log
+# Determine upload directory
+UPLOAD_DIR = os.path.join("uploads", "cms")
+# os.makedirs(UPLOAD_DIR, exist_ok=True) -> Moved to main.py startup_event
 
 # ---------- Header & Banner ----------
 @router.get("/header-banner/", response_model=list[schemas.HeaderBanner])

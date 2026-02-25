@@ -106,28 +106,36 @@ async def startup_event():
     from app.utils.thumbnail_generator import generate_thumbnails_for_dirs
     import os
     
-    # Define directories to scan
-    # Note: These paths are relative to the working directory (ResortApp/)
-    dirs_to_scan = [
+    # Define directories to scan and ensure they exist
+    dirs_to_setup = [
         "static/rooms",
+        "static/food_categories",
         "uploads/rooms",
         "uploads/packages",
         "uploads/cms",
         "uploads/services",
         "uploads/food_items",
-        "static/food_categories"
+        "uploads/expenses",
+        "uploads/employees",
+        "uploads/checkin_proofs"
     ]
 
     # Ensure all directories exist to prevent upload errors
-    for directory in dirs_to_scan:
-        os.makedirs(directory, exist_ok=True)
+    # Handled here centrally to avoid PermissionErrors during module import
+    for directory in dirs_to_setup:
+        try:
+            os.makedirs(directory, exist_ok=True)
+            # Try to ensure it's writable
+            if not os.access(directory, os.W_OK):
+                print(f"Warning: Directory {directory} is not writable by the current user.")
+        except PermissionError:
+            print(f"Error: Permission denied when creating directory: {directory}")
+        except Exception as e:
+            print(f"Unexpected error creating directory {directory}: {e}")
     
     # Run in threadpool to avoid blocking startup excessively (though usually fast)
-    # But for simplicity in startup, synchronous call is okay if not huge.
-    # Or use fastapi background tasks? No, startup waits.
-    # It is safer to run it.
     try:
-        generate_thumbnails_for_dirs(dirs_to_scan)
+        generate_thumbnails_for_dirs(dirs_to_setup)
     except Exception as e:
         print(f"Startup thumbnail generation failed: {e}")
 

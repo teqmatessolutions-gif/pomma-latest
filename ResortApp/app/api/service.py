@@ -14,7 +14,7 @@ from app.utils.auth import get_db, get_current_user
 router = APIRouter(prefix="/services", tags=["Services"])
 
 UPLOAD_DIR = "uploads/services"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+# os.makedirs(UPLOAD_DIR, exist_ok=True) -> Moved to main.py startup_event
 
 # Service CRUD
 @router.post("", response_model=service_schema.ServiceOut)

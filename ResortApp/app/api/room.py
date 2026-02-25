@@ -23,7 +23,7 @@ def get_db():
         db.close()
 
 UPLOAD_DIR = os.path.join("uploads", "rooms")
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+# os.makedirs(UPLOAD_DIR, exist_ok=True) -> Moved to main.py startup_event
 
 def save_image_file(image: UploadFile) -> str:
     """Helper to save uploaded image and return the relative URL"""

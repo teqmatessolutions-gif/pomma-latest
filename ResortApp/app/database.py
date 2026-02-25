@@ -8,7 +8,11 @@ import os
 env_path = Path(__file__).parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
-# Fallback: also try loading from current directory
+# Fallback 1: Current directory (important for Cython compiled apps)
+if not os.getenv("DATABASE_URL"):
+    load_dotenv(dotenv_path=".env")
+
+# Fallback 2: Default load_dotenv
 if not os.getenv("DATABASE_URL"):
     load_dotenv()
 
