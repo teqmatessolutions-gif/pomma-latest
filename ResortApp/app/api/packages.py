@@ -101,7 +101,10 @@ async def create_package_api(
             raise HTTPException(status_code=500, detail=f"Failed to upload images: {str(img_error)}")
 
         try:
-            return crud_package.create_package(db, title, description, price, image_urls, booking_type, room_types, status, priority)
+            # Convert form-data strings to correct types
+            price_val = float(price) if price is not None else 0.0
+            priority_val = int(priority) if priority is not None else None
+            return crud_package.create_package(db, title, description, price_val, image_urls, booking_type, room_types, status, priority_val)
         except Exception as db_error:
             import traceback
             error_detail = f"Failed to create package in database: {str(db_error)}\n{traceback.format_exc()}"
@@ -162,14 +165,14 @@ async def update_package_api(
     if not package:
         raise HTTPException(status_code=404, detail="Package not found")
     
-    # Update package fields
+    # Update package fields (convert form-data strings to correct types)
     package.title = title
     package.description = description
-    package.price = price
+    package.price = float(price) if price is not None else 0.0
     package.booking_type = booking_type
     package.room_types = room_types
     package.status = status
-    package.priority = priority
+    package.priority = int(priority) if priority is not None else None
     
     # Add new images if provided
     if images is not None:
