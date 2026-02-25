@@ -82,10 +82,6 @@ def compile_backend():
             if os.path.exists(f):
                 shutil.copy(f, dist_dir)
         
-        # Create empty base directories needed for StaticFiles
-        os.makedirs(os.path.join(dist_dir, "uploads"), exist_ok=True)
-        os.makedirs(os.path.join(dist_dir, "static"), exist_ok=True)
-        
         if os.path.exists('alembic'):
             shutil.copytree('alembic', os.path.join(dist_dir, 'alembic'), dirs_exist_ok=True)
 

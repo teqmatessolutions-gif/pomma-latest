@@ -106,34 +106,40 @@ async def startup_event():
     from app.utils.thumbnail_generator import generate_thumbnails_for_dirs
     import os
     
+    # Detect if we are running from the 'dist' folder (production mode)
+    # The parent directory of 'dist' is the project root where uploads should live
+    current_dir = os.getcwd()
+    base_storage_path = "."
+    if os.path.basename(current_dir) == "dist":
+        base_storage_path = ".."
+    
     # Define directories to scan and ensure they exist
     dirs_to_setup = [
-        "static/rooms",
-        "static/food_categories",
-        "uploads/rooms",
-        "uploads/packages",
-        "uploads/cms",
-        "uploads/services",
-        "uploads/food_items",
-        "uploads/expenses",
-        "uploads/employees",
-        "uploads/checkin_proofs"
+        os.path.join(base_storage_path, "static/rooms"),
+        os.path.join(base_storage_path, "static/food_categories"),
+        os.path.join(base_storage_path, "uploads/rooms"),
+        os.path.join(base_storage_path, "uploads/packages"),
+        os.path.join(base_storage_path, "uploads/cms"),
+        os.path.join(base_storage_path, "uploads/services"),
+        os.path.join(base_storage_path, "uploads/food_items"),
+        os.path.join(base_storage_path, "uploads/expenses"),
+        os.path.join(base_storage_path, "uploads/employees"),
+        os.path.join(base_storage_path, "uploads/checkin_proofs")
     ]
 
     # Ensure all directories exist to prevent upload errors
-    # Handled here centrally to avoid PermissionErrors during module import
     for directory in dirs_to_setup:
         try:
             os.makedirs(directory, exist_ok=True)
             # Try to ensure it's writable
             if not os.access(directory, os.W_OK):
-                print(f"Warning: Directory {directory} is not writable by the current user.")
+                print(f"Warning: Directory {directory} is not writable.")
         except PermissionError:
-            print(f"Error: Permission denied when creating directory: {directory}")
+            print(f"Error: Permission denied creating directory: {directory}")
         except Exception as e:
             print(f"Unexpected error creating directory {directory}: {e}")
     
-    # Run in threadpool to avoid blocking startup excessively (though usually fast)
+    # Run in threadpool
     try:
         generate_thumbnails_for_dirs(dirs_to_setup)
     except Exception as e:
@@ -145,18 +151,26 @@ async def startup_event():
     asyncio.create_task(start_monitoring_loop())
 
 # Static file dirs
-UPLOAD_DIR = "uploads/expenses"
+# Note: These paths are used by individual routers. 
+# They are relative to the project root in dev, or parent of dist in prod.
+current_dir = os.getcwd()
+base_storage_path = "."
+if os.path.basename(current_dir) == "dist":
+    base_storage_path = ".."
+
+UPLOAD_DIR = os.path.join(base_storage_path, "uploads/expenses")
+
 # Ensure base directories exist before mounting to avoid RuntimeError
 for d in ["uploads", "static"]:
+    full_d = os.path.join(base_storage_path, d)
     try:
-        os.makedirs(d, exist_ok=True)
+        os.makedirs(full_d, exist_ok=True)
     except Exception:
         pass
 
-# os.makedirs("static/rooms", exist_ok=True) -> Moved to startup_event
-# os.makedirs(UPLOAD_DIR, exist_ok=True) -> Moved to startup_event
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Mount static files pointing to the persistent storage location
+app.mount("/uploads", StaticFiles(directory=os.path.join(base_storage_path, "uploads")), name="uploads")
+app.mount("/static", StaticFiles(directory=os.path.join(base_storage_path, "static")), name="static")
 
 # Register Routers with /api prefix to match nginx configuration
 app.include_router(auth.router, prefix="/api")
