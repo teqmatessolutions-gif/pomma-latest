@@ -169,8 +169,9 @@ for d in ["uploads", "static"]:
         pass
 
 # Mount static files pointing to the persistent storage location
+# Remapped to /backend-static to avoid conflict with React's /static folder
 app.mount("/uploads", StaticFiles(directory=os.path.join(base_storage_path, "uploads")), name="uploads")
-app.mount("/static", StaticFiles(directory=os.path.join(base_storage_path, "static")), name="static")
+app.mount("/backend-static", StaticFiles(directory=os.path.join(base_storage_path, "static")), name="static")
 
 # Register Routers with /api prefix to match nginx configuration
 app.include_router(auth.router, prefix="/api")
