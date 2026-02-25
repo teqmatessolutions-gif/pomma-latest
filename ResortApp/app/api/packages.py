@@ -20,8 +20,8 @@ router = APIRouter(prefix="/packages", tags=["Packages"])
 
 UPLOAD_DIR = "uploads/packages"
 CHECKIN_UPLOAD_DIR = "uploads/checkin_proofs"
-# os.makedirs(UPLOAD_DIR, exist_ok=True) -> Moved to main.py
-# os.makedirs(CHECKIN_UPLOAD_DIR, exist_ok=True) -> Moved to main.py
+os.makedirs(UPLOAD_DIR, exist_ok=True)  # Ensure directory exists at startup
+os.makedirs(CHECKIN_UPLOAD_DIR, exist_ok=True)  # Ensure directory exists at startup
 
 
 # ------------------- Packages -------------------
