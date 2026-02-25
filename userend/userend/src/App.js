@@ -1421,8 +1421,10 @@ export default function App() {
                 setNearbyAttractions(nearbyAttractionsData || []);
                 setNearbyAttractionBanners(nearbyAttractionBannersData || []);
 
-                // Only set a global error if even the core resort info is missing
-                if (!roomsData.length && !resortInfoData.length) {
+                // Only set a global error if the core rooms and resort info are both missing.
+                // Note: roomsData may be a paginated object {total, items} so check .items or Array.isArray
+                const processedRooms = roomsData.items || (Array.isArray(roomsData) ? roomsData : []);
+                if (!processedRooms.length && !resortInfoData.length) {
                     setError(
                         "Unable to load resort details. Please ensure the backend server is running and accessible."
                     );
@@ -2403,13 +2405,6 @@ export default function App() {
         );
     }
 
-    if (error) {
-        return (
-            <div className={`flex items-center justify-center min-h-screen ${theme.bgPrimary} text-red-400`}>
-                <p className={`p-4 ${theme.bgCard} rounded-lg shadow-lg`}>{error}</p>
-            </div>
-        );
-    }
 
     return (
         <>
