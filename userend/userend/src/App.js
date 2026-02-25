@@ -2405,6 +2405,13 @@ export default function App() {
         );
     }
 
+    if (error) {
+        return (
+            <div className={`flex items-center justify-center min-h-screen ${theme.bgPrimary} text-red-400`}>
+                <p className={`p-4 ${theme.bgCard} rounded-lg shadow-lg`}>{error}</p>
+            </div>
+        );
+    }
 
     return (
         <>
