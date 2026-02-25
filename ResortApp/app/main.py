@@ -146,8 +146,8 @@ async def startup_event():
 
 # Static file dirs
 UPLOAD_DIR = "uploads/expenses"
-os.makedirs("static/rooms", exist_ok=True)
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+# os.makedirs("static/rooms", exist_ok=True) -> Moved to startup_event
+# os.makedirs(UPLOAD_DIR, exist_ok=True) -> Moved to startup_event
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
