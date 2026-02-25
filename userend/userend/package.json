@@ -60,9 +60,9 @@
   },
   "scripts": {
     "start": "cross-env PORT=3002 react-scripts start",
-    "start:pomma": "cross-env PORT=3002 PUBLIC_URL=/pomma react-scripts start",
-    "build": "react-scripts build && npm run copy-assets && npm run copy-build",
-    "build:prod": "react-scripts build && npm run copy-assets && npm run copy-build",
+    "start:pomma": "cross-env PORT=3002 react-scripts start",
+    "build": "react-scripts build",
+    "build:prod": "react-scripts build",
     "copy-build": "node scripts/copyBuild.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
