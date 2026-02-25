@@ -146,6 +146,13 @@ async def startup_event():
 
 # Static file dirs
 UPLOAD_DIR = "uploads/expenses"
+# Ensure base directories exist before mounting to avoid RuntimeError
+for d in ["uploads", "static"]:
+    try:
+        os.makedirs(d, exist_ok=True)
+    except Exception:
+        pass
+
 # os.makedirs("static/rooms", exist_ok=True) -> Moved to startup_event
 # os.makedirs(UPLOAD_DIR, exist_ok=True) -> Moved to startup_event
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
