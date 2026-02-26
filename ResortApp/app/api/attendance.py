@@ -150,7 +150,11 @@ def get_attendance_for_employee(employee_id: int, db: Annotated[Any, Depends(get
     return db.query(Attendance).filter(Attendance.employee_id == employee_id).order_by(Attendance.date.desc()).all()
 
 @router.get("/work-logs/{employee_id}", response_model=List[WorkingLogRecord])
-def get_work_logs_for_employee(employee_id: int, db: Annotated[Any, Depends(get_db)] = None):
+def get_work_logs_for_employee(
+    employee_id: int, 
+    db: Annotated[Any, Depends(get_db)],
+    current_user: Annotated[Any, Depends(get_current_user)]
+):
     work_logs = db.query(WorkingLog).filter(WorkingLog.employee_id == employee_id).order_by(WorkingLog.date.desc(), WorkingLog.check_in_time.desc()).all()
     
     results = []

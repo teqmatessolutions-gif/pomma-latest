@@ -986,13 +986,14 @@ const EmployeeListAndForm = () => {
   const fetchEmployees = async (currentPage = 1) => {
     try {
       const skip = (currentPage - 1) * 20;
-      // Fetch both users and employees to show all users including admins
+      // Fetch all users (large limit) so join with employees doesn't miss anyone
+      // due to independent pagination between the two endpoints.
       const [usersRes, employeesRes] = await Promise.all([
-        api.get(`/users/?skip=${skip}&limit=20`),
+        api.get(`/users/?skip=0&limit=500`),
         api.get(`/employees?skip=${skip}&limit=20`)
       ]);
 
-      const users = usersRes.data || []; // Note: Users might not be paginated same way or need logic adjustment if user list > 20
+      const users = usersRes.data || [];
       // Assuming employeesRes is now paginated { items, total }
       let employeesData = [];
       let total = 0;
