@@ -399,28 +399,28 @@ def update_room(
         if not db_room:
             raise HTTPException(status_code=404, detail="Room not found")
 
-        # Update basic fields if provided
+        # Update basic fields if provided (convert form-data strings to correct types)
         if number is not None: db_room.number = number
         if type is not None: db_room.type = type
-        if price is not None: db_room.price = price
+        if price is not None: db_room.price = float(price)
         if status is not None: db_room.status = status
-        if adults is not None: db_room.adults = adults
-        if children is not None: db_room.children = children
-        if priority is not None: db_room.priority = priority
+        if adults is not None: db_room.adults = int(adults)
+        if children is not None: db_room.children = int(children)
+        if priority is not None: db_room.priority = int(priority)
         
-        # Update feature fields
-        if air_conditioning is not None: db_room.air_conditioning = air_conditioning
-        if wifi is not None: db_room.wifi = wifi
-        if bathroom is not None: db_room.bathroom = bathroom
-        if living_area is not None: db_room.living_area = living_area
-        if terrace is not None: db_room.terrace = terrace
-        if parking is not None: db_room.parking = parking
-        if kitchen is not None: db_room.kitchen = kitchen
-        if family_room is not None: db_room.family_room = family_room
-        if bbq is not None: db_room.bbq = bbq
-        if garden is not None: db_room.garden = garden
-        if dining is not None: db_room.dining = dining
-        if breakfast is not None: db_room.breakfast = breakfast
+        # Update feature fields (convert string booleans to actual booleans)
+        if air_conditioning is not None: db_room.air_conditioning = str_to_bool(air_conditioning)
+        if wifi is not None: db_room.wifi = str_to_bool(wifi)
+        if bathroom is not None: db_room.bathroom = str_to_bool(bathroom)
+        if living_area is not None: db_room.living_area = str_to_bool(living_area)
+        if terrace is not None: db_room.terrace = str_to_bool(terrace)
+        if parking is not None: db_room.parking = str_to_bool(parking)
+        if kitchen is not None: db_room.kitchen = str_to_bool(kitchen)
+        if family_room is not None: db_room.family_room = str_to_bool(family_room)
+        if bbq is not None: db_room.bbq = str_to_bool(bbq)
+        if garden is not None: db_room.garden = str_to_bool(garden)
+        if dining is not None: db_room.dining = str_to_bool(dining)
+        if breakfast is not None: db_room.breakfast = str_to_bool(breakfast)
 
         # Handle new image uploads
         if images:
