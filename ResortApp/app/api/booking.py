@@ -788,8 +788,8 @@ async def check_in_booking(
             raise HTTPException(status_code=400, detail=f"Invalid booking ID format: {booking_id}")
         if booking_type and booking_type != "booking":
             raise HTTPException(status_code=400, detail=f"Invalid booking type. Expected regular booking, got: {booking_id}")
-        booking_id = numeric_id
-        booking = db.query(Booking).filter(Booking.id == booking_id).first()
+        numeric_booking_id = numeric_id  # Use a new variable to avoid reassigning str param to int
+        booking = db.query(Booking).filter(Booking.id == numeric_booking_id).first()
         if not booking:
             raise HTTPException(status_code=404, detail="Booking not found")
         today = date.today()
@@ -831,7 +831,7 @@ async def check_in_booking(
         occupied_regular = db.query(Booking).join(BookingRoom).filter(
             BookingRoom.room_id.in_(room_ids),
             Booking.status.in_(['checked-in', 'checked_in']),
-            Booking.id != booking_id
+            Booking.id != numeric_booking_id
         ).first()
         
         if occupied_regular:
@@ -863,7 +863,7 @@ async def check_in_booking(
         first_id_filename = None
         for i, file in enumerate(all_id_cards):
             try:
-                filename = f"id_{booking_id}_{uuid.uuid4().hex}.jpg"
+                filename = f"id_{numeric_booking_id}_{uuid.uuid4().hex}.jpg"
                 file_path = os.path.join(UPLOAD_DIR, filename)
                 
                 # Robust extraction of file content
@@ -897,7 +897,7 @@ async def check_in_booking(
         first_photo_filename = None
         for i, file in enumerate(all_guest_photos):
             try:
-                filename = f"guest_{booking_id}_{uuid.uuid4().hex}.jpg"
+                filename = f"guest_{numeric_booking_id}_{uuid.uuid4().hex}.jpg"
                 file_path = os.path.join(UPLOAD_DIR, filename)
 
                 if hasattr(file, "file"):
