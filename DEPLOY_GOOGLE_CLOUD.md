@@ -189,7 +189,7 @@ server {
 
     # Uploads & Static
     location /uploads/ { alias /opt/pomma/ResortApp/uploads/; }
-    location /static/ { alias /opt/pomma/ResortApp/static/; }
+    location /backend-static/ { alias /opt/pomma/ResortApp/static/; }
 
     # Dashboard (/admin)
     location /admin {
@@ -236,7 +236,7 @@ server {
 
     location /api/ { proxy_pass http://127.0.0.1:8000/api/; proxy_set_header Host $host; }
     location /uploads/ { alias /opt/pomma/ResortApp/uploads/; }
-    location /static/ { alias /opt/pomma/ResortApp/static/; }
+    location /backend-static/ { alias /opt/pomma/ResortApp/static/; }
     location /admin {
         alias /opt/pomma/dasboard-build/;
         index index.html;
