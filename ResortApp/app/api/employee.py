@@ -58,9 +58,10 @@ def add_employee(
             raise HTTPException(status_code=400, detail="Email already registered as an employee")
         # Otherwise it's a guest account auto-created from a booking — we'll reuse it below
 
+    role = role.strip() if role else role  # Remove trailing/leading whitespace from role name
     role_obj = crud_employee.get_role_by_name(db, role_name=role)
     if not role_obj:
-        raise HTTPException(status_code=404, detail="Role not found")
+        raise HTTPException(status_code=404, detail=f"Role '{role}' not found")
         
     from app.utils.auth import get_password_hash
     if existing_user:
@@ -97,7 +98,7 @@ def add_employee(
         db,
         name=name,
         role=role,
-        salary=salary,
+        salary=float(salary) if salary else 0.0,  # Convert string to float
         join_date=parsed_join_date,
         image_url=image_url,
         user_id=new_user.id,
@@ -212,9 +213,10 @@ def update_employee(
         employee.name = name
         employee.user.name = name
     if role is not None:
+        role = role.strip()  # Remove trailing/leading whitespace
         role_obj = crud_employee.get_role_by_name(db, role_name=role)
         if not role_obj:
-            raise HTTPException(status_code=404, detail="Role not found")
+            raise HTTPException(status_code=404, detail=f"Role '{role}' not found")
         employee.role = role
         employee.user.role_id = role_obj.id
     if salary is not None:
