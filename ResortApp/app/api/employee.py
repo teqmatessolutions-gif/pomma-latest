@@ -51,22 +51,39 @@ def add_employee(
             shutil.copyfileobj(image.file, buffer)
         image_url = file_path.replace("\\", "/")
 
-    if crud_user.get_user_by_email(db, email=email):
-        raise HTTPException(status_code=400, detail="Email already registered")
+    existing_user = crud_user.get_user_by_email(db, email=email)
+    if existing_user:
+        # If the existing user already has an employee record, block the creation
+        if existing_user.employee:
+            raise HTTPException(status_code=400, detail="Email already registered as an employee")
+        # Otherwise it's a guest account auto-created from a booking — we'll reuse it below
 
     role_obj = crud_employee.get_role_by_name(db, role_name=role)
     if not role_obj:
         raise HTTPException(status_code=404, detail="Role not found")
         
-    user_data = UserCreate(
-        email=email,
-        password=password,
-        name=name,
-        phone=phone,
-        role_id=role_obj.id,
-    )
-    
-    new_user = crud_user.create_user(db=db, user=user_data)
+    from app.utils.auth import get_password_hash
+    if existing_user:
+        # Reuse the existing guest account — upgrade it to an employee account
+        existing_user.name = name
+        existing_user.role_id = role_obj.id
+        existing_user.is_active = True
+        if phone:
+            existing_user.phone = phone
+        if password:
+            existing_user.hashed_password = get_password_hash(password)
+        db.commit()
+        db.refresh(existing_user)
+        new_user = existing_user
+    else:
+        user_data = UserCreate(
+            email=email,
+            password=password,
+            name=name,
+            phone=phone,
+            role_id=role_obj.id,
+        )
+        new_user = crud_user.create_user(db=db, user=user_data)
 
     try:
         parsed_join_date = date.fromisoformat(join_date)
