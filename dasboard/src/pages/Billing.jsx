@@ -1024,18 +1024,48 @@ const Billing = () => {
   };
 
 
-  const handleWhatsAppShare = () => {
-    const billText = generateBillText(true);
-    window.open(`https://wa.me/?text=${billText}`, '_blank');
+  const handleShareFile = async (type) => {
+    try {
+      const pdfBlob = generatePDF('blob');
+      if (!pdfBlob) {
+        showBannerMessage("error", "Failed to generate PDF for sharing.");
+        return;
+      }
+
+      const fileName = `Invoice_${billData.guest_name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+      const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+
+      const shareData = {
+        title: 'Hotel Invoice',
+        text: `Please find attached your invoice for Room(s) ${billData.room_numbers.join(', ')} at ${resortInfo?.name || 'Pomma Resort'}.`,
+        files: [file]
+      };
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share(shareData);
+        showBannerMessage("success", "Shared successfully!");
+      } else {
+        // Fallback for browsers that don't support file sharing natively
+        if (type === 'whatsapp') {
+          const billText = generateBillText(true);
+          window.open(`https://wa.me/?text=${encodeURIComponent('Please find your invoice details below:\\n\\n' + billText)}`, '_blank');
+        } else {
+          const subject = encodeURIComponent(`Your Hotel Invoice - ${resortInfo?.name || 'Pomma Resort'}`);
+          const body = encodeURIComponent('Please find your invoice details below:\\n\\n' + generateBillText(false));
+          window.location.href = `mailto:?subject=${subject}&body=${body}`;
+        }
+        showBannerMessage("info", "File attachment not supported on this browser. Sending text instead.");
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        console.error("Error sharing:", err);
+        showBannerMessage("error", "Failed to share file.");
+      }
+    }
   };
 
-  const handleEmailShare = () => {
-    const subject = encodeURIComponent(`Your Hotel Bill for Room(s) ${billData.room_numbers.join(', ')}`);
-    const body = generateBillText(false);
-    // This will open the user's default email client. For GMail specifically:
-    // window.open(`https://mail.google.com/mail/?view=cm&fs=1&su=${subject}&body=${body}`, '_blank');
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
-  };
+  const handleWhatsAppShare = () => handleShareFile('whatsapp');
+  const handleEmailShare = () => handleShareFile('email');
 
   return (
     <DashboardLayout>
