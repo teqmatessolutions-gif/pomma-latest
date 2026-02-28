@@ -52,6 +52,8 @@ const ProgressiveImage = ({ src, alt, className = "", placeholderSrc = null, sty
                     src={thumbUrl}
                     alt={alt || "Thumbnail"}
                     className="absolute inset-0 w-full h-full object-cover blur-sm scale-110 z-0"
+                    loading="lazy"
+                    decoding="async"
                 />
             )}
 
@@ -62,6 +64,8 @@ const ProgressiveImage = ({ src, alt, className = "", placeholderSrc = null, sty
                     alt={alt}
                     className="relative w-full h-full object-cover z-10"
                     onError={handleError}
+                    loading="lazy"
+                    decoding="async"
                 />
             )}
 
