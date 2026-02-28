@@ -65,6 +65,8 @@ root.render(
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/room/:id" element={<RoomLanding />} />
+        {/* Support existing QR codes that include the /pomma path prefix */}
+        <Route path="/pomma/room/:id" element={<RoomLanding />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>
