@@ -80,25 +80,20 @@ const BookingDetailsModal = ({ booking, onClose, onImageClick, roomIdToRoom }) =
 
   const roomInfo = booking.rooms && booking.rooms.length > 0
     ? booking.rooms.map(room => {
-      // Handle package bookings (nested room structure) vs regular bookings
-      if (booking.is_package) {
-        // Package bookings: room has nested room object or only room_id
-        if (room?.room?.number) return `${room.room.number} (${room.room.type})`;
-        if (room?.room_id && roomIdToRoom && roomIdToRoom[room.room_id]) {
-          const r = roomIdToRoom[room.room_id];
-          return `${r.number} (${r.type})`;
-        }
-        return '-';
-      } else {
-        // Regular bookings: room has number and type directly
-        if (room?.number) return `${room.number} (${room.type})`;
-        if (room?.room_id && roomIdToRoom && roomIdToRoom[room.room_id]) {
-          const r = roomIdToRoom[room.room_id];
-          return `${r.number} (${r.type})`;
-        }
-        return '-';
+      // The `/api/bookings/details` endpoint returns flattened Room objects `[{ number: '101' }]`
+      if (room?.number) return `${room.number} (${room.type})`;
+
+      // The `/api/packages/bookingsall` endpoint returns nested objects `[{ room: { number: '101' } }]`
+      if (room?.room?.number) return `${room.room.number} (${room.room.type})`;
+
+      // Fallback via lookup (supports both room_id and id properties)
+      const rId = room?.room_id || room?.id;
+      if (rId && roomIdToRoom && roomIdToRoom[rId]) {
+        const r = roomIdToRoom[rId];
+        return `${r.number} (${r.type})`;
       }
-    }).filter(Boolean).join(", ") || '-'
+      return '-';
+    }).filter(r => r !== '-').join(", ") || '-'
     : "-";
 
   return (
