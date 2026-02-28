@@ -993,7 +993,7 @@ const EmployeeListAndForm = () => {
         api.get(`/employees?skip=${skip}&limit=20`)
       ]);
 
-      const users = usersRes.data || [];
+      const users = usersRes.data?.items ? usersRes.data.items : Array.isArray(usersRes.data) ? usersRes.data : [];
       // Assuming employeesRes is now paginated { items, total }
       let employeesData = [];
       let total = 0;
