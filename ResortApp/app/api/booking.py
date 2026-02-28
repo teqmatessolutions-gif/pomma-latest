@@ -872,11 +872,24 @@ async def check_in_booking(
                 elif hasattr(file, "stream"):
                     content_stream = file.stream
                 else:
-                    # Log object details for debugging
                     raise ValueError(f"File object at index {i} (type: {type(file)}) has no 'file' or 'stream' attribute. Dir: {dir(file)}")
 
-                with open(file_path, "wb") as buffer:
-                    shutil.copyfileobj(content_stream, buffer)
+                # Compress and resize image before saving (speeds up upload significantly)
+                try:
+                    from PIL import Image as PILImage
+                    import io as _io
+                    raw_bytes = content_stream.read()
+                    img = PILImage.open(_io.BytesIO(raw_bytes)).convert("RGB")
+                    max_dim = 1920
+                    if img.width > max_dim or img.height > max_dim:
+                        img.thumbnail((max_dim, max_dim), PILImage.LANCZOS)
+                    img.save(file_path, "JPEG", quality=75, optimize=True)
+                except Exception:
+                    # Fallback: save as-is if PIL fails
+                    with open(file_path, "wb") as buffer:
+                        if hasattr(content_stream, 'seek'):
+                            content_stream.seek(0)
+                        shutil.copyfileobj(content_stream, buffer)
             except Exception as e:
                 # Catch specific file processing errors
                 print(f"ERROR saving ID card {i}: {str(e)}")
@@ -905,10 +918,23 @@ async def check_in_booking(
                 elif hasattr(file, "stream"):
                     content_stream = file.stream
                 else:
-                     raise ValueError(f"Guest photo object at index {i} (type: {type(file)}) has no 'file' or 'stream' attribute")
+                    raise ValueError(f"Guest photo object at index {i} (type: {type(file)}) has no 'file' or 'stream' attribute")
 
-                with open(file_path, "wb") as buffer:
-                    shutil.copyfileobj(content_stream, buffer)
+                # Compress and resize image before saving
+                try:
+                    from PIL import Image as PILImage
+                    import io as _io
+                    raw_bytes = content_stream.read()
+                    img = PILImage.open(_io.BytesIO(raw_bytes)).convert("RGB")
+                    max_dim = 1920
+                    if img.width > max_dim or img.height > max_dim:
+                        img.thumbnail((max_dim, max_dim), PILImage.LANCZOS)
+                    img.save(file_path, "JPEG", quality=75, optimize=True)
+                except Exception:
+                    with open(file_path, "wb") as buffer:
+                        if hasattr(content_stream, 'seek'):
+                            content_stream.seek(0)
+                        shutil.copyfileobj(content_stream, buffer)
             except Exception as e:
                 print(f"ERROR saving guest photo {i}: {str(e)}")
                 traceback.print_exc()
