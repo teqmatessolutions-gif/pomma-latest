@@ -112,8 +112,8 @@ def _list_employees_impl(db: Session, current_user: User, skip: int = 0, limit: 
 
 @router.get("", response_model=None)
 def list_employees(
-    db: Annotated[Any, Depends(get_db)] = None, 
-    current_user: Annotated[Any, Depends(get_current_user)] = None, 
+    db: Annotated[Any, Depends(get_db)], 
+    current_user: Annotated[Any, Depends(get_current_user)], 
     skip: int = 0, 
     limit: int = 20
 ):
@@ -128,8 +128,8 @@ def list_employees(
 
 @router.get("/", response_model=None)  # Handle trailing slash
 def list_employees_slash(
-    db: Annotated[Any, Depends(get_db)] = None, 
-    current_user: Annotated[Any, Depends(get_current_user)] = None, 
+    db: Annotated[Any, Depends(get_db)], 
+    current_user: Annotated[Any, Depends(get_current_user)], 
     skip: int = 0, 
     limit: int = 20
 ):
