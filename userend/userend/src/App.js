@@ -2608,11 +2608,11 @@ export default function App() {
                                             >
                                                 <div className="flex flex-col md:flex-row items-stretch">
                                                     {/* Large Image Section - Left */}
-                                                    <div className="w-full md:w-1/2 h-80 md:h-[500px] overflow-hidden relative">
+                                                    <div className="w-full md:w-1/2 relative" style={{ minHeight: '420px' }}>
                                                         <ProgressiveImage
                                                             src={currentImage ? getImageUrl(currentImage.image_url) : ITEM_PLACEHOLDER}
                                                             alt={featuredPkg.title}
-                                                            className="w-full h-full object-cover transition-transform duration-700 hover:scale-110 reveal"
+                                                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 hover:scale-110 reveal"
                                                         />
                                                         {/* Status Badge (Top Right) */}
                                                         <div className={`absolute top-4 right-4 text-white font-extrabold text-lg px-4 py-2 rounded-xl shadow-lg border border-white/20 backdrop-blur-sm z-20 uppercase tracking-wider ${isUnavailable ? (isComingSoon ? 'bg-amber-500' : 'bg-red-500') : 'bg-[#0f5132]/90'}`}>
