@@ -164,7 +164,7 @@ def _list_items_impl(db: Session, skip: int = 0, limit: int = 20):
         return []
 
 @router.get("", response_model=None)
-def list_items(db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 1000):
+def list_items(db: Annotated[Any, Depends(get_db)], skip: int = 0, limit: int = 1000):
     data = _list_items_impl(db, skip, limit)
     # Calculate page number
     page = (skip // limit) + 1 if limit > 0 else 1
@@ -176,7 +176,7 @@ def list_items(db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit:
     }
 
 @router.get("/")  # Handle trailing slash
-def list_items_slash(db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 1000):
+def list_items_slash(db: Annotated[Any, Depends(get_db)], skip: int = 0, limit: int = 1000):
     data = _list_items_impl(db, skip, limit)
     page = (skip // limit) + 1 if limit > 0 else 1
     return {
