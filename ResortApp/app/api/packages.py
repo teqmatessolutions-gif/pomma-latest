@@ -467,7 +467,8 @@ def book_package_guest_api(
 
 @router.get("/bookingsall", response_model=PackageBookingPaginationOut)
 def get_bookings(
-    db: Annotated[Any, Depends(get_db)] = None, 
+    db: Annotated[Any, Depends(get_db)],
+    current_user: Annotated[Any, Depends(get_current_user)],
     skip: int = 0, 
     limit: int = 20,
     from_date: Optional[str] = None,
@@ -554,7 +555,7 @@ def _list_packages_impl(db: Session, skip: int = 0, limit: int = 20):
         return []
 
 @router.get("", response_model=List[PackageOut])
-def list_packages(db: Annotated[Any, Depends(get_db)] = None, skip: int = 0, limit: int = 20):
+def list_packages(db: Annotated[Any, Depends(get_db)], skip: int = 0, limit: int = 20):
     return _list_packages_impl(db, skip, limit)
 
 @router.get("/", response_model=List[PackageOut])  # Handle trailing slash
