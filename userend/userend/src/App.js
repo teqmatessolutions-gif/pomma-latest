@@ -5044,13 +5044,35 @@ export default function App() {
                                                     <p className={`font-semibold ${theme.textPrimary}`}>{item.name}</p>
                                                 </div>
                                             </div>
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                value={foodOrderData.items[item.id] || 0}
-                                                onChange={(e) => handleFoodOrderChange(e, item.id)}
-                                                className={`w-20 p-2 text-center rounded-lg ${theme.bgSecondary} ${theme.textPrimary} border ${theme.border} focus:outline-none focus:ring-2 focus:ring-amber-500`}
-                                            />
+                                            <div className="flex items-center space-x-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        const currentVal = foodOrderData.items[item.id] || 0;
+                                                        if (currentVal > 0) {
+                                                            handleFoodOrderChange({ target: { value: currentVal - 1 } }, item.id);
+                                                        }
+                                                    }}
+                                                    className="w-8 h-8 flex items-center justify-center rounded-full bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors"
+                                                >
+                                                    <span className="text-xl font-bold leading-none -mt-1">-</span>
+                                                </button>
+                                                <span className={`w-6 text-center font-bold text-lg ${theme.textPrimary}`}>
+                                                    {foodOrderData.items[item.id] || 0}
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        const currentVal = foodOrderData.items[item.id] || 0;
+                                                        handleFoodOrderChange({ target: { value: currentVal + 1 } }, item.id);
+                                                    }}
+                                                    className="w-8 h-8 flex items-center justify-center rounded-full bg-amber-600 text-white hover:bg-amber-700 transition-colors shadow-sm"
+                                                >
+                                                    <span className="text-xl font-bold leading-none -mt-0.5">+</span>
+                                                </button>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
