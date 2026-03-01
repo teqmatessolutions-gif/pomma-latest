@@ -852,8 +852,10 @@ export default function App() {
     const [resortInfo, setResortInfo] = useState(null);
     const [galleryImages, setGalleryImages] = useState([]);
     const [roomImageIndices, setRoomImageIndices] = useState({});
+    const [foodImageIndices, setFoodImageIndices] = useState({});
     const [roomDetailsImageIndex, setRoomDetailsImageIndex] = useState(0);
     const [packageDetailsImageIndex, setPackageDetailsImageIndex] = useState(0);
+    const [foodDetailsImageIndex, setFoodDetailsImageIndex] = useState(0);
     const [hoveredRoomId, setHoveredRoomId] = useState(null);
 
     // Auto-play for hovered room card
@@ -893,6 +895,22 @@ export default function App() {
         return () => clearInterval(interval);
     }, [packages]);
 
+    // Global Auto-play for Food Items
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setFoodImageIndices(prevIndices => {
+                const newIndices = { ...prevIndices };
+                foodItems.forEach(food => {
+                    if (food.images && food.images.length > 1) {
+                        const currentIndex = newIndices[food.id] || 0;
+                        newIndices[food.id] = (currentIndex + 1) % food.images.length;
+                    }
+                });
+                return newIndices;
+            });
+        }, 3000);
+        return () => clearInterval(interval);
+    }, [foodItems]);
 
 
     const [reviews, setReviews] = useState([]);
@@ -1128,6 +1146,7 @@ export default function App() {
         guest_email: "",
         room_id: null,
     });
+    const [orderFoodCategory, setOrderFoodCategory] = useState('All');
     const [foodOrderData, setFoodOrderData] = useState({
         room_id: null,
         items: {},
@@ -3337,16 +3356,71 @@ export default function App() {
                                                         key={food.id}
                                                         onClick={() => {
                                                             setSelectedFoodForDetails(food);
+                                                            setFoodDetailsImageIndex(0);
                                                             setIsFoodDetailsOpen(true);
                                                         }}
                                                         className={`group relative ${theme.bgCard} rounded-2xl overflow-hidden luxury-shadow transition-all duration-300 transform hover:-translate-y-2 border ${theme.cardBorder || theme.border} cursor-pointer`}
                                                     >
                                                         <div className="relative h-40 overflow-hidden">
                                                             <ProgressiveImage
-                                                                src={getImageUrl(food.images?.[0]?.image_url)}
+                                                                src={
+                                                                    (() => {
+                                                                        const images = food.images && food.images.length > 0 ? food.images : null;
+                                                                        if (!images) return ITEM_PLACEHOLDER;
+
+                                                                        const currentIndex = foodImageIndices[food.id] || 0;
+                                                                        const safeIndex = Math.abs(currentIndex % images.length);
+                                                                        const targetImage = images[safeIndex];
+
+                                                                        if (!targetImage || !targetImage.image_url) return ITEM_PLACEHOLDER;
+
+                                                                        return getImageUrl(targetImage.image_url);
+                                                                    })()
+                                                                }
                                                                 alt={food.name}
                                                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                                             />
+                                                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+
+                                                            {/* Image Slider Controls (Arrows) */}
+                                                            {food.images && food.images.length > 1 && (
+                                                                <>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            const count = food.images.length;
+                                                                            setFoodImageIndices(prev => ({ ...prev, [food.id]: ((prev[food.id] || 0) === 0 ? count - 1 : (prev[food.id] || 0) - 1) }));
+                                                                        }}
+                                                                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all z-20"
+                                                                    >
+                                                                        <ChevronLeft className="w-4 h-4" />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            const count = food.images.length;
+                                                                            setFoodImageIndices(prev => ({ ...prev, [food.id]: ((prev[food.id] || 0) + 1) % count }));
+                                                                        }}
+                                                                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all z-20"
+                                                                    >
+                                                                        <ChevronRight className="w-4 h-4" />
+                                                                    </button>
+
+                                                                    {/* Image Slider Dots */}
+                                                                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/60 backdrop-blur-sm px-3 py-2 rounded-full z-10 transition-opacity duration-300 opacity-0 group-hover:opacity-100">
+                                                                        {food.images.map((_, imgIdx) => (
+                                                                            <button
+                                                                                key={imgIdx}
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    setFoodImageIndices(prev => ({ ...prev, [food.id]: imgIdx }));
+                                                                                }}
+                                                                                className={`w-2 h-2 rounded-full transition-all ${imgIdx === (foodImageIndices[food.id] || 0) ? 'bg-white' : 'bg-white/40'}`}
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                </>
+                                                            )}
                                                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                                                             <div className="absolute top-3 left-3 px-3 py-1 bg-black/40 text-white text-xs font-semibold rounded-full backdrop-blur-sm">
                                                                 {categoryName}
@@ -4418,12 +4492,50 @@ export default function App() {
                                 {/* Image Section */}
                                 {selectedFoodForDetails.images && selectedFoodForDetails.images.length > 0 && (
                                     <div className="relative mb-6">
-                                        <div className="relative h-96 rounded-2xl overflow-hidden">
+                                        <div className="relative h-96 rounded-2xl overflow-hidden group">
                                             <ProgressiveImage
-                                                src={getImageUrl(selectedFoodForDetails.images[0].image_url)}
+                                                src={getImageUrl(selectedFoodForDetails.images[foodDetailsImageIndex]?.image_url)}
                                                 alt={selectedFoodForDetails.name}
-                                                className="w-full h-full object-cover"
+                                                className="w-full h-full object-cover transition-transform duration-700"
                                             />
+
+                                            {/* Image Slider Controls */}
+                                            {selectedFoodForDetails.images.length > 1 && (
+                                                <>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setFoodDetailsImageIndex((prev) => prev === 0 ? selectedFoodForDetails.images.length - 1 : prev - 1);
+                                                        }}
+                                                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-all z-20"
+                                                    >
+                                                        <ChevronLeft className="w-6 h-6" />
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setFoodDetailsImageIndex((prev) => (prev + 1) % selectedFoodForDetails.images.length);
+                                                        }}
+                                                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-all z-20"
+                                                    >
+                                                        <ChevronRight className="w-6 h-6" />
+                                                    </button>
+
+                                                    {/* Slider Dots */}
+                                                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full z-10 transition-opacity duration-300 opacity-0 group-hover:opacity-100">
+                                                        {selectedFoodForDetails.images.map((_, imgIdx) => (
+                                                            <button
+                                                                key={imgIdx}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setFoodDetailsImageIndex(imgIdx);
+                                                                }}
+                                                                className={`w-2.5 h-2.5 rounded-full transition-all ${Math.abs(foodDetailsImageIndex % selectedFoodForDetails.images.length) === imgIdx ? 'bg-white scale-125' : 'bg-white/40 hover:bg-white/60'}`}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                </>
+                                            )}
 
                                             {/* Category Badge */}
                                             <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full">
@@ -5035,46 +5147,77 @@ export default function App() {
                                     {scannedRoomId && <p className="text-xs text-green-600 font-medium">✓ Room Automatically Detected</p>}
                                 </div>
                                 <h4 className={`text-md font-semibold ${theme.textPrimary}`}>Select Items:</h4>
-                                <div className="space-y-4 max-h-60 overflow-y-auto">
-                                    {foodItems.map(item => (
-                                        <div key={item.id} className="flex items-center justify-between">
-                                            <div className="flex items-center space-x-4">
-                                                <img src={getImageUrl(item.images?.[0]?.image_url)} alt={item.name} className="w-12 h-12 object-cover rounded-full" />
-                                                <div>
-                                                    <p className={`font-semibold ${theme.textPrimary}`}>{item.name}</p>
+                                {/* Category Filter for Food Orders */}
+                                <div className="flex overflow-x-auto pb-2 gap-2 hide-scrollbar">
+                                    {['All', ...Array.from(new Set(foodItems.map(item => item.category?.name || item.category_name || 'Uncategorized')))].map(category => (
+                                        <button
+                                            key={category}
+                                            type="button"
+                                            onClick={() => setOrderFoodCategory(category)}
+                                            className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${orderFoodCategory === category
+                                                    ? 'bg-[#0f5132] text-white'
+                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                }`}
+                                        >
+                                            {category}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div className="space-y-4 max-h-60 overflow-y-auto pr-1">
+                                    {foodItems
+                                        .filter(item => {
+                                            if (orderFoodCategory === 'All') return true;
+                                            const catName = item.category?.name || item.category_name || 'Uncategorized';
+                                            return catName === orderFoodCategory;
+                                        })
+                                        .map(item => (
+                                            <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 border border-gray-100 rounded-xl shadow-sm gap-3">
+                                                <div className="flex items-center space-x-3 overflow-hidden">
+                                                    <div className="w-14 h-14 flex-shrink-0">
+                                                        <img
+                                                            src={getImageUrl(item.images?.[0]?.image_url || '')}
+                                                            alt={item.name}
+                                                            className="w-full h-full object-cover rounded-lg bg-gray-100"
+                                                            onError={(e) => { e.target.onerror = null; e.target.src = ITEM_PLACEHOLDER; }}
+                                                        />
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className={`font-semibold text-sm truncate ${theme.textPrimary}`}>{item.name}</p>
+                                                        <p className="text-xs text-gray-500 mt-1 uppercase tracking-wider">{item.category?.name || item.category_name || 'Uncategorized'}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center justify-end space-x-3 w-full sm:w-auto mt-1 sm:mt-0">
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            const currentVal = foodOrderData.items[item.id] || 0;
+                                                            if (currentVal > 0) {
+                                                                handleFoodOrderChange({ target: { value: currentVal - 1 } }, item.id);
+                                                            }
+                                                        }}
+                                                        className="w-8 h-8 flex items-center justify-center rounded-full bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors flex-shrink-0"
+                                                    >
+                                                        <span className="text-xl font-bold leading-none -mt-1">-</span>
+                                                    </button>
+                                                    <span className={`w-6 text-center font-bold text-lg ${theme.textPrimary}`}>
+                                                        {foodOrderData.items[item.id] || 0}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            const currentVal = foodOrderData.items[item.id] || 0;
+                                                            handleFoodOrderChange({ target: { value: currentVal + 1 } }, item.id);
+                                                        }}
+                                                        className="w-8 h-8 flex items-center justify-center rounded-full bg-amber-600 text-white hover:bg-amber-700 transition-colors shadow-sm flex-shrink-0"
+                                                    >
+                                                        <span className="text-xl font-bold leading-none -mt-0.5">+</span>
+                                                    </button>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center space-x-3">
-                                                <button
-                                                    type="button"
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        const currentVal = foodOrderData.items[item.id] || 0;
-                                                        if (currentVal > 0) {
-                                                            handleFoodOrderChange({ target: { value: currentVal - 1 } }, item.id);
-                                                        }
-                                                    }}
-                                                    className="w-8 h-8 flex items-center justify-center rounded-full bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors"
-                                                >
-                                                    <span className="text-xl font-bold leading-none -mt-1">-</span>
-                                                </button>
-                                                <span className={`w-6 text-center font-bold text-lg ${theme.textPrimary}`}>
-                                                    {foodOrderData.items[item.id] || 0}
-                                                </span>
-                                                <button
-                                                    type="button"
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        const currentVal = foodOrderData.items[item.id] || 0;
-                                                        handleFoodOrderChange({ target: { value: currentVal + 1 } }, item.id);
-                                                    }}
-                                                    className="w-8 h-8 flex items-center justify-center rounded-full bg-amber-600 text-white hover:bg-amber-700 transition-colors shadow-sm"
-                                                >
-                                                    <span className="text-xl font-bold leading-none -mt-0.5">+</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        ))}
                                 </div>
                                 <button type="submit" className={`w-full py-3 rounded-full ${theme.buttonBg} ${theme.buttonText} font-bold shadow-lg ${theme.buttonHover} transition-colors disabled:opacity-50`} disabled={isBookingLoading}>
                                     {isBookingLoading ? 'Placing Order...' : 'Place Order'}
