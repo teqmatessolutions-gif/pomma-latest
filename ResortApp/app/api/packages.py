@@ -290,9 +290,9 @@ def book_package_api(
             check_out_date = result.check_out if isinstance(result.check_out, date) else datetime.strptime(str(result.check_out), '%Y-%m-%d').date()
             stay_nights = max(1, (check_out_date - check_in_date).days)
             
-            # Calculate package charges (package price per night per room)
+            # Calculate package charges (package price per night)
             package_price = package.price if package else 0
-            package_charges = package_price * stay_nights * len(booking.room_ids) if booking.room_ids else package_price * stay_nights
+            package_charges = package_price * stay_nights
             
             # Get room details with prices
             rooms_data = []
@@ -388,9 +388,9 @@ def book_package_guest_api(
                     check_out_date = result.check_out if isinstance(result.check_out, date) else datetime.strptime(str(result.check_out), '%Y-%m-%d').date()
                     stay_nights = max(1, (check_out_date - check_in_date).days)
                     
-                    # Calculate package charges (package price per night per room)
+                    # Calculate package charges (package price per night)
                     package_price = package.price if package else 0
-                    package_charges = package_price * stay_nights * len(booking.room_ids) if booking.room_ids else package_price * stay_nights
+                    package_charges = package_price * stay_nights
                     
                     # Get room details with prices
                     rooms_data = []
