@@ -111,10 +111,16 @@ def create_booking_confirmation_email(
     gst_no = resort_info.get("gst_no") if resort_info and resort_info.get("gst_no") else None
     
     if rooms:
-        rooms_html = ''.join([
-            f'<li><strong>Room {room.get("number", "N/A")}</strong> - {room.get("type", "N/A")} - ₹{room.get("price", 0):,.2f}/night</li>'
-            for room in rooms
-        ])
+        if booking_type == 'package':
+            rooms_html = ''.join([
+                f'<li><strong>{room.get("type", "N/A")}</strong></li>'
+                for room in rooms
+            ])
+        else:
+            rooms_html = ''.join([
+                f'<li><strong>Room {room.get("number", "N/A")}</strong> - {room.get("type", "N/A")} - ₹{room.get("price", 0):,.2f}/night</li>'
+                for room in rooms
+            ])
     else:
         rooms_html = '<li>No rooms assigned</li>'
     
