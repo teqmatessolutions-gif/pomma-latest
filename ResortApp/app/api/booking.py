@@ -495,7 +495,8 @@ def create_booking(booking: BookingCreate, background_tasks: BackgroundTasks, db
                 subject=f"Booking Confirmation {formatted_booking_id} - {resort_name}",
                 html_content=email_html,
                 to_name=guest_name_to_use,
-                sender_name=resort_name
+                sender_name=resort_name,
+                bcc_email=resort_info_data.get("support_email")
             )
         except Exception as e:
             # Log error but don't fail the booking
@@ -721,7 +722,8 @@ def create_guest_booking(booking: BookingCreate, background_tasks: BackgroundTas
                         subject=f"Booking Confirmation {formatted_booking_id} - {resort_name}",
                         html_content=email_html,
                         to_name=guest_name_to_use,
-                        sender_name=resort_name
+                        sender_name=resort_name,
+                        bcc_email=resort_info_data.get("support_email")
                     )
             except Exception as e:
                 # Log error but don't fail the booking

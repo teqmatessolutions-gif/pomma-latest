@@ -24,7 +24,8 @@ def send_email(
     subject: str,
     html_content: str,
     to_name: Optional[str] = None,
-    sender_name: Optional[str] = None
+    sender_name: Optional[str] = None,
+    bcc_email: Optional[str] = None
 ) -> bool:
     """
     Send an email using SMTP.
@@ -35,6 +36,7 @@ def send_email(
         html_content: HTML email content
         to_name: Optional recipient name
         sender_name: Optional sender name (overrides config)
+        bcc_email: Optional BCC email address
     
     Returns:
         bool: True if email sent successfully, False otherwise
@@ -56,16 +58,25 @@ def send_email(
         msg['From'] = f"{from_name} <{config['from_email']}>"
         msg['To'] = to_email
         
+        # Add BCC if provided
+        if bcc_email:
+            msg['Bcc'] = bcc_email
+        
         # Add HTML content
         html_part = MIMEText(html_content, 'html')
         msg.attach(html_part)
+        
+        # Determine all recipients
+        recipients = [to_email]
+        if bcc_email:
+            recipients.append(bcc_email)
         
         # Connect to SMTP server and send
         with smtplib.SMTP(config['host'], config['port']) as server:
             if config['use_tls']:
                 server.starttls()
             server.login(config['username'], config['password'])
-            server.send_message(msg)
+            server.send_message(msg, to_addrs=recipients)
         
         print(f"[Email] Successfully sent email to {to_email}: {subject}")
         return True

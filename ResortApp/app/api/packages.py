@@ -344,7 +344,8 @@ def book_package_api(
                 subject=f"Package Booking Confirmation {formatted_booking_id} - {resort_name}",
                 html_content=email_html,
                 to_name=result.guest_name,
-                sender_name=resort_name
+                sender_name=resort_name,
+                bcc_email=resort_info_data.get("support_email")
             )
         except Exception as e:
             # Log error but don't fail the booking
@@ -441,7 +442,8 @@ def book_package_guest_api(
                         subject=f"Package Booking Confirmation {formatted_booking_id} - {resort_name}",
                         html_content=email_html,
                         to_name=result.guest_name,
-                        sender_name=resort_name
+                        sender_name=resort_name,
+                        bcc_email=resort_info_data.get("support_email")
                     )
                 except Exception as e:
                     # Log error but don't fail the booking
