@@ -611,10 +611,10 @@ def _calculate_bill_for_single_room(db: Session, room_number: str):
         package_price = package.price if package else 0
         
         if is_whole_property:
-            # For whole_property packages: package price is the total amount (not multiplied by days)
+            # For whole_property packages: package price is the total amount per night
             # Note: For single room checkout, we still use the full package price
             # as it's a whole property package (all rooms included)
-            charges.package_charges = package_price
+            charges.package_charges = package_price * stay_days
             charges.room_charges = 0
         else:
             # For room_type packages: package price is per room, per night
@@ -821,8 +821,8 @@ def _calculate_bill_for_entire_booking(db: Session, room_number: str):
         package_price = package.price if package else 0
         
         if is_whole_property:
-            # For whole_property packages: package price is the total amount (not multiplied by rooms/days)
-            charges.package_charges = package_price
+            # For whole_property packages: package price is the total amount per night
+            charges.package_charges = package_price * stay_days
             charges.room_charges = 0  # Room charges are included in the package price
         else:
             # For room_type packages: package price is per room, per night
