@@ -1588,7 +1588,11 @@ const Bookings = () => {
       // - Package bookings: package bookings from 'package_bookings' table (is_package = true)
       //   Note: Rooms booked as part of a package are treated as package bookings
       const isPackage = booking.is_package || false;
-      const displayId = generateBookingId(booking);
+      // Always build displayId based on isPackage flag to avoid wrong prefix (BK- vs PK-)
+      const numericId = booking.id;
+      const displayId = isPackage
+        ? `PK-${String(numericId).padStart(6, '0')}`
+        : `BK-${String(numericId).padStart(6, '0')}`;
 
       if (!displayId) {
         showBannerMessage("error", "Invalid booking ID. Please refresh the page.");
