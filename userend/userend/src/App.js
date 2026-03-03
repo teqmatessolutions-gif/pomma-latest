@@ -1607,18 +1607,39 @@ export default function App() {
                 // Match Dashboard: Only check "booked" or "checked-in"
                 if (normalizedBookingStatus !== "booked" && normalizedBookingStatus !== "checked-in") return false;
 
-                // Link check
+                const bookingCheckIn = new Date(booking.check_in);
+                const bookingCheckOut = new Date(booking.check_out);
+
+                // Check Date overlap first
+                const hasDateOverlap = (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
+                if (!hasDateOverlap) return false;
+
+                // If dates overlap, check if it's a whole property package booking
+                const isPackageBooking = booking.package_id !== undefined; // package bookings have package_id
+                if (isPackageBooking) {
+                    const pkg = booking.package;
+                    const bookingType = pkg?.booking_type || '';
+                    const hasRoomTypes = pkg?.room_types && pkg.room_types.trim().length > 0;
+                    const isWholeProperty = bookingType === 'whole_property' || bookingType === 'whole property' || (!bookingType && !hasRoomTypes);
+
+                    if (isWholeProperty) {
+                        return true; // Whole property packages block ALL rooms
+                    }
+                }
+
+                // Link check for specific rooms
                 const isRoomInBooking = booking.rooms && Array.isArray(booking.rooms) && booking.rooms.some(r => {
                     const roomId = r.room?.id || r.room_id || r.id;
                     return roomId === room.id;
                 });
-                if (!isRoomInBooking) return false;
 
-                const bookingCheckIn = new Date(booking.check_in);
-                const bookingCheckOut = new Date(booking.check_out);
+                // Fallback for regular bookings that use booking_rooms
+                const isRoomInRegularBooking = booking.booking_rooms && Array.isArray(booking.booking_rooms) && booking.booking_rooms.some(r => {
+                    const roomId = r.room?.id || r.room_id || r.id;
+                    return roomId === room.id;
+                });
 
-                // Match Dashboard: Date overlap logic
-                return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
+                return isRoomInBooking || isRoomInRegularBooking;
             });
         };
 
@@ -5155,8 +5176,8 @@ export default function App() {
                                             type="button"
                                             onClick={() => setOrderFoodCategory(category)}
                                             className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${orderFoodCategory === category
-                                                    ? 'bg-[#0f5132] text-white'
-                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                ? 'bg-[#0f5132] text-white'
+                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                                 }`}
                                         >
                                             {category}
