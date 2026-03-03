@@ -1754,7 +1754,7 @@ export default function App() {
                 const isRoomInBooking = packageBooking.rooms && packageBooking.rooms.some(r => {
                     // For package bookings, r.id is PackageBookingRoom.id, not room.id
                     // We need to use r.room_id (direct field) or r.room.id (nested object)
-                    const roomId = r.room_id || r.room?.id;
+                    const roomId = r.room?.id || r.room_id || r.id;
                     return roomId === room.id;
                 });
                 if (!isRoomInBooking) return false;
@@ -1945,6 +1945,16 @@ export default function App() {
                 setBookingData({ room_ids: [], guest_name: "", guest_mobile: "+91", guest_email: "", check_in: "", check_out: "", adults: 1, children: 0 });
                 setBookingCountryCode(countryCodes.find((c) => c.value === "+91"));
                 setBookingMobileNumber("");
+
+                // Refresh bookings data to update availability instantly
+                try {
+                    const res = await fetch(`${API_BASE_URL}/bookings?limit=2000&skip=0`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        setBookings(data.bookings || data.items || []);
+                    }
+                } catch (e) { console.error("Failed to refresh bookings after booking", e); }
+
                 // Close the booking form after successful booking
                 setTimeout(() => {
                     setIsRoomBookingFormOpen(false);
@@ -2019,7 +2029,7 @@ export default function App() {
 
                         // Check if this room is part of the booking
                         const isRoomInBooking = booking.rooms && booking.rooms.some(r => {
-                            const roomId = r.room?.id || r.id;
+                            const roomId = r.room?.id || r.room_id || r.id;
                             return roomId === room.id;
                         });
                         if (!isRoomInBooking) return false;
@@ -2195,6 +2205,16 @@ export default function App() {
                 setPackageBookingData({ package_id: null, room_ids: [], guest_name: "", guest_mobile: "+91", guest_email: "", check_in: "", check_out: "", adults: 1, children: 0 });
                 setPackageCountryCode(countryCodes.find((c) => c.value === "+91"));
                 setPackageMobileNumber("");
+
+                // Refresh package bookings data to update availability instantly
+                try {
+                    const res = await fetch(`${API_BASE_URL}/packages/bookingsall?limit=2000&skip=0`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        setPackageBookings(Array.isArray(data) ? data : (data.items || []));
+                    }
+                } catch (e) { console.error("Failed to refresh package bookings after booking", e); }
+
                 // Close the booking form after successful booking
                 setTimeout(() => {
                     setIsPackageBookingFormOpen(false);
