@@ -364,7 +364,8 @@ export default function ComprehensiveReport() {
   };
 
   const handleExportGST = (format = 'excel') => {
-    const gstData = checkouts.filter(c => (c.charges?.total_gst || 0) > 0).map(c => {
+    const filteredCheckouts = checkouts.filter(c => (c.charges?.total_gst || 0) > 0);
+    const gstData = filteredCheckouts.map(c => {
       const roomAmt = (c.charges?.room_charges || 0) + (c.charges?.package_charges || 0);
       const roomCgst = (c.charges?.room_cgst || 0) + (c.charges?.package_cgst || 0);
       const roomSgst = (c.charges?.room_sgst || 0) + (c.charges?.package_sgst || 0);
@@ -397,6 +398,41 @@ export default function ComprehensiveReport() {
         "Total GST": c.charges?.total_gst || 0
       };
     });
+
+    // Append Grand Total row
+    const totalRoomAmt = gstData.reduce((s, r) => s + (r["Room Amount"] || 0), 0);
+    const totalRoomCgst = gstData.reduce((s, r) => s + (r["Room CGST"] || 0), 0);
+    const totalRoomSgst = gstData.reduce((s, r) => s + (r["Room SGST"] || 0), 0);
+    const totalFoodAmt = gstData.reduce((s, r) => s + (r["Food Amount"] || 0), 0);
+    const totalFoodCgst = gstData.reduce((s, r) => s + (r["Food CGST"] || 0), 0);
+    const totalFoodSgst = gstData.reduce((s, r) => s + (r["Food SGST"] || 0), 0);
+    const totalSvcAmt = gstData.reduce((s, r) => s + (r["Service Amount"] || 0), 0);
+    const totalSvcCgst = gstData.reduce((s, r) => s + (r["Service CGST"] || 0), 0);
+    const totalSvcSgst = gstData.reduce((s, r) => s + (r["Service SGST"] || 0), 0);
+    const totalGst = gstData.reduce((s, r) => s + (r["Total GST"] || 0), 0);
+
+    gstData.push({
+      "Invoice No": "GRAND TOTAL",
+      "Date": "",
+      "Customer": "",
+      "Room Amount": totalRoomAmt,
+      "Room CGST": totalRoomCgst,
+      "Room CGST %": totalRoomAmt > 0 ? ((totalRoomCgst / totalRoomAmt) * 100).toFixed(2) : 0,
+      "Room SGST": totalRoomSgst,
+      "Room SGST %": totalRoomAmt > 0 ? ((totalRoomSgst / totalRoomAmt) * 100).toFixed(2) : 0,
+      "Food Amount": totalFoodAmt,
+      "Food CGST": totalFoodCgst,
+      "Food CGST %": totalFoodAmt > 0 ? ((totalFoodCgst / totalFoodAmt) * 100).toFixed(2) : 0,
+      "Food SGST": totalFoodSgst,
+      "Food SGST %": totalFoodAmt > 0 ? ((totalFoodSgst / totalFoodAmt) * 100).toFixed(2) : 0,
+      "Service Amount": totalSvcAmt,
+      "Service CGST": totalSvcCgst,
+      "Service CGST %": totalSvcAmt > 0 ? ((totalSvcCgst / totalSvcAmt) * 100).toFixed(2) : 0,
+      "Service SGST": totalSvcSgst,
+      "Service SGST %": totalSvcAmt > 0 ? ((totalSvcSgst / totalSvcAmt) * 100).toFixed(2) : 0,
+      "Total GST": totalGst
+    });
+
     if (format === 'excel') exportToExcel(gstData, "GST_Consolidated_Report");
     else if (format === 'csv') exportToCSV(gstData, "GST_Consolidated_Report");
     else if (format === 'pdf') exportToPDF(gstData, "GST_Consolidated_Report", "GST Consolidated Report");
