@@ -1644,10 +1644,9 @@ export default function App() {
         };
 
         if (hasConflictInList(bookings || [])) return false;
-        if (hasConflictInList(packageBookings || [])) return false;
 
         return true;
-    }, [bookings, packageBookings]);
+    }, [bookings]);
 
     const handleRoomSelection = useCallback((roomId) => {
         setBookingData(prev => {
@@ -2015,31 +2014,7 @@ export default function App() {
 
             // Check availability for bookable rooms based on selected dates
             const availableRoomIds = bookableRooms
-                .filter(room => {
-                    // Check if room has any conflicting bookings
-                    const hasConflict = bookings.some(booking => {
-                        const normalizedStatus = booking.status?.toLowerCase().replace(/_/g, '-');
-                        // Only check for "booked" or "checked-in" status
-                        if (normalizedStatus !== "booked" && normalizedStatus !== "checked-in") return false;
-
-                        const bookingCheckIn = new Date(booking.check_in);
-                        const bookingCheckOut = new Date(booking.check_out);
-                        const requestedCheckIn = new Date(packageBookingData.check_in);
-                        const requestedCheckOut = new Date(packageBookingData.check_out);
-
-                        // Check if this room is part of the booking
-                        const isRoomInBooking = booking.rooms && booking.rooms.some(r => {
-                            const roomId = r.room?.id || r.room_id || r.id;
-                            return roomId === room.id;
-                        });
-                        if (!isRoomInBooking) return false;
-
-                        // Check for date overlap
-                        return (requestedCheckIn < bookingCheckOut && requestedCheckOut > bookingCheckIn);
-                    });
-
-                    return !hasConflict; // Room is available if no conflicts
-                })
+                .filter(room => checkRoomAvailability(room, packageBookingData.check_in, packageBookingData.check_out))
                 .map(room => room.id);
 
             // CRITICAL: For whole property packages, ALL bookable rooms must be available
@@ -4176,6 +4151,16 @@ export default function App() {
                                                     <p className={`text-xs ${theme.textSecondary} mb-2`}>Showing rooms available from {packageBookingData.check_in} to {packageBookingData.check_out}</p>
                                                     <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-48 overflow-y-auto p-3 rounded-xl ${theme.bgSecondary}`}>
                                                         {(() => {
+                                                            if (isWholeProperty && isWholePropertyBlocked) {
+                                                                return (
+                                                                    <div className="col-span-full text-center py-6 text-red-500 bg-red-50 rounded-xl border border-red-200 mt-2">
+                                                                        <BedDouble className="w-10 h-10 text-red-400 mx-auto mb-2" />
+                                                                        <p className="text-md font-bold mb-1">Property Unavailable</p>
+                                                                        <p className="text-xs px-4">The whole property cannot be booked for these dates because some rooms are already occupied.</p>
+                                                                    </div>
+                                                                );
+                                                            }
+
                                                             // Filter rooms based on package type
                                                             let roomsToShow = rooms;
 
