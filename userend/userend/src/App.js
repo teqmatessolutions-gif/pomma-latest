@@ -3017,15 +3017,14 @@ export default function App() {
                                                                 e.stopPropagation();
                                                                 handleOpenRoomBookingForm(room.id);
                                                             }}
-                                                            disabled={(bookingData.check_in && bookingData.check_out && !roomAvailability[room.id]) || room.status === 'Maintenance' || room.status === 'Coming Soon' || room.status === 'Disabled'}
+                                                            disabled={room.status === 'Maintenance' || room.status === 'Coming Soon' || room.status === 'Disabled'}
                                                             className={`w-full py-3.5 font-bold rounded-full shadow-md transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 ${room.status === 'Maintenance' ? 'bg-red-600 text-white cursor-not-allowed' :
                                                                 room.status === 'Coming Soon' ? 'bg-amber-500 text-white cursor-not-allowed' :
                                                                     room.status === 'Disabled' ? 'bg-red-600 text-white cursor-not-allowed' :
-                                                                        (bookingData.check_in && bookingData.check_out && !roomAvailability[room.id]) ? 'bg-red-500 text-white cursor-not-allowed' :
-                                                                            'bg-[#0f5132] text-white hover:bg-[#153a2c] hover:shadow-lg'
+                                                                        'bg-[#0f5132] text-white hover:bg-[#153a2c] hover:shadow-lg'
                                                                 }`}
                                                         >
-                                                            {room.status === 'Maintenance' ? 'Maintenance' : room.status === 'Coming Soon' ? 'Coming Soon' : room.status === 'Disabled' ? 'Unavailable' : (bookingData.check_in && bookingData.check_out && !roomAvailability[room.id] ? 'Not Available' : 'Book Now')}
+                                                            {room.status === 'Maintenance' ? 'Maintenance' : room.status === 'Coming Soon' ? 'Coming Soon' : room.status === 'Disabled' ? 'Unavailable' : 'Book Now'}
                                                             <ChevronRight className="w-4 h-4" />
                                                         </button>
                                                     </div>
@@ -4843,8 +4842,8 @@ export default function App() {
                                             setIsRoomDetailsOpen(false);
                                             handleOpenRoomBookingForm(selectedRoomForDetails.id);
                                         }}
-                                        disabled={selectedRoomForDetails.status === 'Maintenance' || selectedRoomForDetails.status === 'Coming Soon' || selectedRoomForDetails.status === 'Disabled' || (bookingData.check_in && bookingData.check_out && !roomAvailability[selectedRoomForDetails.id])}
-                                        className={`px-8 py-4 font-bold rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center gap-2 ${selectedRoomForDetails.status === 'Maintenance' || selectedRoomForDetails.status === 'Coming Soon' || selectedRoomForDetails.status === 'Disabled' || (bookingData.check_in && bookingData.check_out && !roomAvailability[selectedRoomForDetails.id])
+                                        disabled={selectedRoomForDetails.status === 'Maintenance' || selectedRoomForDetails.status === 'Coming Soon' || selectedRoomForDetails.status === 'Disabled'}
+                                        className={`px-8 py-4 font-bold rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center gap-2 ${selectedRoomForDetails.status === 'Maintenance' || selectedRoomForDetails.status === 'Coming Soon' || selectedRoomForDetails.status === 'Disabled'
                                             ? 'bg-gray-400 text-white cursor-not-allowed'
                                             : 'bg-[#0f5132] text-white hover:bg-[#153a2c] hover:shadow-xl'
                                             }`}
@@ -4852,8 +4851,7 @@ export default function App() {
                                         {selectedRoomForDetails.status === 'Maintenance' ? 'Under Maintenance' :
                                             selectedRoomForDetails.status === 'Coming Soon' ? 'Coming Soon' :
                                                 selectedRoomForDetails.status === 'Disabled' ? 'Unavailable' :
-                                                    (bookingData.check_in && bookingData.check_out && !roomAvailability[selectedRoomForDetails.id]) ? 'Not Available' :
-                                                        'Book Now'}
+                                                    'Book Now'}
                                         <ChevronRight className="w-5 h-5" />
                                     </button>
                                 </div>
