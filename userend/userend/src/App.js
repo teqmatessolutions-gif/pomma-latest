@@ -1644,9 +1644,10 @@ export default function App() {
         };
 
         if (hasConflictInList(bookings || [])) return false;
+        if (hasConflictInList(packageBookings || [])) return false;
 
         return true;
-    }, [bookings]);
+    }, [bookings, packageBookings]);
 
     const handleRoomSelection = useCallback((roomId) => {
         setBookingData(prev => {
