@@ -5,7 +5,7 @@ import pommaLogo from "../assets/pommalogo.png";
 
 import { jwtDecode } from "jwt-decode";
 
-import LicenseOverlay from "../components/LicenseOverlay";
+
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -85,7 +85,7 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden p-4">
-      <LicenseOverlay />
+      
 
       {/* Natural Green Gradient Background */}
       <div className="absolute inset-0 animate-gradient bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50"></div>

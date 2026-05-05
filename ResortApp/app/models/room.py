@@ -53,6 +53,31 @@ class Room(Base):
         cascade="all, delete-orphan"
     )
 
+    # Aiosell / Channel Manager Fields
+    aiosell_room_code = Column(String, nullable=True) # e.g. DELUXE
+    min_stay = Column(Integer, default=1)
+    cta = Column(Boolean, default=False)
+    ctd = Column(Boolean, default=False)
+
+    rate_plan_mappings = relationship(
+        "RatePlanMapping",
+        back_populates="room",
+        cascade="all, delete-orphan"
+    )
+
+class RatePlanMapping(Base):
+    __tablename__ = "rate_plan_mappings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    room_id = Column(Integer, ForeignKey("rooms.id"), nullable=False)
+    plan_name = Column(String, nullable=False) # e.g. Luxury Single CP
+    occupancy = Column(Integer, default=2)
+    aiosell_id = Column(String, nullable=False) # Rate Plan ID in Aiosell
+    offset_percentage = Column(Float, default=0.0)
+    fixed_offset = Column(Float, default=0.0)
+
+    room = relationship("Room", back_populates="rate_plan_mappings")
+
 class RoomImage(Base):
     __tablename__ = "room_images"
 

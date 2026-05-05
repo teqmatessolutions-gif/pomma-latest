@@ -178,6 +178,11 @@ def create_room(
     garden: Annotated[Any, Form()] = False,
     dining: Annotated[Any, Form()] = False,
     breakfast: Annotated[Any, Form()] = False,
+    aiosell_room_code: Annotated[Any, Form()] = None,
+    min_stay: Annotated[Any, Form()] = 1,
+    cta: Annotated[Any, Form()] = False,
+    ctd: Annotated[Any, Form()] = False,
+    rate_plan_mappings: Annotated[Any, Form()] = None, # JSON string
     db: Annotated[Any, Depends(get_db)] = None
 ):
     try:
@@ -200,10 +205,33 @@ def create_room(
             bbq=str_to_bool(bbq),
             garden=str_to_bool(garden),
             dining=str_to_bool(dining),
-            breakfast=str_to_bool(breakfast)
+            breakfast=str_to_bool(breakfast),
+            aiosell_room_code=aiosell_room_code,
+            min_stay=int(min_stay) if min_stay else 1,
+            cta=str_to_bool(cta),
+            ctd=str_to_bool(ctd)
         )
         db.add(db_room)
         db.flush() 
+
+        # Handle Rate Plan Mappings
+        if rate_plan_mappings:
+            import json
+            from app.models.room import RatePlanMapping
+            try:
+                mappings = json.loads(rate_plan_mappings)
+                for m in mappings:
+                    db_mapping = RatePlanMapping(
+                        room_id=db_room.id,
+                        plan_name=m.get("plan_name"),
+                        occupancy=m.get("occupancy", 2),
+                        aiosell_id=m.get("aiosell_id"),
+                        offset_percentage=float(m.get("offset_percentage", 0)),
+                        fixed_offset=float(m.get("fixed_offset", 0))
+                    )
+                    db.add(db_mapping)
+            except Exception as json_err:
+                print(f"Error parsing rate_plan_mappings: {json_err}")
 
         # Save images
         primary_image_set = False
@@ -223,10 +251,15 @@ def create_room(
                 
                 # Add to gallery
                 room_image = RoomImage(room_id=db_room.id, image_url=image_url)
-                db.add(room_image)
-        
         db.commit()
         db.refresh(db_room)
+        
+        try:
+            from app.database import SessionLocal
+            from app.utils.aiosell_sync import trigger_aiosell_sync
+            trigger_aiosell_sync(SessionLocal, "all")
+        except: pass
+
         return db_room
     except Exception as e:
         db.rollback()
@@ -392,6 +425,11 @@ def update_room(
     garden: Annotated[Any, Form()] = None,
     dining: Annotated[Any, Form()] = None,
     breakfast: Annotated[Any, Form()] = None,
+    aiosell_room_code: Annotated[Any, Form()] = None,
+    min_stay: Annotated[Any, Form()] = None,
+    cta: Annotated[Any, Form()] = None,
+    ctd: Annotated[Any, Form()] = None,
+    rate_plan_mappings: Annotated[Any, Form()] = None, # JSON string
     db: Annotated[Any, Depends(get_db)] = None
 ):
     try:
@@ -408,6 +446,12 @@ def update_room(
         if children is not None: db_room.children = int(children)
         if priority is not None: db_room.priority = int(priority)
         
+        # Aiosell Fields
+        if aiosell_room_code is not None: db_room.aiosell_room_code = aiosell_room_code
+        if min_stay is not None: db_room.min_stay = int(min_stay)
+        if cta is not None: db_room.cta = str_to_bool(cta)
+        if ctd is not None: db_room.ctd = str_to_bool(ctd)
+
         # Update feature fields (convert string booleans to actual booleans)
         if air_conditioning is not None: db_room.air_conditioning = str_to_bool(air_conditioning)
         if wifi is not None: db_room.wifi = str_to_bool(wifi)
@@ -421,6 +465,28 @@ def update_room(
         if garden is not None: db_room.garden = str_to_bool(garden)
         if dining is not None: db_room.dining = str_to_bool(dining)
         if breakfast is not None: db_room.breakfast = str_to_bool(breakfast)
+
+        # Handle Rate Plan Mappings
+        if rate_plan_mappings:
+            import json
+            from app.models.room import RatePlanMapping
+            try:
+                # Remove existing mappings
+                db.query(RatePlanMapping).filter(RatePlanMapping.room_id == room_id).delete()
+                
+                mappings = json.loads(rate_plan_mappings)
+                for m in mappings:
+                    db_mapping = RatePlanMapping(
+                        room_id=db_room.id,
+                        plan_name=m.get("plan_name"),
+                        occupancy=m.get("occupancy", 2),
+                        aiosell_id=m.get("aiosell_id"),
+                        offset_percentage=float(m.get("offset_percentage", 0)),
+                        fixed_offset=float(m.get("fixed_offset", 0))
+                    )
+                    db.add(db_mapping)
+            except Exception as json_err:
+                print(f"Error parsing rate_plan_mappings: {json_err}")
 
         # Handle new image uploads
         if images:
@@ -442,6 +508,13 @@ def update_room(
 
         db.commit()
         db.refresh(db_room)
+        
+        try:
+            from app.database import SessionLocal
+            from app.utils.aiosell_sync import trigger_aiosell_sync
+            trigger_aiosell_sync(SessionLocal, "all")
+        except: pass
+
         return db_room
     except Exception as e:
         db.rollback()

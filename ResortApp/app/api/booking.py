@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session, joinedload, load_only
 from sqlalchemy import or_, and_
 from typing import List, Union, Optional, Annotated, Any
 from app.utils.auth import get_db, get_current_user
+from app.utils.aiosell_sync import sync_inventory
 from app.utils.booking_id import parse_display_id
 from app.models.booking import Booking, BookingRoom, CheckInDocument
 from app.models.user import User
@@ -502,6 +503,11 @@ def create_booking(booking: BookingCreate, background_tasks: BackgroundTasks, db
             # Log error but don't fail the booking
             print(f"Failed to queue confirmation email: {str(e)}")
     
+    # Trigger Aiosell Inventory Sync
+    from app.database import SessionLocal
+    from app.utils.aiosell_sync import trigger_aiosell_sync
+    background_tasks.add_task(trigger_aiosell_sync, SessionLocal, "inventory")
+
     return booking_out
 
 @router.post("/guest", response_model=BookingOut, summary="Create a booking as a guest")
@@ -729,6 +735,15 @@ def create_guest_booking(booking: BookingCreate, background_tasks: BackgroundTas
                 # Log error but don't fail the booking
                 print(f"Failed to queue confirmation email: {str(e)}")
         
+        # Trigger Aiosell Inventory Sync
+        from app.database import SessionLocal
+        from app.utils.aiosell_sync import trigger_aiosell_sync
+        if 'background_tasks' in locals():
+            background_tasks.add_task(trigger_aiosell_sync, SessionLocal, "inventory")
+        else:
+            # Fallback if background_tasks is missing for some reason
+            trigger_aiosell_sync(SessionLocal, "inventory")
+
         return booking_with_rooms
         
     except HTTPException:

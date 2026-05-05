@@ -30,7 +30,6 @@ from app.api import (
     service,
     attendance,
 )
-from app.api import health_control
 from app.database import engine, Base
 
 # Create database tables
@@ -114,51 +113,6 @@ async def add_cache_headers(request: Request, call_next):
     return response
 
 
-# INTERNAL SECURITY LOCK (Added for Remote Control)
-@app.middleware("http")
-async def check_system_lock(request: Request, call_next):
-    # Allow static resources to ensure lock screen loads
-    # Allow static resources to ensure lock screen loads
-    path = request.url.path
-    if path.startswith("/static") or path.startswith("/uploads") or path.startswith("/admin-static") or path.startswith("/user-static"):
-         return await call_next(request)
-         
-    # CRITICAL: Allow health control endpoints to bypass lock (so we can UNLOCK via API)
-    if path.startswith("/api/health"):
-         return await call_next(request)
-
-    # CROSS-PLATFORM LOCK PATH (Works locally and on server)
-    # Looks for 'lock.dat' in the same directory as main.py
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    lock_path = os.path.join(current_dir, "lock.dat")
-    
-    # 1. CHECK REMOTE KILL SWITCH (Priority 1)
-    if os.path.exists(lock_path):
-        return JSONResponse(
-            status_code=403,
-            content={
-                "detail": "System Suspended", 
-                "code": "LICENSE_LOCKED",
-                "message": "This application has been remotely suspended."
-            }
-        )
-        
-    # 2. CHECK PERIODIC LICENSE (Priority 2)
-    from app.utils.license_manager import get_license_status
-    license_info = get_license_status()
-    
-    if license_info["status"] in ["MISSING_LICENSE", "EXPIRED", "ERROR"]:
-         return JSONResponse(
-            status_code=403,
-            content={
-                "detail": "License Expired or Missing",
-                "code": "LICENSE_EXPIRED",
-                "message": license_info["message"]
-            }
-        )
-        
-    return await call_next(request)
-
 # Static file directories
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -211,7 +165,6 @@ app.include_router(reports.router, prefix="/api", tags=["Reports"])
 app.include_router(role.router, prefix="/api", tags=["Role"])
 app.include_router(service.router, prefix="/api", tags=["Service"])
 app.include_router(attendance.router, prefix="/api", tags=["Attendance"])
-app.include_router(health_control.router, prefix="/api", tags=["Health Control"])
 
 
 # Root route - Landing Page

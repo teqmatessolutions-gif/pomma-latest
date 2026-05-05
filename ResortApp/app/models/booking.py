@@ -21,6 +21,12 @@ class Booking(Base):
     guest_photo_url = Column(String, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     total_amount = Column(Float, default=0.0)
+    
+    # Channel Manager Integration
+    channel = Column(String, nullable=True) # e.g. "Aiosell"
+    external_booking_id = Column(String, nullable=True) # Aiosell's reservation ID
+    external_status = Column(String, nullable=True) # Status from Aiosell
+    
     # Relationships
     checkout = relationship("Checkout", back_populates="booking", uselist=False)
     user = relationship("User", back_populates="bookings")

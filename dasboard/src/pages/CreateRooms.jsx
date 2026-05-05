@@ -317,6 +317,11 @@ const Rooms = () => {
     children: 0,
     breakfast: false,
     images: [], // Changed from image: null to images: []
+    aiosell_room_code: "",
+    min_stay: 1,
+    cta: false,
+    ctd: false,
+    rate_plan_mappings: [],
   });
   const [previewImages, setPreviewImages] = useState([]);
   const [existingImages, setExistingImages] = useState([]); // For edit mode
@@ -496,6 +501,32 @@ const Rooms = () => {
     }
   };
 
+  const addRatePlanMapping = () => {
+    setForm(prev => ({
+      ...prev,
+      rate_plan_mappings: [
+        ...prev.rate_plan_mappings,
+        { plan_name: "", occupancy: 2, aiosell_id: "", offset_percentage: 0, fixed_offset: 0 }
+      ]
+    }));
+  };
+
+  const updateRatePlanMapping = (index, field, value) => {
+    setForm(prev => {
+      const newMappings = [...prev.rate_plan_mappings];
+      newMappings[index] = { ...newMappings[index], [field]: value };
+      return { ...prev, rate_plan_mappings: newMappings };
+    });
+  };
+
+  const removeRatePlanMapping = (index) => {
+    setForm(prev => {
+      const newMappings = [...prev.rate_plan_mappings];
+      newMappings.splice(index, 1);
+      return { ...prev, rate_plan_mappings: newMappings };
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -530,6 +561,13 @@ const Rooms = () => {
     formData.append("garden", form.garden);
     formData.append("dining", form.dining);
     formData.append("breakfast", form.breakfast);
+
+    // Aiosell Fields
+    formData.append("aiosell_room_code", form.aiosell_room_code);
+    formData.append("min_stay", form.min_stay);
+    formData.append("cta", form.cta);
+    formData.append("ctd", form.ctd);
+    formData.append("rate_plan_mappings", JSON.stringify(form.rate_plan_mappings));
 
     try {
       if (isEditing) {
@@ -568,6 +606,11 @@ const Rooms = () => {
         garden: false,
         dining: false,
         breakfast: false,
+        aiosell_room_code: "",
+        min_stay: 1,
+        cta: false,
+        ctd: false,
+        rate_plan_mappings: [],
       });
       setPreviewImages([]);
       setExistingImages([]);
@@ -605,6 +648,11 @@ const Rooms = () => {
       garden: room.garden || false,
       dining: room.dining || false,
       breakfast: room.breakfast || false,
+      aiosell_room_code: room.aiosell_room_code || "",
+      min_stay: room.min_stay || 1,
+      cta: room.cta || false,
+      ctd: room.ctd || false,
+      rate_plan_mappings: room.rate_plan_mappings || [],
     });
     // Set existing images from room data
     // Combine gallery images with legacy image_url if not already present
@@ -703,6 +751,11 @@ const Rooms = () => {
               garden: false,
               dining: false,
               breakfast: false,
+              aiosell_room_code: "",
+              min_stay: 1,
+              cta: false,
+              ctd: false,
+              rate_plan_mappings: [],
               images: [],
             });
             setPreviewImages([]);
@@ -985,6 +1038,133 @@ const Rooms = () => {
                   />
                   <span className="text-sm text-gray-700">Complimentary Breakfast</span>
                 </label>
+              </div>
+            </div>
+
+            {/* Aiosell Configuration Section */}
+            <div className="md:col-span-2 lg:col-span-3 border-t pt-6 mt-2">
+              <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <i className="fas fa-sync text-indigo-600"></i> Aiosell Channel Manager Mapping
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <div>
+                  <label className="block text-xs font-bold text-indigo-600 uppercase mb-2">Channel Manager Code (Aiosell)</label>
+                  <input
+                    type="text"
+                    name="aiosell_room_code"
+                    placeholder="e.g. DELUXE, PREMIUM"
+                    value={form.aiosell_room_code}
+                    onChange={handleChange}
+                    className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-indigo-600 uppercase mb-2">Min Stay</label>
+                  <input
+                    type="number"
+                    name="min_stay"
+                    value={form.min_stay}
+                    onChange={handleChange}
+                    className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="mb-4 flex justify-between items-center">
+                <label className="block text-xs font-bold text-indigo-600 uppercase">Aiosell Rate Plan Mapping</label>
+                <button
+                  type="button"
+                  onClick={addRatePlanMapping}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 px-4 rounded-lg shadow-sm transition-all flex items-center gap-2 uppercase tracking-wider"
+                >
+                  <i className="fas fa-plus"></i> Add New Mapping
+                </button>
+              </div>
+
+              <div className="overflow-x-auto bg-white rounded-xl border border-gray-200 shadow-sm">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-gray-50 text-gray-500 uppercase text-[10px] font-bold tracking-widest">
+                    <tr>
+                      <th className="px-4 py-3">Plan Name</th>
+                      <th className="px-4 py-3 w-20 text-center">Occ.</th>
+                      <th className="px-4 py-3">Aiosell ID</th>
+                      <th className="px-4 py-3 w-28">Offset (%)</th>
+                      <th className="px-4 py-3 w-28">Fixed (₹)</th>
+                      <th className="px-4 py-3 w-12"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {form.rate_plan_mappings.map((mapping, idx) => (
+                      <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-4 py-2">
+                          <input
+                            type="text"
+                            placeholder="e.g. Luxury Single CP"
+                            value={mapping.plan_name}
+                            onChange={(e) => updateRatePlanMapping(idx, "plan_name", e.target.value)}
+                            className="w-full p-2 bg-transparent border-b border-transparent focus:border-indigo-500 outline-none transition-all"
+                          />
+                        </td>
+                        <td className="px-4 py-2 text-center">
+                          <input
+                            type="number"
+                            value={mapping.occupancy}
+                            onChange={(e) => updateRatePlanMapping(idx, "occupancy", e.target.value)}
+                            className="w-12 p-2 bg-transparent text-center border-b border-transparent focus:border-indigo-500 outline-none transition-all font-bold text-indigo-600"
+                          />
+                        </td>
+                        <td className="px-4 py-2">
+                          <input
+                            type="text"
+                            placeholder="e.g. room-5-cp"
+                            value={mapping.aiosell_id}
+                            onChange={(e) => updateRatePlanMapping(idx, "aiosell_id", e.target.value)}
+                            className="w-full p-2 bg-transparent border-b border-transparent focus:border-indigo-500 outline-none transition-all"
+                          />
+                        </td>
+                        <td className="px-4 py-2">
+                          <div className="flex items-center gap-1">
+                            <span className="text-gray-400 text-xs">+/-</span>
+                            <input
+                              type="number"
+                              value={mapping.offset_percentage}
+                              onChange={(e) => updateRatePlanMapping(idx, "offset_percentage", e.target.value)}
+                              className="w-full p-2 bg-transparent border-b border-transparent focus:border-indigo-500 outline-none transition-all font-bold text-blue-600"
+                            />
+                          </div>
+                        </td>
+                        <td className="px-4 py-2">
+                          <div className="flex items-center gap-1">
+                            <span className="text-gray-400 text-xs">₹</span>
+                            <input
+                              type="number"
+                              value={mapping.fixed_offset}
+                              onChange={(e) => updateRatePlanMapping(idx, "fixed_offset", e.target.value)}
+                              className="w-full p-2 bg-transparent border-b border-transparent focus:border-indigo-500 outline-none transition-all font-bold text-green-600"
+                            />
+                          </div>
+                        </td>
+                        <td className="px-4 py-2">
+                          <button
+                            type="button"
+                            onClick={() => removeRatePlanMapping(idx)}
+                            className="text-gray-300 hover:text-red-500 transition-colors p-2"
+                          >
+                            <i className="fas fa-trash-alt"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {form.rate_plan_mappings.length === 0 && (
+                      <tr>
+                        <td colSpan="6" className="px-4 py-8 text-center text-gray-400 italic">
+                          No rate plan mappings added. Standard room price will be pushed if mapping is required.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
             <div className="md:col-span-2 lg:col-span-3 flex items-center gap-4">

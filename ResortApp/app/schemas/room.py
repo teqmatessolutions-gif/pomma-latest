@@ -8,12 +8,29 @@ class RoomImage(BaseModel):
     model_config = {
         "from_attributes": True
     }
+class RatePlanMappingBase(BaseModel):
+    plan_name: str
+    occupancy: int = 2
+    aiosell_id: str
+    offset_percentage: float = 0.0
+    fixed_offset: float = 0.0
+
+class RatePlanMappingCreate(RatePlanMappingBase):
+    pass
+
+class RatePlanMappingOut(RatePlanMappingBase):
+    id: int
+    
+    model_config = {
+        "from_attributes": True
+    }
+
 class RoomBase(BaseModel):
     number: str
     type: str
     price: float
-    adults: int = 2      # new field
-    children: int = 0    # new field
+    adults: int = 2
+    children: int = 0
     # Room features/amenities
     air_conditioning: bool = False
     wifi: bool = False
@@ -27,6 +44,12 @@ class RoomBase(BaseModel):
     garden: bool = False
     dining: bool = False
     breakfast: bool = False
+    
+    # Aiosell Fields
+    aiosell_room_code: str | None = None
+    min_stay: int = 1
+    cta: bool = False
+    ctd: bool = False
 
 class RoomCreate(RoomBase):
     pass
@@ -37,6 +60,7 @@ class RoomOut(RoomBase):
     priority: int | None = None
     image_url: str | None = None
     images: List[RoomImage] = []
+    rate_plan_mappings: List[RatePlanMappingOut] = []
 
     model_config = {
         "from_attributes": True  # enables from_orm in Pydantic v2

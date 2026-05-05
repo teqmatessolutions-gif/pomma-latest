@@ -26,7 +26,7 @@ import { jwtDecode } from "jwt-decode";
 import pommaLogo from "../assets/pommalogo.png";
 
 import { CreditCard } from "lucide-react";
-import LicenseOverlay from "../components/LicenseOverlay";
+
 
 // Define professional, high-end themes with a focus on harmony and readability.
 const themes = {
@@ -274,7 +274,7 @@ export default function DashboardLayout({ children }) {
         color: 'var(--text-primary)'
       }}
     >
-      <LicenseOverlay />
+      
       {/* Mobile overlay for sidebar */}
 
 

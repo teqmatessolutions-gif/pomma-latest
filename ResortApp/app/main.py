@@ -20,7 +20,6 @@ from app.api import (
     food_item,
     food_orders,
     frontend,
-    health_control,
     packages,
     payment,
     report,
@@ -28,6 +27,7 @@ from app.api import (
     room,
     service,
     user,
+    aiosell,
 )
 
 # Create DB tables
@@ -72,34 +72,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 # Global License/Health Check Middleware
-from starlette.requests import Request
-from starlette.responses import JSONResponse
-from app.utils.health_monitor import get_system_status
-
-@app.middleware("http")
-async def check_system_health(request: Request, call_next):
-    # Bypass check for static files and health/activation endpoints to allow unlocking
-    path = request.url.path
-    if path.startswith("/static") or path.startswith("/uploads") or "/api/health/" in path:
-         return await call_next(request)
-
-    # DIRECT LOCK CHECK (Bypassing health_monitor module to guarantee execution)
-    import os
-    # SYSTEM UPDATE: Using /opt/pomma/lock.dat to bypass systemd PrivateTmp isolation
-    lock_path = "/opt/pomma/lock.dat"
-    
-    # Check if file exists - simplistic and robust
-    if os.path.exists(lock_path):
-        return JSONResponse(
-            status_code=403,
-            content={
-                "detail": "System Suspended", 
-                "code": "LICENSE_LOCKED",
-                "message": "This application has been remotely suspended. Please contact the administrator."
-            }
-        )
-    
-    return await call_next(request)
+# System health check middleware removed
 
 @app.on_event("startup")
 async def startup_event():
@@ -145,10 +118,8 @@ async def startup_event():
     except Exception as e:
         print(f"Startup thumbnail generation failed: {e}")
 
-    # Start Health/License Monitoring
-    from app.utils.health_monitor import start_monitoring_loop
-    import asyncio
-    asyncio.create_task(start_monitoring_loop())
+    # Health/License Monitoring disabled
+    pass
 
 # Static file dirs
 # Note: These paths are used by individual routers. 
@@ -192,6 +163,6 @@ app.include_router(payment.router, prefix="/api")
 app.include_router(frontend.router, prefix="/api/frontend")
 app.include_router(dashboard.router, prefix="/api")
 app.include_router(report.router, prefix="/api")
-app.include_router(health_control.router, prefix="/api") # Hidden Health Sync Endpoint
+app.include_router(aiosell.router, prefix="/api")
 # app.include_router(guest_api.guest_router) # <--- And add this line
 # app.include_router(billing_api.router) # <-- Now billing is active
