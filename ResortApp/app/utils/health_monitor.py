@@ -71,58 +71,20 @@ def set_local_status(status):
 
 async def check_remote_status():
     """
-    Periodically checks remote AND local configuration.
-    Local lock ('system_cache.dat') TAKES PRECEDENCE over remote 'active' status.
+    Disabled.
     """
-    global _system_status, _last_check
-    
-    # 1. Check Local Lock First
-    local_status = load_local_status()
-    if local_status in ["locked", "suspended"]:
-        _system_status = local_status
-        return
-
-    # 2. If locally active, check remote
-    try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            response = await client.get(REMOTE_CONFIG_URL)
-            if response.status_code == 200:
-                data = response.json()
-                new_status = data.get("status", "active").lower()
-                
-                if new_status in ["active", "locked", "suspended"]:
-                    _system_status = new_status
-                    _last_check = datetime.now()
-                    if _system_status != "active":
-                        # If remote says lock, we also write to local to persist it
-                        set_local_status(_system_status)
-                        logger.warning(f"System status updated to: {_system_status}")
-            else:
-                logger.warning(f"Remote health check returned status: {response.status_code}")
-                
-    except Exception as e:
-        logger.error(f"Health monitor connection failed: {e}")
-        pass
+    return
 
 async def start_monitoring_loop():
     """
-    Background task to run the health check loop.
-    Scanning interval: Every 30 minutes.
+    Disabled.
     """
-    while True:
-        await check_remote_status()
-        # Sleep for 30 minutes (1800 seconds)
-        await asyncio.sleep(1800) 
+    return
 
 def get_system_status():
     """
     Returns the current system status.
-    Prioritizes LOCAL LOCK FILE for immediate effect.
+    Always returns 'active' to disable suspension logic.
     """
-    # 1. Immediate Local Check (Bypasses laggy background loop)
-    local = load_local_status()
-    if local in ["locked", "suspended"]:
-        return local
-        
-    # 2. Fallback to cached remote status
-    return _system_status
+    return "active"
+
