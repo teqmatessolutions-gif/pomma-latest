@@ -120,6 +120,10 @@ const BookingDetailsModal = ({ booking, onClose, onImageClick, roomIdToRoom }) =
           <p><strong>Mobile:</strong> {booking.guest_mobile}</p>
           <p><strong>Email:</strong> {booking.guest_email}</p>
           <p><strong>Guests:</strong> {booking.adults} Adults, {booking.children} Children</p>
+          <div className="p-4 bg-indigo-50 rounded-lg border border-indigo-100 flex justify-between items-center mt-4">
+            <span className="text-indigo-800 font-semibold uppercase tracking-wider text-sm">Estimated Total Amount:</span>
+            <span className="text-2xl font-bold text-indigo-700">{formatCurrency(booking.total_amount || 0)}</span>
+          </div>
           {booking.status === 'checked-in' && booking.user && (
             <p><strong>Checked-in By:</strong> {booking.user.name}</p>
           )}

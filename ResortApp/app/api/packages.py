@@ -7,6 +7,7 @@ from app.models.room import Room
 from app.models.Package import Package, PackageBooking, PackageBookingRoom
 from app.models.frontend import ResortInfo
 from app.utils.auth import get_db, get_current_user
+from app.utils.billing import calculate_booking_bill
 from app.utils.booking_id import parse_display_id
 from app.schemas.packages import PackageBookingCreate, PackageOut, PackageBookingOut, PackageBookingPaginationOut
 from fastapi.responses import FileResponse
@@ -518,6 +519,12 @@ def get_bookings(
         result_items = result if result is not None else []
         
         page = (skip // limit) + 1 if limit > 0 else 1
+        
+        # Add live total_amount for each item
+        for item in result_items:
+            bill_result = calculate_booking_bill(db, item)
+            item.total_amount = bill_result["grand_total"]
+            
         return {
             "items": result_items,
             "total": total,

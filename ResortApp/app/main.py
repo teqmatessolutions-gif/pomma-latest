@@ -164,5 +164,13 @@ app.include_router(frontend.router, prefix="/api/frontend")
 app.include_router(dashboard.router, prefix="/api")
 app.include_router(report.router, prefix="/api")
 app.include_router(aiosell.router, prefix="/api")
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok", "service": "pomma-latest"}
+
+@app.get("/api/health")
+async def api_health():
+    return {"status": "ok", "api": "pomma-latest"}
 # app.include_router(guest_api.guest_router) # <--- And add this line
 # app.include_router(billing_api.router) # <-- Now billing is active

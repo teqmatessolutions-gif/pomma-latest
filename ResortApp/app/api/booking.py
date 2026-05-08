@@ -23,6 +23,7 @@ UPLOAD_DIR = "uploads/checkin_proofs"
 os.makedirs(UPLOAD_DIR, exist_ok=True)  # Ensure directory exists at startup
 from app.schemas.booking import BookingOut, BookingRoomOut
 from pydantic import BaseModel
+from app.utils.billing import calculate_booking_bill
 
 class PaginatedBookingResponse(BaseModel):
     total: int
@@ -89,12 +90,8 @@ def get_bookings(
         # Convert to BookingOut format
         booking_results = []
         for booking in regular_bookings:
-            # Calculate total if 0 (legacy data)
-            calculated_total = booking.total_amount
-            if not calculated_total or calculated_total == 0:
-                stay_days = max(1, (booking.check_out - booking.check_in).days)
-                room_total = sum((br.room.price or 0) for br in booking.booking_rooms if br.room)
-                calculated_total = room_total * stay_days
+            # Calculate live total using the unified billing utility
+            bill_result = calculate_booking_bill(db, booking)
 
             booking_out = BookingOut(
                 id=booking.id,
@@ -110,7 +107,7 @@ def get_bookings(
                 guest_photo_url=getattr(booking, 'guest_photo_url', None),
                 user=booking.user,
                 is_package=False,
-                total_amount=calculated_total,
+                total_amount=bill_result["grand_total"],
                 rooms=[br.room for br in booking.booking_rooms if br.room]
             )
             booking_results.append(booking_out)
@@ -153,6 +150,9 @@ def get_booking_details(booking_id: Union[str, int], is_package: bool, db: Annot
         if not booking:
             raise HTTPException(status_code=404, detail="Package booking not found")
 
+        # Calculate live total using the unified billing utility
+        bill_result = calculate_booking_bill(db, booking)
+        
         return BookingOut(
             id=booking.id,
             guest_name=booking.guest_name,
@@ -167,6 +167,7 @@ def get_booking_details(booking_id: Union[str, int], is_package: bool, db: Annot
             guest_photo_url=getattr(booking, 'guest_photo_url', None),
             user=booking.user,
             is_package=True,
+            total_amount=bill_result["grand_total"],
             rooms=[pbr.room for pbr in booking.rooms if pbr.room]
         )
     else: # Regular booking
@@ -178,6 +179,9 @@ def get_booking_details(booking_id: Union[str, int], is_package: bool, db: Annot
 
         if not booking:
             raise HTTPException(status_code=404, detail="Booking not found")
+        
+        # Calculate live total using the unified billing utility
+        bill_result = calculate_booking_bill(db, booking)
         
         # Manually construct the response to ensure rooms and image URLs are correctly populated
         return BookingOut(
@@ -195,6 +199,7 @@ def get_booking_details(booking_id: Union[str, int], is_package: bool, db: Annot
             checkin_documents=booking.checkin_documents,
             user=booking.user,
             is_package=False,
+            total_amount=bill_result["grand_total"],
             rooms=[br.room for br in booking.booking_rooms if br.room]
         )
 

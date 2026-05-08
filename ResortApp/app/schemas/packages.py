@@ -79,6 +79,7 @@ class PackageBookingOut(PackageBookingBase):
     status: str
     rooms: List[PackageBookingRoomOut] = Field(default_factory=list)
     package: Optional[PackageOut]
+    total_amount: Optional[float] = 0.0
     
     @model_validator(mode='after')
     def set_display_id(self):

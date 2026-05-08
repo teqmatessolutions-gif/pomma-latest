@@ -19,6 +19,7 @@ from app.models.service import AssignedService, Service, ServiceStatus
 from app.models.checkout import Checkout
 import app.schemas.checkout as schemas
 from app.schemas.checkout import BillSummary, BillBreakdown, CheckoutFull, CheckoutSuccess, CheckoutRequest
+from app.utils.billing import calculate_booking_bill
 
 router = APIRouter(prefix="/bill", tags=["checkout"])
 
@@ -560,11 +561,9 @@ def _calculate_bill_for_single_room(db: Session, room_number: str):
                                 and_(Booking.status == 'booked', Booking.check_in <= date.today())
                             ))
                     .order_by(Booking.id.desc()).first())
-    
+
     if booking_link:
         booking = booking_link.booking
-        if booking.status not in ['checked-in', 'checked_in', 'booked']:
-            raise HTTPException(status_code=400, detail=f"Booking is not in a valid state for checkout. Current status: {booking.status}")
     else:
         package_link = (db.query(PackageBookingRoom)
                         .join(PackageBooking)
@@ -578,155 +577,17 @@ def _calculate_bill_for_single_room(db: Session, room_number: str):
         if package_link:
             booking = package_link.package_booking
             is_package = True
-            if booking.status not in ['checked-in', 'checked_in', 'booked']:
-                raise HTTPException(status_code=400, detail=f"Package booking is not in a valid state for checkout. Current status: {booking.status}")
-    
+
     if not booking:
         raise HTTPException(status_code=404, detail=f"No active booking found for room {room_number}.")
-    
-    # 3. Calculate charges for THIS ROOM ONLY
-    charges = BillBreakdown()
-    
-    # Calculate effective checkout date:
-    # If actual checkout date (today) > booking.check_out (late checkout): use today
-    # If actual checkout date (today) < booking.check_out (early checkout): use booking.check_out
-    today = date.today()
-    effective_checkout_date = max(today, booking.check_out)
-    stay_days = max(1, (effective_checkout_date - booking.check_in).days)
-    
-    if is_package:
-        # Check if this is a whole_property package
-        package = booking.package if booking.package else None
-        is_whole_property = False
-        if package:
-            # Check booking_type field
-            booking_type = getattr(package, 'booking_type', None)
-            if booking_type:
-                is_whole_property = booking_type.lower() in ['whole_property', 'whole property']
-            else:
-                # Fallback: if no room_types specified, treat as whole_property (legacy packages)
-                room_types = getattr(package, 'room_types', None)
-                is_whole_property = not room_types or not room_types.strip()
-        
-        package_price = package.price if package else 0
-        
-        if is_whole_property:
-            # For whole_property packages: package price is the total amount per night
-            # Note: For single room checkout, we still use the full package price
-            # as it's a whole property package (all rooms included)
-            charges.package_charges = package_price * stay_days
-            charges.room_charges = 0
-        else:
-            # For room_type packages: package price is per room, per night
-            charges.package_charges = package_price * stay_days
-            charges.room_charges = 0
-    else:
-        charges.package_charges = 0
-        # For regular bookings: calculate room charges as days * room price
-        charges.room_charges = (room.price or 0) * stay_days
-    
-    # Get food and service charges for THIS ROOM ONLY
-    # Include food orders with billing_status "unbilled" or NULL (for orders created before billing_status was added)
-    # Exclude only orders that are explicitly marked as "billed"
-    unbilled_food_order_items = (db.query(FoodOrderItem)
-                                 .join(FoodOrder)
-                                 .options(joinedload(FoodOrderItem.food_item))
-                                 .filter(FoodOrder.room_id == room.id, 
-                                        or_(FoodOrder.billing_status == "unbilled", 
-                                            FoodOrder.billing_status.is_(None)))
-                                 .filter(FoodOrder.status != "cancelled")
-                                 .all())
-    
-    unbilled_services = db.query(AssignedService).options(joinedload(AssignedService.service)).filter(
-        AssignedService.room_id == room.id, 
-        AssignedService.billing_status == "unbilled",
-        AssignedService.status != ServiceStatus.cancelled
-    ).all()
-    
-    charges.food_charges = sum(item.quantity * item.food_item.price for item in unbilled_food_order_items if item.food_item)
-    charges.service_charges = sum(ass.service.charges for ass in unbilled_services)
-    
-    # Aggregate food items
-    food_aggregation = {}
-    for item in unbilled_food_order_items:
-        if not item.food_item: continue
-        name = item.food_item.name
-        if name in food_aggregation:
-            food_aggregation[name]['quantity'] += item.quantity
-            food_aggregation[name]['amount'] += item.quantity * item.food_item.price
-        else:
-            food_aggregation[name] = {
-                "item_name": name,
-                "quantity": item.quantity,
-                "amount": item.quantity * item.food_item.price
-            }
-    charges.food_items = list(food_aggregation.values())
 
-    # Aggregate service items
-    service_aggregation = {}
-    for ass in unbilled_services:
-        if not ass.service: continue
-        name = ass.service.name
-        if name in service_aggregation:
-            service_aggregation[name]['charges'] += ass.service.charges
-            service_aggregation[name]['quantity'] += 1
-        else:
-            service_aggregation[name] = {
-                "service_name": name,
-                "quantity": 1,
-                "charges": ass.service.charges
-            }
-    charges.service_items = list(service_aggregation.values())
-    
-    # Calculate GST
-    # Room charges: 5% GST if <= 7500, 18% GST if > 7500
-    room_charge_amount = charges.room_charges or 0
-    if room_charge_amount > 0:
-        if room_charge_amount <= 7500:
-            charges.room_gst = room_charge_amount * 0.05
-        else:
-            charges.room_gst = room_charge_amount * 0.18
-        charges.room_cgst = charges.room_gst / 2
-        charges.room_sgst = charges.room_gst / 2
-    
-    # Package charges: Same rule as room charges (5% if <= 7500, 18% if > 7500)
-    package_charge_amount = charges.package_charges or 0
-    if package_charge_amount > 0:
-        if package_charge_amount <= 7500:
-            charges.package_gst = package_charge_amount * 0.05
-        else:
-            charges.package_gst = package_charge_amount * 0.18
-        charges.package_cgst = charges.package_gst / 2
-        charges.package_sgst = charges.package_gst / 2
-    
-    # Food charges: 5% GST always
-    food_charge_amount = charges.food_charges or 0
-    if food_charge_amount > 0:
-        charges.food_gst = food_charge_amount * 0.05
-        charges.food_cgst = charges.food_gst / 2
-        charges.food_sgst = charges.food_gst / 2
-
-    # Service charges: 5% GST
-    service_charge_amount = charges.service_charges or 0
-    if service_charge_amount > 0:
-        charges.service_gst = service_charge_amount * 0.05
-        charges.service_cgst = charges.service_gst / 2
-        charges.service_sgst = charges.service_gst / 2
-    
-    # Grand Total GST
-    charges.total_gst = (charges.room_gst or 0) + (charges.food_gst or 0) + (charges.service_gst or 0) + (charges.package_gst or 0)
-    charges.cgst = charges.total_gst / 2
-    charges.sgst = charges.total_gst / 2
-    
-    # Total due (subtotal before GST)
-    charges.total_due = sum([charges.room_charges, charges.food_charges, charges.service_charges, charges.package_charges])
-    
-    number_of_guests = getattr(booking, 'number_of_guests', 1)
+    # Use the unified billing utility for calculation
+    result = calculate_booking_bill(db, booking, room_id=room.id)
     
     return {
-        "booking": booking, "room": room, "charges": charges,
-        "is_package": is_package, "stay_nights": stay_days, "number_of_guests": number_of_guests,
-        "effective_checkout_date": effective_checkout_date
+        "booking": result["booking"], "room": room, "charges": result["charges"],
+        "is_package": result["is_package"], "stay_nights": result["stay_nights"], "number_of_guests": result["number_of_guests"],
+        "effective_checkout_date": result["effective_checkout_date"]
     }
 
 def _calculate_bill_for_entire_booking(db: Session, room_number: str):
@@ -741,13 +602,9 @@ def _calculate_bill_for_entire_booking(db: Session, room_number: str):
 
     # 2. Find the active parent booking (regular or package) linked to this room
     booking, is_package = None, False
-    
-    # Eagerly load the booking relationship to avoid extra queries
-    # Order by descending ID to get the MOST RECENT booking for the room first.
-    # Handle both 'checked-in' and 'checked_in' status formats
     booking_link = (db.query(BookingRoom)
                     .join(Booking)
-                    .options(joinedload(BookingRoom.booking)) # Eager load the booking
+                    .options(joinedload(BookingRoom.booking))
                     .filter(BookingRoom.room_id == initial_room.id, 
                             or_(
                                 Booking.status.in_(['checked-in', 'checked_in']),
@@ -757,13 +614,10 @@ def _calculate_bill_for_entire_booking(db: Session, room_number: str):
 
     if booking_link:
         booking = booking_link.booking
-        # Validate booking status before proceeding
-        if booking.status not in ['checked-in', 'checked_in', 'booked']:
-            raise HTTPException(status_code=400, detail=f"Booking is not in a valid state for checkout. Current status: {booking.status}")
     else:
         package_link = (db.query(PackageBookingRoom)
                         .join(PackageBooking)
-                        .options(joinedload(PackageBookingRoom.package_booking)) # Eager load the booking
+                        .options(joinedload(PackageBookingRoom.package_booking))
                         .filter(PackageBookingRoom.room_id == initial_room.id, 
                                 or_(
                                     PackageBooking.status.in_(['checked-in', 'checked_in']),
@@ -773,173 +627,17 @@ def _calculate_bill_for_entire_booking(db: Session, room_number: str):
         if package_link:
             booking = package_link.package_booking
             is_package = True
-            # Validate booking status before proceeding
-            if booking.status not in ['checked-in', 'checked_in', 'booked']:
-                raise HTTPException(status_code=400, detail=f"Package booking is not in a valid state for checkout. Current status: {booking.status}")
 
     if not booking:
         raise HTTPException(status_code=404, detail=f"No active booking found for room {room_number}.")
 
-    # 3. Get ALL rooms and their IDs associated with the found booking
-    all_rooms = []
-    if is_package:
-        # For package bookings, the relationship is `booking.rooms` -> `PackageBookingRoom` -> `room`
-        all_rooms = [link.room for link in booking.rooms]
-    else:
-        # For regular bookings, the relationship is `booking.booking_rooms` -> `BookingRoom` -> `room`
-        all_rooms = [link.room for link in booking.booking_rooms]
+    # Use the unified billing utility for calculation
+    result = calculate_booking_bill(db, booking)
     
-    room_ids = [room.id for room in all_rooms]
-    
-    if not all_rooms:
-         raise HTTPException(status_code=404, detail="Booking found, but no rooms are linked to it.")
-
-    # 4. Calculate total charges across ALL rooms
-    charges = BillBreakdown()
-    
-    # Calculate effective checkout date:
-    # If actual checkout date (today) > booking.check_out (late checkout): use today
-    # If actual checkout date (today) < booking.check_out (early checkout): use booking.check_out
-    today = date.today()
-    effective_checkout_date = max(today, booking.check_out)
-    stay_days = max(1, (effective_checkout_date - booking.check_in).days)
-
-    if is_package:
-        # Check if this is a whole_property package
-        package = booking.package if booking.package else None
-        is_whole_property = False
-        if package:
-            # Check booking_type field
-            booking_type = getattr(package, 'booking_type', None)
-            if booking_type:
-                is_whole_property = booking_type.lower() in ['whole_property', 'whole property']
-            else:
-                # Fallback: if no room_types specified, treat as whole_property (legacy packages)
-                room_types = getattr(package, 'room_types', None)
-                is_whole_property = not room_types or not room_types.strip()
-        
-        package_price = package.price if package else 0
-        
-        if is_whole_property:
-            # For whole_property packages: package price is the total amount per night
-            charges.package_charges = package_price * stay_days
-            charges.room_charges = 0  # Room charges are included in the package price
-        else:
-            # For room_type packages: package price is per room, per night
-            num_rooms_in_package = len(all_rooms)
-            charges.package_charges = package_price * num_rooms_in_package * stay_days
-            charges.room_charges = 0  # Room charges are included in the package price
-    else:
-        charges.package_charges = 0
-        # For regular bookings: calculate room charges as number of rooms * days * room price
-        charges.room_charges = sum((room.price or 0) * stay_days for room in all_rooms)
-    
-    # Sum up additional food and service charges from all rooms
-    # We need to get the individual items from the orders to display them.
-    # Include food orders with billing_status "unbilled" or NULL (for orders created before billing_status was added)
-    # Exclude only orders that are explicitly marked as "billed"
-    unbilled_food_order_items = (db.query(FoodOrderItem)
-                                 .join(FoodOrder)
-                                 .options(joinedload(FoodOrderItem.food_item))
-                                 .filter(FoodOrder.room_id.in_(room_ids), 
-                                        or_(FoodOrder.billing_status == "unbilled", 
-                                            FoodOrder.billing_status.is_(None)))
-                                 .filter(FoodOrder.status != "cancelled")
-                                 .all())
-
-    unbilled_services = db.query(AssignedService).options(joinedload(AssignedService.service)).filter(
-        AssignedService.room_id.in_(room_ids), 
-        AssignedService.billing_status == "unbilled",
-        AssignedService.status != ServiceStatus.cancelled
-    ).all()
-
-    # Calculate total food charges from the individual items.
-    charges.food_charges = sum(item.quantity * item.food_item.price for item in unbilled_food_order_items if item.food_item)
-    charges.service_charges = sum(ass.service.charges for ass in unbilled_services)
-
-    # Populate detailed item lists for the bill summary
-    # Aggregate food items
-    food_aggregation = {}
-    for item in unbilled_food_order_items:
-        if not item.food_item: continue
-        name = item.food_item.name
-        if name in food_aggregation:
-            food_aggregation[name]['quantity'] += item.quantity
-            food_aggregation[name]['amount'] += item.quantity * item.food_item.price
-        else:
-            food_aggregation[name] = {
-                "item_name": name,
-                "quantity": item.quantity,
-                "amount": item.quantity * item.food_item.price
-            }
-    charges.food_items = list(food_aggregation.values())
-
-    # Aggregate service items
-    service_aggregation = {}
-    for ass in unbilled_services:
-        if not ass.service: continue
-        name = ass.service.name
-        if name in service_aggregation:
-            service_aggregation[name]['charges'] += ass.service.charges
-            service_aggregation[name]['quantity'] += 1
-        else:
-            service_aggregation[name] = {
-                "service_name": name,
-                "quantity": 1,
-                "charges": ass.service.charges
-            }
-    charges.service_items = list(service_aggregation.values())
-
-    # Calculate GST
-    # Room charges: 5% GST if <= 7500, 18% GST if > 7500
-    room_charge_amount = charges.room_charges or 0
-    if room_charge_amount > 0:
-        if room_charge_amount <= 7500:
-            charges.room_gst = room_charge_amount * 0.05
-        else:
-            charges.room_gst = room_charge_amount * 0.18
-        charges.room_cgst = charges.room_gst / 2
-        charges.room_sgst = charges.room_gst / 2
-    
-    # Package charges: Same rule as room charges (5% if <= 7500, 18% if > 7500)
-    package_charge_amount = charges.package_charges or 0
-    if package_charge_amount > 0:
-        if package_charge_amount <= 7500:
-            charges.package_gst = package_charge_amount * 0.05
-        else:
-            charges.package_gst = package_charge_amount * 0.18
-        charges.package_cgst = charges.package_gst / 2
-        charges.package_sgst = charges.package_gst / 2
-    
-    # Food charges: 5% GST always
-    food_charge_amount = charges.food_charges or 0
-    if food_charge_amount > 0:
-        charges.food_gst = food_charge_amount * 0.05
-        charges.food_cgst = charges.food_gst / 2
-        charges.food_sgst = charges.food_gst / 2
-
-    # Service charges: 5% GST
-    service_charge_amount = charges.service_charges or 0
-    if service_charge_amount > 0:
-        charges.service_gst = service_charge_amount * 0.05
-        charges.service_cgst = charges.service_gst / 2
-        charges.service_sgst = charges.service_gst / 2
-    
-    # Grand Total GST
-    charges.total_gst = (charges.room_gst or 0) + (charges.food_gst or 0) + (charges.service_gst or 0) + (charges.package_gst or 0)
-    charges.cgst = charges.total_gst / 2
-    charges.sgst = charges.total_gst / 2
-
-    # Total due (subtotal before GST)
-    charges.total_due = sum([charges.room_charges, charges.food_charges, charges.service_charges, charges.package_charges])
-
-    # Assume number_of_guests is a field on the booking model. Default to 1 if not present.
-    number_of_guests = getattr(booking, 'number_of_guests', 1)
-
     return {
-        "booking": booking, "all_rooms": all_rooms, "charges": charges, 
-        "is_package": is_package, "stay_nights": stay_days, "number_of_guests": number_of_guests,
-        "effective_checkout_date": effective_checkout_date
+        "booking": result["booking"], "all_rooms": result["all_rooms"], "charges": result["charges"], 
+        "is_package": result["is_package"], "stay_nights": result["stay_nights"], "number_of_guests": result["number_of_guests"],
+        "effective_checkout_date": result["effective_checkout_date"]
     }
 
 
