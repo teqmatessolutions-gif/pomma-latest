@@ -29,6 +29,7 @@ from app.api import (
     role,
     service,
     attendance,
+    aiosell,
 )
 from app.database import engine, Base
 
@@ -165,6 +166,15 @@ app.include_router(reports.router, prefix="/api", tags=["Reports"])
 app.include_router(role.router, prefix="/api", tags=["Role"])
 app.include_router(service.router, prefix="/api", tags=["Service"])
 app.include_router(attendance.router, prefix="/api", tags=["Attendance"])
+app.include_router(aiosell.router, prefix="/api", tags=["Aiosell"])
+
+
+# Health check endpoint (matching both root and /api)
+@app.get("/health")
+@app.get("/api/health")
+async def health_check():
+    """Health check endpoint for monitoring"""
+    return {"status": "healthy", "message": "Resort Management System is running"}
 
 
 # Root route - Landing Page
@@ -241,18 +251,17 @@ async def user_page(request: Request, path: str = ""):
     """)
 
 
-# Health check endpoint
-@app.get("/health")
-async def health_check():
-    """Health check endpoint for monitoring"""
-    return {"status": "healthy", "message": "Resort Management System is running"}
-
-
 # API documentation redirect
 @app.get("/api-docs")
 async def api_docs():
     """Redirect to API documentation"""
     return {"message": "API documentation available at /docs"}
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
 
 
 if __name__ == "__main__":
