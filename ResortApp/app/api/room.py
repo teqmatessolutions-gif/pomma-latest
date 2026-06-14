@@ -179,6 +179,7 @@ def create_room(
     dining: Annotated[Any, Form()] = False,
     breakfast: Annotated[Any, Form()] = False,
     aiosell_room_code: Annotated[Any, Form()] = None,
+    online_inventory: Annotated[Any, Form()] = 0,
     min_stay: Annotated[Any, Form()] = 1,
     cta: Annotated[Any, Form()] = False,
     ctd: Annotated[Any, Form()] = False,
@@ -206,7 +207,8 @@ def create_room(
             garden=str_to_bool(garden),
             dining=str_to_bool(dining),
             breakfast=str_to_bool(breakfast),
-            aiosell_room_code=aiosell_room_code,
+            channel_manager_id=aiosell_room_code,
+            online_inventory=int(online_inventory) if online_inventory else 0,
             min_stay=int(min_stay) if min_stay else 1,
             cta=str_to_bool(cta),
             ctd=str_to_bool(ctd)
@@ -225,7 +227,8 @@ def create_room(
                         room_id=db_room.id,
                         plan_name=m.get("plan_name"),
                         occupancy=m.get("occupancy", 2),
-                        aiosell_id=m.get("aiosell_id"),
+                        channel_manager_id=m.get("channel_manager_id") if "channel_manager_id" in m else m.get("aiosell_id"),
+                        price_offset=float(m.get("price_offset", 0)),
                         offset_percentage=float(m.get("offset_percentage", 0)),
                         fixed_offset=float(m.get("fixed_offset", 0))
                     )
@@ -426,6 +429,7 @@ def update_room(
     dining: Annotated[Any, Form()] = None,
     breakfast: Annotated[Any, Form()] = None,
     aiosell_room_code: Annotated[Any, Form()] = None,
+    online_inventory: Annotated[Any, Form()] = None,
     min_stay: Annotated[Any, Form()] = None,
     cta: Annotated[Any, Form()] = None,
     ctd: Annotated[Any, Form()] = None,
@@ -447,7 +451,8 @@ def update_room(
         if priority is not None: db_room.priority = int(priority)
         
         # Aiosell Fields
-        if aiosell_room_code is not None: db_room.aiosell_room_code = aiosell_room_code
+        if aiosell_room_code is not None: db_room.channel_manager_id = aiosell_room_code
+        if online_inventory is not None: db_room.online_inventory = int(online_inventory)
         if min_stay is not None: db_room.min_stay = int(min_stay)
         if cta is not None: db_room.cta = str_to_bool(cta)
         if ctd is not None: db_room.ctd = str_to_bool(ctd)
@@ -480,7 +485,8 @@ def update_room(
                         room_id=db_room.id,
                         plan_name=m.get("plan_name"),
                         occupancy=m.get("occupancy", 2),
-                        aiosell_id=m.get("aiosell_id"),
+                        channel_manager_id=m.get("channel_manager_id") if "channel_manager_id" in m else m.get("aiosell_id"),
+                        price_offset=float(m.get("price_offset", 0)),
                         offset_percentage=float(m.get("offset_percentage", 0)),
                         fixed_offset=float(m.get("fixed_offset", 0))
                     )

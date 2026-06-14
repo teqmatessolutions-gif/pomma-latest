@@ -76,6 +76,8 @@ class BookingOut(BaseModel):
     user: Optional[UserOut] = None
     is_package: bool = False
     total_amount: Optional[float] = 0.0
+    source: Optional[str] = None
+    external_id: Optional[str] = None
     # ----------------------------------------------------
     rooms: List[RoomOut] = []
     

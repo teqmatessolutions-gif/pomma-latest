@@ -37,6 +37,13 @@ async def create_package_api(
     status: Annotated[Any, Form()] = "Available",
     priority: Annotated[Any, Form()] = None,
     images: Annotated[Any, File()] = [],
+    channel_manager_id: Annotated[Any, Form()] = None,
+    aiosell_room_code: Annotated[Any, Form()] = None,
+    online_inventory: Annotated[Any, Form()] = 0,
+    min_stay: Annotated[Any, Form()] = 1,
+    cta: Annotated[Any, Form()] = False,
+    ctd: Annotated[Any, Form()] = False,
+    rate_plan_mappings: Annotated[Any, Form()] = None, # JSON string
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
@@ -44,22 +51,22 @@ async def create_package_api(
         # Validate booking_type
         if booking_type not in ["whole_property", "room_type"]:
             raise HTTPException(status_code=400, detail="booking_type must be either 'whole_property' or 'room_type'")
-        
+
         # If booking_type is room_type, room_types must be provided
         if booking_type == "room_type" and not room_types:
             raise HTTPException(status_code=400, detail="room_types is required when booking_type is 'room_type'")
-        
+
         # If booking_type is whole_property, room_types should be empty
         if booking_type == "whole_property":
             room_types = None
-        
+
         image_urls = []
         try:
             if images is not None:
                 # Ensure images is a list
                 if not isinstance(images, list):
                     images = [images]
-            
+
                 for img in images:
                     if not img or not getattr(img, 'filename', None):
                         continue
@@ -67,7 +74,7 @@ async def create_package_api(
                     original_filename = img.filename if img.filename else "image.jpg"
                     filename = f"pkg_{uuid.uuid4().hex}_{original_filename}"
                     file_path = os.path.join(UPLOAD_DIR, filename)
-                    
+
                     # Write to disk
                     try:
                         contents = await img.read()
@@ -76,7 +83,7 @@ async def create_package_api(
                     except Exception as file_err:
                         print(f"Error saving file {filename}: {file_err}")
                         continue
-                    
+
                     # Store with leading slash
                     normalized_path = file_path.replace('\\', '/')
                     image_urls.append(f"/{normalized_path}")
@@ -105,7 +112,50 @@ async def create_package_api(
             # Convert form-data strings to correct types
             price_val = float(price) if price is not None else 0.0
             priority_val = int(priority) if priority is not None else None
-            return crud_package.create_package(db, title, description, price_val, image_urls, booking_type, room_types, status, priority_val)
+            online_inventory_val = int(online_inventory) if online_inventory is not None else 0
+            min_stay_val = int(min_stay) if min_stay is not None else 1
+
+            # Use aiosell_room_code as channel_manager_id if provided
+            cm_id = aiosell_room_code or channel_manager_id
+
+            from app.api.room import str_to_bool
+            pkg = crud_package.create_package(
+                db, title, description, price_val, image_urls, booking_type, room_types, status, priority_val,
+                cm_id, online_inventory_val, min_stay_val, str_to_bool(cta), str_to_bool(ctd)
+            )
+
+            # Handle Rate Plan Mappings
+            if rate_plan_mappings:
+                import json
+                from app.models.room import RatePlanMapping
+                try:
+                    mappings = json.loads(rate_plan_mappings)
+                    for m in mappings:
+                        db_mapping = RatePlanMapping(
+                            package_id=pkg.id,
+                            plan_name=m.get("plan_name"),
+                            occupancy=m.get("occupancy", 2),
+                            channel_manager_id=m.get("channel_manager_id") if "channel_manager_id" in m else m.get("aiosell_id"),
+                            price_offset=float(m.get("price_offset", 0)),
+                            offset_percentage=float(m.get("offset_percentage", 0)),
+                            fixed_offset=float(m.get("fixed_offset", 0))
+                        )
+                        db.add(db_mapping)
+                    db.commit()
+                except Exception as json_err:
+                    print(f"Error parsing rate_plan_mappings: {json_err}")
+
+            db.commit()
+            db.refresh(pkg)
+            
+            try:
+                from app.database import SessionLocal
+                from app.utils.aiosell_sync import trigger_aiosell_sync
+                trigger_aiosell_sync(SessionLocal, "all")
+            except Exception as sync_err:
+                print(f"Warning: Failed to trigger Aiosell sync: {sync_err}")
+
+            return pkg
         except Exception as db_error:
             import traceback
             error_detail = f"Failed to create package in database: {str(db_error)}\n{traceback.format_exc()}"
@@ -146,26 +196,34 @@ async def update_package_api(
     priority: Annotated[Any, Form()] = None,
     keep_image_ids: Annotated[Any, Form()] = "",
     images: Annotated[Any, File()] = [],
+    channel_manager_id: Annotated[Any, Form()] = None,
+    aiosell_room_code: Annotated[Any, Form()] = None,
+    online_inventory: Annotated[Any, Form()] = None,
+    min_stay: Annotated[Any, Form()] = None,
+    cta: Annotated[Any, Form()] = None,
+    ctd: Annotated[Any, Form()] = None,
+    rate_plan_mappings: Annotated[Any, Form()] = None, # JSON string
     db: Annotated[Any, Depends(get_db)] = None,
     current_user: Annotated[Any, Depends(get_current_user)] = None
 ):
     # Validate booking_type
     if booking_type not in ["whole_property", "room_type"]:
         raise HTTPException(status_code=400, detail="booking_type must be either 'whole_property' or 'room_type'")
-    
+
     # If booking_type is room_type, room_types must be provided
     if booking_type == "room_type" and not room_types:
         raise HTTPException(status_code=400, detail="room_types is required when booking_type is 'room_type'")
-    
+
     # If booking_type is whole_property, room_types should be empty
     if booking_type == "whole_property":
         room_types = None
-    
+
     # Get existing package
     package = db.query(Package).filter(Package.id == package_id).first()
     if not package:
         raise HTTPException(status_code=404, detail="Package not found")
-    
+
+    from app.api.room import str_to_bool
     # Update package fields (convert form-data strings to correct types)
     package.title = title
     package.description = description
@@ -174,6 +232,50 @@ async def update_package_api(
     package.room_types = room_types
     package.status = status
     package.priority = int(priority) if priority is not None else None
+
+    # Update Channel Manager Fields
+    if aiosell_room_code is not None: package.channel_manager_id = aiosell_room_code
+    elif channel_manager_id is not None: package.channel_manager_id = channel_manager_id
+
+    if online_inventory is not None: package.online_inventory = int(online_inventory)
+    if min_stay is not None: package.min_stay = int(min_stay)
+    if cta is not None: package.cta = str_to_bool(cta)
+    if ctd is not None: package.ctd = str_to_bool(ctd)
+
+    # Handle Rate Plan Mappings
+    if rate_plan_mappings:
+        import json
+        from app.models.room import RatePlanMapping
+        try:
+            # Remove existing mappings
+            db.query(RatePlanMapping).filter(RatePlanMapping.package_id == package_id).delete()
+
+            mappings = json.loads(rate_plan_mappings)
+            for m in mappings:
+                db_mapping = RatePlanMapping(
+                    package_id=package.id,
+                    plan_name=m.get("plan_name"),
+                    occupancy=m.get("occupancy", 2),
+                    channel_manager_id=m.get("channel_manager_id") if "channel_manager_id" in m else m.get("aiosell_id"),
+                    price_offset=float(m.get("price_offset", 0)),
+                    offset_percentage=float(m.get("offset_percentage", 0)),
+                    fixed_offset=float(m.get("fixed_offset", 0))
+                )
+                db.add(db_mapping)
+        except Exception as json_err:
+            print(f"Error parsing rate_plan_mappings: {json_err}")
+    
+    # Commit changes to ensure DB is up to date before sync
+    db.commit()
+    db.refresh(package)
+    
+    # Trigger Aiosell Sync
+    try:
+        from app.database import SessionLocal
+        from app.utils.aiosell_sync import trigger_aiosell_sync
+        trigger_aiosell_sync(SessionLocal, "all")
+    except Exception as sync_err:
+        print(f"Warning: Failed to trigger Aiosell sync: {sync_err}")
     
     # Add new images if provided
     if images is not None:
@@ -352,6 +454,14 @@ def book_package_api(
             # Log error but don't fail the booking
             print(f"Failed to queue confirmation email: {str(e)}")
     
+    # Trigger Aiosell Inventory Sync
+    try:
+        from app.database import SessionLocal
+        from app.utils.aiosell_sync import trigger_aiosell_sync
+        trigger_aiosell_sync(SessionLocal, "inventory")
+    except Exception as sync_err:
+        print(f"Warning: Failed to trigger Aiosell sync on booking: {sync_err}")
+
     return result
 
 @router.post("/book/guest", response_model=PackageBookingOut, summary="Book a package as a guest")
@@ -450,6 +560,14 @@ def book_package_guest_api(
                     # Log error but don't fail the booking
                     print(f"Failed to queue confirmation email: {str(e)}")
         
+        # Trigger Aiosell Inventory Sync
+        try:
+            from app.database import SessionLocal
+            from app.utils.aiosell_sync import trigger_aiosell_sync
+            trigger_aiosell_sync(SessionLocal, "inventory")
+        except Exception as sync_err:
+            print(f"Warning: Failed to trigger Aiosell sync on guest booking: {sync_err}")
+
         return result
         
     except HTTPException:
@@ -614,6 +732,15 @@ def cancel_package_booking(booking_id: Union[str, int], db: Annotated[Any, Depen
     booking.status = "cancelled"
     db.commit()
     db.refresh(booking)
+
+    # Trigger Aiosell Sync to release inventory
+    try:
+        from app.database import SessionLocal
+        from app.utils.aiosell_sync import trigger_aiosell_sync
+        trigger_aiosell_sync(SessionLocal, "inventory")
+    except Exception as sync_err:
+        print(f"Warning: Failed to trigger Aiosell sync on cancellation: {sync_err}")
+
     return booking
 
 @router.put("/booking/{booking_id}/extend", response_model=PackageBookingOut)

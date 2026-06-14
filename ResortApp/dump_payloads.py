@@ -32,7 +32,7 @@ def print_payloads():
     }
     
     # 2. Rates Payload
-    rooms = db.query(Room).filter(Room.aiosell_room_code != None).all()
+    rooms = db.query(Room).filter(Room.channel_manager_id != None).all()
     end_date = today + timedelta(days=29)
     
     rate_updates = []
@@ -45,8 +45,8 @@ def print_payloads():
                 price += mapping.fixed_offset
                 
             rate_updates.append({
-                "roomCode": room.aiosell_room_code,
-                "rateplanCode": mapping.aiosell_id,
+                "roomCode": room.channel_manager_id,
+                "rateplanCode": mapping.channel_manager_id,
                 "rate": round(price, 2)
             })
             
@@ -65,7 +65,7 @@ def print_payloads():
     restriction_updates = []
     for room in rooms:
         restriction_updates.append({
-            "roomCode": room.aiosell_room_code,
+            "roomCode": room.channel_manager_id,
             "minStay": room.min_stay or 1,
             "cta": room.cta or False,
             "ctd": room.ctd or False

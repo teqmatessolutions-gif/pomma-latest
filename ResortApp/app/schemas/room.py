@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 from typing import List
 
 class RoomImage(BaseModel):
@@ -11,7 +11,9 @@ class RoomImage(BaseModel):
 class RatePlanMappingBase(BaseModel):
     plan_name: str
     occupancy: int = 2
-    aiosell_id: str
+    channel_manager_id: str
+    aiosell_id: str | None = None # Alias for frontend
+    price_offset: float = 0.0
     offset_percentage: float = 0.0
     fixed_offset: float = 0.0
 
@@ -21,6 +23,11 @@ class RatePlanMappingCreate(RatePlanMappingBase):
 class RatePlanMappingOut(RatePlanMappingBase):
     id: int
     
+    @model_validator(mode='after')
+    def set_aiosell_id(self) -> 'RatePlanMappingOut':
+        self.aiosell_id = self.channel_manager_id
+        return self
+
     model_config = {
         "from_attributes": True
     }
@@ -46,7 +53,9 @@ class RoomBase(BaseModel):
     breakfast: bool = False
     
     # Aiosell Fields
-    aiosell_room_code: str | None = None
+    channel_manager_id: str | None = None
+    aiosell_room_code: str | None = None # Alias for frontend
+    online_inventory: int | None = None
     min_stay: int = 1
     cta: bool = False
     ctd: bool = False
@@ -61,6 +70,11 @@ class RoomOut(RoomBase):
     image_url: str | None = None
     images: List[RoomImage] = []
     rate_plan_mappings: List[RatePlanMappingOut] = []
+
+    @model_validator(mode='after')
+    def set_aiosell_room_code(self) -> 'RoomOut':
+        self.aiosell_room_code = self.channel_manager_id
+        return self
 
     model_config = {
         "from_attributes": True  # enables from_orm in Pydantic v2

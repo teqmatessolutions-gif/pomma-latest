@@ -3,6 +3,8 @@ from datetime import date, datetime
 from typing import List, Optional
 
 
+from app.schemas.room import RatePlanMappingOut
+
 class PackageImageOut(BaseModel):
     id: int
     image_url: str
@@ -20,8 +22,23 @@ class PackageOut(BaseModel):
     room_types: Optional[str] = None  # Comma-separated list of room types
     status: Optional[str] = "Available"
     priority: Optional[int] = None  # Display order priority (1 = first, 2 = second, etc. NULL = last)
+    
+    # Aiosell Fields
+    channel_manager_id: str | None = None
+    aiosell_room_code: str | None = None # Alias for frontend
+    online_inventory: int | None = None
+    min_stay: int = 1
+    cta: bool = False
+    ctd: bool = False
+
     images: List[PackageImageOut] = Field(default_factory=list)
+    rate_plan_mappings: List[RatePlanMappingOut] = Field(default_factory=list)
     created_at: Optional[datetime] = None
+
+    @model_validator(mode='after')
+    def set_aiosell_room_code(self) -> 'PackageOut':
+        self.aiosell_room_code = self.channel_manager_id
+        return self
 
     class Config:
         from_attributes = True

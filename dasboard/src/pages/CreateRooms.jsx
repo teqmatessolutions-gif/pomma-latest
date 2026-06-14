@@ -318,6 +318,7 @@ const Rooms = () => {
     breakfast: false,
     images: [], // Changed from image: null to images: []
     aiosell_room_code: "",
+    online_inventory: 0,
     min_stay: 1,
     cta: false,
     ctd: false,
@@ -506,7 +507,7 @@ const Rooms = () => {
       ...prev,
       rate_plan_mappings: [
         ...prev.rate_plan_mappings,
-        { plan_name: "", occupancy: 2, aiosell_id: "", offset_percentage: 0, fixed_offset: 0 }
+        { plan_name: "", occupancy: 2, channel_manager_id: "", offset_percentage: 0, fixed_offset: 0, price_offset: 0 }
       ]
     }));
   };
@@ -539,7 +540,6 @@ const Rooms = () => {
     formData.append("status", form.status);
     formData.append("adults", form.adults);
     formData.append("children", form.children);
-    formData.append("children", form.children);
 
     // Append multiple images
     if (form.images && form.images.length > 0) {
@@ -564,6 +564,7 @@ const Rooms = () => {
 
     // Aiosell Fields
     formData.append("aiosell_room_code", form.aiosell_room_code);
+    formData.append("online_inventory", form.online_inventory);
     formData.append("min_stay", form.min_stay);
     formData.append("cta", form.cta);
     formData.append("ctd", form.ctd);
@@ -607,6 +608,7 @@ const Rooms = () => {
         dining: false,
         breakfast: false,
         aiosell_room_code: "",
+        online_inventory: 0,
         min_stay: 1,
         cta: false,
         ctd: false,
@@ -648,7 +650,8 @@ const Rooms = () => {
       garden: room.garden || false,
       dining: room.dining || false,
       breakfast: room.breakfast || false,
-      aiosell_room_code: room.aiosell_room_code || "",
+      aiosell_room_code: room.channel_manager_id || "",
+      online_inventory: room.online_inventory || 0,
       min_stay: room.min_stay || 1,
       cta: room.cta || false,
       ctd: room.ctd || false,
@@ -774,6 +777,7 @@ const Rooms = () => {
         isOpen={isModalOpen}
         title={isEditing ? "Edit Room" : "Add New Room"}
         onClose={() => setIsModalOpen(false)}
+        maxWidth="max-w-5xl"
       >
         <form
           onSubmit={handleSubmit}
@@ -1044,17 +1048,28 @@ const Rooms = () => {
             {/* Aiosell Configuration Section */}
             <div className="md:col-span-2 lg:col-span-3 border-t pt-6 mt-2">
               <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <i className="fas fa-sync text-indigo-600"></i> Aiosell Channel Manager Mapping
+                <i className="fas fa-sync text-indigo-600"></i> Channel Manager Mapping
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                 <div>
-                  <label className="block text-xs font-bold text-indigo-600 uppercase mb-2">Channel Manager Code (Aiosell)</label>
+                  <label className="block text-xs font-bold text-indigo-600 uppercase mb-2">Room Type Code</label>
                   <input
                     type="text"
                     name="aiosell_room_code"
                     placeholder="e.g. DELUXE, PREMIUM"
                     value={form.aiosell_room_code}
+                    onChange={handleChange}
+                    className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-indigo-600 uppercase mb-2">Online Inventory</label>
+                  <input
+                    type="number"
+                    name="online_inventory"
+                    placeholder="e.g. 5"
+                    value={form.online_inventory}
                     onChange={handleChange}
                     className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all font-medium"
                   />
@@ -1072,7 +1087,7 @@ const Rooms = () => {
               </div>
 
               <div className="mb-4 flex justify-between items-center">
-                <label className="block text-xs font-bold text-indigo-600 uppercase">Aiosell Rate Plan Mapping</label>
+                <label className="block text-xs font-bold text-indigo-600 uppercase">Rate Plan Mapping</label>
                 <button
                   type="button"
                   onClick={addRatePlanMapping}
@@ -1088,9 +1103,9 @@ const Rooms = () => {
                     <tr>
                       <th className="px-4 py-3">Plan Name</th>
                       <th className="px-4 py-3 w-20 text-center">Occ.</th>
-                      <th className="px-4 py-3">Aiosell ID</th>
+                      <th className="px-4 py-3">Mapping ID</th>
+                      <th className="px-4 py-3 w-28">Price Offset (₹)</th>
                       <th className="px-4 py-3 w-28">Offset (%)</th>
-                      <th className="px-4 py-3 w-28">Fixed (₹)</th>
                       <th className="px-4 py-3 w-12"></th>
                     </tr>
                   </thead>
@@ -1118,10 +1133,21 @@ const Rooms = () => {
                           <input
                             type="text"
                             placeholder="e.g. room-5-cp"
-                            value={mapping.aiosell_id}
-                            onChange={(e) => updateRatePlanMapping(idx, "aiosell_id", e.target.value)}
+                            value={mapping.channel_manager_id}
+                            onChange={(e) => updateRatePlanMapping(idx, "channel_manager_id", e.target.value)}
                             className="w-full p-2 bg-transparent border-b border-transparent focus:border-indigo-500 outline-none transition-all"
                           />
+                        </td>
+                        <td className="px-4 py-2">
+                          <div className="flex items-center gap-1">
+                            <span className="text-gray-400 text-xs">₹</span>
+                            <input
+                              type="number"
+                              value={mapping.price_offset}
+                              onChange={(e) => updateRatePlanMapping(idx, "price_offset", e.target.value)}
+                              className="w-full p-2 bg-transparent border-b border-transparent focus:border-indigo-500 outline-none transition-all font-bold text-green-600"
+                            />
+                          </div>
                         </td>
                         <td className="px-4 py-2">
                           <div className="flex items-center gap-1">
@@ -1135,21 +1161,11 @@ const Rooms = () => {
                           </div>
                         </td>
                         <td className="px-4 py-2">
-                          <div className="flex items-center gap-1">
-                            <span className="text-gray-400 text-xs">₹</span>
-                            <input
-                              type="number"
-                              value={mapping.fixed_offset}
-                              onChange={(e) => updateRatePlanMapping(idx, "fixed_offset", e.target.value)}
-                              className="w-full p-2 bg-transparent border-b border-transparent focus:border-indigo-500 outline-none transition-all font-bold text-green-600"
-                            />
-                          </div>
-                        </td>
-                        <td className="px-4 py-2">
                           <button
                             type="button"
                             onClick={() => removeRatePlanMapping(idx)}
-                            className="text-gray-300 hover:text-red-500 transition-colors p-2"
+                            className="text-red-500 hover:text-red-700 transition-colors p-2"
+                            title="Remove Mapping"
                           >
                             <i className="fas fa-trash-alt"></i>
                           </button>

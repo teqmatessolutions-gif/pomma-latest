@@ -1031,6 +1031,15 @@ def cancel_booking(booking_id: Union[str, int], db: Annotated[Any, Depends(get_d
     booking.status = "cancelled"
     db.commit()
     db.refresh(booking)
+
+    # Trigger Aiosell Sync to release inventory
+    try:
+        from app.database import SessionLocal
+        from app.utils.aiosell_sync import trigger_aiosell_sync
+        trigger_aiosell_sync(SessionLocal, "inventory")
+    except Exception as sync_err:
+        print(f"Warning: Failed to trigger Aiosell sync on cancellation: {sync_err}")
+
     return booking
     
 @router.put("/{booking_id}/extend", response_model=BookingOut)

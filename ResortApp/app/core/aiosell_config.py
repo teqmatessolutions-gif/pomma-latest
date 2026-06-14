@@ -6,11 +6,26 @@ from pathlib import Path
 env_path = Path(__file__).parent.parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
-AIOSELL_USERNAME = os.getenv("AIOSELL_USERNAME", "aiosell")
-AIOSELL_PASSWORD = os.getenv("AIOSELL_PASSWORD", "AIOsell@123")
-AIOSELL_HOTEL_CODE = os.getenv("AIOSELL_HOTEL_CODE", "SANDBOX-PMS")
-AIOSELL_BASE_URL = os.getenv("AIOSELL_BASE_URL", "https://live.aiosell.com/api/v2/cm/update/sample-pms")
+# Phase 1: Environment Configuration
+AIOSELL_ACTIVE = os.getenv("AIOSELL_ACTIVE", "false").lower() == "true"
+AIOSELL_HOTEL_CODE = os.getenv("AIOSELL_HOTEL_CODE", "81479296f2")
+AIOSELL_PARTNER_ID = os.getenv("AIOSELL_PARTNER_ID")
 
-# Rate Push Endpoint: {BASE_URL}/rates
-# Inventory Push Endpoint: {BASE_URL}/inventory
-# Restrictions Push Endpoint: {BASE_URL}/restrictions
+# Global Outbound Credentials
+AIOSELL_USERNAME = os.getenv("AIOSELL_USERNAME")
+AIOSELL_PASSWORD = os.getenv("AIOSELL_PASSWORD")
+
+# Webhook Inbound Credentials
+WEBHOOK_USER = os.getenv("WEBHOOK_USER", "admin@teqmates.com")
+WEBHOOK_PASS = os.getenv("WEBHOOK_PASS", "teqmates@5412!")
+
+# Base URL Construction
+# Inventory Endpoint: .../v2/cm/update/{PARTNER_ID}
+# Rates Endpoint: .../v2/cm/update-rates/{PARTNER_ID}
+AIOSELL_BASE_URL = os.getenv("AIOSELL_BASE_URL", "https://live.aiosell.com/api/v2/cm")
+
+def get_inventory_url():
+    return f"{AIOSELL_BASE_URL}/update/{AIOSELL_PARTNER_ID}"
+
+def get_rates_url():
+    return f"{AIOSELL_BASE_URL}/update-rates/{AIOSELL_PARTNER_ID}"

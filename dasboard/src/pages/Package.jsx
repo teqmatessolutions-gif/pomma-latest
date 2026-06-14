@@ -163,7 +163,13 @@ const Packages = () => {
     selected_room_types: [],  // Array of selected room types
     status: "Available",
     priority: "",  // Display order priority
-    images: []
+    images: [],
+    aiosell_room_code: "",
+    online_inventory: 0,
+    min_stay: 1,
+    cta: false,
+    ctd: false,
+    rate_plan_mappings: [],
   });
   const [editForm, setEditForm] = useState({
     title: "",
@@ -173,7 +179,13 @@ const Packages = () => {
     selected_room_types: [],
     status: "Available",
     priority: "",  // Display order priority
-    images: []
+    images: [],
+    aiosell_room_code: "",
+    online_inventory: 0,
+    min_stay: 1,
+    cta: false,
+    ctd: false,
+    rate_plan_mappings: [],
   });
   const [editExistingImages, setEditExistingImages] = useState([]); // Track existing images from DB
   const [editNewImagePreviews, setEditNewImagePreviews] = useState([]); // Track previews for NEWLY added files
@@ -379,6 +391,14 @@ const Packages = () => {
         data.append("room_types", createForm.selected_room_types.join(","));
       }
 
+      // Aiosell Fields
+      data.append("aiosell_room_code", createForm.aiosell_room_code);
+      data.append("online_inventory", createForm.online_inventory);
+      data.append("min_stay", createForm.min_stay);
+      data.append("cta", createForm.cta);
+      data.append("ctd", createForm.ctd);
+      data.append("rate_plan_mappings", JSON.stringify(createForm.rate_plan_mappings));
+
       selectedFiles.forEach(img => data.append("images", img));
       // Don't set Content-Type manually - axios will set it automatically with the correct boundary
       // This ensures the Authorization header from the interceptor is preserved
@@ -392,7 +412,13 @@ const Packages = () => {
         selected_room_types: [],
         status: "Available",
         priority: "",
-        images: []
+        images: [],
+        aiosell_room_code: "",
+        online_inventory: 0,
+        min_stay: 1,
+        cta: false,
+        ctd: false,
+        rate_plan_mappings: [],
       });
       setImagePreviews([]);
       setSelectedFiles([]);
@@ -417,11 +443,45 @@ const Packages = () => {
       selected_room_types: pkg.room_types ? pkg.room_types.split(',').map(t => t.trim()) : [],
       status: pkg.status || "Available",
       priority: pkg.priority || "",
-      images: []
+      images: [],
+      aiosell_room_code: pkg.channel_manager_id || "",
+      online_inventory: pkg.online_inventory || 0,
+      min_stay: pkg.min_stay || 1,
+      cta: pkg.cta || false,
+      ctd: pkg.ctd || false,
+      rate_plan_mappings: pkg.rate_plan_mappings || [],
     });
     setEditExistingImages(pkg.images || []);
     setEditNewImagePreviews([]);
     setEditSelectedFiles([]);
+  };
+
+  const addRatePlanMapping = (isEdit = false) => {
+    const setFn = isEdit ? setEditForm : setCreateForm;
+    setFn(prev => ({
+      ...prev,
+      rate_plan_mappings: [
+        ...prev.rate_plan_mappings,
+        { plan_name: "", occupancy: 2, channel_manager_id: "", offset_percentage: 0, fixed_offset: 0, price_offset: 0 }
+      ]
+    }));
+  };
+
+  const updateRatePlanMapping = (idx, field, value, isEdit = false) => {
+    const setFn = isEdit ? setEditForm : setCreateForm;
+    setFn(prev => {
+      const newMappings = [...prev.rate_plan_mappings];
+      newMappings[idx] = { ...newMappings[idx], [field]: value };
+      return { ...prev, rate_plan_mappings: newMappings };
+    });
+  };
+
+  const removeRatePlanMapping = (idx, isEdit = false) => {
+    const setFn = isEdit ? setEditForm : setCreateForm;
+    setFn(prev => ({
+      ...prev,
+      rate_plan_mappings: prev.rate_plan_mappings.filter((_, i) => i !== idx)
+    }));
   };
 
   const handleEditChange = e => {
@@ -488,6 +548,14 @@ const Packages = () => {
         data.append("room_types", editForm.selected_room_types.join(","));
       }
 
+      // Aiosell Fields
+      data.append("aiosell_room_code", editForm.aiosell_room_code);
+      data.append("online_inventory", editForm.online_inventory);
+      data.append("min_stay", editForm.min_stay);
+      data.append("cta", editForm.cta);
+      data.append("ctd", editForm.ctd);
+      data.append("rate_plan_mappings", JSON.stringify(editForm.rate_plan_mappings));
+
       editSelectedFiles.forEach(img => data.append("images", img));
 
       // Send list of IDs to keep
@@ -511,12 +579,16 @@ const Packages = () => {
         selected_room_types: [],
         status: "Available",
         priority: "",
-        images: []
+        images: [],
+        aiosell_room_code: "",
+        online_inventory: 0,
+        min_stay: 1,
+        cta: false,
+        ctd: false,
+        rate_plan_mappings: [],
       });
       setEditExistingImages([]);
       setEditNewImagePreviews([]);
-      setEditSelectedFiles([]);
-      fetchData();
       setEditSelectedFiles([]);
       fetchData();
     } catch (err) {
@@ -1035,6 +1107,167 @@ const Packages = () => {
               </div>
             )}
 
+            {/* Channel Manager Mapping Section */}
+            <div className="border-t pt-6 mt-2">
+              <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <i className="fas fa-sync text-indigo-600"></i> Channel Manager Mapping
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                <div>
+                  <label className="block text-xs font-bold text-indigo-600 uppercase mb-2">Room Type Code</label>
+                  <input
+                    type="text"
+                    name="aiosell_room_code"
+                    placeholder="e.g. DELUXE, PREMIUM"
+                    value={editForm.aiosell_room_code}
+                    onChange={handleEditChange}
+                    className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-indigo-600 uppercase mb-2">Online Inventory</label>
+                  <input
+                    type="number"
+                    name="online_inventory"
+                    placeholder="e.g. 5"
+                    value={editForm.online_inventory}
+                    onChange={handleEditChange}
+                    className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-indigo-600 uppercase mb-2">Min Stay</label>
+                  <input
+                    type="number"
+                    name="min_stay"
+                    value={editForm.min_stay}
+                    onChange={handleEditChange}
+                    className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all"
+                  />
+                </div>
+                <div className="flex items-center gap-6 mt-2">
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="cta"
+                      checked={editForm.cta}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, cta: e.target.checked }))}
+                      className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                    />
+                    <span className="text-sm font-bold text-gray-700">CTA (Closed to Arrival)</span>
+                  </label>
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="ctd"
+                      checked={editForm.ctd}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, ctd: e.target.checked }))}
+                      className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                    />
+                    <span className="text-sm font-bold text-gray-700">CTD (Closed to Departure)</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="mb-4 flex justify-between items-center">
+                <label className="block text-xs font-bold text-indigo-600 uppercase">Rate Plan Mapping</label>
+                <button
+                  type="button"
+                  onClick={() => addRatePlanMapping(true)}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 px-4 rounded-lg shadow-sm transition-all flex items-center gap-2 uppercase tracking-wider"
+                >
+                  <i className="fas fa-plus"></i> Add New Mapping
+                </button>
+              </div>
+
+              <div className="overflow-x-auto bg-white rounded-xl border border-gray-200 shadow-sm">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-gray-50 text-gray-500 uppercase text-[10px] font-bold tracking-widest">
+                    <tr>
+                      <th className="px-4 py-3">Plan Name</th>
+                      <th className="px-4 py-3 w-20 text-center">Occ.</th>
+                      <th className="px-4 py-3">Mapping ID</th>
+                      <th className="px-4 py-3 w-28">Price Offset (₹)</th>
+                      <th className="px-4 py-3 w-28">Offset (%)</th>
+                      <th className="px-4 py-3 w-12"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {editForm.rate_plan_mappings.map((mapping, idx) => (
+                      <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-4 py-2">
+                          <input
+                            type="text"
+                            placeholder="e.g. Luxury Single CP"
+                            value={mapping.plan_name}
+                            onChange={(e) => updateRatePlanMapping(idx, "plan_name", e.target.value, true)}
+                            className="w-full p-2 bg-transparent border-b border-transparent focus:border-indigo-500 outline-none transition-all"
+                          />
+                        </td>
+                        <td className="px-4 py-2 text-center">
+                          <input
+                            type="number"
+                            value={mapping.occupancy}
+                            onChange={(e) => updateRatePlanMapping(idx, "occupancy", e.target.value, true)}
+                            className="w-12 p-2 bg-transparent text-center border-b border-transparent focus:border-indigo-500 outline-none transition-all font-bold text-indigo-600"
+                          />
+                        </td>
+                        <td className="px-4 py-2">
+                          <input
+                            type="text"
+                            placeholder="e.g. room-5-cp"
+                            value={mapping.channel_manager_id}
+                            onChange={(e) => updateRatePlanMapping(idx, "channel_manager_id", e.target.value, true)}
+                            className="w-full p-2 bg-transparent border-b border-transparent focus:border-indigo-500 outline-none transition-all"
+                          />
+                        </td>
+                        <td className="px-4 py-2">
+                          <div className="flex items-center gap-1">
+                            <span className="text-gray-400 text-xs">₹</span>
+                            <input
+                              type="number"
+                              value={mapping.price_offset}
+                              onChange={(e) => updateRatePlanMapping(idx, "price_offset", e.target.value, true)}
+                              className="w-full p-2 bg-transparent border-b border-transparent focus:border-indigo-500 outline-none transition-all font-bold text-green-600"
+                            />
+                          </div>
+                        </td>
+                        <td className="px-4 py-2">
+                          <div className="flex items-center gap-1">
+                            <span className="text-gray-400 text-xs">+/-</span>
+                            <input
+                              type="number"
+                              value={mapping.offset_percentage}
+                              onChange={(e) => updateRatePlanMapping(idx, "offset_percentage", e.target.value, true)}
+                              className="w-full p-2 bg-transparent border-b border-transparent focus:border-indigo-500 outline-none transition-all font-bold text-blue-600"
+                            />
+                          </div>
+                        </td>
+                        <td className="px-4 py-2">
+                          <button
+                            type="button"
+                            onClick={() => removeRatePlanMapping(idx, true)}
+                            className="text-red-500 hover:text-red-700 transition-colors p-2"
+                            title="Remove Mapping"
+                          >
+                            <i className="fas fa-trash-alt"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {editForm.rate_plan_mappings.length === 0 && (
+                      <tr>
+                        <td colSpan="6" className="px-4 py-8 text-center text-gray-400 italic">
+                          No rate plan mappings added.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
             <div className="flex flex-col gap-3">
               {isSubmitting && (
                 <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2 overflow-hidden">
@@ -1108,6 +1341,167 @@ const Packages = () => {
               )}
             </div>
           )}
+
+          {/* Channel Manager Mapping Section */}
+          <div className="border-t pt-6 mt-2">
+            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <i className="fas fa-sync text-indigo-600"></i> Channel Manager Mapping
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+              <div>
+                <label className="block text-xs font-bold text-indigo-600 uppercase mb-2">Room Type Code</label>
+                <input
+                  type="text"
+                  name="aiosell_room_code"
+                  placeholder="e.g. DELUXE, PREMIUM"
+                  value={createForm.aiosell_room_code}
+                  onChange={handleCreateChange}
+                  className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all font-medium"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-indigo-600 uppercase mb-2">Online Inventory</label>
+                <input
+                  type="number"
+                  name="online_inventory"
+                  placeholder="e.g. 5"
+                  value={createForm.online_inventory}
+                  onChange={handleCreateChange}
+                  className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all font-medium"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-indigo-600 uppercase mb-2">Min Stay</label>
+                <input
+                  type="number"
+                  name="min_stay"
+                  value={createForm.min_stay}
+                  onChange={handleCreateChange}
+                  className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all"
+                />
+              </div>
+              <div className="flex items-center gap-6 mt-2">
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="cta"
+                    checked={createForm.cta}
+                    onChange={(e) => setCreateForm(prev => ({ ...prev, cta: e.target.checked }))}
+                    className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                  />
+                  <span className="text-sm font-bold text-gray-700">CTA (Closed to Arrival)</span>
+                </label>
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="ctd"
+                    checked={createForm.ctd}
+                    onChange={(e) => setCreateForm(prev => ({ ...prev, ctd: e.target.checked }))}
+                    className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                  />
+                  <span className="text-sm font-bold text-gray-700">CTD (Closed to Departure)</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="mb-4 flex justify-between items-center">
+              <label className="block text-xs font-bold text-indigo-600 uppercase">Rate Plan Mapping</label>
+              <button
+                type="button"
+                onClick={() => addRatePlanMapping(false)}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 px-4 rounded-lg shadow-sm transition-all flex items-center gap-2 uppercase tracking-wider"
+              >
+                <i className="fas fa-plus"></i> Add New Mapping
+              </button>
+            </div>
+
+            <div className="overflow-x-auto bg-white rounded-xl border border-gray-200 shadow-sm">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-gray-50 text-gray-500 uppercase text-[10px] font-bold tracking-widest">
+                  <tr>
+                    <th className="px-4 py-3">Plan Name</th>
+                    <th className="px-4 py-3 w-20 text-center">Occ.</th>
+                    <th className="px-4 py-3">Mapping ID</th>
+                    <th className="px-4 py-3 w-28">Price Offset (₹)</th>
+                    <th className="px-4 py-3 w-28">Offset (%)</th>
+                    <th className="px-4 py-3 w-12"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {createForm.rate_plan_mappings.map((mapping, idx) => (
+                    <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="px-4 py-2">
+                        <input
+                          type="text"
+                          placeholder="e.g. Luxury Single CP"
+                          value={mapping.plan_name}
+                          onChange={(e) => updateRatePlanMapping(idx, "plan_name", e.target.value, false)}
+                          className="w-full p-2 bg-transparent border-b border-transparent focus:border-indigo-500 outline-none transition-all"
+                        />
+                      </td>
+                      <td className="px-4 py-2 text-center">
+                        <input
+                          type="number"
+                          value={mapping.occupancy}
+                          onChange={(e) => updateRatePlanMapping(idx, "occupancy", e.target.value, false)}
+                          className="w-12 p-2 bg-transparent text-center border-b border-transparent focus:border-indigo-500 outline-none transition-all font-bold text-indigo-600"
+                        />
+                      </td>
+                      <td className="px-4 py-2">
+                        <input
+                          type="text"
+                          placeholder="e.g. room-5-cp"
+                          value={mapping.channel_manager_id}
+                          onChange={(e) => updateRatePlanMapping(idx, "channel_manager_id", e.target.value, false)}
+                          className="w-full p-2 bg-transparent border-b border-transparent focus:border-indigo-500 outline-none transition-all"
+                        />
+                      </td>
+                      <td className="px-4 py-2">
+                        <div className="flex items-center gap-1">
+                          <span className="text-gray-400 text-xs">₹</span>
+                          <input
+                            type="number"
+                            value={mapping.price_offset}
+                            onChange={(e) => updateRatePlanMapping(idx, "price_offset", e.target.value, false)}
+                            className="w-full p-2 bg-transparent border-b border-transparent focus:border-indigo-500 outline-none transition-all font-bold text-green-600"
+                          />
+                        </div>
+                      </td>
+                      <td className="px-4 py-2">
+                        <div className="flex items-center gap-1">
+                          <span className="text-gray-400 text-xs">+/-</span>
+                          <input
+                            type="number"
+                            value={mapping.offset_percentage}
+                            onChange={(e) => updateRatePlanMapping(idx, "offset_percentage", e.target.value, false)}
+                            className="w-full p-2 bg-transparent border-b border-transparent focus:border-indigo-500 outline-none transition-all font-bold text-blue-600"
+                          />
+                        </div>
+                      </td>
+                      <td className="px-4 py-2">
+                        <button
+                          type="button"
+                          onClick={() => removeRatePlanMapping(idx, false)}
+                          className="text-red-500 hover:text-red-700 transition-colors p-2"
+                          title="Remove Mapping"
+                        >
+                          <i className="fas fa-trash-alt"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {createForm.rate_plan_mappings.length === 0 && (
+                    <tr>
+                      <td colSpan="6" className="px-4 py-8 text-center text-gray-400 italic">
+                        No rate plan mappings added.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
 
           <label className="block">
             <span className="text-gray-600 font-medium">Package Images (Select multiple):</span>
@@ -1205,7 +1599,7 @@ const Packages = () => {
                 <tr key={b.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 whitespace-nowrap font-medium text-gray-900">{b.guest_name}</td>
                   <td className="px-4 py-3 whitespace-nowrap">{b.package?.title || "-"}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">{b.rooms.map(r => r.room.number).join(", ")}</td>
+                  <td className="px-4 py-3 whitespace-nowrap">{b.rooms?.map(r => r.room?.number).join(", ") || "-"}</td>
                   <td className="px-4 py-3 whitespace-nowrap">{b.check_in}</td>
                   <td className="px-4 py-3 whitespace-nowrap">{b.check_out}</td>
                   <td className="px-4 py-3 whitespace-nowrap capitalize">{b.status}</td>

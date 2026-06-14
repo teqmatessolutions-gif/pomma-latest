@@ -60,6 +60,7 @@ class ResortInfo(Base):
     support_email = Column(String(100))
     contact_no = Column(String(20))
     property_location = Column(String(255))
+    hotel_code = Column(String(100), nullable=True)
 
 
 # Signature Experiences

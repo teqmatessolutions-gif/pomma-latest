@@ -81,6 +81,7 @@ class ResortInfoBase(BaseSchema):
     support_email: str | None = None
     contact_no: str | None = None
     property_location: str | None = None
+    hotel_code: str | None = None
 
 class ResortInfoCreate(ResortInfoBase):
     pass

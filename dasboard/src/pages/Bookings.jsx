@@ -987,7 +987,7 @@ const Bookings = () => {
         return rooms.find(r => r.number === roomNumber);
       }
       return rooms.find(r => r.number === roomNumber && r.type === formData.roomTypes[0]);
-    }).filter(room => room !== null);
+    }).filter(room => room !== undefined && room !== null);
   }, [rooms, formData.roomNumbers, formData.roomTypes]);
 
   const totalGuests = useMemo(() => {
@@ -1860,6 +1860,257 @@ const Bookings = () => {
   };
 
 
+  const [activeTab, setActiveTab] = useState("all"); // "all" or "calendar"
+
+  // Calendar State
+  const [calendarStartDate, setCalendarStartDate] = useState(new Date().toISOString().split('T')[0]);
+  const [calendarDays, setCalendarDays] = useState(15);
+
+  const calendarDates = useMemo(() => {
+    const dates = [];
+    const start = new Date(calendarStartDate);
+    for (let i = 0; i < calendarDays; i++) {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      dates.push(d.toISOString().split('T')[0]);
+    }
+    return dates;
+  }, [calendarStartDate, calendarDays]);
+
+  const BookingCalendar = () => {
+    return (
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col h-[70vh]">
+        {/* Calendar Controls */}
+        <div className="p-4 bg-gray-50 border-b border-gray-200 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="flex flex-col">
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Start Date</label>
+              <input 
+                type="date" 
+                value={calendarStartDate} 
+                onChange={(e) => setCalendarStartDate(e.target.value)}
+                className="p-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-indigo-500 outline-none"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Duration</label>
+              <select 
+                value={calendarDays} 
+                onChange={(e) => setCalendarDays(parseInt(e.target.value))}
+                className="p-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-indigo-500 outline-none"
+              >
+                <option value={7}>7 Days</option>
+                <option value={15}>15 Days</option>
+                <option value={30}>30 Days</option>
+              </select>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-6 text-xs font-bold uppercase tracking-wider">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-green-500 shadow-sm shadow-green-100"></div>
+              <span className="text-gray-600">Available</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-indigo-500 shadow-sm shadow-indigo-100"></div>
+              <span className="text-gray-600">Booked</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-blue-500 shadow-sm shadow-blue-100"></div>
+              <span className="text-gray-600">Checked-in</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-red-400 shadow-sm shadow-red-100"></div>
+              <span className="text-gray-600">Maintenance</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Grid Container */}
+        <div className="flex-1 overflow-auto custom-scrollbar">
+          <table className="w-full border-collapse table-fixed min-w-[1200px]">
+            <thead className="sticky top-0 z-20 bg-white shadow-sm">
+              <tr>
+                <th className="w-48 p-4 text-left text-xs font-black text-indigo-600 uppercase tracking-widest border-r border-gray-100 bg-indigo-50/30">
+                  Rooms / Dates
+                </th>
+                {calendarDates.map(date => {
+                  const d = new Date(date);
+                  const isToday = date === new Date().toISOString().split('T')[0];
+                  return (
+                    <th key={date} className={`p-4 text-center border-r border-gray-100 ${isToday ? 'bg-indigo-600 text-white' : 'text-gray-500'}`}>
+                      <span className="block text-[10px] font-black uppercase tracking-tighter mb-0.5 opacity-80">
+                        {d.toLocaleDateString('en-US', { weekday: 'short' })}
+                      </span>
+                      <span className="block text-lg font-black leading-tight">
+                        {d.getDate()}
+                      </span>
+                      <span className="block text-[10px] font-bold uppercase">
+                        {d.toLocaleDateString('en-US', { month: 'short' })}
+                      </span>
+                    </th>
+                  );
+                })}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {/* Whole Property Section */}
+              <tr className="bg-indigo-50/20 font-black">
+                <td className="p-4 border-r border-gray-100 sticky left-0 z-10 bg-indigo-50 group-hover:bg-indigo-100 transition-colors shadow-[4px_0_10px_-4px_rgba(0,0,0,0.05)]">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
+                      <i className="fas fa-hotel text-sm"></i>
+                    </div>
+                    <div>
+                      <p className="text-indigo-900 text-sm leading-tight uppercase tracking-tighter">Whole Property</p>
+                      <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mt-0.5">Status Summary</p>
+                    </div>
+                  </div>
+                </td>
+                {calendarDates.map(date => {
+                  const targetDateStr = date;
+                  // Check if ANY room is booked or if a Whole Property package is booked
+                  const anyRoomBooked = bookings.some(b => {
+                    const checkInStr = b.check_in?.toString().split('T')[0];
+                    const checkOutStr = b.check_out?.toString().split('T')[0];
+                    const isActive = ['booked', 'checked-in'].includes(b.status?.toLowerCase().replace(/[-_]/g, '-'));
+                    return isActive && targetDateStr >= checkInStr && targetDateStr < checkOutStr;
+                  });
+
+                  return (
+                    <td key={date} className="p-2 border-r border-gray-100 relative h-16 group/cell">
+                      {anyRoomBooked ? (
+                        <div className="absolute inset-1 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-700 border border-indigo-200">
+                          <span className="text-[10px] font-black uppercase">Occupied</span>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="absolute inset-1 rounded-lg bg-green-100 flex items-center justify-center text-green-700 border border-green-200 group-hover/cell:opacity-20 transition-opacity">
+                            <span className="text-[10px] font-black uppercase">Free</span>
+                          </div>
+                          {/* Hover Actions */}
+                          <div className="absolute inset-0 opacity-0 group-hover/cell:opacity-100 flex items-center justify-center gap-2 transition-all">
+                            <button 
+                              onClick={() => {
+                                setPackageBookingForm(prev => ({ ...prev, check_in: date }));
+                                setIsPackageBookingModalOpen(true);
+                              }}
+                              className="w-10 h-10 rounded-full bg-indigo-600 text-white shadow-xl flex items-center justify-center hover:bg-indigo-700 hover:scale-110 transition-all"
+                              title="Book Package"
+                            >
+                              <i className="fas fa-box-open text-xs"></i>
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+
+              {/* Individual Rooms */}
+              {allRooms.map(room => (
+                <tr key={room.id} className="group hover:bg-gray-50 transition-colors">
+                  <td className="p-4 border-r border-gray-100 sticky left-0 z-10 bg-white group-hover:bg-gray-50 transition-colors shadow-[4px_0_10px_-4px_rgba(0,0,0,0.05)]">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-sm">
+                        {room.number}
+                      </div>
+                      <div>
+                        <p className="font-black text-gray-900 text-sm leading-tight">{room.type}</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">₹{room.price}</p>
+                      </div>
+                    </div>
+                  </td>
+                  {calendarDates.map(date => {
+                    // Check if room is booked for this date using robust string comparison
+                    const targetDateStr = date;
+                    const booking = bookings.find(b => {
+                      const checkInStr = b.check_in?.toString().split('T')[0];
+                      const checkOutStr = b.check_out?.toString().split('T')[0];
+                      
+                      // Robust check for room ID in both standard and package bookings
+                      const isRoomInBooking = b.rooms?.some(r => {
+                        const roomId = r.room?.id || r.room_id || r.id;
+                        return roomId === room.id;
+                      });
+
+                      const isActive = ['booked', 'checked-in'].includes(b.status?.toLowerCase().replace(/[-_]/g, '-'));
+                      return isRoomInBooking && isActive && targetDateStr >= checkInStr && targetDateStr < checkOutStr;
+                    });
+
+                    const isMaintenance = room.status === 'Maintenance';
+                    
+                    let cellContent = null;
+                    if (booking) {
+                      const isCheckInDay = date === booking.check_in;
+                      const isCheckedIn = (booking.status || '').toLowerCase().replace(/[-_]/g, '-') === 'checked-in';
+                      cellContent = (
+                        <div 
+                          onClick={() => viewDetails(booking.id, booking.is_package)}
+                          className={`absolute inset-1 rounded-lg shadow-sm flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-105 active:scale-95 ${
+                            isCheckedIn ? 'bg-blue-600 text-white' : 'bg-indigo-600 text-white'
+                          }`}
+                        >
+                          <span className="text-[10px] font-black leading-none px-1 uppercase tracking-tighter">
+                            {isCheckInDay ? booking.guest_name : 'NOT AVAILABLE'}
+                          </span>
+                        </div>
+                      );
+                    } else if (isMaintenance) {
+                      cellContent = (
+                        <div className="absolute inset-1 rounded-lg bg-red-100 flex items-center justify-center text-red-600 border border-red-200 border-dashed">
+                          <span className="text-[10px] font-black uppercase">Blocked</span>
+                        </div>
+                      );
+                    } else {
+                      cellContent = (
+                        <>
+                          <div className="absolute inset-1 rounded-lg bg-green-50 flex items-center justify-center text-green-600 border border-green-100 border-dashed group-hover/cell:opacity-10 transition-opacity">
+                            <span className="text-[10px] font-black uppercase tracking-widest">Available</span>
+                          </div>
+                          {/* Hover Actions */}
+                          <div className="absolute inset-0 opacity-0 group-hover/cell:opacity-100 flex items-center justify-center gap-2 transition-all">
+                            <button 
+                              onClick={() => {
+                                setFormData(prev => ({ ...prev, checkIn: date, roomNumbers: [room.number] }));
+                                setIsRoomBookingModalOpen(true);
+                              }}
+                              className="w-8 h-8 rounded-full bg-green-600 text-white shadow-lg flex items-center justify-center hover:bg-green-700 hover:scale-110 transition-all"
+                              title="Book Room"
+                            >
+                              <i className="fas fa-plus text-xs"></i>
+                            </button>
+                            <button 
+                              onClick={() => {
+                                setPackageBookingForm(prev => ({ ...prev, check_in: date }));
+                                setIsPackageBookingModalOpen(true);
+                              }}
+                              className="w-8 h-8 rounded-full bg-indigo-600 text-white shadow-lg flex items-center justify-center hover:bg-indigo-700 hover:scale-110 transition-all"
+                              title="Book Package"
+                            >
+                              <i className="fas fa-box-open text-[10px]"></i>
+                            </button>
+                          </div>
+                        </>
+                      );
+                    }
+
+                    return (
+                      <td key={date} className="p-2 border-r border-gray-100 relative h-16 group/cell">
+                        {cellContent}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+  
   return (
     <DashboardLayout>
       <BannerMessage
@@ -1872,9 +2123,43 @@ const Bookings = () => {
 
 
       <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gray-100 min-h-screen font-sans">
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 tracking-tight">Booking Management Dashboard</h1>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 tracking-tight">Booking Management</h1>
+          
+          {/* Tab Navigation */}
+          <div className="bg-white p-1 rounded-xl shadow-md border border-gray-200 flex self-start">
+            <button
+              onClick={() => setActiveTab("all")}
+              className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 flex items-center gap-2 ${
+                activeTab === "all" 
+                  ? "bg-indigo-600 text-white shadow-lg" 
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+              All Bookings
+            </button>
+            <button
+              onClick={() => setActiveTab("calendar")}
+              className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 flex items-center gap-2 ${
+                activeTab === "calendar" 
+                  ? "bg-indigo-600 text-white shadow-lg" 
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Calendar View
+            </button>
+          </div>
+        </div>
 
-        {/* KPI Row and Chart */}
+        {activeTab === "all" ? (
+          <>
+            {/* KPI Row and Chart */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
           <KPI_Card title="Total Bookings" value={kpis.activeBookings} />
           <KPI_Card title="Cancelled Bookings" value={kpis.cancelledBookings} />
@@ -2204,6 +2489,10 @@ const Bookings = () => {
             </div>
           )}
         </div>
+          </>
+        ) : (
+          <BookingCalendar />
+        )}
       </div>
       <AnimatePresence>
         {modalBooking && (

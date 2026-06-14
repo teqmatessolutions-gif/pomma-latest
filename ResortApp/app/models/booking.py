@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Float, Integer, String, ForeignKey, Date, DateTime
+from sqlalchemy import Column, Float, Integer, String, ForeignKey, Date, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.database import Base
@@ -22,10 +22,19 @@ class Booking(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     total_amount = Column(Float, default=0.0)
     
-    # Channel Manager Integration
-    channel = Column(String, nullable=True) # e.g. "Aiosell"
-    external_booking_id = Column(String, nullable=True) # Aiosell's reservation ID
+    display_id = Column(String, index=True)
+    source = Column(String, nullable=True) # e.g. "Aiosell"
+    external_id = Column(String, nullable=True) # Aiosell's reservation ID
     external_status = Column(String, nullable=True) # Status from Aiosell
+    
+    # Missing production columns (commented out as they reference non-existent tables)
+    # branch_id = Column(Integer, ForeignKey("branches.id"), nullable=False, default=1)
+    # room_type_id = Column(Integer, ForeignKey("room_types.id"), nullable=True)
+    num_rooms = Column(Integer, nullable=True)
+    package_name = Column(String, nullable=True)
+    is_confirmed = Column(Boolean, default=False)
+    confirmed_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
     
     # Relationships
     checkout = relationship("Checkout", back_populates="booking", uselist=False)

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, Date, ForeignKey, DateTime, func
+from sqlalchemy import Column, Integer, String, Float, Date, ForeignKey, DateTime, func, Boolean
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -15,9 +15,21 @@ class Package(Base):
     priority = Column(Integer, nullable=True)  # Display order priority (1 = first, 2 = second, etc. NULL = last)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+    # Aiosell / Channel Manager Fields
+    channel_manager_id = Column(String, nullable=True) # e.g. DELUXE
+    online_inventory = Column(Integer, nullable=True)
+    min_stay = Column(Integer, default=1)
+    cta = Column(Boolean, default=False)
+    ctd = Column(Boolean, default=False)
+
     # Relationships
     images = relationship("PackageImage", back_populates="package", cascade="all, delete-orphan")
     bookings = relationship("PackageBooking", back_populates="package")
+    rate_plan_mappings = relationship(
+        "RatePlanMapping",
+        back_populates="package",
+        cascade="all, delete-orphan"
+    )
 
 
 class PackageImage(Base):

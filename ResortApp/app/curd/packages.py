@@ -10,7 +10,7 @@ from app.schemas.packages import PackageBookingCreate
 
 # ------------------- Packages -------------------
 
-def create_package(db: Session, title: str, description: str, price: float, image_urls: List[str], booking_type: str = "room_type", room_types: str = None, status: str = "Available", priority: int = None):
+def create_package(db: Session, title: str, description: str, price: float, image_urls: List[str], booking_type: str = "room_type", room_types: str = None, status: str = "Available", priority: int = None, channel_manager_id: str = None, online_inventory: int = None, min_stay: int = 1, cta: bool = False, ctd: bool = False):
     try:
         pkg = Package(
             title=title, 
@@ -19,7 +19,12 @@ def create_package(db: Session, title: str, description: str, price: float, imag
             booking_type=booking_type,
             room_types=room_types,
             status=status,
-            priority=priority
+            priority=priority,
+            channel_manager_id=channel_manager_id,
+            online_inventory=online_inventory,
+            min_stay=min_stay,
+            cta=cta,
+            ctd=ctd
         )
         db.add(pkg)
         db.commit()

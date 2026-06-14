@@ -54,7 +54,8 @@ class Room(Base):
     )
 
     # Aiosell / Channel Manager Fields
-    aiosell_room_code = Column(String, nullable=True) # e.g. DELUXE
+    channel_manager_id = Column(String, nullable=True) # e.g. DELUXE
+    online_inventory = Column(Integer, nullable=True)
     min_stay = Column(Integer, default=1)
     cta = Column(Boolean, default=False)
     ctd = Column(Boolean, default=False)
@@ -69,14 +70,17 @@ class RatePlanMapping(Base):
     __tablename__ = "rate_plan_mappings"
 
     id = Column(Integer, primary_key=True, index=True)
-    room_id = Column(Integer, ForeignKey("rooms.id"), nullable=False)
+    room_id = Column(Integer, ForeignKey("rooms.id"), nullable=True)
+    package_id = Column(Integer, ForeignKey("packages.id"), nullable=True)
     plan_name = Column(String, nullable=False) # e.g. Luxury Single CP
     occupancy = Column(Integer, default=2)
-    aiosell_id = Column(String, nullable=False) # Rate Plan ID in Aiosell
+    channel_manager_id = Column(String, nullable=False) # Rate Plan ID in Aiosell
+    price_offset = Column(Float, default=0.0)
     offset_percentage = Column(Float, default=0.0)
     fixed_offset = Column(Float, default=0.0)
 
     room = relationship("Room", back_populates="rate_plan_mappings")
+    package = relationship("Package", back_populates="rate_plan_mappings")
 
 class RoomImage(Base):
     __tablename__ = "room_images"
