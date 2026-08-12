@@ -489,6 +489,7 @@ const Bookings = () => {
     checkOut: "",
     adults: 1,
     children: 0,
+    advance_amount: 0,
   });
   const [emailError, setEmailError] = useState("");
   const [phoneError, setPhoneError] = useState("");
@@ -511,7 +512,8 @@ const Bookings = () => {
     check_out: "",
     adults: 2,
     children: 0,
-    room_ids: []
+    room_ids: [],
+    advance_amount: 0
   });
   const [packageEmailError, setPackageEmailError] = useState("");
   const [packagePhoneError, setPackagePhoneError] = useState("");
@@ -1147,11 +1149,12 @@ const Bookings = () => {
         package_id: parseInt(packageBookingForm.package_id),
         adults: parseInt(packageBookingForm.adults),
         children: parseInt(packageBookingForm.children),
+        advance_amount: parseFloat(packageBookingForm.advance_amount) || 0,
         room_ids: finalRoomIds.map(id => parseInt(id)) // Use finalRoomIds (all available for whole_property, selected for room_type)
       };
       const response = await API.post("/packages/book", bookingData, authHeader());
       showBannerMessage("success", "Package booked successfully!");
-      setPackageBookingForm({ package_id: "", guest_name: "", guest_email: "", guest_mobile: "+91", check_in: "", check_out: "", adults: 2, children: 0, room_ids: [] });
+      setPackageBookingForm({ package_id: "", guest_name: "", guest_email: "", guest_mobile: "+91", check_in: "", check_out: "", adults: 2, children: 0, room_ids: [], advance_amount: 0 });
       setPackageCountryCode(countryCodes.find(c => c.value === "+91"));
       setPackageMobileNumber("");
       setIsPackageBookingModalOpen(false); // Close modal
@@ -1528,6 +1531,7 @@ const Bookings = () => {
           check_out: formData.checkOut,
           adults: parseInt(formData.adults),
           children: parseInt(formData.children),
+          advance_amount: parseFloat(formData.advance_amount) || 0,
         },
         authHeader()
       );
@@ -1543,6 +1547,7 @@ const Bookings = () => {
         checkOut: "",
         adults: 1,
         children: 0,
+        advance_amount: 0,
       });
       setRoomCountryCode(countryCodes.find(c => c.value === "+91"));
       setRoomMobileNumber("");
@@ -2274,6 +2279,7 @@ const Bookings = () => {
                   <th className="p-2 sm:p-4 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider text-gray-800">ID</th>
                   <th className="p-2 sm:p-4 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider text-gray-800">Guest</th>
                   <th className="p-2 sm:p-4 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider text-gray-800 hidden md:table-cell">Type</th>
+                  <th className="p-2 sm:p-4 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider text-indigo-600 hidden md:table-cell">Source / OTA</th>
                   <th className="p-2 sm:p-4 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider text-gray-800">Rooms</th>
                   <th className="p-2 sm:p-4 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider text-gray-800 hidden lg:table-cell">Check-in</th>
                   <th className="p-2 sm:p-4 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider text-gray-800 hidden lg:table-cell">Check-out</th>
@@ -2305,6 +2311,15 @@ const Bookings = () => {
                           </span>
                         ) : (
                           <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs font-semibold">Room</span>
+                        )}
+                      </td>
+                      <td className="p-2 sm:p-4 hidden md:table-cell text-xs sm:text-sm">
+                        {b.source ? (
+                          <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full text-xs font-semibold border border-indigo-100 uppercase tracking-wide">
+                            {b.source}
+                          </span>
+                        ) : (
+                          <span className="text-gray-500 font-medium bg-gray-50 px-2 py-0.5 rounded-full text-xs border border-gray-200">Direct</span>
                         )}
                       </td>
                       <td className="p-2 sm:p-4 text-xs sm:text-sm">
@@ -2663,6 +2678,16 @@ const Bookings = () => {
               />
             </div>
 
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-gray-700 mb-1">Advance Amount</label>
+              <input
+                type="number" name="advance_amount" value={formData.advance_amount}
+                onChange={handleChange}
+                className="w-full border-gray-300 rounded-lg shadow-sm p-2 transition-colors focus:border-indigo-500 focus:ring-indigo-500"
+                min="0"
+              />
+            </div>
+
             <div className="flex flex-col md:col-span-2">
               <label className="text-sm font-medium text-gray-700 mb-1">
                 Available Rooms for Selected Dates
@@ -2761,6 +2786,7 @@ const Bookings = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <input type="number" name="adults" min={1} placeholder="Adults" value={packageBookingForm.adults} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" required />
               <input type="number" name="children" min={0} placeholder="Children" value={packageBookingForm.children} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all" />
+              <input type="number" name="advance_amount" min={0} placeholder="Advance Amount" value={packageBookingForm.advance_amount} onChange={handlePackageBookingChange} className="w-full p-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all sm:col-span-2" />
             </div>
             {/* Room Selection - Only show for room_type packages */}
             {(() => {

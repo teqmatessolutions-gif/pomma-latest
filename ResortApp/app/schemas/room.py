@@ -11,7 +11,7 @@ class RoomImage(BaseModel):
 class RatePlanMappingBase(BaseModel):
     plan_name: str
     occupancy: int = 2
-    channel_manager_id: str
+    channel_manager_id: str | None = None
     aiosell_id: str | None = None # Alias for frontend
     price_offset: float = 0.0
     offset_percentage: float = 0.0

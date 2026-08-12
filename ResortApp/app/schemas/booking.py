@@ -76,6 +76,7 @@ class BookingOut(BaseModel):
     user: Optional[UserOut] = None
     is_package: bool = False
     total_amount: Optional[float] = 0.0
+    advance_amount: Optional[float] = 0.0
     source: Optional[str] = None
     external_id: Optional[str] = None
     # ----------------------------------------------------
@@ -90,3 +91,7 @@ class BookingOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class AdvancePaymentRequest(BaseModel):
+    amount: float
+

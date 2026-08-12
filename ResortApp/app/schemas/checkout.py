@@ -23,6 +23,7 @@ class BillBreakdown(BaseModel):
     food_charges: Optional[float] = 0.0
     service_charges: Optional[float] = 0.0
     package_charges: Optional[float] = 0.0
+    advance_amount: Optional[float] = 0.0
     
     # GST breakdown
     room_gst: Optional[float] = 0.0  # Total GST on room charges

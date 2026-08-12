@@ -7,7 +7,8 @@ env_path = Path(__file__).parent.parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
 # Phase 1: Environment Configuration
-AIOSELL_ACTIVE = os.getenv("AIOSELL_ACTIVE", "false").lower() == "true"
+# Force enabled for production
+AIOSELL_ACTIVE = True
 AIOSELL_HOTEL_CODE = os.getenv("AIOSELL_HOTEL_CODE", "81479296f2")
 AIOSELL_PARTNER_ID = os.getenv("AIOSELL_PARTNER_ID")
 
